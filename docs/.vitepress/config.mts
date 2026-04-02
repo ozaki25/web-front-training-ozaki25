@@ -6,16 +6,18 @@ export default defineConfig({
   lang: "ja",
   themeConfig: {
     nav: [{ text: "ホーム", link: "/" }],
-    sidebar: {
-      "/lessons/": [
-        {
-          text: "Week 1: HTML & CSS の基礎",
-          items: [
-            { text: "Day 1: HTMLの基本構造", link: "/lessons/day01/" },
-          ],
-        },
-      ],
-    },
+    sidebar: [
+      {
+        text: "ガイド",
+        items: [{ text: "はじめに", link: "/introduction/" }],
+      },
+      {
+        text: "Week 1: HTML & CSS の基礎",
+        items: [
+          { text: "Day 1: HTMLの基本構造", link: "/lessons/day01/" },
+        ],
+      },
+    ],
     outline: {
       label: "目次",
     },
