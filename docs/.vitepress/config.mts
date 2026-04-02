@@ -7,7 +7,14 @@ export default defineConfig({
   themeConfig: {
     nav: [{ text: "ホーム", link: "/" }],
     sidebar: {
-      "/lessons/": [],
+      "/lessons/": [
+        {
+          text: "Week 1: HTML & CSS の基礎",
+          items: [
+            { text: "Day 1: HTMLの基本構造", link: "/lessons/day01/" },
+          ],
+        },
+      ],
     },
     outline: {
       label: "目次",
