@@ -280,3 +280,5 @@ button.addEventListener("click", (event) => {
 - `addEventListener` でユーザー操作に反応する
 - DOM 操作は「データと画面の手動同期」が必要で、規模が大きくなると煩雑になる
 - この煩雑さが React のような宣言的 UI ライブラリが生まれた理由
+
+**次のレッスン**: [Day 13: 非同期処理](/lessons/day13/)

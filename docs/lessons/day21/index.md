@@ -254,3 +254,5 @@ root.render(<App />);
 - JSX は JavaScript の中に書く HTML 風の記法で、ビルド時に JavaScript に変換される
 - コンポーネントは JSX を返す関数。名前は大文字で始める
 - コンポーネントを組み合わせて画面を構築するのが React の基本パターン
+
+**次のレッスン**: [Day 22: コンポーネントと props](/lessons/day22/)

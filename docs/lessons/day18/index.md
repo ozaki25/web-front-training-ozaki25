@@ -273,3 +273,5 @@ function handleResponse(response: ApiResponse): void {
 - `type` と `interface` でオブジェクトの型に名前を付けられる
 - `?` で省略可能なプロパティ、`readonly` で変更不可なプロパティを定義できる
 - 型を組み合わせることで、実際のデータ構造を正確に表現できる
+
+**次のレッスン**: [Day 19: ジェネリクスとユーティリティ型](/lessons/day19/)
