@@ -191,3 +191,5 @@ export default function Home() {
 - App Router では `src/app/` 配下のフォルダ構造がそのまま URL になる（ファイルベースルーティング）
 - `page.tsx` がページの本体、`layout.tsx` が共通レイアウトなど、ファイル名に特別な意味がある
 - ページ間のリンクには `next/link` の `<Link>` コンポーネントを使う
+
+**次のレッスン**: [Day 32: Server Components と Client Components](/lessons/day32/)

@@ -268,3 +268,5 @@ function ContactForm() {
 - `useFormStatus` は子コンポーネントから送信状態を取得する Hook
 - 入力中のリアルタイムバリデーションには従来の `useState` + `onChange` が適する
 - 送信時のバリデーションには Actions が簡潔
+
+**次のレッスン**: [Day 27: useOptimistic と Transition](/lessons/day27/)

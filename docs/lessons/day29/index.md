@@ -337,3 +337,5 @@ function Layout({ sidebar }: { sidebar: React.ReactNode }) {
 - カスタム Hook（`useUser` など）と Provider コンポーネントのセットで使うのが定番
 - Context は関心ごとに分割し、不要な再レンダリングを避ける
 - Context の前に、合成パターンや state の持ち上げで解決できないか考える
+
+**次のレッスン**: [Day 30: React のレンダリング最適化](/lessons/day30/)

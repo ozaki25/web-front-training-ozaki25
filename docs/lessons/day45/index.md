@@ -208,3 +208,5 @@ export function WebVitals() {
 - パフォーマンス改善は「測定 → 特定 → 改善 → 再測定」のサイクルで行う
 - 推測ではなく、必ずデータに基づいて改善する
 - Next.js の `next/image`、`next/font`、Server Components は多くのパフォーマンス最適化を自動で行ってくれる
+
+**次のレッスン**: [Day 46: Web パフォーマンス応用](/lessons/day46/)

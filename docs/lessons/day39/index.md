@@ -220,3 +220,5 @@ export default function RootLayout({
 - `next/font` はフォントをビルド時にダウンロードし、セルフホスティングとサイズ調整を自動で行う
 - これらの最適化は Core Web Vitals（特に LCP と CLS）の改善に直結する
 - 画像には必ず適切な `alt` テキストを設定する
+
+**次のレッスン**: [Day 40: Tailwind CSS](/lessons/day40/)

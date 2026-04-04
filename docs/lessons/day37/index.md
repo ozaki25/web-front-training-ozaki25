@@ -277,3 +277,5 @@ export default async function BlogPostPage({
 - `proxy.ts` はリクエストがページに到達する前に実行され、認証チェックやリダイレクトに使う
 - `proxy.ts` は軽い処理だけ行い、重い処理はページ側で行う
 - `generateStaticParams` で動的ルートを事前にビルドできる
+
+**次のレッスン**: [Day 38: メタデータと SEO](/lessons/day38/)

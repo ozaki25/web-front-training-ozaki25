@@ -273,3 +273,5 @@ function TabContainer() {
 - `useOptimistic` は楽観的な値を一時的に表示し、正式な state が更新されたら自動で置き換わる
 - `useTransition` は緊急度の低い更新をマークし、緊急な更新（入力反映など）を優先させる
 - `isPending` でトランジション中の状態をユーザーに伝えられる
+
+**次のレッスン**: [Day 28: カスタム Hooks とコンポーネント設計](/lessons/day28/)

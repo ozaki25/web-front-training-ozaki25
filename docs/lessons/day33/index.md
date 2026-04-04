@@ -275,3 +275,5 @@ Next.js はこれらを以下のように組み立てます（概念的なイメ
 - `loading.tsx` は Suspense、`error.tsx` は Error Boundary を利用して自動的に表示される
 - `template.tsx` はレイアウトと似ているが、遷移のたびに再マウントされる
 - これらのファイルを組み合わせることで、ローディングやエラー処理を宣言的に実現できる
+
+**次のレッスン**: [Day 34: データ取得（Server Components）](/lessons/day34/)

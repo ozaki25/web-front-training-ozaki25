@@ -249,3 +249,5 @@ function App() {
 - React Compiler がビルド時に自動でメモ化を挿入するため、手動の最適化はほぼ不要になった
 - React Compiler は React のルール（不変性、副作用の分離）に従ったコードを前提とする
 - パフォーマンスの問題は推測ではなく、React Profiler で計測して判断する
+
+**次のレッスン**: [Day 31: Next.js の概要とプロジェクト構成](/lessons/day31/)
