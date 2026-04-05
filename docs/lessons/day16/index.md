@@ -85,15 +85,17 @@ try {
 ### finally — 必ず実行する処理
 
 ```javascript
-try {
-  const response = await fetch("https://api.example.com/data");
-  const data = await response.json();
-  console.log(data);
-} catch (error) {
-  console.error("データ取得に失敗:", error.message);
-} finally {
-  // 成功でも失敗でも必ず実行される
-  console.log("処理完了");
+async function fetchData() {
+  try {
+    const response = await fetch("https://api.example.com/data");
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error("データ取得に失敗:", error.message);
+  } finally {
+    // 成功でも失敗でも必ず実行される
+    console.log("処理完了");
+  }
 }
 ```
 

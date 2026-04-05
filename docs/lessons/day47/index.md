@@ -80,7 +80,7 @@ Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Ag
 
 ## JWT（JSON Web Token）
 
-**JWT** はもう 1 つのアプローチで、ユーザー情報をトークン（暗号化された文字列）自体に含めます。
+**JWT** はもう 1 つのアプローチで、ユーザー情報をトークン（署名された文字列）自体に含めます。
 
 ```
 eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsIm5hbWUiOiLlpKrpg44iLCJyb2xlIjoiYWRtaW4ifQ.xxxxx
@@ -95,6 +95,8 @@ eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsIm5hbWUiOiLlpKrpg44iLCJyb2xlIjoiYWRtaW4ifQ.
 ペイロード: ユーザー情報（userId, name, role など）
 署名: 改ざん検知用（サーバーの秘密鍵で生成）
 ```
+
+> **重要**: JWT のペイロードは Base64Url エンコードされているだけで、誰でもデコードして内容を読めます。JWT は改ざんを検知するための「署名」であり、内容を隠すための「暗号化」ではありません。パスワードなどの機密情報は JWT に含めないでください。
 
 ### Session vs JWT
 

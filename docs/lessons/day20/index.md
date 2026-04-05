@@ -251,12 +251,24 @@ if (button) {
 | input, change | `Event` |
 | focus, blur | `FocusEvent` |
 
+### 型アサーション（as）
+
+TypeScript には、開発者が「この値はこの型である」と明示的に伝える**型アサーション**（`as`）という構文があります。
+
+TypeScript の型推論では判断しきれない場面で使います。
+
+```typescript
+const input = event.target as HTMLInputElement;
+```
+
+型アサーションは型チェックをすり抜けるため、**本当にその型であると確信がある場合にだけ**使いましょう。このレッスンで学んだ narrowing（型の絞り込み）で安全に型を判別できる場合は、そちらを優先します。
+
 ```typescript
 const input = document.querySelector("input");
 
 if (input) {
   input.addEventListener("input", (event: Event) => {
-    // event.target は EventTarget | null なのでキャストが必要
+    // event.target は EventTarget | null なので型アサーションが必要
     const target = event.target as HTMLInputElement;
     console.log(target.value);
   });

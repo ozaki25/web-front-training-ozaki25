@@ -139,8 +139,13 @@ import { useState } from "react";
 
 function useLocalStorage<T>(key: string, initialValue: T) {
   const [value, setValue] = useState<T>(() => {
-    const stored = localStorage.getItem(key);
-    return stored ? (JSON.parse(stored) as T) : initialValue;
+    if (typeof window === "undefined") return initialValue; // SSR対応
+    try {
+      const stored = window.localStorage.getItem(key);
+      return stored ? (JSON.parse(stored) as T) : initialValue;
+    } catch {
+      return initialValue;
+    }
   });
 
   function updateValue(newValue: T) {
@@ -153,6 +158,8 @@ function useLocalStorage<T>(key: string, initialValue: T) {
 ```
 
 `useState` の初期値に関数を渡しています。これは**遅延初期化**と呼ばれ、`localStorage` の読み取りのような重い処理を初回レンダリング時だけ実行するための書き方です。
+
+> **Next.js での注意**: Server Components や SSR 時には `window` オブジェクトが存在しないため、`typeof window === "undefined"` のチェックが必要です。
 
 ```tsx
 function ThemeSwitcher() {

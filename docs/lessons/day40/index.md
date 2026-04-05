@@ -205,35 +205,28 @@ type Props = {
 
 export default function ArticleCard({ title, excerpt, image, href }: Props) {
   return (
-    <article class="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
-      <div class="relative h-48 w-full">
+    <article className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+      <div className="relative h-48 w-full">
         <Image
           src={image}
           alt=""
           fill
-          class="rounded-t-lg object-cover"
+          className="rounded-t-lg object-cover"
         />
       </div>
-      <div class="p-4">
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
-          <Link href={href} class="hover:underline">
+      <div className="p-4">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+          <Link href={href} className="hover:underline">
             {title}
           </Link>
         </h2>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
           {excerpt}
         </p>
       </div>
     </article>
   );
 }
-```
-
-> **注意**: React/Next.js の JSX では `class` ではなく `className` を使います。上記は説明のために `class` で記載していますが、実際のコードでは `className` に置き換えてください。
-
-```tsx
-// 実際の JSX では className を使う
-<article className="rounded-lg border border-gray-200 bg-white shadow-sm">
 ```
 
 ## hover・focus などの状態

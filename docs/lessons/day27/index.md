@@ -19,7 +19,7 @@ Day 26 でフォーム送信を学びました。API にデータを送信して
 React 19 の `useOptimistic` は、楽観的 UI 更新を簡単に実装する Hook です。
 
 ```tsx
-import { useOptimistic } from "react";
+import { useState, useOptimistic } from "react";
 
 interface Message {
   id: number;
@@ -131,6 +131,8 @@ function LikeButton({ initialCount, liked, onToggle }: LikeButtonProps) {
 ```
 
 ボタンを押した瞬間にハートの色が変わり、API 通信の結果を待ちません。
+
+> **第2引数の省略について**: Chat の例では `useOptimistic(messages, updateFn)` と第2引数に更新関数を渡しましたが、LikeButton の例では `useOptimistic(liked)` と省略しています。第2引数（更新関数）を省略すると、`setOptimisticLiked` に渡した値がそのまま楽観的な状態になります。単純な値の上書きで済む場合は省略形が簡潔です。
 
 ## useTransition
 

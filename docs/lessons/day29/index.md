@@ -99,6 +99,8 @@ function UserInfo() {
 
 もう `Layout` や `Sidebar` で `user` を受け渡す必要はありません。
 
+> **React 19 の `use()` API**: React 19 では `use(ThemeContext)` のように `use()` を使って Context を読み取ることもできます。`useContext` との違いは、`use()` は `if` 文や `for` 文の中でも呼び出せる点です。将来的には `use()` が推奨される方向ですが、現時点ではどちらも使えます。
+
 ```tsx
 function Layout() {
   return (

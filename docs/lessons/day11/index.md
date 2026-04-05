@@ -264,19 +264,26 @@ console.log(second);  // "青"
 
 ### 関数の引数での分割代入
 
+分割代入なし:
+
 ```javascript
-// 分割代入なし
 const greet = (user) => {
   return `${user.name}さん（${user.age}歳）`;
 };
 
-// 分割代入あり（引数で直接プロパティを取り出す）
-const greet = ({ name, age }) => {
+const user = { name: "山田", age: 25 };
+console.log(greet(user));  // "山田さん（25歳）"
+```
+
+分割代入あり（引数で直接プロパティを取り出す）:
+
+```javascript
+const greetUser = ({ name, age }) => {
   return `${name}さん（${age}歳）`;
 };
 
 const user = { name: "山田", age: 25 };
-console.log(greet(user));  // "山田さん（25歳）"
+console.log(greetUser(user));  // "山田さん（25歳）"
 ```
 
 React のコンポーネントでは、props（コンポーネントに渡されるデータ）を分割代入で受け取るのが標準的な書き方です。

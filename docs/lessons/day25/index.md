@@ -230,7 +230,8 @@ function SearchForm() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input value={query} onChange={(e) => setQuery(e.target.value)} />
+      <label htmlFor="search">検索</label>
+      <input id="search" value={query} onChange={(e) => setQuery(e.target.value)} />
       <button type="submit">検索</button>
     </form>
   );
@@ -238,6 +239,8 @@ function SearchForm() {
 ```
 
 「ユーザーのアクションに応じた処理」はイベントハンドラーに書くべきです。`useEffect` は「表示されたときに何かする」場面で使います。
+
+> ※ デバウンスを使ったリアルタイム検索は別のパターンです。ここでは「ボタンクリックで検索する意図なのに useEffect を使っている」ケースを指しています。
 
 ## まとめ
 

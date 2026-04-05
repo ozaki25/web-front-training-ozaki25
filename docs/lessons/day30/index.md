@@ -128,7 +128,26 @@ function App() {
 
 ## React Compiler
 
-React 19 では **React Compiler** が導入されました。これは、レンダリングの最適化をコンパイラが自動で行う仕組みです。
+React 19 と合わせて **React Compiler** が公開されました。これは、レンダリングの最適化をコンパイラが自動で行う仕組みです。React Compiler は React 19 に自動で含まれるわけではなく、別途セットアップが必要です。
+
+React Compiler v1.0 は 2025 年 10 月に安定版としてリリースされました。導入するには以下のようにインストールします。
+
+```bash
+npm install -D babel-plugin-react-compiler
+```
+
+Next.js で有効にするには、`next.config.ts` に設定を追加するだけです。
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  reactCompiler: true,
+};
+
+export default nextConfig;
+```
 
 ### React Compiler がすること
 

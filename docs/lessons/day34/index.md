@@ -148,6 +148,19 @@ export default async function RecentPosts() {
 
 データ取得の結果をキャッシュ（一時的に保存して再利用）したい場合があります。最新の Next.js では、`"use cache"` ディレクティブを使ってキャッシュを制御します。
 
+`"use cache"` を使うには、`next.config.ts` で `cacheComponents: true` を設定する必要があります。
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  cacheComponents: true,
+};
+
+export default nextConfig;
+```
+
 ```tsx
 // src/app/posts/page.tsx
 "use cache";

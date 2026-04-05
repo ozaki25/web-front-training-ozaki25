@@ -64,8 +64,7 @@ my-app/
 ├── public/              ← 静的ファイル（画像など）
 ├── next.config.ts       ← Next.js の設定ファイル
 ├── tsconfig.json        ← TypeScript 設定
-├── package.json
-└── tailwind.config.ts
+└── package.json
 ```
 
 重要なのは `src/app/` ディレクトリです。App Router では、このディレクトリの**フォルダ構造がそのまま URL になります**。これがファイルベースルーティングです。
