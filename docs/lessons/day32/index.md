@@ -1,293 +1,196 @@
-# Day 32: Server Components と Client Components
+# Day 32: Next.js の概要とプロジェクト構成
 
 ## 今日のゴール
 
-- Server Components と Client Components の違いを説明できる
-- `"use client"` の意味と効果を理解する
-- どちらを使うべきか判断できるようになる
+- Next.js が何を解決するフレームワークか説明できる
+- App Router のディレクトリ構成を理解する
+- ファイルベースルーティングの仕組みを知る
 
-## 2 種類のコンポーネント
+## React だけでは足りないもの
 
-Day 31 で `page.tsx` に `"use client"` が書かれていないことに触れました。Next.js の App Router では、コンポーネントはデフォルトで **Server Component**（サーバーコンポーネント）です。
+Day 21〜30 で React の基礎を学びました。React は UI を宣言的に構築する優れたライブラリですが、実際のプロダクトを作ろうとすると、React 単体では解決できない課題が出てきます。
 
-ブラウザ側で動かしたいコンポーネントには、ファイルの先頭に `"use client"` と書きます。これが **Client Component**（クライアントコンポーネント）です。
+| 課題 | React 単体 | Next.js |
+|------|-----------|---------|
+| ルーティング（ページ遷移） | 別ライブラリが必要 | ファイルベースで自動 |
+| サーバーサイドレンダリング | 自分で構築 | 組み込み |
+| データ取得とキャッシュ | 自分で設計 | フレームワークが提供 |
+| 画像・フォント最適化 | 自分で対応 | 組み込みコンポーネント |
+| バンドル・ビルド設定 | Vite 等を自分で設定 | ゼロコンフィグ |
 
-```tsx
-// Server Component（デフォルト）
-// "use client" を書かないとサーバーで実行される
-export default function ServerComp() {
-  return <p>サーバーで実行されます</p>;
-}
+Next.js は React をベースにした**フルスタックフレームワーク**です。「フルスタック」とは、ブラウザ側（フロントエンド）だけでなく、サーバー側の処理も 1 つのプロジェクト内で扱えるという意味です。
+
+Day 31 で学んだように、React 単体で作ると CSR（Client-Side Rendering）になり、初期表示の遅さや SEO の弱さが課題になります。Next.js は SSR（Server-Side Rendering）を標準でサポートし、これらの問題を解決します。
+
+## Next.js プロジェクトを作る
+
+実際にプロジェクトを作って、中身を見てみましょう。ターミナルで以下を実行します。
+
+```bash
+npx create-next-app@latest my-app
 ```
 
-```tsx
-"use client";
+対話形式でいくつか質問されます。以下のように答えてください。
 
-// Client Component
-// ブラウザで実行される
-export default function ClientComp() {
-  return <p>ブラウザで実行されます</p>;
-}
+```
+✔ Would you like to use TypeScript? … Yes
+✔ Would you like to use ESLint? … Yes
+✔ Would you like to use Tailwind CSS? … Yes
+✔ Would you like your code inside a `src/` directory? … Yes
+✔ Would you like to use App Router? (recommended) … Yes
+✔ Would you like to use Turbopack for next dev? … Yes
+✔ Would you like to customize the import alias? … No
 ```
 
-## Server Component とは
+作成されたプロジェクトに移動して、開発サーバーを起動します。
 
-Server Component は**サーバー上でのみ実行される** React コンポーネントです。サーバーで HTML に変換されてからブラウザに送られます。
-
-### Server Component のメリット
-
-1. **JavaScript がブラウザに送られない** — コンポーネントのコードはサーバーで実行が完了するため、そのぶんブラウザがダウンロードする JavaScript が減る
-2. **データベースや API に直接アクセスできる** — サーバーで動くので、データベースクエリやファイルシステムへのアクセスが可能
-3. **機密情報を安全に扱える** — API キーなどの秘密の値がブラウザに漏れない
-
-```tsx
-// Server Component でデータベースに直接アクセスする例
-import { db } from "@/lib/database";
-
-export default async function UserList() {
-  // この SQL はサーバーで実行される。ブラウザには結果の HTML だけ届く
-  const users = await db.query("SELECT name FROM users");
-
-  return (
-    <ul>
-      {users.map((user) => (
-        <li key={user.name}>{user.name}</li>
-      ))}
-    </ul>
-  );
-}
+```bash
+cd my-app
+npm run dev
 ```
 
-この例ではデータベースクエリがブラウザに送られることは絶対にありません。ブラウザが受け取るのは、クエリの結果から生成された HTML だけです。
+ブラウザで `http://localhost:3000` を開くと、Next.js のウェルカムページが表示されます。
 
-### Server Component の制約
+## ディレクトリ構成を理解する
 
-サーバーで実行されるため、**ブラウザの機能は使えません**。
+生成されたプロジェクトの構成を見てみましょう。
 
-- `useState`、`useEffect` などの React Hooks が使えない
-- `onClick`、`onChange` などのイベントハンドラが使えない
-- `window`、`document` などのブラウザ API にアクセスできない
-
-つまり、**ユーザーの操作に反応するインタラクティブな UI は作れません**。
-
-## Client Component とは
-
-ブラウザで動くコンポーネントです。従来の React コンポーネントと同じように、state やイベントハンドラを使えます。
-
-```tsx
-"use client";
-
-import { useState } from "react";
-
-export default function Counter() {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div>
-      <p>カウント: {count}</p>
-      <button onClick={() => setCount(count + 1)} type="button">
-        +1
-      </button>
-    </div>
-  );
-}
+```
+my-app/
+├── src/
+│   └── app/            ← App Router のルートディレクトリ
+│       ├── layout.tsx   ← ルートレイアウト（全ページ共通の枠）
+│       ├── page.tsx     ← トップページ（"/"）
+│       ├── globals.css  ← グローバルスタイル
+│       └── favicon.ico
+├── public/              ← 静的ファイル（画像など）
+├── next.config.ts       ← Next.js の設定ファイル
+├── tsconfig.json        ← TypeScript 設定
+└── package.json
 ```
 
-`"use client"` はファイルの**一番上**に書きます。これは Next.js（正確には React）への宣言で、「このファイルとここから import されるモジュールはクライアントバンドルに含めてください」という意味です。
+重要なのは `src/app/` ディレクトリです。App Router では、このディレクトリの**フォルダ構造がそのまま URL になります**。これがファイルベースルーティングです。
 
-> **注意**: `"use client"` は「このコンポーネントはブラウザ**だけ**で動く」という意味ではありません。初回表示時にはサーバーで HTML としてプリレンダリングされることもあります。正確には「クライアントバンドルに含める（ブラウザに JavaScript を送る）」という指示です。
+## ファイルベースルーティング
 
-## 使い分けの判断基準
+従来の Web 開発では、URL とページの対応付けをコードで書く必要がありました（「`/about` にアクセスされたら About コンポーネントを表示する」といった設定）。Next.js ではフォルダを作るだけで URL が決まります。
 
-どちらを使うか迷ったときの判断基準です。
+### フォルダ = URL パス
 
-| やりたいこと | Server Component | Client Component |
-|-------------|:---:|:---:|
-| データベースやファイルに直接アクセス | ✅ | ❌ |
-| 機密情報（API キーなど）を使う | ✅ | ❌ |
-| `useState` / `useEffect` を使う | ❌ | ✅ |
-| イベントハンドラ（onClick など）を使う | ❌ | ✅ |
-| ブラウザ API（localStorage など）を使う | ❌ | ✅ |
-| 静的な表示だけ（操作なし） | ✅ | △（可能だが不要） |
+```
+src/app/
+├── page.tsx              → /
+├── about/
+│   └── page.tsx          → /about
+├── blog/
+│   ├── page.tsx          → /blog
+│   └── first-post/
+│       └── page.tsx      → /blog/first-post
+└── contact/
+    └── page.tsx          → /contact
+```
 
-**基本方針: デフォルトは Server Component。インタラクティブな機能が必要な部分だけ Client Component にする。**
+ルールはシンプルです。
 
-この方針には明確な理由があります。Server Component はブラウザに JavaScript を送らないため、ページの読み込みが速くなります。「必要なところだけ Client Component にする」ことで、パフォーマンスを最適に保てます。
+- **フォルダ名**が URL のパス（path）になる
+- **`page.tsx`** がそのパスで表示されるページになる
+- `page.tsx` がないフォルダは URL としてアクセスできない
 
-## サーバーとクライアントの境界
-
-実際のアプリでは、Server Component と Client Component を組み合わせて使います。ここで重要なのが「境界」の考え方です。
-
-### Server Component の中に Client Component を置ける
+実際に試してみましょう。`src/app/about/page.tsx` を作成します。
 
 ```tsx
-// app/page.tsx（Server Component）
-import Counter from "./counter";
-
-export default function Page() {
+export default function AboutPage() {
   return (
     <main>
-      <h1>ダッシュボード</h1>
-      <p>ようこそ。今日の統計です。</p>
-      {/* Server Component の中に Client Component を配置 */}
-      <Counter />
+      <h1>About</h1>
+      <p>このサイトについてのページです。</p>
     </main>
   );
 }
 ```
 
+ブラウザで `http://localhost:3000/about` にアクセスすると、作成したページが表示されます。ルーティングの設定コードは一切書いていません。
+
+### 特別な意味を持つファイル名
+
+App Router では、いくつかのファイル名が特別な役割を持っています。
+
+| ファイル名 | 役割 |
+|-----------|------|
+| `page.tsx` | そのルートの UI（ページ本体） |
+| `layout.tsx` | 共通レイアウト（ナビゲーションなど） |
+| `loading.tsx` | ローディング UI |
+| `error.tsx` | エラー UI |
+| `not-found.tsx` | 404 ページ |
+| `route.ts` | API エンドポイント（Day 36 で学習） |
+
+これらは Next.js が自動的に認識して、適切なタイミングで使用します。たとえば `loading.tsx` を置くだけで、ページの読み込み中にローディング表示が自動で出ます。詳しくは Day 34 で学びます。
+
+## page.tsx の中身を見る
+
+`src/app/page.tsx` を開いてみましょう。これがトップページのコンポーネントです。
+
 ```tsx
-// app/counter.tsx（Client Component）
-"use client";
-
-import { useState } from "react";
-
-export default function Counter() {
-  const [count, setCount] = useState(0);
+export default function Home() {
   return (
-    <button onClick={() => setCount(count + 1)} type="button">
-      クリック数: {count}
-    </button>
+    <main>
+      <h1>Welcome to Next.js</h1>
+    </main>
   );
 }
 ```
 
-ページ全体は Server Component ですが、インタラクティブな `Counter` の部分だけが Client Component です。`<h1>` や `<p>` の部分は JavaScript なしで HTML として送られます。
+注目してほしい点があります。
 
-### Client Component の中から Server Component を直接 import できない
+- **`"use client"` と書かれていない** — これは Server Component です（Day 33 で詳しく学びます）
+- **`export default`** が必要 — Next.js はデフォルトエクスポートされたコンポーネントをページとして使う
+- **普通の React コンポーネント** — Day 21〜30 で学んだ JSX がそのまま使える
 
-これはよくある間違いです。
+## ページ間のリンク
+
+HTML では `<a>` タグでリンクを作りますが、Next.js では `<Link>` コンポーネントを使います。
 
 ```tsx
-// ❌ これはうまくいかない
-"use client";
+import Link from "next/link";
 
-import ServerComp from "./server-comp"; // Server Component を import
-
-export default function ClientComp() {
+export default function Home() {
   return (
-    <div>
-      <ServerComp />
-    </div>
+    <main>
+      <h1>ホーム</h1>
+      <nav>
+        <ul>
+          <li>
+            <Link href="/about">About</Link>
+          </li>
+          <li>
+            <Link href="/blog">Blog</Link>
+          </li>
+        </ul>
+      </nav>
+    </main>
   );
 }
 ```
 
-`"use client"` を書いたファイルから import したモジュールは、すべてクライアントバンドルに含まれます。つまり、`ServerComp` は Server Component として動かなくなります。
+`<Link>` は HTML の `<a>` タグをレンダリングしますが、裏側でクライアントサイドナビゲーション（JavaScript によるページ遷移）を行います。Day 31 で学んだ SPA の特徴を思い出してください。通常の `<a>` タグではページ全体が再読み込みされますが、`<Link>` ではページの差分だけが更新されるため、高速でスムーズなページ遷移が実現します。
 
-### children パターンで解決する
+> **ポイント**: 外部サイトへのリンク（`https://example.com` など）には通常の `<a>` タグを使います。`<Link>` はアプリ内のページ遷移に使うものです。
 
-Client Component の中に Server Component を配置したい場合は、`children`（または他の props）として渡します。
+## なぜファイルベースルーティングなのか
 
-```tsx
-// app/page.tsx（Server Component）
-import ClientWrapper from "./client-wrapper";
-import ServerContent from "./server-content";
+ファイルベースルーティングの利点を整理しておきましょう。
 
-export default function Page() {
-  return (
-    <ClientWrapper>
-      <ServerContent />
-    </ClientWrapper>
-  );
-}
-```
+1. **URL 構造が一目でわかる** — フォルダ構造を見ればサイトマップがわかる
+2. **設定コードが不要** — ルーティング設定ファイルを書かなくていい
+3. **コロケーション** — ページに関連するファイル（テスト、スタイルなど）を同じフォルダにまとめられる
 
-```tsx
-// app/client-wrapper.tsx（Client Component）
-"use client";
-
-import { useState } from "react";
-
-export default function ClientWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isOpen, setIsOpen] = useState(true);
-
-  return (
-    <div>
-      <button onClick={() => setIsOpen(!isOpen)} type="button">
-        {isOpen ? "閉じる" : "開く"}
-      </button>
-      {isOpen && children}
-    </div>
-  );
-}
-```
-
-```tsx
-// app/server-content.tsx（Server Component）
-export default function ServerContent() {
-  // サーバーでのみ実行される処理が可能
-  return <p>この部分は Server Component です</p>;
-}
-```
-
-こうすると `ServerContent` は Server Component のままサーバーで実行され、その結果が `ClientWrapper` の `children` として渡されます。
-
-## 実際の設計例
-
-ブログ記事ページを例に、Server Component と Client Component の使い分けを見てみましょう。
-
-```tsx
-// app/blog/[slug]/page.tsx（Server Component）
-import LikeButton from "./like-button";
-
-export default async function BlogPost({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  // サーバーで記事データを取得
-  const res = await fetch(`https://api.example.com/posts/${slug}`);
-  const post = await res.json();
-
-  return (
-    <article>
-      <h1>{post.title}</h1>
-      <time dateTime={post.publishedAt}>{post.publishedAt}</time>
-      <div>{post.body}</div>
-      {/* いいねボタンだけ Client Component */}
-      <LikeButton postId={post.id} />
-    </article>
-  );
-}
-```
-
-```tsx
-// app/blog/[slug]/like-button.tsx（Client Component）
-"use client";
-
-import { useState } from "react";
-
-export default function LikeButton({ postId }: { postId: string }) {
-  const [liked, setLiked] = useState(false);
-
-  return (
-    <button
-      onClick={() => setLiked(!liked)}
-      aria-pressed={liked}
-      type="button"
-    >
-      {liked ? "♥ いいね済み" : "♡ いいね"}
-    </button>
-  );
-}
-```
-
-記事の本文（タイトル、日付、テキスト）は静的な表示なので Server Component で十分です。「いいね」ボタンはクリックに反応する必要があるので Client Component にしています。
-
-> **アクセシビリティ**: `<button>` に `aria-pressed` を付けると、スクリーンリーダーがボタンの ON/OFF 状態を読み上げてくれます。トグル（切り替え）ボタンには必ず付けましょう。
+「コロケーション（colocation）」とは、関連するものを近くに置くという考え方です。`about/` フォルダの中にページ、テスト、スタイルをまとめると、何がどこにあるか迷わなくなります。
 
 ## まとめ
 
-- Next.js のコンポーネントはデフォルトで Server Component（サーバーで実行）
-- `"use client"` を書くと Client Component になり、ブラウザの JavaScript バンドルに含まれる
-- Server Component はデータ取得や機密情報の扱いに強い。Client Component はインタラクションに使う
-- 基本方針は「デフォルト Server Component、必要な部分だけ Client Component」
-- Client Component から Server Component を直接 import できない。`children` パターンを使う
+- Next.js は React ベースのフルスタックフレームワークで、SSR・ルーティング・最適化などを組み込みで提供する
+- App Router では `src/app/` 配下のフォルダ構造がそのまま URL になる（ファイルベースルーティング）
+- `page.tsx` がページの本体、`layout.tsx` が共通レイアウトなど、ファイル名に特別な意味がある
+- ページ間のリンクには `next/link` の `<Link>` コンポーネントを使う
 
-**次のレッスン**: [Day 33: レイアウトとページ](/lessons/day33/)
+**次のレッスン**: [Day 33: Server Components と Client Components](/lessons/day33/)

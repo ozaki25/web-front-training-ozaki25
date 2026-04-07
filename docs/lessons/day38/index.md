@@ -1,173 +1,64 @@
-# Day 38: メタデータと SEO
+# Day 38: 動的ルーティングとミドルウェア
 
 ## 今日のゴール
 
-- Next.js の Metadata API を使ってページのメタデータを設定できる
-- OGP（Open Graph Protocol）の役割と設定方法を理解する
-- `generateMetadata` で動的なメタデータを生成できる
+- 動的セグメント（`[slug]`）と catch-all セグメントの使い方を知る
+- `proxy.ts` による認証チェックやリダイレクトの方法を理解する
+- 動的ルーティングの実際の使いどころを把握する
 
-## メタデータとは
+## 動的ルーティング
 
-メタデータとは、ページの「情報についての情報」です。Day 1 で学んだ HTML の `<head>` 内に書く `<title>` や `<meta>` タグが該当します。
+Day 32 でファイルベースルーティングを学びました。`about/page.tsx` が `/about` に対応するという静的なルーティングでした。しかし実際のアプリでは、ブログ記事の URL（`/blog/my-first-post`）やユーザーページ（`/users/123`）のように、URL の一部が動的に変わるケースが大半です。
 
-```html
-<head>
-  <title>ページのタイトル</title>
-  <meta name="description" content="ページの説明文" />
-</head>
+### 動的セグメント `[param]`
+
+フォルダ名を角括弧 `[]` で囲むと、その部分が動的なパラメータになります。
+
 ```
-
-メタデータはブラウザの画面には直接表示されませんが、以下の場面で重要です。
-
-- **検索エンジン** — Google などがページの内容を理解するために使う
-- **SNS シェア** — Twitter や LINE でリンクを共有したときに表示されるカード画像やタイトル
-- **ブラウザ** — タブに表示されるタイトル、ブックマークの名前
-
-## Metadata API — 静的なメタデータ
-
-Next.js では、`metadata` オブジェクトをエクスポートすることでメタデータを設定します。直接 `<head>` タグを書く必要はありません。
-
-```tsx
-// src/app/page.tsx
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "My App - ホーム",
-  description: "Next.js で作った Web アプリケーション",
-};
-
-export default function HomePage() {
-  return (
-    <main>
-      <h1>ホームページ</h1>
-    </main>
-  );
-}
+src/app/
+└── blog/
+    └── [slug]/
+        └── page.tsx    → /blog/hello-world, /blog/nextjs-intro, ...
 ```
-
-Next.js がこの `metadata` オブジェクトを読み取り、自動的に `<head>` 内に適切なタグを生成します。
-
-### ルートレイアウトでの共通メタデータ
-
-`layout.tsx` に書いた `metadata` は、配下のすべてのページに適用されます。
-
-```tsx
-// src/app/layout.tsx
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: {
-    template: "%s | My App",  // %s がページごとのタイトルに置換される
-    default: "My App",         // タイトルが設定されていないページのデフォルト
-  },
-  description: "Next.js で作った Web アプリケーション",
-  metadataBase: new URL("https://myapp.example.com"),
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="ja">
-      <body>{children}</body>
-    </html>
-  );
-}
-```
-
-`title.template` を使うと、各ページのタイトルにサイト名を自動で付加できます。
-
-```tsx
-// src/app/about/page.tsx
-export const metadata: Metadata = {
-  title: "About",  // → "About | My App" とレンダリングされる
-};
-```
-
-## OGP — SNS シェア時の表示
-
-OGP（Open Graph Protocol）は、SNS でリンクが共有されたときに表示される情報を制御するための仕様です。
-
-```tsx
-// src/app/page.tsx
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "My App",
-  description: "Next.js で作った Web アプリケーション",
-  openGraph: {
-    title: "My App",
-    description: "Next.js で作った Web アプリケーション",
-    url: "https://myapp.example.com",
-    siteName: "My App",
-    images: [
-      {
-        url: "/og-image.png",  // public フォルダ内の画像
-        width: 1200,
-        height: 630,
-        alt: "My App のトップページ",
-      },
-    ],
-    locale: "ja_JP",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "My App",
-    description: "Next.js で作った Web アプリケーション",
-    images: ["/og-image.png"],
-  },
-};
-```
-
-OGP 画像のサイズは `1200 x 630` ピクセルが推奨されています。
-
-> **アクセシビリティ**: OGP 画像にも `alt` テキストを設定しましょう。スクリーンリーダーを使っている人が SNS で共有されたリンクにアクセスしたときに役立ちます。
-
-## generateMetadata — 動的なメタデータ
-
-ブログ記事のようにページごとにタイトルや説明が異なる場合、`generateMetadata` 関数を使います。
 
 ```tsx
 // src/app/blog/[slug]/page.tsx
-import type { Metadata } from "next";
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
+  return (
+    <article>
+      <h1>ブログ記事: {slug}</h1>
+      <p>このページの URL は /blog/{slug} です</p>
+    </article>
+  );
+}
+```
+
+`/blog/hello-world` にアクセスすると `slug` に `"hello-world"` が入ります。`/blog/nextjs-intro` なら `"nextjs-intro"` です。
+
+> **注意**: 最新の Next.js では `params` は `Promise` です。使用する前に `await` で解決する必要があります。
+
+### 実際のデータ取得と組み合わせる
+
+```tsx
+// src/app/blog/[slug]/page.tsx
 import { notFound } from "next/navigation";
 
-type Props = {
+export default async function BlogPostPage({
+  params,
+}: {
   params: Promise<{ slug: string }>;
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+}) {
   const { slug } = await params;
   const res = await fetch(`https://api.example.com/posts/${slug}`);
 
   if (!res.ok) {
-    return { title: "記事が見つかりません" };
-  }
-
-  const post = await res.json();
-
-  return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      images: [{ url: post.coverImage, alt: post.title }],
-      type: "article",
-      publishedTime: post.publishedAt,
-    },
-  };
-}
-
-export default async function BlogPostPage({ params }: Props) {
-  const { slug } = await params;
-  const res = await fetch(`https://api.example.com/posts/${slug}`);
-
-  if (!res.ok) {
-    notFound();
+    notFound(); // 記事が見つからなければ 404 ページを表示
   }
 
   const post = await res.json();
@@ -175,114 +66,216 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <article>
       <h1>{post.title}</h1>
-      <p>{post.body}</p>
+      <time dateTime={post.publishedAt}>{post.publishedAt}</time>
+      <div>{post.body}</div>
     </article>
   );
 }
 ```
 
-`generateMetadata` と `page` コンポーネントで同じ `fetch` を呼んでいますが、Next.js は同じ URL への `fetch` を自動的に重複排除（deduplication）するため、実際のリクエストは 1 回だけです。
+`notFound()` を呼ぶと、最も近い `not-found.tsx`（Day 34 で学習）が表示されます。
 
-## 構造化データ
+### 複数の動的セグメント
 
-構造化データ（Structured Data）は、検索エンジンにページの内容を機械的に伝えるための仕組みです。Google の検索結果にリッチスニペット（レビューの星、レシピの調理時間など）が表示されるのは、構造化データのおかげです。
+動的セグメントは複数持てます。
 
-JSON-LD 形式で `<script>` タグとして埋め込みます。
+```
+src/app/
+└── shop/
+    └── [category]/
+        └── [productId]/
+            └── page.tsx    → /shop/electronics/42
+```
 
 ```tsx
-// src/app/blog/[slug]/page.tsx
-export default async function BlogPostPage({ params }: Props) {
-  const { slug } = await params;
-  const res = await fetch(`https://api.example.com/posts/${slug}`);
-  const post = await res.json();
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    datePublished: post.publishedAt,
-    author: {
-      "@type": "Person",
-      name: post.author,
-    },
-    description: post.excerpt,
-  };
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ category: string; productId: string }>;
+}) {
+  const { category, productId } = await params;
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <article>
-        <h1>{post.title}</h1>
-        <p>{post.body}</p>
-      </article>
-    </>
+    <main>
+      <p>カテゴリ: {category}</p>
+      <p>商品ID: {productId}</p>
+    </main>
   );
 }
 ```
 
-## robots と sitemap
+## Catch-all セグメント `[...param]`
 
-### robots.txt
+`[...param]` と書くと、そのセグメント以降のすべてのパスをまとめて受け取れます。
 
-検索エンジンのクローラー（Web ページを自動的に巡回するプログラム）に対して、どのページをクロールしてよいか指示するファイルです。
+```
+src/app/
+└── docs/
+    └── [...slug]/
+        └── page.tsx
+```
+
+| URL | `slug` の値 |
+|-----|------------|
+| `/docs/getting-started` | `["getting-started"]` |
+| `/docs/guides/routing` | `["guides", "routing"]` |
+| `/docs/api/auth/login` | `["api", "auth", "login"]` |
 
 ```tsx
-// src/app/robots.ts
-import type { MetadataRoute } from "next";
+// src/app/docs/[...slug]/page.tsx
+export default async function DocsPage({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>;
+}) {
+  const { slug } = await params;
 
-export default function robots(): MetadataRoute.Robots {
-  return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-      disallow: "/dashboard/",
-    },
-    sitemap: "https://myapp.example.com/sitemap.xml",
-  };
+  return (
+    <main>
+      <h1>ドキュメント</h1>
+      <p>パス: {slug.join(" / ")}</p>
+    </main>
+  );
 }
 ```
 
-### sitemap.xml
+ドキュメントサイトや CMS のように、階層構造が不定のコンテンツを扱うときに便利です。
 
-サイト内のすべてのページを一覧にしたファイルです。検索エンジンがページを見つけやすくなります。
+### Optional Catch-all `[[...param]]`
+
+二重角括弧 `[[...param]]` にすると、パラメータなしの URL（`/docs`）にもマッチします。
+
+```
+src/app/
+└── docs/
+    └── [[...slug]]/
+        └── page.tsx    → /docs, /docs/intro, /docs/guides/routing
+```
+
+`/docs` にアクセスした場合、`slug` は `undefined` になります。
+
+## proxy.ts — リクエストの中継と制御
+
+Next.js の最新バージョンでは、`proxy.ts` がリクエストの中継・制御を担当します（以前は `middleware.ts` がこの役割でした）。`proxy.ts` はプロジェクトのルート（`src/` 配下の場合は `src/proxy.ts`）に配置します。
+
+`proxy.ts` は、**すべてのリクエストがページや API に到達する前に実行されます**。これを利用して、認証チェックやリダイレクトを行えます。
+
+### 基本構造
+
+```ts
+// src/proxy.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export function proxy(request: NextRequest) {
+  // すべてのリクエストに対して実行される
+  console.log("リクエスト:", request.nextUrl.pathname);
+
+  // 次の処理に進む
+  return NextResponse.next();
+}
+
+// どのパスで実行するか指定
+export const config = {
+  matcher: ["/dashboard/:path*", "/settings/:path*"],
+};
+```
+
+`config.matcher` で、proxy が実行されるパスを指定します。上の例では `/dashboard` と `/settings` 配下のリクエストだけが対象です。
+
+### 認証チェックの例
+
+ログインしていないユーザーをログインページにリダイレクトする典型的なパターンです。
+
+```ts
+// src/proxy.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export function proxy(request: NextRequest) {
+  const token = request.cookies.get("auth-token");
+
+  // 認証トークンがなければログインページにリダイレクト
+  if (!token) {
+    const loginUrl = new URL("/login", request.url);
+    // ログイン後に元のページに戻れるように、リダイレクト先を保存
+    loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/dashboard/:path*", "/settings/:path*"],
+};
+```
+
+### リダイレクトの例
+
+URL の変更やリニューアル時に、古い URL から新しい URL へリダイレクトするケースです。
+
+```ts
+// src/proxy.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // 古い URL から新しい URL へリダイレクト
+  if (pathname === "/old-blog") {
+    return NextResponse.redirect(new URL("/blog", request.url));
+  }
+
+  // レスポンスヘッダーの追加
+  const response = NextResponse.next();
+  response.headers.set("x-custom-header", "my-value");
+  return response;
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};
+```
+
+### proxy.ts の注意点
+
+- **Node.js ランタイムで実行される** — サーバー側の Node.js API を利用できる
+- **軽い処理だけ行う** — すべてのリクエストで実行されるため、重い処理を入れるとパフォーマンスに影響する
+- **データベースアクセスは避ける** — 認証チェックは Cookie やトークンの検証だけにし、データベースへの問い合わせはページ側で行う
+
+## generateStaticParams — 静的生成
+
+動的ルーティングのページを事前にビルドしておきたい場合、`generateStaticParams` を使います。
 
 ```tsx
-// src/app/sitemap.ts
-import type { MetadataRoute } from "next";
+// src/app/blog/[slug]/page.tsx
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export async function generateStaticParams() {
   const res = await fetch("https://api.example.com/posts");
   const posts = await res.json();
 
-  const blogEntries = posts.map((post: { slug: string; updatedAt: string }) => ({
-    url: `https://myapp.example.com/blog/${post.slug}`,
-    lastModified: post.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
+  return posts.map((post: { slug: string }) => ({
+    slug: post.slug,
   }));
+}
 
-  return [
-    {
-      url: "https://myapp.example.com",
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 1,
-    },
-    ...blogEntries,
-  ];
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  // ...
 }
 ```
 
+ビルド時に `generateStaticParams` が返したすべての `slug` に対して HTML が生成されます。これにより、リクエスト時にサーバーで処理する必要がなく、非常に高速にページが表示されます。
+
 ## まとめ
 
-- `metadata` オブジェクトのエクスポートで静的なメタデータを設定する
-- `title.template` でサイト名の自動付加ができる
-- `generateMetadata` で動的ルートのメタデータを生成する
-- OGP を設定すると SNS シェア時の表示をコントロールできる
-- 構造化データ（JSON-LD）で検索エンジンにリッチな情報を伝える
-- `robots.ts` と `sitemap.ts` で検索エンジンのクロールを最適化する
+- `[param]` で動的セグメント、`[...param]` で catch-all、`[[...param]]` で optional catch-all を実現する
+- `params` は `Promise` なので `await` で解決してから使う
+- `proxy.ts` はリクエストがページに到達する前に実行され、認証チェックやリダイレクトに使う
+- `proxy.ts` は軽い処理だけ行い、重い処理はページ側で行う
+- `generateStaticParams` で動的ルートを事前にビルドできる
 
-**次のレッスン**: [Day 39: 画像・フォント最適化](/lessons/day39/)
+**次のレッスン**: [Day 39: メタデータと SEO](/lessons/day39/)

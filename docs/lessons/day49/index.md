@@ -1,366 +1,224 @@
-# Day 49: コンポーネント設計パターン
+# Day 48: Web セキュリティ
 
 ## 今日のゴール
 
-- 代表的なコンポーネント設計パターンを理解する
-- Presentational / Container パターンの考え方を知る
-- Compound Components パターンを使えるようになる
-- Render Props と Hooks の使い分けを理解する
+- XSS、CSRF、CORS の仕組みと対策を理解する
+- Content Security Policy の概念を知る
+- Next.js が提供するセキュリティ機能を把握する
 
-## なぜ設計パターンを学ぶのか
+## なぜ Web セキュリティを学ぶのか
 
-Day 21〜30 で React の基礎を、Day 31〜40 で Next.js の機能を学びました。小さなコンポーネントは直感的に書けるようになったと思います。
+Web アプリケーションはインターネットに公開されるため、常に攻撃のリスクがあります。セキュリティを知らずにコードを書くと、ユーザーの個人情報が漏洩したり、アカウントが乗っ取られたりする可能性があります。
 
-しかし、実際のプロジェクトではコンポーネントが増え、複雑になっていきます。「この state はどこに置くべきか」「このロジックはどう共有するか」「このコンポーネントを再利用可能にするにはどうするか」という判断が必要になります。
+フロントエンドエンジニアも、最低限の攻撃手法と対策を知っておく必要があります。
 
-設計パターンは、こうした問題に対する先人の解決策です。パターンを知っておくと、チーム内の設計議論に参加しやすくなります。
+## XSS（Cross-Site Scripting）
 
-## Presentational / Container パターン
+**XSS** は、悪意のある JavaScript をページに埋め込む攻撃です。
 
-コンポーネントを「見た目」と「ロジック」に分離するパターンです。
+### 攻撃の仕組み
 
-### Presentational Component（見た目担当）
-
-```tsx
-// src/components/user-profile-view.tsx
-type Props = {
-  name: string;
-  email: string;
-  avatarUrl: string;
-  onLogout: () => void;
-};
-
-export default function UserProfileView({
-  name,
-  email,
-  avatarUrl,
-  onLogout,
-}: Props) {
-  return (
-    <div className="flex items-center gap-4 rounded-lg bg-white p-4 shadow-sm">
-      <img
-        src={avatarUrl}
-        alt={`${name}のアバター`}
-        className="h-12 w-12 rounded-full"
-      />
-      <div>
-        <p className="font-bold text-gray-900">{name}</p>
-        <p className="text-sm text-gray-600">{email}</p>
-      </div>
-      <button
-        onClick={onLogout}
-        type="button"
-        className="ml-auto text-sm text-gray-500 hover:text-gray-700"
-      >
-        ログアウト
-      </button>
-    </div>
-  );
-}
-```
-
-特徴:
-- **Props だけで完結** — 自分で state を持たず、データや関数はすべて props で受け取る
-- **再利用しやすい** — データの取得元に依存しない
-- **テストしやすい** — props を渡すだけでテストできる
-
-### Container Component（ロジック担当）
-
-```tsx
-// src/components/user-profile.tsx
-import { auth, signOut } from "@/auth";
-import UserProfileView from "./user-profile-view";
-
-export default async function UserProfile() {
-  const session = await auth();
-
-  if (!session?.user) {
-    return null;
-  }
-
-  return (
-    <UserProfileView
-      name={session.user.name ?? "名無し"}
-      email={session.user.email ?? ""}
-      avatarUrl={session.user.image ?? "/default-avatar.png"}
-      onLogout={async () => {
-        "use server";
-        await signOut();
-      }}
-    />
-  );
-}
-```
-
-特徴:
-- **データ取得やロジックを担当** — API 呼び出し、認証チェックなど
-- **見た目のコードがない**（または最小限） — 表示は Presentational に委譲
-
-### Server Components 時代の Presentational / Container
-
-Next.js の App Router では、この分離がさらに自然になりました。
-
-- **Server Component** = Container の役割（データ取得、ビジネスロジック）
-- **Client Component** = Presentational の役割（インタラクション、表示）
-
-Day 32 で学んだ「デフォルト Server Component、必要な部分だけ Client Component」の方針は、まさにこのパターンの実践です。
-
-## Compound Components パターン
-
-**Compound Components**（複合コンポーネント）は、複数のコンポーネントが協調して動くパターンです。HTML の `<select>` と `<option>` の関係に似ています。
+たとえば、ユーザーのコメントをそのまま HTML として表示するサイトがあるとします。
 
 ```html
-<!-- HTML の select と option も Compound Components の一種 -->
-<select>
-  <option value="a">オプション A</option>
-  <option value="b">オプション B</option>
-</select>
+<!-- ❌ ユーザー入力をそのまま HTML として表示 -->
+<div>ユーザーのコメント: <script>document.cookie を外部サーバーに送信</script></div>
 ```
 
-### Tabs コンポーネントの例
+攻撃者がコメント欄に `<script>` タグを含むテキストを投稿すると、他のユーザーがそのページを見たときに、攻撃者の JavaScript が実行されてしまいます。これにより Cookie の窃取やページの改ざんが可能になります。
 
-タブ UI を Compound Components で実装してみましょう。
+### React/Next.js の XSS 対策
+
+React は JSX でテキストを表示する際、自動的に**エスケープ**（特殊文字を無害化）します。
 
 ```tsx
-// src/components/tabs.tsx
-"use client";
+// ✅ React は自動でエスケープする
+const userInput = '<script>alert("XSS")</script>';
 
-import {
-  createContext,
-  useContext,
-  useState,
-  type ReactNode,
-} from "react";
+export default function Comment() {
+  // <script> タグはテキストとして表示され、実行されない
+  return <p>{userInput}</p>;
+}
+// 表示結果: <script>alert("XSS")</script>（文字列として）
+```
 
-// タブの状態を共有するための Context
-type TabsContextType = {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
+ただし、`dangerouslySetInnerHTML` を使うとエスケープが無効になります。
+
+```tsx
+// ❌ 危険: ユーザー入力を dangerouslySetInnerHTML に渡してはいけない
+<div dangerouslySetInnerHTML={{ __html: userInput }} />
+```
+
+`dangerouslySetInnerHTML` は、Day 38 の構造化データのように**信頼できる HTML だけ**に使いましょう。名前に「dangerously（危険に）」と付いているのは、この理由からです。
+
+### XSS の対策まとめ
+
+1. ユーザー入力はそのまま HTML として出力しない（React は自動対応）
+2. `dangerouslySetInnerHTML` は信頼できるデータだけに使う
+3. Cookie に `HttpOnly` 属性を付ける（JavaScript からアクセスできなくする）
+4. Content Security Policy を設定する（後述）
+
+## CSRF（Cross-Site Request Forgery）
+
+**CSRF** は、ログイン済みのユーザーに意図しない操作をさせる攻撃です。
+
+### 攻撃の仕組み
+
+```
+1. ユーザーが銀行サイトにログイン中
+2. 攻撃者が用意した別のサイトにアクセス
+3. そのサイトに仕込まれたフォームが、銀行サイトに送金リクエストを自動送信
+4. ブラウザが銀行サイトの Cookie を自動的に付けるため、リクエストが成功してしまう
+```
+
+ユーザーは悪意のあるサイトを開いただけで、銀行サイトへの送金が実行されてしまいます。
+
+### CSRF の対策
+
+```tsx
+// ✅ Next.js の Server Actions は CSRF トークンが自動で付与される
+async function transferMoney(formData: FormData) {
+  "use server";
+  // Server Actions は同一オリジンからのリクエストのみ受け付ける
+}
+```
+
+Next.js の Server Actions は、自動的に CSRF 対策が組み込まれています。
+
+追加の対策としては以下があります。
+
+- Cookie に `SameSite=Strict` または `SameSite=Lax` を設定する（Day 47 で学習）
+- 重要な操作では CSRF トークンを使用する
+- `Origin` / `Referer` ヘッダーを検証する
+
+## CORS（Cross-Origin Resource Sharing）
+
+**CORS** は攻撃ではなく、ブラウザの**セキュリティ機構**です。
+
+### 同一オリジンポリシー
+
+ブラウザは、あるオリジン（`プロトコル + ドメイン + ポート`）のページから、別のオリジンへのリクエストを制限します。これを**同一オリジンポリシー**と呼びます。
+
+```
+https://myapp.com から https://api.example.com へのリクエスト
+→ オリジンが異なるので、デフォルトではブロックされる
+
+https://myapp.com から https://myapp.com/api へのリクエスト
+→ 同じオリジンなので OK
+```
+
+### CORS ヘッダー
+
+API サーバー側が「このオリジンからのリクエストを許可する」とレスポンスヘッダーで宣言することで、クロスオリジンのリクエストが許可されます。
+
+```ts
+// src/app/api/data/route.ts
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  const response = NextResponse.json({ data: "値" });
+
+  // 特定のオリジンからのアクセスを許可
+  response.headers.set("Access-Control-Allow-Origin", "https://frontend.example.com");
+  response.headers.set("Access-Control-Allow-Methods", "GET, POST");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+
+  return response;
+}
+```
+
+> **`Access-Control-Allow-Origin: *`（すべてのオリジンを許可）は慎重に使いましょう**。公開 API 以外では、許可するオリジンを明示的に指定するべきです。
+
+### Next.js での CORS
+
+Next.js の Server Components から外部 API を呼ぶ場合、CORS は関係ありません。CORS はブラウザのセキュリティ機構なので、サーバーからのリクエストには適用されません。これは Server Components の利点の 1 つです。
+
+```tsx
+// Server Component からの fetch — CORS の制限を受けない
+export default async function Page() {
+  const res = await fetch("https://external-api.example.com/data");
+  const data = await res.json();
+  return <div>{data.value}</div>;
+}
+```
+
+## Content Security Policy（CSP）
+
+**CSP** は、ページ内でどのリソース（スクリプト、スタイル、画像など）の読み込みを許可するかを制御するセキュリティ機構です。XSS 攻撃の被害を大幅に軽減できます。
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  headers: async () => [
+    {
+      source: "/(.*)",
+      headers: [
+        {
+          key: "Content-Security-Policy",
+          value: [
+            "default-src 'self'",           // デフォルトは同一オリジンのみ
+            "script-src 'self'",             // スクリプトは同一オリジンのみ
+            "style-src 'self' 'unsafe-inline'", // スタイルは同一オリジンとインライン
+            "img-src 'self' https:",         // 画像は同一オリジンとHTTPS
+            "font-src 'self'",               // フォントは同一オリジンのみ
+          ].join("; "),
+        },
+      ],
+    },
+  ],
 };
 
-const TabsContext = createContext<TabsContextType | null>(null);
-
-function useTabsContext() {
-  const context = useContext(TabsContext);
-  if (!context) {
-    throw new Error("Tabs コンポーネントの中で使ってください");
-  }
-  return context;
-}
-
-// 親コンポーネント
-function Tabs({
-  defaultTab,
-  children,
-}: {
-  defaultTab: string;
-  children: ReactNode;
-}) {
-  const [activeTab, setActiveTab] = useState(defaultTab);
-
-  return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      <div>{children}</div>
-    </TabsContext.Provider>
-  );
-}
-
-// タブリスト
-function TabList({ children }: { children: ReactNode }) {
-  return (
-    <div role="tablist" className="flex gap-1 border-b border-gray-200">
-      {children}
-    </div>
-  );
-}
-
-// 個々のタブ
-function Tab({ value, children }: { value: string; children: ReactNode }) {
-  const { activeTab, setActiveTab } = useTabsContext();
-  const isActive = activeTab === value;
-
-  return (
-    <button
-      role="tab"
-      type="button"
-      aria-selected={isActive}
-      onClick={() => setActiveTab(value)}
-      className={`px-4 py-2 ${
-        isActive
-          ? "border-b-2 border-blue-500 font-bold text-blue-600"
-          : "text-gray-500 hover:text-gray-700"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-// タブパネル
-function TabPanel({
-  value,
-  children,
-}: {
-  value: string;
-  children: ReactNode;
-}) {
-  const { activeTab } = useTabsContext();
-
-  if (activeTab !== value) return null;
-
-  return (
-    <div role="tabpanel" className="p-4">
-      {children}
-    </div>
-  );
-}
-
-// 名前空間としてエクスポート
-Tabs.List = TabList;
-Tabs.Tab = Tab;
-Tabs.Panel = TabPanel;
-
-export default Tabs;
+export default nextConfig;
 ```
 
-### 使い方
+CSP が設定されていると、たとえ XSS でスクリプトが注入されても、許可されていないオリジンからのスクリプトは実行されません。
 
-```tsx
-import Tabs from "@/components/tabs";
+## Next.js が提供するセキュリティ機能
 
-export default function SettingsPage() {
-  return (
-    <main>
-      <h1>設定</h1>
-      <Tabs defaultTab="profile">
-        <Tabs.List>
-          <Tabs.Tab value="profile">プロフィール</Tabs.Tab>
-          <Tabs.Tab value="notifications">通知</Tabs.Tab>
-          <Tabs.Tab value="security">セキュリティ</Tabs.Tab>
-        </Tabs.List>
-        <Tabs.Panel value="profile">
-          <p>プロフィール設定の内容</p>
-        </Tabs.Panel>
-        <Tabs.Panel value="notifications">
-          <p>通知設定の内容</p>
-        </Tabs.Panel>
-        <Tabs.Panel value="security">
-          <p>セキュリティ設定の内容</p>
-        </Tabs.Panel>
-      </Tabs>
-    </main>
-  );
-}
+Next.js はフレームワークレベルでいくつかのセキュリティ対策を提供しています。
+
+| 機能 | 対策 |
+|------|------|
+| React の自動エスケープ | XSS 防止 |
+| Server Actions の CSRF トークン | CSRF 防止 |
+| Server Components | 機密データがブラウザに漏れない |
+| `next.config.ts` の `headers` | CSP や各種セキュリティヘッダー |
+| 環境変数（`NEXT_PUBLIC_` なし） | サーバー側のみで使える秘密の値 |
+
+### 環境変数のルール
+
+```
+# .env.local
+
+# サーバーでのみ使える（ブラウザに送られない）
+DATABASE_URL=postgresql://...
+AUTH_SECRET=your-secret-key
+
+# ブラウザでも使える（NEXT_PUBLIC_ プレフィックス）
+NEXT_PUBLIC_SITE_URL=https://myapp.example.com
 ```
 
-Compound Components の利点は以下のとおりです。
+`NEXT_PUBLIC_` プレフィックスがない環境変数は、Server Components、Server Actions、Route Handlers でしかアクセスできません。データベースの接続情報や API キーなどの機密情報は、`NEXT_PUBLIC_` を付けないでください。
 
-- **API が宣言的** — JSX の構造を見ればどんな UI か直感的にわかる
-- **柔軟** — タブの順番や数を自由に変えられる
-- **内部状態が隠蔽されている** — `activeTab` の管理を利用者が意識しなくていい
+## セキュリティチェックリスト
 
-> **アクセシビリティ**: タブ UI には `role="tablist"`、`role="tab"`、`role="tabpanel"`、`aria-selected` を適切に設定しましょう。
+Web アプリケーションを作る際に確認すべき最低限の項目です。
 
-## Render Props vs Custom Hooks
-
-**Render Props** は、関数を props として渡して表示内容を委譲するパターンです。
-
-```tsx
-// Render Props パターン
-type Props = {
-  url: string;
-  render: (data: unknown, isLoading: boolean) => ReactNode;
-};
-
-function DataFetcher({ url, render }: Props) {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setIsLoading(false);
-      });
-  }, [url]);
-
-  return <>{render(data, isLoading)}</>;
-}
-
-// 使い方
-<DataFetcher
-  url="/api/users"
-  render={(data, isLoading) =>
-    isLoading ? <p>読み込み中...</p> : <UserList users={data} />
-  }
-/>
-```
-
-しかし現在は、同じことを **Custom Hook** でよりシンプルに実現できます。
-
-```tsx
-// Custom Hook パターン（推奨）
-function useDataFetcher(url: string) {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setIsLoading(false);
-      });
-  }, [url]);
-
-  return { data, isLoading };
-}
-
-// 使い方
-function UserPage() {
-  const { data, isLoading } = useDataFetcher("/api/users");
-
-  if (isLoading) return <p>読み込み中...</p>;
-  return <UserList users={data} />;
-}
-```
-
-**基本方針: ロジックの共有には Custom Hook を使う。Render Props は特殊なケース（Compound Components の内部など）でのみ使う。**
-
-## 実プロジェクトでの設計判断
-
-「どのパターンを使うべきか」はケースバイケースです。判断の指針をまとめます。
-
-| 状況 | 推奨パターン |
-|------|-----------|
-| データ取得とUIの分離 | Presentational / Container（Server / Client Component） |
-| 関連するUI部品のセット | Compound Components |
-| ロジックの共有 | Custom Hooks |
-| 条件分岐が複雑な表示 | Compound Components or 単純な条件分岐 |
-
-### オーバーエンジニアリングに注意
-
-パターンを知ると、何でもパターンに当てはめたくなります。しかし、**シンプルなコンポーネントにパターンを適用すると、かえって複雑になります**。
-
-```tsx
-// ❌ やりすぎ: 単純なボタンに Compound Components は不要
-<Button>
-  <Button.Icon name="save" />
-  <Button.Label>保存</Button.Label>
-</Button>
-
-// ✅ シンプルが十分
-<Button icon="save">保存</Button>
-```
-
-パターンは「問題が発生してから適用する」くらいのタイミングが適切です。
+- [ ] ユーザー入力を `dangerouslySetInnerHTML` に渡していないか
+- [ ] 機密情報（API キー、DB 接続情報）がブラウザに漏れていないか
+- [ ] Cookie に `HttpOnly`、`Secure`、`SameSite` を設定しているか
+- [ ] Server Actions やフォームで CSRF 対策がされているか
+- [ ] 認証チェックをサーバー側で行っているか（クライアントだけで判断しない）
+- [ ] セキュリティヘッダー（CSP など）を設定しているか
 
 ## まとめ
 
-- Presentational / Container はUIとロジックの分離。Server / Client Component の境界と自然に一致する
-- Compound Components は関連するUI部品を協調させるパターン。タブやアコーディオンに適する
-- ロジックの共有には Custom Hooks が最も適している
-- パターンは問題解決のための道具。シンプルなケースに無理に適用しない
+- XSS はページにスクリプトを注入する攻撃。React の自動エスケープが基本対策
+- CSRF はログイン済みユーザーに意図しない操作をさせる攻撃。Server Actions は自動で対策済み
+- CORS はブラウザのセキュリティ機構。Server Components からの fetch には影響しない
+- CSP で読み込み可能なリソースを制限し、XSS の被害を軽減する
+- 環境変数は `NEXT_PUBLIC_` プレフィックスの有無でサーバー専用かブラウザ共有かが決まる
 
-**次のレッスン**: [Day 50: アーキテクチャ総まとめ](/lessons/day50/)
+**次のレッスン**: [Day 49: コンポーネント設計パターン](/lessons/day49/)

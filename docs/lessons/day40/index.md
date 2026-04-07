@@ -1,295 +1,224 @@
-# Day 40: Tailwind CSS
+# Day 40: 画像・フォント最適化
 
 ## 今日のゴール
 
-- ユーティリティファーストの考え方を理解する
-- Tailwind CSS v4 の CSS ファーストな設定方法を知る
-- レスポンシブデザインとダークモードの実装方法を理解する
+- `next/image` が画像をどう最適化するか理解する
+- `next/font` でフォントを最適化する方法を知る
+- Core Web Vitals との関係を理解する
 
-## Tailwind CSS の仕組み
+## なぜ最適化が必要か
 
-Tailwind CSS が何をしているのかを理解してから使い方に入りましょう。
+Web ページの表示速度は、ユーザー体験に直結します。表示が遅いとユーザーは離脱し、検索順位にも影響します。そして、ページの表示を遅くする最大の原因の 1 つが**画像**です。
 
-### ブラウザのデフォルトスタイルと reset CSS
+一般的な Web ページのデータ量の 50% 以上を画像が占めていると言われています。そしてフォント（Web フォント）も、読み込み方を誤るとテキストが一瞬見えなくなるなどの問題を引き起こします。
 
-ブラウザには HTML 要素に対する**デフォルトスタイル**があります。`<h1>` が大きく表示されたり、`<ul>` にマーカー（・）がついたりするのは、ブラウザが最初からスタイルを持っているからです。
+Next.js はこれらを自動的に最適化する仕組みを組み込みで提供しています。
 
-しかし、このデフォルトスタイルはブラウザごとに微妙に異なります。Chrome と Safari で余白が違う、ということが起こりえます。そこで、プロジェクトの最初にブラウザ間の差異をリセットする CSS を読み込む手法が広く使われてきました。これが **reset CSS** です。
+## next/image — 画像の最適化
 
-Tailwind CSS は `@import "tailwindcss"` を書くだけで、**Preflight** と呼ばれる reset CSS を自動的に適用します。Preflight は以下のようなことを行います。
+### HTML の img タグの問題
 
-- すべての要素の `margin` と `padding` を `0` にリセット
-- `box-sizing` を `border-box` に統一（Day 5 で学んだ設定です）
-- 見出し（`<h1>` 等）のフォントサイズや太字を解除し、すべてのテキストを均一にする
-- リスト（`<ul>`, `<ol>`）のマーカーを非表示にする
-- 画像をブロック要素にする
-
-つまり、Tailwind を導入すると**すべてのデフォルトスタイルが消えて、まっさらな状態からスタート**します。「`<h1>` を書いたのに大きくならない」と思ったら、それは Preflight が働いているからです。すべてのスタイルをユーティリティクラスで明示的に指定する — これが Tailwind のアプローチです。
-
-### Tailwind CSS の全体像
-
-Tailwind CSS は大きく 3 つの層で構成されています。
-
-| 層 | 役割 |
-|---|------|
-| **Preflight** | ブラウザのデフォルトスタイルをリセットし、統一された出発点を作る |
-| **ユーティリティクラス** | `p-4`、`text-lg` など、1 プロパティ = 1 クラスの小さな CSS クラス群 |
-| **ビルド時の最適化** | 実際に使われているクラスだけを CSS ファイルに含め、ファイルサイズを最小化する |
-
-3 番目のポイントが重要です。Tailwind は何千ものユーティリティクラスを定義していますが、**ビルド時にコードをスキャンし、使われているクラスだけを最終的な CSS に含めます**。だから、どれだけ多くのクラスが存在しても、最終的な CSS ファイルは数十 KB 程度に収まります。
-
-## ユーティリティファースト CSS とは
-
-Day 4〜6 で CSS の基礎を学びました。従来の CSS では、クラス名を考えてスタイルを書くのが一般的でした。
-
-```css
-/* 従来の CSS */
-.card {
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #1a202c;
-}
-```
+まず、普通の `<img>` タグの問題を確認しましょう。
 
 ```html
-<div class="card">
-  <h2 class="card-title">タイトル</h2>
-</div>
+<!-- ❌ 問題のあるコード -->
+<img src="/photo.jpg" />
 ```
 
-Tailwind CSS は、これとは異なる**ユーティリティファースト**というアプローチを取ります。1 つのクラスが 1 つの CSS プロパティに対応する小さなクラス（ユーティリティクラス）を組み合わせてスタイリングします。
+このコードには複数の問題があります。
 
-```html
-<div class="p-4 rounded-lg bg-white shadow-sm">
-  <h2 class="text-xl font-bold text-gray-900">タイトル</h2>
-</div>
-```
+1. **画像サイズが最適化されない** — スマートフォンの小さな画面にも 4000px の画像がそのまま送られる
+2. **フォーマットが最適化されない** — WebP や AVIF など効率的なフォーマットに変換されない
+3. **レイアウトシフトが起きる** — 画像が読み込まれると突然レイアウトがガタッとずれる
+4. **遅延読み込みがない** — 画面外の画像もすべて一度に読み込まれる
+5. **alt がない** — スクリーンリーダーが画像の内容を伝えられない
 
-| ユーティリティクラス | 対応する CSS |
-|-------------------|------------|
-| `p-4` | `padding: 1rem` |
-| `rounded-lg` | `border-radius: 0.5rem` |
-| `bg-white` | `background-color: white` |
-| `shadow-sm` | `box-shadow: 0 1px 3px ...` |
-| `text-xl` | `font-size: 1.25rem` |
-| `font-bold` | `font-weight: bold` |
-| `text-gray-900` | `color: #111827` |
+### next/image の使い方
 
-### なぜユーティリティファーストなのか
-
-最初は「クラス名が多くて読みにくい」と感じるかもしれません。しかし、実際のプロジェクトでは大きなメリットがあります。
-
-1. **クラス名を考えなくていい** — `.card-wrapper-inner-title` のような命名に悩む時間がなくなる
-2. **CSS ファイルが肥大化しない** — 同じユーティリティクラスが再利用されるため、CSS の総量が増えない
-3. **HTML を見ればスタイルがわかる** — CSS ファイルを行き来する必要がない
-4. **スタイルの衝突が起きない** — Day 6 で学んだ CSS のグローバルスコープ問題が発生しない
-
-## Tailwind CSS v4 のセットアップ
-
-Tailwind CSS v4 は、従来の JavaScript 設定ファイル（`tailwind.config.js`）ではなく、**CSS ファイルで設定する**というアプローチに変わりました。これを「CSS ファースト」と呼びます。
-
-### Next.js プロジェクトでのセットアップ
-
-`create-next-app` で Tailwind CSS を選択した場合、すでにセットアップ済みです。手動で設定する場合は以下のようになります。
-
-```css
-/* src/app/globals.css */
-@import "tailwindcss";
-```
-
-これだけで Tailwind CSS が使えるようになります。v3 以前の `@tailwind base;` `@tailwind components;` `@tailwind utilities;` という 3 行は不要になりました。
-
-### @theme ブロックでカスタマイズ
-
-プロジェクト固有の色やフォントを定義するには、`@theme` ブロックを使います。
-
-```css
-/* src/app/globals.css */
-@import "tailwindcss";
-
-@theme {
-  --color-primary: #3b82f6;
-  --color-primary-dark: #1d4ed8;
-  --color-secondary: #10b981;
-  --font-sans: "Noto Sans JP", sans-serif;
-  --breakpoint-xs: 475px;
-}
-```
-
-`@theme` で定義した値は、ユーティリティクラスとして自動的に使えるようになります。
-
-```html
-<!-- --color-primary が bg-primary として使える -->
-<button class="bg-primary text-white font-sans">ボタン</button>
-```
-
-従来の `tailwind.config.js` で `theme.extend` に書いていた内容が、CSS で完結するようになりました。
-
-## よく使うユーティリティクラス
-
-### レイアウト
-
-```html
-<!-- Flexbox -->
-<div class="flex items-center justify-between gap-4">
-  <span>左</span>
-  <span>右</span>
-</div>
-
-<!-- Grid -->
-<div class="grid grid-cols-3 gap-4">
-  <div>1</div>
-  <div>2</div>
-  <div>3</div>
-</div>
-```
-
-### スペーシング
-
-```html
-<!-- padding -->
-<div class="p-4">全方向に 1rem</div>
-<div class="px-4 py-2">横 1rem、縦 0.5rem</div>
-
-<!-- margin -->
-<div class="m-4">全方向に 1rem</div>
-<div class="mt-8">上に 2rem</div>
-```
-
-数値の対応: `1` = 0.25rem、`2` = 0.5rem、`4` = 1rem、`8` = 2rem、`16` = 4rem
-
-### テキスト
-
-```html
-<p class="text-sm text-gray-600">小さめのグレー文字</p>
-<p class="text-2xl font-bold text-gray-900">大きい太字</p>
-<p class="text-center leading-relaxed">中央揃えでゆったり行間</p>
-```
-
-### 背景・ボーダー
-
-```html
-<div class="bg-gray-100 border border-gray-300 rounded-lg">
-  角丸のカード
-</div>
-```
-
-## レスポンシブデザイン
-
-Tailwind では、ブレークポイント（画面幅の区切り）のプレフィックスを付けるだけでレスポンシブデザインが実現できます。
-
-```html
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  <div class="p-4 bg-white rounded-lg shadow-sm">カード 1</div>
-  <div class="p-4 bg-white rounded-lg shadow-sm">カード 2</div>
-  <div class="p-4 bg-white rounded-lg shadow-sm">カード 3</div>
-</div>
-```
-
-| プレフィックス | 画面幅 | 意味 |
-|-------------|-------|------|
-| なし | 0px〜 | モバイル（デフォルト） |
-| `sm:` | 640px〜 | 小型タブレット |
-| `md:` | 768px〜 | タブレット |
-| `lg:` | 1024px〜 | デスクトップ |
-| `xl:` | 1280px〜 | 大画面 |
-| `2xl:` | 1536px〜 | 超大画面 |
-
-Tailwind は**モバイルファースト**です。プレフィックスなしのスタイルがモバイル用で、`md:` や `lg:` でより大きい画面のスタイルを上書きしていきます。
-
-上の例では、スマートフォンでは 1 列、タブレットでは 2 列、デスクトップでは 3 列のグリッドになります。
-
-## ダークモード
-
-Tailwind では `dark:` プレフィックスでダークモード用のスタイルを指定します。
-
-```html
-<div class="bg-white dark:bg-gray-900">
-  <h1 class="text-gray-900 dark:text-white">タイトル</h1>
-  <p class="text-gray-600 dark:text-gray-300">本文テキスト</p>
-</div>
-```
-
-ダークモードは、ユーザーの OS 設定に従います（`prefers-color-scheme: dark`）。
-
-### 完全なカードコンポーネント例
-
-ここまでの内容を組み合わせた実践的な例です。
+Next.js の `<Image>` コンポーネントは、これらの問題をすべて解決します。
 
 ```tsx
-// src/app/components/article-card.tsx
 import Image from "next/image";
-import Link from "next/link";
 
-type Props = {
-  title: string;
-  excerpt: string;
-  image: string;
-  href: string;
-};
-
-export default function ArticleCard({ title, excerpt, image, href }: Props) {
+export default function ProfilePage() {
   return (
-    <article className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
-      <div className="relative h-48 w-full">
-        <Image
-          src={image}
-          alt=""
-          fill
-          className="rounded-t-lg object-cover"
-        />
-      </div>
-      <div className="p-4">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-          <Link href={href} className="hover:underline">
-            {title}
-          </Link>
-        </h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          {excerpt}
-        </p>
-      </div>
-    </article>
+    <main>
+      <h1>プロフィール</h1>
+      <Image
+        src="/profile.jpg"
+        alt="山田太郎のプロフィール写真"
+        width={300}
+        height={300}
+      />
+    </main>
   );
 }
 ```
 
-## hover・focus などの状態
+### next/image が裏でやっていること
 
-ユーザーの操作状態に応じたスタイルも、プレフィックスで指定できます。
+1. **自動フォーマット変換** — ブラウザが対応していれば WebP や AVIF に変換して配信する。JPEG より大幅にファイルサイズが小さくなる
+2. **自動リサイズ** — デバイスの画面サイズに合わせて適切なサイズの画像を生成・配信する
+3. **レイアウトシフト防止** — `width` と `height` を指定することで、画像の読み込み前からスペースが確保される
+4. **遅延読み込み（lazy loading）** — 画面内に入るまで画像を読み込まない（デフォルトで有効）
+5. **キャッシュ** — 一度変換した画像はキャッシュされ、次のリクエストから高速に配信される
 
-```html
-<button
-  class="rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-blue-700"
->
-  ボタン
-</button>
+### レスポンシブ画像
+
+画面幅に合わせて画像サイズを変えたい場合は `fill` を使います。
+
+```tsx
+import Image from "next/image";
+
+export default function HeroSection() {
+  return (
+    <div style={{ position: "relative", width: "100%", height: "400px" }}>
+      <Image
+        src="/hero.jpg"
+        alt="緑豊かな森の風景"
+        fill
+        style={{ objectFit: "cover" }}
+        priority  // ファーストビューの画像には priority を付ける
+      />
+    </div>
+  );
+}
 ```
 
-| プレフィックス | 状態 |
-|-------------|------|
-| `hover:` | マウスを乗せたとき |
-| `focus:` | フォーカスしたとき |
-| `active:` | クリック中 |
-| `disabled:` | 無効状態 |
-| `first:` | 最初の子要素 |
-| `last:` | 最後の子要素 |
+- **`fill`** — 親要素いっぱいに画像を広げる（親要素に `position: relative` が必要）
+- **`priority`** — ファーストビュー（最初に見える領域）の画像に付ける。遅延読み込みを無効にして即座に読み込む
+- **`objectFit: "cover"`** — 画像のアスペクト比を保ちつつ、コンテナいっぱいに表示する
 
-> **アクセシビリティ**: `focus:ring` による視覚的なフォーカスインジケーターは、キーボード操作のユーザーにとって非常に重要です。フォーカススタイルは必ず設定しましょう。
+### sizes プロパティ
+
+`fill` を使うとき、`sizes` を指定するとブラウザが最適なサイズの画像を選択できます。
+
+```tsx
+<Image
+  src="/hero.jpg"
+  alt="ヒーローイメージ"
+  fill
+  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+/>
+```
+
+これは「画面幅 768px 以下では画面幅いっぱい、1200px 以下では半分、それ以上では 3 分の 1」という意味です。ブラウザはこの情報を元に、最適なサイズの画像だけをダウンロードします。
+
+### 外部画像の設定
+
+外部サイトの画像を使う場合は、`next.config.ts` でドメインを許可する必要があります。
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.example.com",
+      },
+    ],
+  },
+};
+
+export default nextConfig;
+```
+
+## next/font — フォントの最適化
+
+### Web フォントの問題
+
+Web フォントを使うと、以下の問題が起きることがあります。
+
+- **FOUT（Flash of Unstyled Text）** — フォント読み込み前にシステムフォントで表示され、読み込み後にフォントが切り替わる（テキストがちらつく）
+- **FOIT（Flash of Invisible Text）** — フォント読み込みまでテキストが非表示になる
+- **外部リクエスト** — Google Fonts などの外部サーバーへのリクエストが発生し、プライバシーやパフォーマンスに影響する
+
+### next/font の使い方
+
+`next/font` はこれらの問題を解決します。
+
+```tsx
+// src/app/layout.tsx
+import { Noto_Sans_JP } from "next/font/google";
+
+const notoSansJP = Noto_Sans_JP({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "700"],
+});
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="ja" className={notoSansJP.className}>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+### next/font が裏でやっていること
+
+1. **ビルド時にフォントをダウンロード** — Google Fonts への外部リクエストが本番では発生しない
+2. **セルフホスティング** — フォントファイルを自サーバーから配信する
+3. **CSS の `size-adjust`** — フォント読み込み前後でレイアウトがずれないよう、自動でサイズ調整する
+4. **サブセット化** — 必要な文字だけを含むフォントファイルを生成し、ファイルサイズを削減
+
+### ローカルフォントの使用
+
+プロジェクト内にフォントファイルを持っている場合は `next/font/local` を使います。
+
+```tsx
+import localFont from "next/font/local";
+
+const myFont = localFont({
+  src: "./fonts/MyFont.woff2",
+  display: "swap",
+});
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="ja" className={myFont.className}>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+## Core Web Vitals との関係
+
+**Core Web Vitals** は Google が定めた Web ページの品質指標です。Day 46 で詳しく学びますが、画像・フォントの最適化と特に関係が深い指標を紹介します。
+
+### LCP（Largest Contentful Paint）
+
+ページ内の最も大きなコンテンツ（多くの場合は画像）が表示されるまでの時間です。
+
+- `next/image` の自動フォーマット変換とリサイズで画像のファイルサイズが減り、LCP が改善する
+- ファーストビューの画像に `priority` を付けると即座に読み込まれ、LCP が改善する
+
+### CLS（Cumulative Layout Shift）
+
+ページ読み込み中にレイアウトがどれだけずれるかの指標です。
+
+- `next/image` の `width`/`height` 指定でスペースが事前に確保され、CLS が改善する
+- `next/font` の `size-adjust` でフォント切り替え時のずれが防止され、CLS が改善する
 
 ## まとめ
 
-- Tailwind CSS はユーティリティファーストのアプローチで、クラス名の命名やスタイルの衝突から解放される
-- v4 では `@import "tailwindcss"` だけで使い始められ、`@theme` ブロックでカスタマイズする
-- レスポンシブデザインは `md:`、`lg:` などのプレフィックスで、モバイルファーストに実装する
-- ダークモードは `dark:` プレフィックスで対応する
-- `hover:`、`focus:` などの状態プレフィックスで、インタラクション時のスタイルを指定する
+- `next/image` は自動フォーマット変換、リサイズ、遅延読み込み、レイアウトシフト防止を行う
+- ファーストビューの画像には `priority` を付けて即座に読み込む
+- `next/font` はフォントをビルド時にダウンロードし、セルフホスティングとサイズ調整を自動で行う
+- これらの最適化は Core Web Vitals（特に LCP と CLS）の改善に直結する
+- 画像には必ず適切な `alt` テキストを設定する
 
-**次のレッスン**: [Day 41: テスト基礎（Vitest）](/lessons/day41/)
+**次のレッスン**: [Day 41: Tailwind CSS](/lessons/day41/)

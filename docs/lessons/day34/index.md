@@ -1,294 +1,284 @@
-# Day 34: データ取得（Server Components）
+# Day 34: レイアウトとページ
 
 ## 今日のゴール
 
-- Server Components でのデータ取得の仕組みを理解する
-- async コンポーネントの書き方を知る
-- `"use cache"` ディレクティブによるキャッシュ戦略を理解する
+- `layout.tsx`、`page.tsx`、`loading.tsx`、`error.tsx` の役割を理解する
+- ネストレイアウトの仕組みを理解する
+- テンプレート（`template.tsx`）とレイアウトの違いを知る
 
-## Server Components でのデータ取得
+## 特別なファイル群
 
-Day 32 で学んだように、Server Components はサーバーで実行されます。つまり、**コンポーネントの中で直接 `fetch` を呼んでデータを取得できます**。
+Day 32 で「App Router にはファイル名に特別な意味がある」と紹介しました。今日はその中でも特に重要な 4 つのファイルを詳しく見ていきます。
 
-```tsx
-// src/app/posts/page.tsx（Server Component）
-export default async function PostsPage() {
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
-  const posts = await res.json();
+## layout.tsx — 共通の枠
 
-  return (
-    <main>
-      <h1>記事一覧</h1>
-      <ul>
-        {posts.slice(0, 10).map((post: { id: number; title: string }) => (
-          <li key={post.id}>{post.title}</li>
-        ))}
-      </ul>
-    </main>
-  );
-}
-```
+`layout.tsx` は、複数のページで共有される**共通の UI**を定義します。ナビゲーションバーやフッターなど、どのページでも表示したい要素を置く場所です。
 
-注目してほしい点があります。
+### ルートレイアウト
 
-- **`async` が付いている** — コンポーネント関数が非同期（async）になっている
-- **`await fetch()`** — コンポーネント内で直接 `await` を使っている
-- **`useEffect` は使わない** — Day 28 で学んだ `useEffect` でのデータ取得とは根本的に異なる
-
-### なぜ Server Components での fetch が優れているのか
-
-Day 28 で学んだ Client Component でのデータ取得と比較してみましょう。
-
-**Client Component の場合（従来の方法）**:
-
-1. ブラウザが空の HTML を受け取る
-2. JavaScript をダウンロード・実行
-3. コンポーネントがマウントされ `useEffect` が走る
-4. ブラウザから API に fetch リクエスト
-5. レスポンスを受けて画面を更新
-
-**Server Component の場合**:
-
-1. サーバーで fetch してデータ取得
-2. データを含んだ HTML をブラウザに送る
-3. ブラウザに表示
-
-Server Component では、データが含まれた状態でページが表示されます。ユーザーはローディング画面を見ることなく、すぐにコンテンツを読めます。また、サーバーから API サーバーへの通信は、ブラウザからの通信より高速なことが多いです（同じデータセンター内にある場合など）。
-
-## データ取得のパターン
-
-### 複数のデータを並列で取得する
-
-ページに複数のデータが必要な場合、`Promise.all` で並列に取得します。
+`src/app/layout.tsx` はアプリ全体のルートレイアウトです。これは**必須**ファイルで、`<html>` タグと `<body>` タグを含める必要があります。
 
 ```tsx
-export default async function DashboardPage() {
-  // 並列にリクエストを送る（1つずつ待たない）
-  const [postsRes, usersRes] = await Promise.all([
-    fetch("https://jsonplaceholder.typicode.com/posts"),
-    fetch("https://jsonplaceholder.typicode.com/users"),
-  ]);
+// src/app/layout.tsx
+import type { Metadata } from "next";
+import Link from "next/link";
+import "./globals.css";
 
-  const posts = await postsRes.json();
-  const users = await usersRes.json();
-
-  return (
-    <main>
-      <h1>ダッシュボード</h1>
-      <section>
-        <h2>最新の投稿</h2>
-        <ul>
-          {posts.slice(0, 5).map((post: { id: number; title: string }) => (
-            <li key={post.id}>{post.title}</li>
-          ))}
-        </ul>
-      </section>
-      <section>
-        <h2>ユーザー一覧</h2>
-        <ul>
-          {users.slice(0, 5).map((user: { id: number; name: string }) => (
-            <li key={user.id}>{user.name}</li>
-          ))}
-        </ul>
-      </section>
-    </main>
-  );
-}
-```
-
-`Promise.all` を使わず順番に `await` すると、1 つ目の fetch が終わるまで 2 つ目が始まりません。これを**ウォーターフォール**と呼び、パフォーマンスが悪くなります。
-
-### データ取得をコンポーネントに分ける
-
-データを必要とするコンポーネントごとに fetch を行う設計も有効です。
-
-```tsx
-// src/app/dashboard/page.tsx
-import { Suspense } from "react";
-import RecentPosts from "./recent-posts";
-import UserStats from "./user-stats";
-
-export default function DashboardPage() {
-  return (
-    <main>
-      <h1>ダッシュボード</h1>
-      <Suspense fallback={<p role="status">投稿を読み込み中...</p>}>
-        <RecentPosts />
-      </Suspense>
-      <Suspense fallback={<p role="status">統計を読み込み中...</p>}>
-        <UserStats />
-      </Suspense>
-    </main>
-  );
-}
-```
-
-```tsx
-// src/app/dashboard/recent-posts.tsx
-export default async function RecentPosts() {
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
-  const posts = await res.json();
-
-  return (
-    <section>
-      <h2>最新の投稿</h2>
-      <ul>
-        {posts.slice(0, 5).map((post: { id: number; title: string }) => (
-          <li key={post.id}>{post.title}</li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-```
-
-各コンポーネントを `<Suspense>` で包むことで、データ取得が速く終わったコンポーネントから順に表示されます。遅いデータがあっても、ページ全体が待たされることはありません。
-
-## "use cache" ディレクティブ
-
-データ取得の結果をキャッシュ（一時的に保存して再利用）したい場合があります。最新の Next.js では、`"use cache"` ディレクティブを使ってキャッシュを制御します。
-
-`"use cache"` を使うには、`next.config.ts` で `cacheComponents: true` を設定する必要があります。
-
-```ts
-// next.config.ts
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  cacheComponents: true,
+export const metadata: Metadata = {
+  title: "My App",
+  description: "Next.js で作ったアプリ",
 };
 
-export default nextConfig;
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="ja">
+      <body>
+        <header>
+          <nav aria-label="メインナビゲーション">
+            <Link href="/">ホーム</Link>
+            <Link href="/about">About</Link>
+          </nav>
+        </header>
+        <main>{children}</main>
+        <footer>
+          <p>&copy; 2026 My App</p>
+        </footer>
+      </body>
+    </html>
+  );
+}
+```
+
+`{children}` の部分に、各ページの内容が入ります。ページを切り替えても、ヘッダーやフッターは再レンダリングされません。これがレイアウトの大きな特徴です。
+
+> **アクセシビリティ**: `<nav>` に `aria-label` を付けると、スクリーンリーダーが「メインナビゲーション」とそのナビゲーションの目的を読み上げます。ページに複数のナビゲーションがある場合に特に重要です。
+
+### ネストレイアウト
+
+フォルダごとに `layout.tsx` を置くと、レイアウトがネスト（入れ子）になります。
+
+```
+src/app/
+├── layout.tsx          ← ルートレイアウト（全ページ共通）
+├── page.tsx            ← /
+└── blog/
+    ├── layout.tsx      ← ブログ用レイアウト（/blog 以下で共通）
+    ├── page.tsx        ← /blog
+    └── [slug]/
+        └── page.tsx    ← /blog/hello-world など
 ```
 
 ```tsx
-// src/app/posts/page.tsx
-"use cache";
+// src/app/blog/layout.tsx
+import Link from "next/link";
 
-export default async function PostsPage() {
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
-  const posts = await res.json();
+export default function BlogLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ display: "flex", gap: "2rem" }}>
+      <aside>
+        <nav aria-label="ブログカテゴリ">
+          <h2>カテゴリ</h2>
+          <ul>
+            <li><Link href="/blog?category=tech">Tech</Link></li>
+            <li><Link href="/blog?category=life">Life</Link></li>
+          </ul>
+        </nav>
+      </aside>
+      <section>{children}</section>
+    </div>
+  );
+}
+```
 
+`/blog/hello-world` にアクセスすると、以下のようにレイアウトが組み合わされます。
+
+```
+RootLayout（ヘッダー、フッター）
+  └── BlogLayout（サイドバー）
+       └── BlogPost ページ
+```
+
+レイアウトが入れ子になるだけで、ブログセクションにサイドバーを追加できました。他のページ（`/about` など）にはサイドバーは表示されません。
+
+### レイアウトの重要な性質
+
+レイアウトは**ページ遷移をまたいで状態が保持されます**。つまり、`/blog/post-1` から `/blog/post-2` に移動しても、`BlogLayout` は再レンダリングされず、state があればそれも維持されます。
+
+## page.tsx — ページの本体
+
+`page.tsx` はルートの UI を定義するファイルです。Day 32 で見たように、`page.tsx` がないフォルダは URL としてアクセスできません。
+
+```tsx
+// src/app/about/page.tsx
+export default function AboutPage() {
+  return (
+    <article>
+      <h1>About</h1>
+      <p>このアプリについての説明です。</p>
+    </article>
+  );
+}
+```
+
+`page.tsx` は必ず**デフォルトエクスポート**でコンポーネントを返す必要があります。
+
+## loading.tsx — ローディング UI
+
+`loading.tsx` を置くと、ページの読み込み中に自動でローディング UI が表示されます。
+
+```tsx
+// src/app/blog/loading.tsx
+export default function Loading() {
+  return (
+    <div role="status" aria-label="読み込み中">
+      <p>読み込み中...</p>
+    </div>
+  );
+}
+```
+
+これは React の **Suspense**（サスペンス）という仕組みを利用しています。Next.js は `page.tsx` を自動的に `<Suspense>` で包み、`loading.tsx` をフォールバック（代替 UI）として使います。
+
+内部的にはこうなっています。
+
+```tsx
+// Next.js が内部でやっていること（イメージ）
+<Suspense fallback={<Loading />}>
+  <Page />
+</Suspense>
+```
+
+> **アクセシビリティ**: ローディング UI には `role="status"` を付けましょう。スクリーンリーダーが状態の変化を自動的に読み上げてくれます。
+
+## error.tsx — エラー UI
+
+`error.tsx` は、そのルートセグメントでエラーが発生したときに表示される UI です。
+
+```tsx
+// src/app/blog/error.tsx
+"use client"; // error.tsx は必ず Client Component
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <div role="alert">
+      <h2>エラーが発生しました</h2>
+      <p>{error.message}</p>
+      <button onClick={() => reset()} type="button">
+        もう一度試す
+      </button>
+    </div>
+  );
+}
+```
+
+注目ポイントがあります。
+
+- **`"use client"` が必須** — エラーバウンダリはクライアントで動作する必要がある
+- **`reset` 関数** — 呼び出すとエラーからの回復を試みる（コンポーネントを再レンダリング）
+- **`role="alert"`** — スクリーンリーダーにエラーを即座に通知する
+
+`error.tsx` は React の **Error Boundary**（エラーバウンダリ）を利用しています。エラーが発生してもアプリ全体がクラッシュせず、エラーが起きたセクションだけを置き換えてくれます。
+
+## not-found.tsx — 404 ページ
+
+存在しないページにアクセスされたときの UI です。
+
+```tsx
+// src/app/not-found.tsx
+import Link from "next/link";
+
+export default function NotFound() {
   return (
     <main>
-      <h1>記事一覧</h1>
-      <ul>
-        {posts.slice(0, 10).map((post: { id: number; title: string }) => (
-          <li key={post.id}>{post.title}</li>
-        ))}
-      </ul>
+      <h1>404 - ページが見つかりません</h1>
+      <p>お探しのページは存在しないか、移動した可能性があります。</p>
+      <Link href="/">ホームに戻る</Link>
     </main>
   );
 }
 ```
 
-`"use cache"` をファイルの先頭に書くと、そのコンポーネントの**レンダリング結果がキャッシュされます**。同じページへのリクエストが来たとき、キャッシュがあれば fetch を再実行せずにキャッシュされた結果を返します。
+## template.tsx — レイアウトとの違い
 
-### 関数単位のキャッシュ
+`template.tsx` は `layout.tsx` と似ていますが、重要な違いがあります。
 
-コンポーネント全体ではなく、データ取得関数だけをキャッシュすることもできます。
+- **`layout.tsx`**: ページ遷移をまたいで**状態が保持される**（再レンダリングされない）
+- **`template.tsx`**: ページ遷移のたびに**新しいインスタンスが作られる**（状態がリセットされる）
 
 ```tsx
-async function getPosts() {
-  "use cache";
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
-  return res.json();
-}
-
-export default async function PostsPage() {
-  const posts = await getPosts();
-
+// src/app/blog/template.tsx
+export default function BlogTemplate({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <main>
-      <h1>記事一覧</h1>
-      <ul>
-        {posts.slice(0, 10).map((post: { id: number; title: string }) => (
-          <li key={post.id}>{post.title}</li>
-        ))}
-      </ul>
-    </main>
+    <div>
+      <p>このテンプレートはページ遷移のたびに再マウントされます</p>
+      {children}
+    </div>
   );
 }
 ```
 
-関数の先頭に `"use cache"` を書くと、その関数の戻り値がキャッシュされます。同じ引数で呼ばれた場合はキャッシュが返されます。
+`template.tsx` が有効な場面としては次のようなケースがあります。
 
-### キャッシュの有効期限
+- ページ遷移時にアニメーションを再実行したい
+- ページ遷移時に `useEffect` を再実行したい
+- ページごとにフォームの state をリセットしたい
 
-`cacheLife` を使って、キャッシュの有効期限を設定できます。
+ほとんどの場合は `layout.tsx` で十分です。「遷移のたびにリセットしたい」という明確な理由があるときだけ `template.tsx` を使いましょう。
 
-```tsx
-import { cacheLife } from "next/cache";
+## ファイルの組み合わせ方
 
-async function getPosts() {
-  "use cache";
-  cacheLife("hours"); // 数時間キャッシュ
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
-  return res.json();
-}
+これらのファイルがどう組み合わされるか、全体像を見てみましょう。
+
+```
+src/app/blog/
+├── layout.tsx     ← 共通レイアウト
+├── template.tsx   ← テンプレート（任意）
+├── loading.tsx    ← ローディング UI
+├── error.tsx      ← エラー UI
+├── not-found.tsx  ← 404 UI
+└── page.tsx       ← ページ本体
 ```
 
-`cacheLife` にはプリセット値を指定できます。
-
-| プリセット | 意味 |
-|-----------|------|
-| `"seconds"` | 数秒間 |
-| `"minutes"` | 数分間 |
-| `"hours"` | 数時間 |
-| `"days"` | 数日間 |
-| `"weeks"` | 数週間 |
-| `"max"` | 最大限長く |
-
-## キャッシュ戦略の考え方
-
-キャッシュを使うかどうかは、データの性質で判断します。
-
-| データの特徴 | キャッシュ戦略 |
-|-------------|-------------|
-| ほぼ変わらない（会社概要など） | `cacheLife("max")` で長期キャッシュ |
-| 定期的に更新（ブログ記事一覧） | `cacheLife("hours")` で適度にキャッシュ |
-| リアルタイム性が必要（在庫数など） | キャッシュしない |
-| ユーザーごとに異なる（マイページ） | キャッシュしないか、ユーザー単位でキャッシュ |
-
-キャッシュの基本は「変更頻度が低いデータは長くキャッシュし、変更頻度が高いデータはキャッシュしないか短くする」です。
-
-## エラーハンドリング
-
-データ取得は失敗する可能性があります。適切にエラーを処理しましょう。
+Next.js はこれらを以下のように組み立てます（概念的なイメージ）。
 
 ```tsx
-export default async function PostsPage() {
-  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
-
-  if (!res.ok) {
-    // エラーを throw すると、最も近い error.tsx が表示される
-    throw new Error("記事の取得に失敗しました");
-  }
-
-  const posts = await res.json();
-
-  return (
-    <main>
-      <h1>記事一覧</h1>
-      <ul>
-        {posts.slice(0, 10).map((post: { id: number; title: string }) => (
-          <li key={post.id}>{post.title}</li>
-        ))}
-      </ul>
-    </main>
-  );
-}
+<Layout>
+  <Template>
+    <ErrorBoundary fallback={<Error />}>
+      <Suspense fallback={<Loading />}>
+        <Page />
+      </Suspense>
+    </ErrorBoundary>
+  </Template>
+</Layout>
 ```
 
-Day 33 で学んだ `error.tsx` がここで活きます。エラーを `throw` すると、Next.js が自動的に `error.tsx` を表示してくれます。
+外側から順にレイアウト → テンプレート → エラーバウンダリ → サスペンス → ページという構造です。この順序を覚えておくと、どのファイルがどの範囲をカバーするかがわかります。
 
 ## まとめ
 
-- Server Components では `async` コンポーネント内で直接 `fetch` できる
-- `useEffect` による Client 側のデータ取得と違い、データが含まれた HTML が最初から送られる
-- 複数のデータ取得は `Promise.all` で並列化し、ウォーターフォールを避ける
-- `"use cache"` ディレクティブでレンダリング結果やデータ取得結果をキャッシュできる
-- `cacheLife` でキャッシュの有効期限を制御する
-- データの変更頻度に応じてキャッシュ戦略を選択する
+- `layout.tsx` は共通 UI を定義し、ページ遷移をまたいで状態が保持される
+- ネストレイアウトにより、セクションごとに異なるレイアウトを適用できる
+- `loading.tsx` は Suspense、`error.tsx` は Error Boundary を利用して自動的に表示される
+- `template.tsx` はレイアウトと似ているが、遷移のたびに再マウントされる
+- これらのファイルを組み合わせることで、ローディングやエラー処理を宣言的に実現できる
 
-**次のレッスン**: [Day 35: Route Handlers](/lessons/day35/)
+**次のレッスン**: [Day 35: データ取得（Server Components）](/lessons/day35/)

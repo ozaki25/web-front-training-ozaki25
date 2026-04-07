@@ -1,262 +1,212 @@
-# Day 46: Web パフォーマンス応用
+# Day 45: Web パフォーマンス基礎
 
 ## 今日のゴール
 
-- コード分割と dynamic import の仕組みを理解する
-- lazy loading の使い方を知る
-- バンドルサイズの分析方法を学ぶ
-- SSR/SSG のパフォーマンス特性を理解する
+- Core Web Vitals（LCP / CLS / INP）の意味と改善方法を理解する
+- Lighthouse を使ったパフォーマンス測定の方法を知る
+- パフォーマンス改善の基本的なサイクルを身につける
 
-## コード分割（Code Splitting）
+## なぜパフォーマンスが重要か
 
-ブラウザが Web ページを表示するとき、JavaScript ファイルをダウンロードして実行します。アプリが大きくなると JavaScript のファイルサイズも大きくなり、ダウンロードと実行に時間がかかります。
+Web ページの表示速度は、ユーザー体験とビジネス成果に直結します。
 
-**コード分割**は、JavaScript を複数のファイル（チャンク）に分け、必要なものだけをダウンロードする仕組みです。
+- ページ表示が **1 秒遅れる**と、コンバージョン率（購入や申し込みの割合）が **7% 低下**するという調査がある
+- Google は検索ランキングにページ速度を考慮している
+- モバイル環境では通信速度やデバイス性能が限られるため、パフォーマンスの影響がさらに大きい
 
-Next.js は自動的にページ単位でコード分割を行います。`/about` にアクセスしたとき、`/blog` のコードはダウンロードされません。しかし、1 つのページ内でも分割が必要な場合があります。
+「速いサイト」は良い UX の基本です。
 
-## dynamic import
+## Core Web Vitals
 
-`next/dynamic` を使うと、コンポーネントを必要なタイミングで読み込めます。
+**Core Web Vitals** は Google が定めた 3 つのパフォーマンス指標です。「ユーザーにとって良い体験か」を数値で表します。
 
-### 基本的な使い方
+### LCP（Largest Contentful Paint）
 
-```tsx
-import dynamic from "next/dynamic";
+**最も大きなコンテンツが表示されるまでの時間**です。ユーザーが「ページが表示された」と感じるタイミングに近い指標です。
 
-// 通常のインポート（ページ読み込み時にダウンロードされる）
-// import HeavyChart from "./heavy-chart";
+| 評価 | 時間 |
+|------|------|
+| 良い | 2.5 秒以下 |
+| 改善が必要 | 2.5〜4.0 秒 |
+| 悪い | 4.0 秒超 |
 
-// dynamic import（必要になったときにダウンロードされる）
-const HeavyChart = dynamic(() => import("./heavy-chart"), {
-  loading: () => <p role="status">グラフを読み込み中...</p>,
-});
+LCP の対象になるのは、画像、`<video>` のポスター画像、背景画像、テキストブロックなどです。
 
-export default function DashboardPage() {
-  return (
-    <main>
-      <h1>ダッシュボード</h1>
-      <p>概要テキスト</p>
-      {/* この部分は後からダウンロードされる */}
-      <HeavyChart />
-    </main>
-  );
-}
-```
-
-`dynamic` は内部的に React の `lazy` と `Suspense` を使っています。コンポーネントが必要になるまで JavaScript のダウンロードが遅延されます。
-
-### SSR を無効にする
-
-ブラウザの API（`window`、`document` など）に依存するライブラリは、サーバーでは動きません。`ssr: false` を指定すると、クライアントでのみレンダリングされます。
-
-```tsx
-const MapComponent = dynamic(() => import("./map"), {
-  ssr: false,
-  loading: () => <p role="status">地図を読み込み中...</p>,
-});
-```
-
-### dynamic import が効果的なケース
-
-| ケース | 理由 |
-|-------|------|
-| 重いライブラリ（グラフ、エディタ、地図） | 初期表示に不要なコードを遅延読み込み |
-| モーダルやダイアログ | ユーザーが開くまで不要 |
-| 条件付きで表示するコンポーネント | 管理者だけが見るUIなど |
-| 画面下部のコンポーネント | ファーストビューに影響しない |
-
-## lazy loading
-
-**lazy loading**（遅延読み込み）は、コンテンツを必要になるまで読み込まないテクニックです。
-
-### 画像の lazy loading
-
-Day 39 で学んだ `next/image` はデフォルトで lazy loading が有効です。
+#### LCP を改善する方法
 
 ```tsx
 import Image from "next/image";
 
-// デフォルトで lazy loading（画面内に入るまで読み込まない）
-<Image src="/photo.jpg" alt="写真" width={600} height={400} />
+// ✅ ファーストビューの画像に priority を付ける（Day 39 で学習）
+<Image src="/hero.jpg" alt="ヒーロー画像" fill priority />
 
-// ファーストビューの画像は priority で即座に読み込む
-<Image src="/hero.jpg" alt="ヒーロー" fill priority />
+// ✅ Server Components でデータ取得（Day 34 で学習）
+// → データを含んだ HTML が最初から送られるため、表示が速い
+
+// ✅ フォントの最適化（Day 39 で学習）
+// → next/font でフォントをビルド時に取得しておく
 ```
 
-### Intersection Observer
+- サーバーのレスポンス時間を短縮する
+- レンダリングをブロックする CSS/JavaScript を減らす
+- 画像を最適化する（`next/image` が自動で対応）
 
-コンポーネントが画面内に入ったことを検知する仕組みです。React ではカスタムフックとして実装できます。
+### CLS（Cumulative Layout Shift）
+
+**ページの読み込み中にレイアウトがどれだけずれるか**の指標です。読んでいたテキストが突然ずれて別の場所をクリックしてしまった、という経験はないでしょうか。それが CLS です。
+
+| 評価 | スコア |
+|------|-------|
+| 良い | 0.1 以下 |
+| 改善が必要 | 0.1〜0.25 |
+| 悪い | 0.25 超 |
+
+#### CLS を改善する方法
 
 ```tsx
-"use client";
+// ✅ 画像にサイズを指定する
+<Image src="/photo.jpg" alt="写真" width={600} height={400} />
 
-import { useRef, useEffect, useState } from "react";
+// ❌ サイズなしの img はレイアウトシフトの原因
+<img src="/photo.jpg" alt="写真" />
+```
 
-function useIntersectionObserver() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+- 画像や動画に `width`/`height` を指定する（スペースが事前に確保される）
+- Web フォントの読み込みでレイアウトがずれないようにする（`next/font` が自動で対応）
+- 動的にコンテンツを挿入しない（広告バナーなどは事前にスペースを確保）
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect(); // 一度表示されたら監視を止める
-        }
-      },
-      { threshold: 0.1 } // 10% 見えたら発火
-    );
+### INP（Interaction to Next Paint）
 
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
+**ユーザーの操作（クリック、タップ、キー入力）から画面が更新されるまでの時間**です。ボタンをクリックしてから画面が反応するまでの体感的な速さを測ります。
 
-    return () => observer.disconnect();
-  }, []);
+| 評価 | 時間 |
+|------|------|
+| 良い | 200ms 以下 |
+| 改善が必要 | 200〜500ms |
+| 悪い | 500ms 超 |
 
-  return { ref, isVisible };
-}
+#### INP を改善する方法
 
-export default function LazySection() {
-  const { ref, isVisible } = useIntersectionObserver();
+- メインスレッド（ブラウザが UI を処理するスレッド）を長時間ブロックする処理を避ける
+- 重い計算は Web Worker に移す
+- イベントハンドラを軽くする
+- 不要な再レンダリングを避ける（`React.memo` など）
 
+## Lighthouse の使い方
+
+**Lighthouse** は Google が提供するパフォーマンス測定ツールです。Chrome の開発者ツールに組み込まれています。
+
+### 測定手順
+
+1. Chrome で測定したいページを開く
+2. 開発者ツールを開く（`F12` または `Cmd + Option + I`）
+3. **Lighthouse** タブを選択
+4. 「Analyze page load」をクリック
+
+数秒〜数十秒で結果が表示されます。
+
+### 結果の読み方
+
+Lighthouse は以下の 5 つのカテゴリでスコアを表示します。
+
+| カテゴリ | 内容 |
+|---------|------|
+| Performance | ページの表示速度 |
+| Accessibility | アクセシビリティ（Day 43-44 で学習） |
+| Best Practices | Web 開発のベストプラクティス |
+| SEO | 検索エンジン最適化（Day 38 で学習） |
+| PWA | Progressive Web App 対応 |
+
+Performance スコアの内訳として、LCP / CLS / INP などの Core Web Vitals の値が表示されます。各指標の横に具体的な改善提案も表示されるので、それに従って改善します。
+
+### 注意点
+
+Lighthouse のスコアは測定のたびに変動します。以下の点に注意してください。
+
+- **シークレットモードで測定する** — ブラウザ拡張機能がスコアに影響する
+- **複数回測定する** — 1 回の結果を鵜呑みにしない
+- **本番環境で測定する** — 開発環境は最適化されていないため、スコアが低く出る
+- **モバイルで測定する** — Lighthouse はデフォルトでモバイル環境をシミュレートする
+
+## パフォーマンス改善のサイクル
+
+パフォーマンス改善は、一度やって終わりではありません。以下のサイクルを回します。
+
+```
+1. 測定する（Lighthouse、実際のユーザーデータ）
+   ↓
+2. 問題を特定する（どの指標が悪いか）
+   ↓
+3. 原因を分析する（なぜ遅いか）
+   ↓
+4. 改善を実施する
+   ↓
+5. 効果を測定する（改善されたか確認）
+   ↓
+1 に戻る
+```
+
+### 重要: 推測で最適化しない
+
+```
+❌ 「たぶんここが遅いだろう」→ 最適化 → 効果なし → 時間の無駄
+
+✅ 測定 → 「LCP が 4.2 秒で、ヒーロー画像の読み込みが原因」
+   → 画像を最適化 → LCP が 2.1 秒に改善
+```
+
+必ず測定してボトルネック（最も遅い箇所）を特定してから改善に取りかかりましょう。
+
+## 実際のユーザーデータ
+
+Lighthouse はラボデータ（シミュレーション環境での測定）です。実際のユーザーの体験を測定するには **RUM（Real User Monitoring）** が必要です。
+
+Next.js では `reportWebVitals` を使って実際のユーザーの Core Web Vitals を収集できます。
+
+```tsx
+// src/app/layout.tsx
+import { WebVitals } from "./web-vitals";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div ref={ref}>
-      {isVisible ? (
-        <HeavyContent />
-      ) : (
-        <div style={{ height: "400px" }} /> // プレースホルダー
-      )}
-    </div>
+    <html lang="ja">
+      <body>
+        <WebVitals />
+        {children}
+      </body>
+    </html>
   );
 }
 ```
 
-## バンドルサイズ分析
-
-JavaScript のバンドルサイズが大きいと、ダウンロードと解析に時間がかかります。何がサイズを大きくしているか分析しましょう。
-
-### @next/bundle-analyzer
-
-```bash
-npm install -D @next/bundle-analyzer
-```
-
-```ts
-// next.config.ts
-import type { NextConfig } from "next";
-import withBundleAnalyzer from "@next/bundle-analyzer";
-
-const nextConfig: NextConfig = {
-  // ...
-};
-
-export default withBundleAnalyzer({
-  enabled: process.env.ANALYZE === "true",
-})(nextConfig);
-```
-
-```bash
-ANALYZE=true npm run build
-```
-
-ビルドが完了すると、ブラウザにバンドルの内訳がビジュアルで表示されます。各ライブラリがどれだけのサイズを占めているか一目でわかります。
-
-### バンドルサイズ削減のコツ
-
 ```tsx
-// ❌ ライブラリ全体をインポート
-import _ from "lodash";
-const result = _.groupBy(data, "category");
+// src/app/web-vitals.tsx
+"use client";
 
-// ✅ 必要な関数だけインポート（tree shaking が効く）
-import groupBy from "lodash/groupBy";
-const result = groupBy(data, "category");
-```
+import { useReportWebVitals } from "next/web-vitals";
 
-**Tree shaking** とは、使われていないコードをビルド時に自動で除去する仕組みです。ただし、ライブラリの書き方によっては tree shaking が効かないことがあります。個別インポートを使うのが確実です。
+export function WebVitals() {
+  useReportWebVitals((metric) => {
+    // アナリティクスサービスに送信
+    console.log(metric.name, metric.value);
+  });
 
-### 大きなライブラリに注意
-
-```
-よくある大きなライブラリ:
-- moment.js → day.js に置き換え（サイズ 1/20）
-- lodash → lodash-es（tree shaking 対応版）または自前実装
-- chart.js → 必要な要素だけインポート
-```
-
-## SSR / SSG のパフォーマンス特性
-
-Next.js のレンダリング戦略によって、パフォーマンス特性が異なります。
-
-### SSG（Static Site Generation）
-
-ビルド時に HTML を生成します。リクエストのたびに生成する必要がないため、最も高速です。
-
-```tsx
-// 特に設定しなければ、データ取得のないページは自動で SSG になる
-export default function AboutPage() {
-  return <h1>About</h1>;
-}
-
-// generateStaticParams があるページもビルド時に生成される
-export async function generateStaticParams() {
-  return [{ slug: "post-1" }, { slug: "post-2" }];
+  return null;
 }
 ```
 
-**特性**:
-- TTFB（Time to First Byte）が最も速い（CDN から配信可能）
-- データの更新にはビルドし直す必要がある
-- ブログや企業サイトなど、頻繁に変わらないコンテンツに最適
-
-### SSR（Server-Side Rendering）
-
-リクエストのたびにサーバーで HTML を生成します。
-
-```tsx
-// Server Component でデータを取得すると SSR になる
-export default async function DashboardPage() {
-  const data = await fetch("https://api.example.com/stats");
-  const stats = await data.json();
-
-  return <div>{stats.visitors} visitors</div>;
-}
-```
-
-**特性**:
-- 常に最新のデータを表示できる
-- TTFB は SSG より遅い（サーバー処理の時間がかかる）
-- ユーザーごとに異なるコンテンツ（ダッシュボードなど）に適している
-
-### 使い分け
-
-| コンテンツの性質 | 推奨戦略 |
-|---------------|---------|
-| 変更頻度が低い（ブログ、ドキュメント） | SSG |
-| 定期的に更新（商品一覧など） | SSR + キャッシュ（`"use cache"`） |
-| リアルタイムデータ（ダッシュボード） | SSR |
-| ユーザー固有のデータ（マイページ） | SSR |
-
-## パフォーマンスチェックリスト
-
-Next.js プロジェクトで確認すべき項目をまとめます。
-
-- [ ] `next/image` で画像を最適化しているか
-- [ ] ファーストビューの画像に `priority` を付けているか
-- [ ] `next/font` でフォントを最適化しているか
-- [ ] 重いライブラリを `dynamic` で遅延読み込みしているか
-- [ ] 不要なライブラリがバンドルに含まれていないか
-- [ ] Server Components を活用してクライアント JavaScript を減らしているか
-- [ ] 適切なレンダリング戦略（SSG/SSR）を選択しているか
+これにより LCP、CLS、INP などの実際のユーザーデータが収集できます。
 
 ## まとめ
 
-- `next/dynamic` でコンポーネントを必要なタイミングに遅延読み込みできる
-- バンドルサイズ分析で、何がページを重くしているか特定する
-- tree shaking を活かすために、ライブラリは個別インポートを使う
-- SSG は最も高速だが静的コンテンツ向き、SSR は動的コンテンツに使う
-- パフォーマンス改善は推測ではなく、測定に基づいて行う
+- Core Web Vitals は LCP（表示速度）、CLS（レイアウトのずれ）、INP（操作の応答性）の 3 指標
+- Lighthouse で測定できるが、結果は毎回変動するため複数回の測定が重要
+- パフォーマンス改善は「測定 → 特定 → 改善 → 再測定」のサイクルで行う
+- 推測ではなく、必ずデータに基づいて改善する
+- Next.js の `next/image`、`next/font`、Server Components は多くのパフォーマンス最適化を自動で行ってくれる
 
-**次のレッスン**: [Day 47: 認証の基礎](/lessons/day47/)
+**次のレッスン**: [Day 46: Web パフォーマンス応用](/lessons/day46/)

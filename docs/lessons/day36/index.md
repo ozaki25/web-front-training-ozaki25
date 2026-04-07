@@ -1,313 +1,249 @@
-# Day 36: Server Actions
+# Day 36: Route Handlers
 
 ## 今日のゴール
 
-- Server Actions の仕組みと `"use server"` の意味を理解する
-- フォーム送信でのデータ変更パターンを知る
-- revalidation（キャッシュ再検証）の仕組みを理解する
-- Server Actions のセキュリティ上の注意点を知る
+- Route Handlers（`route.ts`）で API エンドポイントを作れるようになる
+- リクエストとレスポンスの処理方法を理解する
+- Route Handlers をいつ使うべきか判断できるようになる
 
-## Server Actions とは
+## Route Handlers とは
 
-Server Actions は、**クライアント（ブラウザ）からサーバーの関数を直接呼び出す仕組み**です。フォーム送信やボタンクリックで、サーバー上の関数を実行できます。
+Day 32 で、`page.tsx` はページを表示するファイルだと学びました。一方、`route.ts`（`.tsx` ではなく `.ts`）は **API エンドポイント**を作るためのファイルです。
 
-Day 35 で Route Handlers（API エンドポイント）を学びましたが、Server Actions を使うと、API エンドポイントを作らずにサーバーの処理を呼び出せます。
+API エンドポイントとは、ブラウザの画面ではなく、JSON などのデータを返す URL のことです。外部サービスとの連携や、Client Component からのデータ送信に使います。
 
-## 基本的な Server Action
+## 基本的な Route Handler
 
-`"use server"` を書くと、その関数が Server Action になります。
-
-```tsx
-// src/app/contact/page.tsx
-
-async function submitContact(formData: FormData) {
-  "use server";
-
-  const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
-  const message = formData.get("message") as string;
-
-  // サーバーで実行される（データベース保存、メール送信など）
-  console.log("お問い合わせ:", { name, email, message });
-}
-
-export default function ContactPage() {
-  return (
-    <main>
-      <h1>お問い合わせ</h1>
-      <form action={submitContact}>
-        <div>
-          <label htmlFor="name">お名前</label>
-          <input type="text" id="name" name="name" required />
-        </div>
-        <div>
-          <label htmlFor="email">メールアドレス</label>
-          <input type="email" id="email" name="email" required />
-        </div>
-        <div>
-          <label htmlFor="message">メッセージ</label>
-          <textarea id="message" name="message" required />
-        </div>
-        <button type="submit">送信</button>
-      </form>
-    </main>
-  );
-}
-```
-
-注目ポイントがいくつかあります。
-
-- **`"use server"`** — 関数の先頭に書くと、その関数はサーバーでのみ実行される
-- **`<form action={submitContact}>`** — HTML のフォームの `action` に関数を渡している
-- **`FormData`** — ブラウザ標準のフォームデータオブジェクトを引数として受け取る
-
-### 裏で何が起きているか
-
-1. ユーザーがフォームを送信する
-2. ブラウザが Next.js サーバーに POST リクエストを送る
-3. サーバーが `submitContact` 関数を実行する
-4. 結果に応じてページが更新される
-
-重要なのは、**`submitContact` の中身（コード）はブラウザに送られない**ということです。ブラウザが送るのはフォームデータだけで、サーバー側の処理内容は完全にサーバーに留まります。
-
-## Server Actions を別ファイルに分ける
-
-Server Actions は別ファイルにまとめることもできます。ファイルの先頭に `"use server"` を書くと、そのファイル内のすべてのエクスポートされた関数が Server Action になります。
+`src/app/api/hello/route.ts` を作成してみましょう。
 
 ```ts
-// src/app/actions.ts
-"use server";
+// src/app/api/hello/route.ts
+import { NextResponse } from "next/server";
 
-export async function createPost(formData: FormData) {
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
-
-  // データベースに保存
-  // await db.insert({ title, content });
-
-  console.log("投稿作成:", { title, content });
-}
-
-export async function deletePost(postId: string) {
-  // データベースから削除
-  // await db.delete(postId);
-
-  console.log("投稿削除:", postId);
+export async function GET() {
+  return NextResponse.json({ message: "こんにちは！" });
 }
 ```
 
-```tsx
-// src/app/posts/new/page.tsx
-import { createPost } from "../actions";
+ブラウザで `http://localhost:3000/api/hello` にアクセスすると、JSON が返されます。
 
-export default function NewPostPage() {
-  return (
-    <main>
-      <h1>新しい投稿</h1>
-      <form action={createPost}>
-        <div>
-          <label htmlFor="title">タイトル</label>
-          <input type="text" id="title" name="title" required />
-        </div>
-        <div>
-          <label htmlFor="content">本文</label>
-          <textarea id="content" name="content" required />
-        </div>
-        <button type="submit">投稿する</button>
-      </form>
-    </main>
-  );
+```json
+{ "message": "こんにちは！" }
+```
+
+### HTTP メソッドと関数名
+
+Route Handler では、HTTP メソッドに対応する関数名をエクスポートします。
+
+```ts
+// src/app/api/posts/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+// GET /api/posts — データの取得
+export async function GET() {
+  const posts = [
+    { id: 1, title: "最初の投稿" },
+    { id: 2, title: "2番目の投稿" },
+  ];
+  return NextResponse.json(posts);
+}
+
+// POST /api/posts — データの作成
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  // 本来はデータベースに保存する
+  const newPost = { id: 3, title: body.title };
+  return NextResponse.json(newPost, { status: 201 });
 }
 ```
 
-## Client Component からの呼び出し
+| 関数名 | HTTP メソッド | 用途 |
+|--------|-------------|------|
+| `GET` | GET | データの取得 |
+| `POST` | POST | データの作成 |
+| `PUT` | PUT | データの更新（全体） |
+| `PATCH` | PATCH | データの更新（一部） |
+| `DELETE` | DELETE | データの削除 |
 
-Server Actions は Client Component からも呼び出せます。フォームの `action` だけでなく、イベントハンドラの中でも使えます。
+> **HTTP メソッド**とは、リクエストの「目的」を表すものです。Day 8 で学んだ HTML フォームでは `GET` と `POST` を使いましたが、API ではより細かく使い分けます。
 
-```tsx
-// src/app/actions.ts
-"use server";
+## リクエストの処理
 
-export async function addToCart(productId: string) {
-  // カートに追加する処理（サーバーで実行）
-  console.log("カートに追加:", productId);
-}
-```
+### URL パラメータの取得
 
-```tsx
-// src/app/products/add-to-cart-button.tsx
-"use client";
+URL のクエリパラメータ（`?key=value` の部分）を取得する方法です。
 
-import { addToCart } from "../actions";
+```ts
+// src/app/api/search/route.ts
+import { NextRequest, NextResponse } from "next/server";
 
-export default function AddToCartButton({ productId }: { productId: string }) {
-  async function handleClick() {
-    await addToCart(productId);
-    alert("カートに追加しました！");
+// GET /api/search?q=nextjs
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const query = searchParams.get("q");
+
+  if (!query) {
+    return NextResponse.json(
+      { error: "検索クエリが必要です" },
+      { status: 400 }
+    );
   }
 
-  return (
-    <button onClick={handleClick} type="button">
-      カートに追加
-    </button>
+  // 本来はデータベースを検索する
+  const results = [{ id: 1, title: `「${query}」の検索結果` }];
+  return NextResponse.json(results);
+}
+```
+
+### リクエストボディの取得
+
+POST や PUT で送られてくるデータを取得します。
+
+```ts
+// src/app/api/contact/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+
+  // バリデーション（入力チェック）
+  if (!body.name || !body.email || !body.message) {
+    return NextResponse.json(
+      { error: "名前、メール、メッセージは必須です" },
+      { status: 400 }
+    );
+  }
+
+  // 本来はメール送信やデータベース保存を行う
+  console.log("お問い合わせ:", body);
+
+  return NextResponse.json(
+    { success: true, message: "お問い合わせを受け付けました" },
+    { status: 200 }
   );
 }
 ```
 
-## Revalidation — キャッシュの再検証
-
-データを変更したら、表示しているデータも最新にしたいですよね。これが **revalidation**（再検証）です。
-
-### revalidatePath — パスを指定して再検証
+### リクエストヘッダーの取得
 
 ```ts
-"use server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { revalidatePath } from "next/cache";
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
 
-export async function createPost(formData: FormData) {
-  const title = formData.get("title") as string;
-  // データベースに保存...
+  if (!authHeader) {
+    return NextResponse.json(
+      { error: "認証が必要です" },
+      { status: 401 }
+    );
+  }
 
-  // /posts ページのキャッシュを無効化して再取得
-  revalidatePath("/posts");
+  return NextResponse.json({ data: "認証済みデータ" });
 }
 ```
 
-`revalidatePath("/posts")` を呼ぶと、`/posts` ページのキャッシュが無効になり、次のアクセス時に新しいデータで再レンダリングされます。
+## レスポンスの返し方
 
-### revalidateTag — タグを指定して再検証
+### JSON レスポンス
 
-Day 34 で学んだ `fetch` にタグを付けておくと、そのタグ単位でキャッシュを無効化できます。
-
-```tsx
-// データ取得時にタグを付ける
-async function getPosts() {
-  "use cache";
-  const res = await fetch("https://api.example.com/posts", {
-    next: { tags: ["posts"] },
-  });
-  return res.json();
-}
-```
+最も一般的なパターンです。
 
 ```ts
-// Server Action でタグを指定して再検証
-"use server";
+return NextResponse.json(
+  { data: "値" },       // レスポンスボディ
+  { status: 200 }       // ステータスコード（省略すると 200）
+);
+```
 
-import { revalidateTag } from "next/cache";
+### リダイレクト
 
-export async function createPost(formData: FormData) {
-  // データベースに保存...
+```ts
+import { redirect } from "next/navigation";
 
-  // "posts" タグのキャッシュをすべて無効化
-  revalidateTag("posts");
+export async function GET() {
+  redirect("/login");
 }
 ```
 
-## フォーム送信中の状態管理
+### ストリーミングレスポンス
 
-フォーム送信中にローディング状態を表示するには、`useActionState` を使います。
+大量のデータを少しずつ返したい場合に使います。
 
-```tsx
-"use client";
-
-import { useActionState } from "react";
-import { createPost } from "../actions";
-
-export default function NewPostForm() {
-  const [state, formAction, isPending] = useActionState(
-    async (previousState: { message: string } | null, formData: FormData) => {
-      await createPost(formData);
-      return { message: "投稿を作成しました！" };
+```ts
+export async function GET() {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode("Hello "));
+      controller.enqueue(new TextEncoder().encode("World"));
+      controller.close();
     },
-    null
-  );
+  });
 
-  return (
-    <form action={formAction}>
-      <div>
-        <label htmlFor="title">タイトル</label>
-        <input type="text" id="title" name="title" required />
-      </div>
-      <div>
-        <label htmlFor="content">本文</label>
-        <textarea id="content" name="content" required />
-      </div>
-      <button type="submit" disabled={isPending}>
-        {isPending ? "送信中..." : "投稿する"}
-      </button>
-      {state?.message && <p role="status">{state.message}</p>}
-    </form>
-  );
+  return new Response(stream, {
+    headers: { "Content-Type": "text/plain" },
+  });
 }
 ```
 
-`isPending` が `true` の間、ボタンを無効化したりローディング表示を出したりできます。
+## 動的ルートの Route Handler
 
-## セキュリティの注意点
-
-Server Actions は便利ですが、セキュリティ上の重要な注意点があります。
-
-### 1. Server Actions は公開エンドポイント
-
-Server Actions は HTTP の POST エンドポイントとして公開されます。つまり、**誰でもリクエストを送れます**。ブラウザの開発者ツールやコマンドラインから直接呼び出すことも可能です。
+Day 38 で詳しく学ぶ動的ルーティングは、Route Handler でも使えます。
 
 ```ts
-"use server";
+// src/app/api/posts/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
 
-export async function deletePost(postId: string) {
-  // ❌ 危険: 認証チェックなしで削除している
-  // await db.delete(postId);
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
 
-  // ✅ 安全: 認証チェックを行う
-  const user = await getCurrentUser();
-  if (!user) {
-    throw new Error("認証が必要です");
-  }
+  // 本来はデータベースから取得
+  const post = { id, title: `記事 ${id}` };
+  return NextResponse.json(post);
+}
 
-  const post = await db.findPost(postId);
-  if (post.authorId !== user.id) {
-    throw new Error("権限がありません");
-  }
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
 
-  await db.delete(postId);
+  // 本来はデータベースから削除
+  return NextResponse.json({ message: `記事 ${id} を削除しました` });
 }
 ```
 
-### 2. 入力値は必ずバリデーションする
+`GET /api/posts/42` にアクセスすると `{ id: "42", title: "記事 42" }` が返されます。
 
-ブラウザ側の `required` 属性は回避できます。サーバー側でも必ず検証しましょう。
+## Route Handlers をいつ使うか
 
-```ts
-"use server";
+Server Components や Server Actions（Day 37 で学習）がある今、Route Handlers の出番はどこでしょうか。
 
-export async function createPost(formData: FormData) {
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
+### Route Handlers が適しているケース
 
-  // サーバー側でもバリデーション
-  if (!title || title.length < 1 || title.length > 100) {
-    throw new Error("タイトルは1〜100文字で入力してください");
-  }
-  if (!content || content.length < 1) {
-    throw new Error("本文を入力してください");
-  }
+| ケース | 理由 |
+|-------|------|
+| 外部サービスへの Webhook 受信 | 外部サービスが POST する先として URL が必要 |
+| OAuth のコールバック | 認証プロバイダからのリダイレクト先 |
+| 外部に公開する API | 他のサービスやモバイルアプリから呼ばれる |
+| ストリーミングレスポンス | Server Components では難しい応答パターン |
 
-  // バリデーション通過後に保存
-}
-```
+### Server Components / Server Actions で十分なケース
 
-### 3. 引数に機密情報を渡さない
+- ページ表示のためのデータ取得 → Server Components で直接 fetch（Day 35）
+- フォーム送信やデータ変更 → Server Actions（Day 37）
 
-Server Actions の引数はネットワーク上を流れます。パスワードなどの機密情報を直接渡す場合は HTTPS が必須です（Next.js の本番環境では通常 HTTPS）。
+**基本方針: まず Server Components と Server Actions で実現できないか考える。外部とのインターフェースが必要な場合に Route Handlers を使う。**
 
 ## まとめ
 
-- Server Actions は `"use server"` で宣言し、サーバーでのみ実行される関数
-- フォームの `action` 属性に渡すことで、API を作らずにサーバー処理を呼び出せる
-- `revalidatePath` / `revalidateTag` でデータ変更後にキャッシュを再検証できる
-- `useActionState` で送信中の状態を管理できる
-- Server Actions は公開エンドポイントなので、認証チェックとバリデーションは必須
+- `route.ts` で API エンドポイントを作成でき、HTTP メソッドに対応する関数をエクスポートする
+- `NextRequest` でリクエスト情報を取得し、`NextResponse` でレスポンスを返す
+- リクエストボディ、URL パラメータ、ヘッダーなどを処理できる
+- 外部サービスとの連携や公開 API には Route Handlers が適している
+- ページのデータ取得やフォーム送信は Server Components / Server Actions が基本
 
-**次のレッスン**: [Day 37: 動的ルーティングとミドルウェア](/lessons/day37/)
+**次のレッスン**: [Day 37: Server Actions](/lessons/day37/)

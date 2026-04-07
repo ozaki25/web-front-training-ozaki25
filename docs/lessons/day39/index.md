@@ -1,154 +1,68 @@
-# Day 39: 画像・フォント最適化
+# Day 39: メタデータと SEO
 
 ## 今日のゴール
 
-- `next/image` が画像をどう最適化するか理解する
-- `next/font` でフォントを最適化する方法を知る
-- Core Web Vitals との関係を理解する
+- Next.js の Metadata API を使ってページのメタデータを設定できる
+- OGP（Open Graph Protocol）の役割と設定方法を理解する
+- `generateMetadata` で動的なメタデータを生成できる
 
-## なぜ最適化が必要か
+## メタデータとは
 
-Web ページの表示速度は、ユーザー体験に直結します。表示が遅いとユーザーは離脱し、検索順位にも影響します。そして、ページの表示を遅くする最大の原因の 1 つが**画像**です。
-
-一般的な Web ページのデータ量の 50% 以上を画像が占めていると言われています。そしてフォント（Web フォント）も、読み込み方を誤るとテキストが一瞬見えなくなるなどの問題を引き起こします。
-
-Next.js はこれらを自動的に最適化する仕組みを組み込みで提供しています。
-
-## next/image — 画像の最適化
-
-### HTML の img タグの問題
-
-まず、普通の `<img>` タグの問題を確認しましょう。
+メタデータとは、ページの「情報についての情報」です。Day 1 で学んだ HTML の `<head>` 内に書く `<title>` や `<meta>` タグが該当します。
 
 ```html
-<!-- ❌ 問題のあるコード -->
-<img src="/photo.jpg" />
+<head>
+  <title>ページのタイトル</title>
+  <meta name="description" content="ページの説明文" />
+</head>
 ```
 
-このコードには複数の問題があります。
+メタデータはブラウザの画面には直接表示されませんが、以下の場面で重要です。
 
-1. **画像サイズが最適化されない** — スマートフォンの小さな画面にも 4000px の画像がそのまま送られる
-2. **フォーマットが最適化されない** — WebP や AVIF など効率的なフォーマットに変換されない
-3. **レイアウトシフトが起きる** — 画像が読み込まれると突然レイアウトがガタッとずれる
-4. **遅延読み込みがない** — 画面外の画像もすべて一度に読み込まれる
-5. **alt がない** — スクリーンリーダーが画像の内容を伝えられない
+- **検索エンジン** — Google などがページの内容を理解するために使う
+- **SNS シェア** — Twitter や LINE でリンクを共有したときに表示されるカード画像やタイトル
+- **ブラウザ** — タブに表示されるタイトル、ブックマークの名前
 
-### next/image の使い方
+## Metadata API — 静的なメタデータ
 
-Next.js の `<Image>` コンポーネントは、これらの問題をすべて解決します。
+Next.js では、`metadata` オブジェクトをエクスポートすることでメタデータを設定します。直接 `<head>` タグを書く必要はありません。
 
 ```tsx
-import Image from "next/image";
+// src/app/page.tsx
+import type { Metadata } from "next";
 
-export default function ProfilePage() {
+export const metadata: Metadata = {
+  title: "My App - ホーム",
+  description: "Next.js で作った Web アプリケーション",
+};
+
+export default function HomePage() {
   return (
     <main>
-      <h1>プロフィール</h1>
-      <Image
-        src="/profile.jpg"
-        alt="山田太郎のプロフィール写真"
-        width={300}
-        height={300}
-      />
+      <h1>ホームページ</h1>
     </main>
   );
 }
 ```
 
-### next/image が裏でやっていること
+Next.js がこの `metadata` オブジェクトを読み取り、自動的に `<head>` 内に適切なタグを生成します。
 
-1. **自動フォーマット変換** — ブラウザが対応していれば WebP や AVIF に変換して配信する。JPEG より大幅にファイルサイズが小さくなる
-2. **自動リサイズ** — デバイスの画面サイズに合わせて適切なサイズの画像を生成・配信する
-3. **レイアウトシフト防止** — `width` と `height` を指定することで、画像の読み込み前からスペースが確保される
-4. **遅延読み込み（lazy loading）** — 画面内に入るまで画像を読み込まない（デフォルトで有効）
-5. **キャッシュ** — 一度変換した画像はキャッシュされ、次のリクエストから高速に配信される
+### ルートレイアウトでの共通メタデータ
 
-### レスポンシブ画像
-
-画面幅に合わせて画像サイズを変えたい場合は `fill` を使います。
-
-```tsx
-import Image from "next/image";
-
-export default function HeroSection() {
-  return (
-    <div style={{ position: "relative", width: "100%", height: "400px" }}>
-      <Image
-        src="/hero.jpg"
-        alt="緑豊かな森の風景"
-        fill
-        style={{ objectFit: "cover" }}
-        priority  // ファーストビューの画像には priority を付ける
-      />
-    </div>
-  );
-}
-```
-
-- **`fill`** — 親要素いっぱいに画像を広げる（親要素に `position: relative` が必要）
-- **`priority`** — ファーストビュー（最初に見える領域）の画像に付ける。遅延読み込みを無効にして即座に読み込む
-- **`objectFit: "cover"`** — 画像のアスペクト比を保ちつつ、コンテナいっぱいに表示する
-
-### sizes プロパティ
-
-`fill` を使うとき、`sizes` を指定するとブラウザが最適なサイズの画像を選択できます。
-
-```tsx
-<Image
-  src="/hero.jpg"
-  alt="ヒーローイメージ"
-  fill
-  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-/>
-```
-
-これは「画面幅 768px 以下では画面幅いっぱい、1200px 以下では半分、それ以上では 3 分の 1」という意味です。ブラウザはこの情報を元に、最適なサイズの画像だけをダウンロードします。
-
-### 外部画像の設定
-
-外部サイトの画像を使う場合は、`next.config.ts` でドメインを許可する必要があります。
-
-```ts
-// next.config.ts
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.example.com",
-      },
-    ],
-  },
-};
-
-export default nextConfig;
-```
-
-## next/font — フォントの最適化
-
-### Web フォントの問題
-
-Web フォントを使うと、以下の問題が起きることがあります。
-
-- **FOUT（Flash of Unstyled Text）** — フォント読み込み前にシステムフォントで表示され、読み込み後にフォントが切り替わる（テキストがちらつく）
-- **FOIT（Flash of Invisible Text）** — フォント読み込みまでテキストが非表示になる
-- **外部リクエスト** — Google Fonts などの外部サーバーへのリクエストが発生し、プライバシーやパフォーマンスに影響する
-
-### next/font の使い方
-
-`next/font` はこれらの問題を解決します。
+`layout.tsx` に書いた `metadata` は、配下のすべてのページに適用されます。
 
 ```tsx
 // src/app/layout.tsx
-import { Noto_Sans_JP } from "next/font/google";
+import type { Metadata } from "next";
 
-const notoSansJP = Noto_Sans_JP({
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "700"],
-});
+export const metadata: Metadata = {
+  title: {
+    template: "%s | My App",  // %s がページごとのタイトルに置換される
+    default: "My App",         // タイトルが設定されていないページのデフォルト
+  },
+  description: "Next.js で作った Web アプリケーション",
+  metadataBase: new URL("https://myapp.example.com"),
+};
 
 export default function RootLayout({
   children,
@@ -156,69 +70,219 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja" className={notoSansJP.className}>
+    <html lang="ja">
       <body>{children}</body>
     </html>
   );
 }
 ```
 
-### next/font が裏でやっていること
-
-1. **ビルド時にフォントをダウンロード** — Google Fonts への外部リクエストが本番では発生しない
-2. **セルフホスティング** — フォントファイルを自サーバーから配信する
-3. **CSS の `size-adjust`** — フォント読み込み前後でレイアウトがずれないよう、自動でサイズ調整する
-4. **サブセット化** — 必要な文字だけを含むフォントファイルを生成し、ファイルサイズを削減
-
-### ローカルフォントの使用
-
-プロジェクト内にフォントファイルを持っている場合は `next/font/local` を使います。
+`title.template` を使うと、各ページのタイトルにサイト名を自動で付加できます。
 
 ```tsx
-import localFont from "next/font/local";
+// src/app/about/page.tsx
+export const metadata: Metadata = {
+  title: "About",  // → "About | My App" とレンダリングされる
+};
+```
 
-const myFont = localFont({
-  src: "./fonts/MyFont.woff2",
-  display: "swap",
-});
+## OGP — SNS シェア時の表示
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+OGP（Open Graph Protocol）は、SNS でリンクが共有されたときに表示される情報を制御するための仕様です。
+
+```tsx
+// src/app/page.tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "My App",
+  description: "Next.js で作った Web アプリケーション",
+  openGraph: {
+    title: "My App",
+    description: "Next.js で作った Web アプリケーション",
+    url: "https://myapp.example.com",
+    siteName: "My App",
+    images: [
+      {
+        url: "/og-image.png",  // public フォルダ内の画像
+        width: 1200,
+        height: 630,
+        alt: "My App のトップページ",
+      },
+    ],
+    locale: "ja_JP",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "My App",
+    description: "Next.js で作った Web アプリケーション",
+    images: ["/og-image.png"],
+  },
+};
+```
+
+OGP 画像のサイズは `1200 x 630` ピクセルが推奨されています。
+
+> **アクセシビリティ**: OGP 画像にも `alt` テキストを設定しましょう。スクリーンリーダーを使っている人が SNS で共有されたリンクにアクセスしたときに役立ちます。
+
+## generateMetadata — 動的なメタデータ
+
+ブログ記事のようにページごとにタイトルや説明が異なる場合、`generateMetadata` 関数を使います。
+
+```tsx
+// src/app/blog/[slug]/page.tsx
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const res = await fetch(`https://api.example.com/posts/${slug}`);
+
+  if (!res.ok) {
+    return { title: "記事が見つかりません" };
+  }
+
+  const post = await res.json();
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      images: [{ url: post.coverImage, alt: post.title }],
+      type: "article",
+      publishedTime: post.publishedAt,
+    },
+  };
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
+  const res = await fetch(`https://api.example.com/posts/${slug}`);
+
+  if (!res.ok) {
+    notFound();
+  }
+
+  const post = await res.json();
+
   return (
-    <html lang="ja" className={myFont.className}>
-      <body>{children}</body>
-    </html>
+    <article>
+      <h1>{post.title}</h1>
+      <p>{post.body}</p>
+    </article>
   );
 }
 ```
 
-## Core Web Vitals との関係
+`generateMetadata` と `page` コンポーネントで同じ `fetch` を呼んでいますが、Next.js は同じ URL への `fetch` を自動的に重複排除（deduplication）するため、実際のリクエストは 1 回だけです。
 
-**Core Web Vitals** は Google が定めた Web ページの品質指標です。Day 45 で詳しく学びますが、画像・フォントの最適化と特に関係が深い指標を紹介します。
+## 構造化データ
 
-### LCP（Largest Contentful Paint）
+構造化データ（Structured Data）は、検索エンジンにページの内容を機械的に伝えるための仕組みです。Google の検索結果にリッチスニペット（レビューの星、レシピの調理時間など）が表示されるのは、構造化データのおかげです。
 
-ページ内の最も大きなコンテンツ（多くの場合は画像）が表示されるまでの時間です。
+JSON-LD 形式で `<script>` タグとして埋め込みます。
 
-- `next/image` の自動フォーマット変換とリサイズで画像のファイルサイズが減り、LCP が改善する
-- ファーストビューの画像に `priority` を付けると即座に読み込まれ、LCP が改善する
+```tsx
+// src/app/blog/[slug]/page.tsx
+export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
+  const res = await fetch(`https://api.example.com/posts/${slug}`);
+  const post = await res.json();
 
-### CLS（Cumulative Layout Shift）
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    datePublished: post.publishedAt,
+    author: {
+      "@type": "Person",
+      name: post.author,
+    },
+    description: post.excerpt,
+  };
 
-ページ読み込み中にレイアウトがどれだけずれるかの指標です。
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <article>
+        <h1>{post.title}</h1>
+        <p>{post.body}</p>
+      </article>
+    </>
+  );
+}
+```
 
-- `next/image` の `width`/`height` 指定でスペースが事前に確保され、CLS が改善する
-- `next/font` の `size-adjust` でフォント切り替え時のずれが防止され、CLS が改善する
+## robots と sitemap
+
+### robots.txt
+
+検索エンジンのクローラー（Web ページを自動的に巡回するプログラム）に対して、どのページをクロールしてよいか指示するファイルです。
+
+```tsx
+// src/app/robots.ts
+import type { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: "/dashboard/",
+    },
+    sitemap: "https://myapp.example.com/sitemap.xml",
+  };
+}
+```
+
+### sitemap.xml
+
+サイト内のすべてのページを一覧にしたファイルです。検索エンジンがページを見つけやすくなります。
+
+```tsx
+// src/app/sitemap.ts
+import type { MetadataRoute } from "next";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const res = await fetch("https://api.example.com/posts");
+  const posts = await res.json();
+
+  const blogEntries = posts.map((post: { slug: string; updatedAt: string }) => ({
+    url: `https://myapp.example.com/blog/${post.slug}`,
+    lastModified: post.updatedAt,
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
+  return [
+    {
+      url: "https://myapp.example.com",
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 1,
+    },
+    ...blogEntries,
+  ];
+}
+```
 
 ## まとめ
 
-- `next/image` は自動フォーマット変換、リサイズ、遅延読み込み、レイアウトシフト防止を行う
-- ファーストビューの画像には `priority` を付けて即座に読み込む
-- `next/font` はフォントをビルド時にダウンロードし、セルフホスティングとサイズ調整を自動で行う
-- これらの最適化は Core Web Vitals（特に LCP と CLS）の改善に直結する
-- 画像には必ず適切な `alt` テキストを設定する
+- `metadata` オブジェクトのエクスポートで静的なメタデータを設定する
+- `title.template` でサイト名の自動付加ができる
+- `generateMetadata` で動的ルートのメタデータを生成する
+- OGP を設定すると SNS シェア時の表示をコントロールできる
+- 構造化データ（JSON-LD）で検索エンジンにリッチな情報を伝える
+- `robots.ts` と `sitemap.ts` で検索エンジンのクロールを最適化する
 
-**次のレッスン**: [Day 40: Tailwind CSS](/lessons/day40/)
+**次のレッスン**: [Day 40: 画像・フォント最適化](/lessons/day40/)

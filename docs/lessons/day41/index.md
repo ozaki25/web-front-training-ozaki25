@@ -1,321 +1,295 @@
-# Day 41: テスト基礎（Vitest）
+# Day 41: Tailwind CSS
 
 ## 今日のゴール
 
-- なぜテストを書くのか理解する
-- Vitest のセットアップと基本的な使い方を知る
-- 単体テストの書き方を身につける
+- ユーティリティファーストの考え方を理解する
+- Tailwind CSS v4 の CSS ファーストな設定方法を知る
+- レスポンシブデザインとダークモードの実装方法を理解する
 
-## なぜテストを書くのか
+## Tailwind CSS の仕組み
 
-「動いているコードにテストは必要なのか？」と思うかもしれません。テストを書く理由を具体的に見てみましょう。
+Tailwind CSS が何をしているのかを理解してから使い方に入りましょう。
 
-1. **変更に自信が持てる** — コードを修正したとき、既存の機能が壊れていないことをテストが保証してくれる
-2. **バグの再発を防げる** — バグを見つけたらテストを書くことで、同じバグが二度と起きないようにできる
-3. **コードの仕様書になる** — テストを読めば「この関数はどう動くべきか」がわかる
-4. **リファクタリングしやすくなる** — テストがあれば、コードの内部構造を安心して変更できる
+### ブラウザのデフォルトスタイルと reset CSS
 
-AI でコードを生成する場面が増えた今、テストはさらに重要になっています。AI が生成したコードが正しく動くかを検証する手段がテストだからです。
+ブラウザには HTML 要素に対する**デフォルトスタイル**があります。`<h1>` が大きく表示されたり、`<ul>` にマーカー（・）がついたりするのは、ブラウザが最初からスタイルを持っているからです。
 
-## Vitest とは
+しかし、このデフォルトスタイルはブラウザごとに微妙に異なります。Chrome と Safari で余白が違う、ということが起こりえます。そこで、プロジェクトの最初にブラウザ間の差異をリセットする CSS を読み込む手法が広く使われてきました。これが **reset CSS** です。
 
-Vitest は、JavaScript/TypeScript のテストフレームワークです。以前は Jest がデファクトスタンダードでしたが、Vitest は Vite をベースにしており、高速でモダンな開発体験を提供します。
+Tailwind CSS は `@import "tailwindcss"` を書くだけで、**Preflight** と呼ばれる reset CSS を自動的に適用します。Preflight は以下のようなことを行います。
 
-### Vitest の特徴
+- すべての要素の `margin` と `padding` を `0` にリセット
+- `box-sizing` を `border-box` に統一（Day 5 で学んだ設定です）
+- 見出し（`<h1>` 等）のフォントサイズや太字を解除し、すべてのテキストを均一にする
+- リスト（`<ul>`, `<ol>`）のマーカーを非表示にする
+- 画像をブロック要素にする
 
-- **高速** — Vite のホットモジュールリプレースメント（HMR）を活用し、ファイル変更時に関連テストだけを再実行
-- **ESM ネイティブ** — `import`/`export` をそのまま使える
-- **TypeScript 対応** — 設定なしで TypeScript が使える
-- **Jest 互換の API** — Jest と同じ `describe`、`it`、`expect` が使える
+つまり、Tailwind を導入すると**すべてのデフォルトスタイルが消えて、まっさらな状態からスタート**します。「`<h1>` を書いたのに大きくならない」と思ったら、それは Preflight が働いているからです。すべてのスタイルをユーティリティクラスで明示的に指定する — これが Tailwind のアプローチです。
 
-## セットアップ
+### Tailwind CSS の全体像
 
-Next.js プロジェクトに Vitest を導入します。
+Tailwind CSS は大きく 3 つの層で構成されています。
 
-```bash
-npm install -D vitest @vitejs/plugin-react
-```
+| 層 | 役割 |
+|---|------|
+| **Preflight** | ブラウザのデフォルトスタイルをリセットし、統一された出発点を作る |
+| **ユーティリティクラス** | `p-4`、`text-lg` など、1 プロパティ = 1 クラスの小さな CSS クラス群 |
+| **ビルド時の最適化** | 実際に使われているクラスだけを CSS ファイルに含め、ファイルサイズを最小化する |
 
-プロジェクトルートに `vitest.config.ts` を作成します。
+3 番目のポイントが重要です。Tailwind は何千ものユーティリティクラスを定義していますが、**ビルド時にコードをスキャンし、使われているクラスだけを最終的な CSS に含めます**。だから、どれだけ多くのクラスが存在しても、最終的な CSS ファイルは数十 KB 程度に収まります。
 
-```ts
-// vitest.config.ts
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
+## ユーティリティファースト CSS とは
 
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: "jsdom",  // ブラウザ環境をシミュレート
-    globals: true,          // describe, it, expect をインポート不要にする
-  },
-  resolve: {
-    alias: {
-      "@": "./src",
-    },
-  },
-});
-```
+Day 4〜6 で CSS の基礎を学びました。従来の CSS では、クラス名を考えてスタイルを書くのが一般的でした。
 
-`package.json` にテスト実行コマンドを追加します。
+```css
+/* 従来の CSS */
+.card {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
 
-```json
-{
-  "scripts": {
-    "test": "vitest",
-    "test:run": "vitest run"
-  }
+.card-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #1a202c;
 }
 ```
 
-- `npm test` — ウォッチモード（ファイル変更を監視して自動でテスト再実行）
-- `npm run test:run` — 一回だけテストを実行して終了
-
-## 最初のテスト
-
-まず、テスト対象となるシンプルな関数を作ります。
-
-```ts
-// src/lib/math.ts
-export function add(a: number, b: number): number {
-  return a + b;
-}
-
-export function multiply(a: number, b: number): number {
-  return a * b;
-}
-
-export function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max);
-}
+```html
+<div class="card">
+  <h2 class="card-title">タイトル</h2>
+</div>
 ```
 
-テストファイルを作成します。テストファイルは慣例として `.test.ts` という拡張子にします。
+Tailwind CSS は、これとは異なる**ユーティリティファースト**というアプローチを取ります。1 つのクラスが 1 つの CSS プロパティに対応する小さなクラス（ユーティリティクラス）を組み合わせてスタイリングします。
 
-```ts
-// src/lib/math.test.ts
-import { describe, it, expect } from "vitest";
-import { add, multiply, clamp } from "./math";
-
-describe("add", () => {
-  it("2つの数値を足し算する", () => {
-    expect(add(1, 2)).toBe(3);
-  });
-
-  it("負の数を扱える", () => {
-    expect(add(-1, -2)).toBe(-3);
-  });
-
-  it("0を足しても変わらない", () => {
-    expect(add(5, 0)).toBe(5);
-  });
-});
-
-describe("multiply", () => {
-  it("2つの数値を掛け算する", () => {
-    expect(multiply(3, 4)).toBe(12);
-  });
-
-  it("0を掛けると0になる", () => {
-    expect(multiply(5, 0)).toBe(0);
-  });
-});
-
-describe("clamp", () => {
-  it("最小値より小さい場合は最小値を返す", () => {
-    expect(clamp(-5, 0, 10)).toBe(0);
-  });
-
-  it("最大値より大きい場合は最大値を返す", () => {
-    expect(clamp(15, 0, 10)).toBe(10);
-  });
-
-  it("範囲内の場合はそのまま返す", () => {
-    expect(clamp(5, 0, 10)).toBe(5);
-  });
-});
+```html
+<div class="p-4 rounded-lg bg-white shadow-sm">
+  <h2 class="text-xl font-bold text-gray-900">タイトル</h2>
+</div>
 ```
 
-テストを実行してみましょう。
+| ユーティリティクラス | 対応する CSS |
+|-------------------|------------|
+| `p-4` | `padding: 1rem` |
+| `rounded-lg` | `border-radius: 0.5rem` |
+| `bg-white` | `background-color: white` |
+| `shadow-sm` | `box-shadow: 0 1px 3px ...` |
+| `text-xl` | `font-size: 1.25rem` |
+| `font-bold` | `font-weight: bold` |
+| `text-gray-900` | `color: #111827` |
 
-```bash
-npm test
+### なぜユーティリティファーストなのか
+
+最初は「クラス名が多くて読みにくい」と感じるかもしれません。しかし、実際のプロジェクトでは大きなメリットがあります。
+
+1. **クラス名を考えなくていい** — `.card-wrapper-inner-title` のような命名に悩む時間がなくなる
+2. **CSS ファイルが肥大化しない** — 同じユーティリティクラスが再利用されるため、CSS の総量が増えない
+3. **HTML を見ればスタイルがわかる** — CSS ファイルを行き来する必要がない
+4. **スタイルの衝突が起きない** — Day 6 で学んだ CSS のグローバルスコープ問題が発生しない
+
+## Tailwind CSS v4 のセットアップ
+
+Tailwind CSS v4 は、従来の JavaScript 設定ファイル（`tailwind.config.js`）ではなく、**CSS ファイルで設定する**というアプローチに変わりました。これを「CSS ファースト」と呼びます。
+
+### Next.js プロジェクトでのセットアップ
+
+`create-next-app` で Tailwind CSS を選択した場合、すでにセットアップ済みです。手動で設定する場合は以下のようになります。
+
+```css
+/* src/app/globals.css */
+@import "tailwindcss";
 ```
 
-### テストの構造
+これだけで Tailwind CSS が使えるようになります。v3 以前の `@tailwind base;` `@tailwind components;` `@tailwind utilities;` という 3 行は不要になりました。
 
-テストには 3 つの基本要素があります。
+### @theme ブロックでカスタマイズ
 
-- **`describe`** — テストをグループ化する。関数名やコンポーネント名を渡すことが多い
-- **`it`**（または `test`）— 個々のテストケース。「何をテストするか」を日本語で書く
-- **`expect`** — 期待する結果を検証する。**アサーション**（assertion）と呼ぶ
+プロジェクト固有の色やフォントを定義するには、`@theme` ブロックを使います。
 
-## よく使うアサーション
+```css
+/* src/app/globals.css */
+@import "tailwindcss";
 
-`expect` に続けてさまざまなマッチャー（matcher）を使えます。
-
-```ts
-import { describe, it, expect } from "vitest";
-
-describe("マッチャーの例", () => {
-  // 等値チェック
-  it("toBe: 厳密等価（===）", () => {
-    expect(1 + 1).toBe(2);
-  });
-
-  it("toEqual: オブジェクトの中身を比較", () => {
-    expect({ name: "太郎" }).toEqual({ name: "太郎" });
-  });
-
-  // 真偽チェック
-  it("toBeTruthy / toBeFalsy", () => {
-    expect("hello").toBeTruthy();
-    expect("").toBeFalsy();
-    expect(null).toBeFalsy();
-  });
-
-  // 数値チェック
-  it("toBeGreaterThan / toBeLessThan", () => {
-    expect(10).toBeGreaterThan(5);
-    expect(3).toBeLessThan(10);
-  });
-
-  // 文字列チェック
-  it("toContain: 部分一致", () => {
-    expect("Hello World").toContain("World");
-  });
-
-  // 配列チェック
-  it("toContain: 配列に含まれる", () => {
-    expect([1, 2, 3]).toContain(2);
-  });
-
-  it("toHaveLength: 配列の長さ", () => {
-    expect([1, 2, 3]).toHaveLength(3);
-  });
-
-  // エラーチェック
-  it("toThrow: エラーが投げられる", () => {
-    const throwError = () => {
-      throw new Error("エラー！");
-    };
-    expect(throwError).toThrow("エラー！");
-  });
-});
-```
-
-`toBe` と `toEqual` の違いは重要です。`toBe` は参照の一致（`===`）で比較するため、オブジェクトや配列の比較には `toEqual` を使います。
-
-## 実践的なテスト例
-
-もう少し現実的な関数をテストしてみましょう。
-
-```ts
-// src/lib/format.ts
-export function formatPrice(price: number): string {
-  return `¥${price.toLocaleString("ja-JP")}`;
-}
-
-export function truncate(text: string, maxLength: number): string {
-  if (text.length <= maxLength) {
-    return text;
-  }
-  return text.slice(0, maxLength) + "...";
-}
-
-export function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary: #10b981;
+  --font-sans: "Noto Sans JP", sans-serif;
+  --breakpoint-xs: 475px;
 }
 ```
 
-```ts
-// src/lib/format.test.ts
-import { describe, it, expect } from "vitest";
-import { formatPrice, truncate, slugify } from "./format";
+`@theme` で定義した値は、ユーティリティクラスとして自動的に使えるようになります。
 
-describe("formatPrice", () => {
-  it("3桁区切りで円表示する", () => {
-    expect(formatPrice(1000)).toBe("¥1,000");
-    expect(formatPrice(1234567)).toBe("¥1,234,567");
-  });
-
-  it("0円を表示できる", () => {
-    expect(formatPrice(0)).toBe("¥0");
-  });
-});
-
-describe("truncate", () => {
-  it("最大長を超えた場合は省略する", () => {
-    expect(truncate("こんにちは世界", 5)).toBe("こんにちは...");
-  });
-
-  it("最大長以下の場合はそのまま返す", () => {
-    expect(truncate("短い", 10)).toBe("短い");
-  });
-
-  it("ちょうど最大長の場合はそのまま返す", () => {
-    expect(truncate("12345", 5)).toBe("12345");
-  });
-});
-
-describe("slugify", () => {
-  it("スペースをハイフンに変換する", () => {
-    expect(slugify("hello world")).toBe("hello-world");
-  });
-
-  it("大文字を小文字にする", () => {
-    expect(slugify("Hello World")).toBe("hello-world");
-  });
-
-  it("特殊文字を除去する", () => {
-    expect(slugify("hello! world?")).toBe("hello-world");
-  });
-});
+```html
+<!-- --color-primary が bg-primary として使える -->
+<button class="bg-primary text-white font-sans">ボタン</button>
 ```
 
-## テストの書き方のコツ
+従来の `tailwind.config.js` で `theme.extend` に書いていた内容が、CSS で完結するようになりました。
 
-### AAA パターン
+## よく使うユーティリティクラス
 
-テストは **Arrange（準備）→ Act（実行）→ Assert（検証）** の 3 ステップで書くとわかりやすくなります。
+### レイアウト
 
-```ts
-it("ユーザー名が空の場合はエラーを返す", () => {
-  // Arrange（準備）
-  const emptyName = "";
+```html
+<!-- Flexbox -->
+<div class="flex items-center justify-between gap-4">
+  <span>左</span>
+  <span>右</span>
+</div>
 
-  // Act（実行）
-  const result = validateUserName(emptyName);
-
-  // Assert（検証）
-  expect(result).toEqual({ valid: false, error: "名前は必須です" });
-});
+<!-- Grid -->
+<div class="grid grid-cols-3 gap-4">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+</div>
 ```
 
-### テスト名は「何が」「どうなるか」を書く
+### スペーシング
 
-```ts
-// ✅ よいテスト名
-it("価格が0未満の場合はエラーを投げる", () => {});
-it("メールアドレスに@が含まれない場合はfalseを返す", () => {});
+```html
+<!-- padding -->
+<div class="p-4">全方向に 1rem</div>
+<div class="px-4 py-2">横 1rem、縦 0.5rem</div>
 
-// ❌ 悪いテスト名
-it("テスト1", () => {});
-it("正常系", () => {});
+<!-- margin -->
+<div class="m-4">全方向に 1rem</div>
+<div class="mt-8">上に 2rem</div>
 ```
 
-テスト名を読むだけで、テスト対象の仕様がわかるようにしましょう。
+数値の対応: `1` = 0.25rem、`2` = 0.5rem、`4` = 1rem、`8` = 2rem、`16` = 4rem
+
+### テキスト
+
+```html
+<p class="text-sm text-gray-600">小さめのグレー文字</p>
+<p class="text-2xl font-bold text-gray-900">大きい太字</p>
+<p class="text-center leading-relaxed">中央揃えでゆったり行間</p>
+```
+
+### 背景・ボーダー
+
+```html
+<div class="bg-gray-100 border border-gray-300 rounded-lg">
+  角丸のカード
+</div>
+```
+
+## レスポンシブデザイン
+
+Tailwind では、ブレークポイント（画面幅の区切り）のプレフィックスを付けるだけでレスポンシブデザインが実現できます。
+
+```html
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="p-4 bg-white rounded-lg shadow-sm">カード 1</div>
+  <div class="p-4 bg-white rounded-lg shadow-sm">カード 2</div>
+  <div class="p-4 bg-white rounded-lg shadow-sm">カード 3</div>
+</div>
+```
+
+| プレフィックス | 画面幅 | 意味 |
+|-------------|-------|------|
+| なし | 0px〜 | モバイル（デフォルト） |
+| `sm:` | 640px〜 | 小型タブレット |
+| `md:` | 768px〜 | タブレット |
+| `lg:` | 1024px〜 | デスクトップ |
+| `xl:` | 1280px〜 | 大画面 |
+| `2xl:` | 1536px〜 | 超大画面 |
+
+Tailwind は**モバイルファースト**です。プレフィックスなしのスタイルがモバイル用で、`md:` や `lg:` でより大きい画面のスタイルを上書きしていきます。
+
+上の例では、スマートフォンでは 1 列、タブレットでは 2 列、デスクトップでは 3 列のグリッドになります。
+
+## ダークモード
+
+Tailwind では `dark:` プレフィックスでダークモード用のスタイルを指定します。
+
+```html
+<div class="bg-white dark:bg-gray-900">
+  <h1 class="text-gray-900 dark:text-white">タイトル</h1>
+  <p class="text-gray-600 dark:text-gray-300">本文テキスト</p>
+</div>
+```
+
+ダークモードは、ユーザーの OS 設定に従います（`prefers-color-scheme: dark`）。
+
+### 完全なカードコンポーネント例
+
+ここまでの内容を組み合わせた実践的な例です。
+
+```tsx
+// src/app/components/article-card.tsx
+import Image from "next/image";
+import Link from "next/link";
+
+type Props = {
+  title: string;
+  excerpt: string;
+  image: string;
+  href: string;
+};
+
+export default function ArticleCard({ title, excerpt, image, href }: Props) {
+  return (
+    <article className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+      <div className="relative h-48 w-full">
+        <Image
+          src={image}
+          alt=""
+          fill
+          className="rounded-t-lg object-cover"
+        />
+      </div>
+      <div className="p-4">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+          <Link href={href} className="hover:underline">
+            {title}
+          </Link>
+        </h2>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+          {excerpt}
+        </p>
+      </div>
+    </article>
+  );
+}
+```
+
+## hover・focus などの状態
+
+ユーザーの操作状態に応じたスタイルも、プレフィックスで指定できます。
+
+```html
+<button
+  class="rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-blue-700"
+>
+  ボタン
+</button>
+```
+
+| プレフィックス | 状態 |
+|-------------|------|
+| `hover:` | マウスを乗せたとき |
+| `focus:` | フォーカスしたとき |
+| `active:` | クリック中 |
+| `disabled:` | 無効状態 |
+| `first:` | 最初の子要素 |
+| `last:` | 最後の子要素 |
+
+> **アクセシビリティ**: `focus:ring` による視覚的なフォーカスインジケーターは、キーボード操作のユーザーにとって非常に重要です。フォーカススタイルは必ず設定しましょう。
 
 ## まとめ
 
-- テストはコードの品質を保ち、変更に自信を持つための仕組み
-- Vitest は高速で TypeScript 対応のテストフレームワーク
-- `describe` でグループ化、`it` でテストケース、`expect` でアサーション
-- `toBe` は厳密等価、`toEqual` はオブジェクトの中身を比較
-- テスト名は「何がどうなるか」を明確に書く
+- Tailwind CSS はユーティリティファーストのアプローチで、クラス名の命名やスタイルの衝突から解放される
+- v4 では `@import "tailwindcss"` だけで使い始められ、`@theme` ブロックでカスタマイズする
+- レスポンシブデザインは `md:`、`lg:` などのプレフィックスで、モバイルファーストに実装する
+- ダークモードは `dark:` プレフィックスで対応する
+- `hover:`、`focus:` などの状態プレフィックスで、インタラクション時のスタイルを指定する
 
-**次のレッスン**: [Day 42: コンポーネントテスト](/lessons/day42/)
+**次のレッスン**: [Day 42: テスト基礎（Vitest）](/lessons/day42/)

@@ -1,212 +1,248 @@
-# Day 45: Web パフォーマンス基礎
+# Day 44: アクセシビリティとテスト
 
 ## 今日のゴール
 
-- Core Web Vitals（LCP / CLS / INP）の意味と改善方法を理解する
-- Lighthouse を使ったパフォーマンス測定の方法を知る
-- パフォーマンス改善の基本的なサイクルを身につける
+- axe を使ったアクセシビリティの自動テストを書けるようになる
+- eslint-plugin-jsx-a11y でコーディング時にアクセシビリティ問題を検出する
+- 自動チェックでカバーできる範囲とできない範囲を理解する
 
-## なぜパフォーマンスが重要か
+## 自動テストでアクセシビリティを守る
 
-Web ページの表示速度は、ユーザー体験とビジネス成果に直結します。
+Day 43 でアクセシビリティの基本を学びました。しかし、すべてのルールを常に覚えて手動で確認するのは現実的ではありません。自動テストと静的解析を組み合わせて、アクセシビリティの問題を早期に検出しましょう。
 
-- ページ表示が **1 秒遅れる**と、コンバージョン率（購入や申し込みの割合）が **7% 低下**するという調査がある
-- Google は検索ランキングにページ速度を考慮している
-- モバイル環境では通信速度やデバイス性能が限られるため、パフォーマンスの影響がさらに大きい
+## axe によるアクセシビリティテスト
 
-「速いサイト」は良い UX の基本です。
+**axe**（アクス）は、Deque Systems が開発したアクセシビリティテストエンジンです。HTML をスキャンして、WCAG のルールに違反している箇所を検出します。
 
-## Core Web Vitals
+### セットアップ
 
-**Core Web Vitals** は Google が定めた 3 つのパフォーマンス指標です。「ユーザーにとって良い体験か」を数値で表します。
+```bash
+npm install -D vitest-axe
+```
 
-### LCP（Largest Contentful Paint）
+Vitest のセットアップファイルに追加します。
 
-**最も大きなコンテンツが表示されるまでの時間**です。ユーザーが「ページが表示された」と感じるタイミングに近い指標です。
+```ts
+// vitest.setup.ts
+import "@testing-library/jest-dom/vitest";
+import "vitest-axe/extend-expect";
+```
 
-| 評価 | 時間 |
-|------|------|
-| 良い | 2.5 秒以下 |
-| 改善が必要 | 2.5〜4.0 秒 |
-| 悪い | 4.0 秒超 |
-
-LCP の対象になるのは、画像、`<video>` のポスター画像、背景画像、テキストブロックなどです。
-
-#### LCP を改善する方法
+### 基本的なテスト
 
 ```tsx
-import Image from "next/image";
+// src/components/article-card.test.tsx
+import { describe, it, expect } from "vitest";
+import { render } from "@testing-library/react";
+import { axe } from "vitest-axe";
 
-// ✅ ファーストビューの画像に priority を付ける（Day 39 で学習）
-<Image src="/hero.jpg" alt="ヒーロー画像" fill priority />
-
-// ✅ Server Components でデータ取得（Day 34 で学習）
-// → データを含んだ HTML が最初から送られるため、表示が速い
-
-// ✅ フォントの最適化（Day 39 で学習）
-// → next/font でフォントをビルド時に取得しておく
-```
-
-- サーバーのレスポンス時間を短縮する
-- レンダリングをブロックする CSS/JavaScript を減らす
-- 画像を最適化する（`next/image` が自動で対応）
-
-### CLS（Cumulative Layout Shift）
-
-**ページの読み込み中にレイアウトがどれだけずれるか**の指標です。読んでいたテキストが突然ずれて別の場所をクリックしてしまった、という経験はないでしょうか。それが CLS です。
-
-| 評価 | スコア |
-|------|-------|
-| 良い | 0.1 以下 |
-| 改善が必要 | 0.1〜0.25 |
-| 悪い | 0.25 超 |
-
-#### CLS を改善する方法
-
-```tsx
-// ✅ 画像にサイズを指定する
-<Image src="/photo.jpg" alt="写真" width={600} height={400} />
-
-// ❌ サイズなしの img はレイアウトシフトの原因
-<img src="/photo.jpg" alt="写真" />
-```
-
-- 画像や動画に `width`/`height` を指定する（スペースが事前に確保される）
-- Web フォントの読み込みでレイアウトがずれないようにする（`next/font` が自動で対応）
-- 動的にコンテンツを挿入しない（広告バナーなどは事前にスペースを確保）
-
-### INP（Interaction to Next Paint）
-
-**ユーザーの操作（クリック、タップ、キー入力）から画面が更新されるまでの時間**です。ボタンをクリックしてから画面が反応するまでの体感的な速さを測ります。
-
-| 評価 | 時間 |
-|------|------|
-| 良い | 200ms 以下 |
-| 改善が必要 | 200〜500ms |
-| 悪い | 500ms 超 |
-
-#### INP を改善する方法
-
-- メインスレッド（ブラウザが UI を処理するスレッド）を長時間ブロックする処理を避ける
-- 重い計算は Web Worker に移す
-- イベントハンドラを軽くする
-- 不要な再レンダリングを避ける（`React.memo` など）
-
-## Lighthouse の使い方
-
-**Lighthouse** は Google が提供するパフォーマンス測定ツールです。Chrome の開発者ツールに組み込まれています。
-
-### 測定手順
-
-1. Chrome で測定したいページを開く
-2. 開発者ツールを開く（`F12` または `Cmd + Option + I`）
-3. **Lighthouse** タブを選択
-4. 「Analyze page load」をクリック
-
-数秒〜数十秒で結果が表示されます。
-
-### 結果の読み方
-
-Lighthouse は以下の 5 つのカテゴリでスコアを表示します。
-
-| カテゴリ | 内容 |
-|---------|------|
-| Performance | ページの表示速度 |
-| Accessibility | アクセシビリティ（Day 43-44 で学習） |
-| Best Practices | Web 開発のベストプラクティス |
-| SEO | 検索エンジン最適化（Day 38 で学習） |
-| PWA | Progressive Web App 対応 |
-
-Performance スコアの内訳として、LCP / CLS / INP などの Core Web Vitals の値が表示されます。各指標の横に具体的な改善提案も表示されるので、それに従って改善します。
-
-### 注意点
-
-Lighthouse のスコアは測定のたびに変動します。以下の点に注意してください。
-
-- **シークレットモードで測定する** — ブラウザ拡張機能がスコアに影響する
-- **複数回測定する** — 1 回の結果を鵜呑みにしない
-- **本番環境で測定する** — 開発環境は最適化されていないため、スコアが低く出る
-- **モバイルで測定する** — Lighthouse はデフォルトでモバイル環境をシミュレートする
-
-## パフォーマンス改善のサイクル
-
-パフォーマンス改善は、一度やって終わりではありません。以下のサイクルを回します。
-
-```
-1. 測定する（Lighthouse、実際のユーザーデータ）
-   ↓
-2. 問題を特定する（どの指標が悪いか）
-   ↓
-3. 原因を分析する（なぜ遅いか）
-   ↓
-4. 改善を実施する
-   ↓
-5. 効果を測定する（改善されたか確認）
-   ↓
-1 に戻る
-```
-
-### 重要: 推測で最適化しない
-
-```
-❌ 「たぶんここが遅いだろう」→ 最適化 → 効果なし → 時間の無駄
-
-✅ 測定 → 「LCP が 4.2 秒で、ヒーロー画像の読み込みが原因」
-   → 画像を最適化 → LCP が 2.1 秒に改善
-```
-
-必ず測定してボトルネック（最も遅い箇所）を特定してから改善に取りかかりましょう。
-
-## 実際のユーザーデータ
-
-Lighthouse はラボデータ（シミュレーション環境での測定）です。実際のユーザーの体験を測定するには **RUM（Real User Monitoring）** が必要です。
-
-Next.js では `reportWebVitals` を使って実際のユーザーの Core Web Vitals を収集できます。
-
-```tsx
-// src/app/layout.tsx
-import { WebVitals } from "./web-vitals";
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function ArticleCard() {
   return (
-    <html lang="ja">
-      <body>
-        <WebVitals />
-        {children}
-      </body>
-    </html>
+    <article>
+      <h2>記事タイトル</h2>
+      <p>記事の説明文がここに入ります。</p>
+      <a href="/blog/article-1">続きを読む</a>
+    </article>
+  );
+}
+
+describe("ArticleCard", () => {
+  it("アクセシビリティ違反がない", async () => {
+    const { container } = render(<ArticleCard />);
+    const results = await axe(container);
+
+    expect(results).toHaveNoViolations();
+  });
+});
+```
+
+`toHaveNoViolations()` は、axe が検出した違反が 0 件であることを確認します。
+
+### 違反が検出される例
+
+実際に違反がどう報告されるか見てみましょう。
+
+```tsx
+// ❌ アクセシビリティ違反があるコンポーネント
+function BadCard() {
+  return (
+    <div>
+      <img src="/photo.jpg" />  {/* alt がない */}
+      <div onClick={() => {}}>クリック</div>  {/* div をボタンとして使用 */}
+    </div>
   );
 }
 ```
 
-```tsx
-// src/app/web-vitals.tsx
-"use client";
+テストを実行すると、以下のような違反が報告されます。
 
-import { useReportWebVitals } from "next/web-vitals";
+```
+Expected the HTML found at $('img') to have no violations:
+- image-alt: Images must have alternate text
+  Impact: critical
 
-export function WebVitals() {
-  useReportWebVitals((metric) => {
-    // アナリティクスサービスに送信
-    console.log(metric.name, metric.value);
-  });
-
-  return null;
-}
+Expected the HTML found at $('div') to have no violations:  
+- interactive element is not focusable
+  Impact: serious
 ```
 
-これにより LCP、CLS、INP などの実際のユーザーデータが収集できます。
+### 既存プロジェクトへの段階的な導入
+
+すでに多くの違反があるプロジェクトでは、一度にすべて修正するのは困難です。特定のルールだけを対象にすることもできます。
+
+```tsx
+it("画像にalt属性がある", async () => {
+  const { container } = render(<MyComponent />);
+  const results = await axe(container, {
+    rules: {
+      "image-alt": { enabled: true },
+      // 他のルールは無効化
+    },
+  });
+
+  expect(results).toHaveNoViolations();
+});
+```
+
+## eslint-plugin-jsx-a11y
+
+**eslint-plugin-jsx-a11y** は、JSX のコードを書いている段階でアクセシビリティの問題を指摘してくれる ESLint プラグインです。テストを実行する前、コーディング中に問題を見つけられます。
+
+### セットアップ
+
+```bash
+npm install -D eslint-plugin-jsx-a11y
+```
+
+ESLint の設定に追加します。
+
+```js
+// eslint.config.mjs
+import jsxA11y from "eslint-plugin-jsx-a11y";
+
+export default [
+  // ... 既存の設定
+  jsxA11y.flatConfigs.recommended,
+];
+```
+
+### 検出される問題の例
+
+```tsx
+// ❌ eslint-plugin-jsx-a11y が警告する例
+
+// alt 属性がない画像
+<img src="/photo.jpg" />
+// → jsx-a11y/alt-text: img elements must have an alt prop
+
+// onClick があるのに role がない div
+<div onClick={handleClick}>クリック</div>
+// → jsx-a11y/click-events-have-key-events
+// → jsx-a11y/no-static-element-interactions
+
+// 空のリンク
+<a href="#">リンク</a>
+// → jsx-a11y/anchor-is-valid
+
+// autoFocus の使用
+<input autoFocus />
+// → jsx-a11y/no-autofocus
+```
+
+```tsx
+// ✅ 修正後
+
+<img src="/photo.jpg" alt="森の風景写真" />
+
+<button onClick={handleClick} type="button">クリック</button>
+
+<a href="/about">About</a>
+
+<input />  {/* autoFocus は削除、フォーカス管理は別の方法で */}
+```
+
+## Testing Library と アクセシビリティ
+
+Day 42 で学んだ Testing Library の `getByRole` は、実はアクセシビリティのテストにもなっています。
+
+```tsx
+// この検索が成功すること自体が、
+// アクセシビリティが正しいことの証明
+
+// ボタンにアクセシブルな名前がある
+screen.getByRole("button", { name: "送信" });
+
+// 見出しが正しく使われている
+screen.getByRole("heading", { name: "記事タイトル" });
+
+// フォームにラベルがある
+screen.getByLabelText("メールアドレス");
+
+// ナビゲーションにラベルがある
+screen.getByRole("navigation", { name: "メインナビゲーション" });
+```
+
+`getByRole` で要素が見つからないということは、スクリーンリーダーもその要素を適切に認識できないということです。
+
+## 自動チェックの限界
+
+ここが今日最も重要なポイントです。**自動チェックでカバーできるのは、アクセシビリティの問題全体の約 30〜40% と言われています**。
+
+### 自動でカバーできるもの
+
+| チェック項目 | ツール |
+|------------|-------|
+| 画像に alt がある | axe, ESLint |
+| フォームに label がある | axe, ESLint |
+| 色のコントラスト比が十分 | axe |
+| 見出しレベルが連続している | axe |
+| ARIA 属性が正しい構文 | axe, ESLint |
+| フォーカス可能な要素がある | axe |
+| lang 属性が設定されている | axe |
+
+### 自動ではカバーできないもの
+
+| チェック項目 | なぜ自動で検出できないか |
+|------------|---------------------|
+| alt テキストが適切な内容か | 「画像」と書かれていても、機械には妥当性が判断できない |
+| Tab 順序が論理的か | 正しい順序は文脈に依存する |
+| モーダルのフォーカストラップ | 操作シナリオのテストが必要 |
+| 読み上げ内容が理解可能か | 人間が聞いて判断する必要がある |
+| キーボード操作が直感的か | ユーザーの期待と合っているかは主観的 |
+| 動画に字幕があるか | コンテンツの中身は機械では判断困難 |
+
+### だから両方が必要
+
+```
+自動テスト（axe, ESLint） → 明確なルール違反を検出
+       +
+手動テスト（スクリーンリーダー、キーボード操作） → 体験の質を検証
+```
+
+自動テストは「最低限の品質」を保証するセーフティネットです。その上で、定期的にスクリーンリーダーやキーボードだけでの操作テストを行うことが理想です。
+
+## 実践的なテスト戦略
+
+プロジェクトに導入する際の推奨アプローチです。
+
+```
+1. eslint-plugin-jsx-a11y を導入（コーディング時にリアルタイム検出）
+     ↓
+2. 主要コンポーネントに axe テストを追加（CI で自動実行）
+     ↓
+3. 新規コンポーネントには getByRole ベースのテストを書く
+     ↓
+4. 定期的にスクリーンリーダーで手動テスト
+```
+
+すべてを一度に完璧にする必要はありません。まず自動チェックで基盤を作り、徐々に手動テストも組み合わせていきましょう。
 
 ## まとめ
 
-- Core Web Vitals は LCP（表示速度）、CLS（レイアウトのずれ）、INP（操作の応答性）の 3 指標
-- Lighthouse で測定できるが、結果は毎回変動するため複数回の測定が重要
-- パフォーマンス改善は「測定 → 特定 → 改善 → 再測定」のサイクルで行う
-- 推測ではなく、必ずデータに基づいて改善する
-- Next.js の `next/image`、`next/font`、Server Components は多くのパフォーマンス最適化を自動で行ってくれる
+- axe はレンダリングされた HTML をスキャンして WCAG 違反を検出する
+- eslint-plugin-jsx-a11y はコーディング中にアクセシビリティ問題を指摘する
+- Testing Library の `getByRole` は、暗黙的にアクセシビリティのテストにもなっている
+- 自動チェックでカバーできるのはアクセシビリティ問題の約 30〜40%
+- 自動テストは最低限の品質を保証するセーフティネット。手動テストと組み合わせて初めて十分になる
 
-**次のレッスン**: [Day 46: Web パフォーマンス応用](/lessons/day46/)
+**次のレッスン**: [Day 45: Web パフォーマンス基礎](/lessons/day45/)

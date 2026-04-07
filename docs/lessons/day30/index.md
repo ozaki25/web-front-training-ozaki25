@@ -269,4 +269,4 @@ function App() {
 - React Compiler は React のルール（不変性、副作用の分離）に従ったコードを前提とする
 - パフォーマンスの問題は推測ではなく、React Profiler で計測して判断する
 
-**次のレッスン**: [Day 31: Next.js の概要とプロジェクト構成](/lessons/day31/)
+**次のレッスン**: [Day 31: SPA・CSR・SSR — レンダリング戦略を理解する](/lessons/day31/)

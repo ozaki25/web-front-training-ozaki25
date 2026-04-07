@@ -1,228 +1,366 @@
-# Day 50: アーキテクチャ総まとめ
+# Day 49: コンポーネント設計パターン
 
 ## 今日のゴール
 
-- ディレクトリ構成の戦略を理解する
-- 技術選定の考え方を身につける
-- 50 日間で学んだ知識の全体像を整理する
-- 次のステップを知る
+- 代表的なコンポーネント設計パターンを理解する
+- Presentational / Container パターンの考え方を知る
+- Compound Components パターンを使えるようになる
+- Render Props と Hooks の使い分けを理解する
 
-## ここまでの道のり
+## なぜ設計パターンを学ぶのか
 
-Day 1 から今日まで、Web フロントエンド開発の基礎を一歩ずつ学んできました。ここで全体を振り返り、知識を体系的に整理しましょう。
+Day 21〜30 で React の基礎を、Day 31〜40 で Next.js の機能を学びました。小さなコンポーネントは直感的に書けるようになったと思います。
 
-```
-Day 1-10:   Web の基礎（HTML / CSS / JavaScript）
-Day 11-20:  JavaScript の深掘り（DOM / 非同期 / モジュール / TypeScript）
-Day 21-30:  React の基礎（JSX / コンポーネント / Hooks / 状態管理）
-Day 31-40:  Next.js の基礎（App Router / RSC / データ取得 / Tailwind）
-Day 41-50:  実践スキル（テスト / a11y / パフォーマンス / セキュリティ / 設計）
-```
+しかし、実際のプロジェクトではコンポーネントが増え、複雑になっていきます。「この state はどこに置くべきか」「このロジックはどう共有するか」「このコンポーネントを再利用可能にするにはどうするか」という判断が必要になります。
 
-## ディレクトリ構成戦略
+設計パターンは、こうした問題に対する先人の解決策です。パターンを知っておくと、チーム内の設計議論に参加しやすくなります。
 
-実際のプロジェクトでは「どこに何を置くか」が重要です。チーム全員が迷わずファイルを見つけられる構成を目指します。
+## Presentational / Container パターン
 
-### Next.js App Router の推奨構成
+コンポーネントを「見た目」と「ロジック」に分離するパターンです。
 
-```
-src/
-├── app/                     ← ルーティング（ページとレイアウト）
-│   ├── layout.tsx
-│   ├── page.tsx
-│   ├── globals.css
-│   ├── (auth)/              ← Route Group（URLに影響しない）
-│   │   ├── login/
-│   │   │   └── page.tsx
-│   │   └── register/
-│   │       └── page.tsx
-│   ├── dashboard/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   └── settings/
-│   │       └── page.tsx
-│   └── blog/
-│       ├── page.tsx
-│       └── [slug]/
-│           └── page.tsx
-├── components/              ← 共有コンポーネント
-│   ├── ui/                  ← 汎用UIコンポーネント（Button, Input, Cardなど）
-│   │   ├── button.tsx
-│   │   ├── input.tsx
-│   │   └── card.tsx
-│   └── layout/              ← レイアウト関連（Header, Footer, Sidebarなど）
-│       ├── header.tsx
-│       └── footer.tsx
-├── lib/                     ← ユーティリティ、ヘルパー関数
-│   ├── utils.ts
-│   └── format.ts
-├── types/                   ← 型定義
-│   └── index.ts
-└── auth.ts                  ← 認証設定
+### Presentational Component（見た目担当）
+
+```tsx
+// src/components/user-profile-view.tsx
+type Props = {
+  name: string;
+  email: string;
+  avatarUrl: string;
+  onLogout: () => void;
+};
+
+export default function UserProfileView({
+  name,
+  email,
+  avatarUrl,
+  onLogout,
+}: Props) {
+  return (
+    <div className="flex items-center gap-4 rounded-lg bg-white p-4 shadow-sm">
+      <img
+        src={avatarUrl}
+        alt={`${name}のアバター`}
+        className="h-12 w-12 rounded-full"
+      />
+      <div>
+        <p className="font-bold text-gray-900">{name}</p>
+        <p className="text-sm text-gray-600">{email}</p>
+      </div>
+      <button
+        onClick={onLogout}
+        type="button"
+        className="ml-auto text-sm text-gray-500 hover:text-gray-700"
+      >
+        ログアウト
+      </button>
+    </div>
+  );
+}
 ```
 
-### Route Group `(name)`
+特徴:
+- **Props だけで完結** — 自分で state を持たず、データや関数はすべて props で受け取る
+- **再利用しやすい** — データの取得元に依存しない
+- **テストしやすい** — props を渡すだけでテストできる
 
-丸括弧で囲んだフォルダは**URL に影響しません**。ファイルを整理するためだけのグルーピングです。
+### Container Component（ロジック担当）
 
-```
-src/app/
-├── (marketing)/        ← URL には /marketing は含まれない
-│   ├── page.tsx        → /
-│   ├── about/
-│   │   └── page.tsx    → /about
-│   └── pricing/
-│       └── page.tsx    → /pricing
-└── (app)/              ← URL には /app は含まれない
-    ├── layout.tsx      ← ログイン後のレイアウト
-    ├── dashboard/
-    │   └── page.tsx    → /dashboard
-    └── settings/
-        └── page.tsx    → /settings
-```
+```tsx
+// src/components/user-profile.tsx
+import { auth, signOut } from "@/auth";
+import UserProfileView from "./user-profile-view";
 
-マーケティングサイトとアプリケーションで異なるレイアウトを使いたい場合に便利です。
+export default async function UserProfile() {
+  const session = await auth();
 
-### コロケーション
+  if (!session?.user) {
+    return null;
+  }
 
-Day 31 で紹介した**コロケーション**（関連ファイルを近くに置く）は重要な原則です。
-
-```
-src/app/blog/[slug]/
-├── page.tsx          ← ページ
-├── loading.tsx       ← ローディングUI
-├── error.tsx         ← エラーUI
-└── like-button.tsx   ← このページでしか使わないコンポーネント
-```
-
-そのページでしか使わないコンポーネントは、`components/` に移動するのではなく、ページの近くに置きましょう。複数のページで共有するようになったら `components/` に移動すればよいのです。
-
-## 技術選定の考え方
-
-プロジェクトで「なぜその技術を使うのか」を説明できることが重要です。50 日間で学んだ技術の選定理由を整理します。
-
-### Next.js を使う理由
-
-| 課題 | Next.js の解決策 |
-|------|---------------|
-| React だけではルーティングがない | ファイルベースルーティング |
-| SEO 対応が難しい | SSR / SSG によるサーバーサイドレンダリング |
-| パフォーマンス最適化が大変 | 画像・フォント最適化、コード分割が組み込み |
-| API サーバーが別途必要 | Server Components, Server Actions, Route Handlers |
-
-### TypeScript を使う理由
-
-- **型によるバグ防止** — 実行前にエラーを検出
-- **IDEの補完** — 開発効率が上がる
-- **ドキュメントとしての型** — コードを読むだけで引数や戻り値がわかる
-- **リファクタリングの安全性** — 型の不整合を自動で検出
-
-### Tailwind CSS を使う理由
-
-- **クラス名の命名に悩まない** — ユーティリティクラスの組み合わせで完結
-- **CSS の肥大化を防ぐ** — 使われていないスタイルが生成されない
-- **一貫性** — デザイントークン（`@theme`）で色やスペーシングを統一
-- **スタイルの衝突がない** — グローバルスコープの問題が起きない
-
-### Server Components をデフォルトにする理由
-
-- **JavaScript バンドルサイズの削減** — ブラウザに送る JS が減る
-- **データ取得の簡潔さ** — `async/await` で直接 fetch
-- **セキュリティ** — 機密情報がブラウザに漏れない
-
-### Vitest を使う理由
-
-- **高速** — Vite ベースで HMR を活用
-- **ESM ネイティブ** — モダンな JavaScript を自然に扱える
-- **TypeScript 対応** — 追加設定なし
-- **Jest 互換** — 学習コストが低い
-
-## 知識の全体像
-
-50 日間で学んだ内容がどう繋がっているかを図解します。
-
-```
-                           ┌─────────────┐
-                           │   ブラウザ    │
-                           └──────┬──────┘
-                                  │
-           ┌─────────────────────┼─────────────────────┐
-           │                     │                      │
-    ┌──────▼──────┐    ┌────────▼────────┐   ┌────────▼────────┐
-    │    HTML      │    │     CSS         │   │  JavaScript     │
-    │  Day 1-3     │    │  Day 4-6        │   │  Day 7-20       │
-    │  構造・意味   │    │  見た目・装飾    │   │  動作・ロジック   │
-    └──────┬──────┘    └────────┬────────┘   └────────┬────────┘
-           │                    │                      │
-           └────────────────────┼──────────────────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │       React           │
-                    │     Day 21-30         │
-                    │  宣言的UI・コンポーネント │
-                    └───────────┬───────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │       Next.js         │
-                    │     Day 31-40         │
-                    │  SSR・ルーティング・最適化 │
-                    └───────────┬───────────┘
-                                │
-          ┌─────────┬───────────┼───────────┬──────────┐
-          │         │           │           │          │
-    ┌─────▼───┐ ┌──▼───┐ ┌────▼────┐ ┌───▼────┐ ┌──▼────┐
-    │ テスト   │ │ a11y │ │ パフォ   │ │セキュリ│ │ 設計  │
-    │Day41-42 │ │Day43 │ │ ーマンス │ │ ティ   │ │Day 49 │
-    │         │ │  -44 │ │Day45-46 │ │Day47-48│ │       │
-    └─────────┘ └──────┘ └─────────┘ └────────┘ └───────┘
+  return (
+    <UserProfileView
+      name={session.user.name ?? "名無し"}
+      email={session.user.email ?? ""}
+      avatarUrl={session.user.image ?? "/default-avatar.png"}
+      onLogout={async () => {
+        "use server";
+        await signOut();
+      }}
+    />
+  );
+}
 ```
 
-各レイヤーの知識は独立しているのではなく、下のレイヤーが上のレイヤーの基盤になっています。
+特徴:
+- **データ取得やロジックを担当** — API 呼び出し、認証チェックなど
+- **見た目のコードがない**（または最小限） — 表示は Presentational に委譲
 
-- **HTML/CSS/JavaScript** を知らなければ → React が何を解決しているかわからない
-- **React** を知らなければ → Next.js の Server Components や Hooks が理解できない
-- **Next.js** を知らなければ → テストやパフォーマンス最適化の具体的な手法がわからない
+### Server Components 時代の Presentational / Container
 
-だからこそ、Day 1 の HTML から始めたのです。
+Next.js の App Router では、この分離がさらに自然になりました。
 
-## 次のステップ
+- **Server Component** = Container の役割（データ取得、ビジネスロジック）
+- **Client Component** = Presentational の役割（インタラクション、表示）
 
-この 50 日間で学んだのは「基礎」です。ここからは実際のプロジェクトで経験を積みながら、さらに深い知識を身につけていきましょう。
+Day 32 で学んだ「デフォルト Server Component、必要な部分だけ Client Component」の方針は、まさにこのパターンの実践です。
 
-### すぐに取り組めること
+## Compound Components パターン
 
-1. **実際のアプリを作る** — ブログ、Todo アプリ、ポートフォリオサイトなど、小さなアプリを Next.js で作ってみる
-2. **公式ドキュメントを読む** — [Next.js](https://nextjs.org/docs)、[React](https://react.dev/)、[MDN Web Docs](https://developer.mozilla.org/ja/) の公式ドキュメントは最良の学習リソース
-3. **コードレビューに参加する** — チームメンバーのコードを読み、設計判断の理由を考える
+**Compound Components**（複合コンポーネント）は、複数のコンポーネントが協調して動くパターンです。HTML の `<select>` と `<option>` の関係に似ています。
 
-### さらに学ぶべきトピック
+```html
+<!-- HTML の select と option も Compound Components の一種 -->
+<select>
+  <option value="a">オプション A</option>
+  <option value="b">オプション B</option>
+</select>
+```
 
-| トピック | 概要 |
-|---------|------|
-| 状態管理ライブラリ | Zustand、Jotai など。グローバル状態が複雑になったとき |
-| フォームライブラリ | React Hook Form + Zod。バリデーションを含む複雑なフォーム |
-| E2E テスト | Playwright。ブラウザを自動操作する統合テスト |
-| CI/CD | GitHub Actions。テスト・ビルド・デプロイの自動化 |
-| モニタリング | Sentry、Datadog。本番環境のエラーやパフォーマンスの監視 |
-| デザインシステム | 一貫した UI を提供するコンポーネントライブラリの構築 |
-| マイクロフロントエンド | 大規模アプリケーションの分割戦略 |
+### Tabs コンポーネントの例
 
-### 学び続けるために
+タブ UI を Compound Components で実装してみましょう。
 
-Web フロントエンドの技術は常に進化しています。Next.js も React も頻繁にアップデートされます。
+```tsx
+// src/components/tabs.tsx
+"use client";
 
-- **公式ブログ・リリースノートを読む** — 新機能と変更点を追う
-- **RFCを読む** — 新機能が「なぜ」導入されるかの背景を知る
-- **コミュニティに参加する** — GitHub Issues、Discord、技術ブログで情報交換
+import {
+  createContext,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
 
-ここまでの学習で「なぜその技術を使うのか」の背景を理解する力が身についているはずです。新しい技術が出てきても、「これは何を解決するのか」「既存の技術と何が違うのか」を考える視点があれば、迷わず学んでいけるでしょう。
+// タブの状態を共有するための Context
+type TabsContextType = {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+};
+
+const TabsContext = createContext<TabsContextType | null>(null);
+
+function useTabsContext() {
+  const context = useContext(TabsContext);
+  if (!context) {
+    throw new Error("Tabs コンポーネントの中で使ってください");
+  }
+  return context;
+}
+
+// 親コンポーネント
+function Tabs({
+  defaultTab,
+  children,
+}: {
+  defaultTab: string;
+  children: ReactNode;
+}) {
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  return (
+    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
+      <div>{children}</div>
+    </TabsContext.Provider>
+  );
+}
+
+// タブリスト
+function TabList({ children }: { children: ReactNode }) {
+  return (
+    <div role="tablist" className="flex gap-1 border-b border-gray-200">
+      {children}
+    </div>
+  );
+}
+
+// 個々のタブ
+function Tab({ value, children }: { value: string; children: ReactNode }) {
+  const { activeTab, setActiveTab } = useTabsContext();
+  const isActive = activeTab === value;
+
+  return (
+    <button
+      role="tab"
+      type="button"
+      aria-selected={isActive}
+      onClick={() => setActiveTab(value)}
+      className={`px-4 py-2 ${
+        isActive
+          ? "border-b-2 border-blue-500 font-bold text-blue-600"
+          : "text-gray-500 hover:text-gray-700"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+// タブパネル
+function TabPanel({
+  value,
+  children,
+}: {
+  value: string;
+  children: ReactNode;
+}) {
+  const { activeTab } = useTabsContext();
+
+  if (activeTab !== value) return null;
+
+  return (
+    <div role="tabpanel" className="p-4">
+      {children}
+    </div>
+  );
+}
+
+// 名前空間としてエクスポート
+Tabs.List = TabList;
+Tabs.Tab = Tab;
+Tabs.Panel = TabPanel;
+
+export default Tabs;
+```
+
+### 使い方
+
+```tsx
+import Tabs from "@/components/tabs";
+
+export default function SettingsPage() {
+  return (
+    <main>
+      <h1>設定</h1>
+      <Tabs defaultTab="profile">
+        <Tabs.List>
+          <Tabs.Tab value="profile">プロフィール</Tabs.Tab>
+          <Tabs.Tab value="notifications">通知</Tabs.Tab>
+          <Tabs.Tab value="security">セキュリティ</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="profile">
+          <p>プロフィール設定の内容</p>
+        </Tabs.Panel>
+        <Tabs.Panel value="notifications">
+          <p>通知設定の内容</p>
+        </Tabs.Panel>
+        <Tabs.Panel value="security">
+          <p>セキュリティ設定の内容</p>
+        </Tabs.Panel>
+      </Tabs>
+    </main>
+  );
+}
+```
+
+Compound Components の利点は以下のとおりです。
+
+- **API が宣言的** — JSX の構造を見ればどんな UI か直感的にわかる
+- **柔軟** — タブの順番や数を自由に変えられる
+- **内部状態が隠蔽されている** — `activeTab` の管理を利用者が意識しなくていい
+
+> **アクセシビリティ**: タブ UI には `role="tablist"`、`role="tab"`、`role="tabpanel"`、`aria-selected` を適切に設定しましょう。
+
+## Render Props vs Custom Hooks
+
+**Render Props** は、関数を props として渡して表示内容を委譲するパターンです。
+
+```tsx
+// Render Props パターン
+type Props = {
+  url: string;
+  render: (data: unknown, isLoading: boolean) => ReactNode;
+};
+
+function DataFetcher({ url, render }: Props) {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+        setIsLoading(false);
+      });
+  }, [url]);
+
+  return <>{render(data, isLoading)}</>;
+}
+
+// 使い方
+<DataFetcher
+  url="/api/users"
+  render={(data, isLoading) =>
+    isLoading ? <p>読み込み中...</p> : <UserList users={data} />
+  }
+/>
+```
+
+しかし現在は、同じことを **Custom Hook** でよりシンプルに実現できます。
+
+```tsx
+// Custom Hook パターン（推奨）
+function useDataFetcher(url: string) {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data);
+        setIsLoading(false);
+      });
+  }, [url]);
+
+  return { data, isLoading };
+}
+
+// 使い方
+function UserPage() {
+  const { data, isLoading } = useDataFetcher("/api/users");
+
+  if (isLoading) return <p>読み込み中...</p>;
+  return <UserList users={data} />;
+}
+```
+
+**基本方針: ロジックの共有には Custom Hook を使う。Render Props は特殊なケース（Compound Components の内部など）でのみ使う。**
+
+## 実プロジェクトでの設計判断
+
+「どのパターンを使うべきか」はケースバイケースです。判断の指針をまとめます。
+
+| 状況 | 推奨パターン |
+|------|-----------|
+| データ取得とUIの分離 | Presentational / Container（Server / Client Component） |
+| 関連するUI部品のセット | Compound Components |
+| ロジックの共有 | Custom Hooks |
+| 条件分岐が複雑な表示 | Compound Components or 単純な条件分岐 |
+
+### オーバーエンジニアリングに注意
+
+パターンを知ると、何でもパターンに当てはめたくなります。しかし、**シンプルなコンポーネントにパターンを適用すると、かえって複雑になります**。
+
+```tsx
+// ❌ やりすぎ: 単純なボタンに Compound Components は不要
+<Button>
+  <Button.Icon name="save" />
+  <Button.Label>保存</Button.Label>
+</Button>
+
+// ✅ シンプルが十分
+<Button icon="save">保存</Button>
+```
+
+パターンは「問題が発生してから適用する」くらいのタイミングが適切です。
 
 ## まとめ
 
-- ディレクトリ構成はチームが迷わない一貫したルールが重要。コロケーションを意識する
-- 技術選定は「なぜ使うのか」を説明できることが大事
-- HTML/CSS/JavaScript → React → Next.js → 実践スキルと、各レイヤーは積み重なっている
-- 基礎を理解していれば、新しい技術が出ても「何を解決するのか」の視点で学べる
-- ここからは実際にコードを書き、チームで議論し、経験を積んでいく段階
+- Presentational / Container はUIとロジックの分離。Server / Client Component の境界と自然に一致する
+- Compound Components は関連するUI部品を協調させるパターン。タブやアコーディオンに適する
+- ロジックの共有には Custom Hooks が最も適している
+- パターンは問題解決のための道具。シンプルなケースに無理に適用しない
 
-**50 日間、おつかれさまでした。**
+**次のレッスン**: [Day 50: アーキテクチャ総まとめ](/lessons/day50/)

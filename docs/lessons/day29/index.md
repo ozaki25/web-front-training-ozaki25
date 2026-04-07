@@ -328,7 +328,7 @@ function Layout({ sidebar }: { sidebar: React.ReactNode }) {
 | 親子で共有する | 親の `useState` + props |
 | 離れたコンポーネントで共有する | Context |
 | アプリ全体で共有する | Context（テーマ、認証情報など） |
-| サーバーから取得するデータ | Server Components で取得（Next.js, Day 34 で学ぶ） |
+| サーバーから取得するデータ | Server Components で取得（Next.js, Day 35 で学ぶ） |
 
 > **ポイント**: state は「必要な場所に、できるだけ近くに」置くのが原則です。最初から Context を使わず、props で不便になってから Context を検討しましょう。
 

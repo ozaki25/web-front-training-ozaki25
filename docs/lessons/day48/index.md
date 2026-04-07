@@ -1,224 +1,252 @@
-# Day 48: Web セキュリティ
+# Day 47: 認証の基礎
 
 ## 今日のゴール
 
-- XSS、CSRF、CORS の仕組みと対策を理解する
-- Content Security Policy の概念を知る
-- Next.js が提供するセキュリティ機能を把握する
+- 認証と認可の違いを説明できる
+- Cookie / Session / JWT の仕組みを理解する
+- OAuth の概念を知る
+- Next.js での認証フロー（Auth.js）の全体像を把握する
 
-## なぜ Web セキュリティを学ぶのか
+## 認証と認可
 
-Web アプリケーションはインターネットに公開されるため、常に攻撃のリスクがあります。セキュリティを知らずにコードを書くと、ユーザーの個人情報が漏洩したり、アカウントが乗っ取られたりする可能性があります。
+まず、よく混同される 2 つの概念を明確にしましょう。
 
-フロントエンドエンジニアも、最低限の攻撃手法と対策を知っておく必要があります。
-
-## XSS（Cross-Site Scripting）
-
-**XSS** は、悪意のある JavaScript をページに埋め込む攻撃です。
-
-### 攻撃の仕組み
-
-たとえば、ユーザーのコメントをそのまま HTML として表示するサイトがあるとします。
-
-```html
-<!-- ❌ ユーザー入力をそのまま HTML として表示 -->
-<div>ユーザーのコメント: <script>document.cookie を外部サーバーに送信</script></div>
-```
-
-攻撃者がコメント欄に `<script>` タグを含むテキストを投稿すると、他のユーザーがそのページを見たときに、攻撃者の JavaScript が実行されてしまいます。これにより Cookie の窃取やページの改ざんが可能になります。
-
-### React/Next.js の XSS 対策
-
-React は JSX でテキストを表示する際、自動的に**エスケープ**（特殊文字を無害化）します。
-
-```tsx
-// ✅ React は自動でエスケープする
-const userInput = '<script>alert("XSS")</script>';
-
-export default function Comment() {
-  // <script> タグはテキストとして表示され、実行されない
-  return <p>{userInput}</p>;
-}
-// 表示結果: <script>alert("XSS")</script>（文字列として）
-```
-
-ただし、`dangerouslySetInnerHTML` を使うとエスケープが無効になります。
-
-```tsx
-// ❌ 危険: ユーザー入力を dangerouslySetInnerHTML に渡してはいけない
-<div dangerouslySetInnerHTML={{ __html: userInput }} />
-```
-
-`dangerouslySetInnerHTML` は、Day 38 の構造化データのように**信頼できる HTML だけ**に使いましょう。名前に「dangerously（危険に）」と付いているのは、この理由からです。
-
-### XSS の対策まとめ
-
-1. ユーザー入力はそのまま HTML として出力しない（React は自動対応）
-2. `dangerouslySetInnerHTML` は信頼できるデータだけに使う
-3. Cookie に `HttpOnly` 属性を付ける（JavaScript からアクセスできなくする）
-4. Content Security Policy を設定する（後述）
-
-## CSRF（Cross-Site Request Forgery）
-
-**CSRF** は、ログイン済みのユーザーに意図しない操作をさせる攻撃です。
-
-### 攻撃の仕組み
+- **認証（Authentication）** — 「あなたは誰ですか？」を確認すること。ログイン処理
+- **認可（Authorization）** — 「あなたにはその操作の権限がありますか？」を確認すること。アクセス制御
 
 ```
-1. ユーザーが銀行サイトにログイン中
-2. 攻撃者が用意した別のサイトにアクセス
-3. そのサイトに仕込まれたフォームが、銀行サイトに送金リクエストを自動送信
-4. ブラウザが銀行サイトの Cookie を自動的に付けるため、リクエストが成功してしまう
+例: 会社のオフィスビル
+- 認証 = 社員証で入館ゲートを通る（本人確認）
+- 認可 = 社員証のランクで入れるフロアが決まる（権限確認）
 ```
 
-ユーザーは悪意のあるサイトを開いただけで、銀行サイトへの送金が実行されてしまいます。
+Web アプリケーションでは、まず認証（ログイン）でユーザーを識別し、次に認可でそのユーザーの権限に基づいてアクセスを制御します。
 
-### CSRF の対策
+## HTTP はステートレス
 
-```tsx
-// ✅ Next.js の Server Actions は CSRF トークンが自動で付与される
-async function transferMoney(formData: FormData) {
-  "use server";
-  // Server Actions は同一オリジンからのリクエストのみ受け付ける
-}
-```
-
-Next.js の Server Actions は、自動的に CSRF 対策が組み込まれています。
-
-追加の対策としては以下があります。
-
-- Cookie に `SameSite=Strict` または `SameSite=Lax` を設定する（Day 47 で学習）
-- 重要な操作では CSRF トークンを使用する
-- `Origin` / `Referer` ヘッダーを検証する
-
-## CORS（Cross-Origin Resource Sharing）
-
-**CORS** は攻撃ではなく、ブラウザの**セキュリティ機構**です。
-
-### 同一オリジンポリシー
-
-ブラウザは、あるオリジン（`プロトコル + ドメイン + ポート`）のページから、別のオリジンへのリクエストを制限します。これを**同一オリジンポリシー**と呼びます。
+Web の通信プロトコルである HTTP は**ステートレス**（stateless）です。つまり、サーバーは 1 つのリクエストが終わると、次のリクエストが同じユーザーかどうかわかりません。
 
 ```
-https://myapp.com から https://api.example.com へのリクエスト
-→ オリジンが異なるので、デフォルトではブロックされる
-
-https://myapp.com から https://myapp.com/api へのリクエスト
-→ 同じオリジンなので OK
+リクエスト1: GET /dashboard → サーバー:「誰？」
+リクエスト2: GET /settings  → サーバー:「誰？」（同じ人かわからない）
 ```
 
-### CORS ヘッダー
+これでは、ページを移動するたびにログインが必要になってしまいます。この問題を解決するのが Cookie と Session です。
 
-API サーバー側が「このオリジンからのリクエストを許可する」とレスポンスヘッダーで宣言することで、クロスオリジンのリクエストが許可されます。
+## Cookie
 
-```ts
-// src/app/api/data/route.ts
-import { NextResponse } from "next/server";
+**Cookie** は、ブラウザに保存される小さなデータです。サーバーがレスポンスで「この情報を保存しておいて」とブラウザに指示し、ブラウザは次のリクエストからその情報を自動的に送ります。
 
-export async function GET() {
-  const response = NextResponse.json({ data: "値" });
+```
+1. ログインリクエスト
+   ブラウザ → サーバー: 「メール: user@example.com、パスワード: ****」
 
-  // 特定のオリジンからのアクセスを許可
-  response.headers.set("Access-Control-Allow-Origin", "https://frontend.example.com");
-  response.headers.set("Access-Control-Allow-Methods", "GET, POST");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+2. サーバーがCookieを設定
+   サーバー → ブラウザ: 「ログイン成功。このCookieを保存して」
+   Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict
 
-  return response;
-}
+3. 以降のリクエスト
+   ブラウザ → サーバー: 「GET /dashboard」（Cookie: session_id=abc123 が自動で付く）
+   サーバー: 「abc123 は太郎さんだな」→ 太郎さんのダッシュボードを返す
 ```
 
-> **`Access-Control-Allow-Origin: *`（すべてのオリジンを許可）は慎重に使いましょう**。公開 API 以外では、許可するオリジンを明示的に指定するべきです。
+### Cookie のセキュリティ属性
 
-### Next.js での CORS
-
-Next.js の Server Components から外部 API を呼ぶ場合、CORS は関係ありません。CORS はブラウザのセキュリティ機構なので、サーバーからのリクエストには適用されません。これは Server Components の利点の 1 つです。
-
-```tsx
-// Server Component からの fetch — CORS の制限を受けない
-export default async function Page() {
-  const res = await fetch("https://external-api.example.com/data");
-  const data = await res.json();
-  return <div>{data.value}</div>;
-}
+```
+Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400
 ```
 
-## Content Security Policy（CSP）
-
-**CSP** は、ページ内でどのリソース（スクリプト、スタイル、画像など）の読み込みを許可するかを制御するセキュリティ機構です。XSS 攻撃の被害を大幅に軽減できます。
-
-```ts
-// next.config.ts
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  headers: async () => [
-    {
-      source: "/(.*)",
-      headers: [
-        {
-          key: "Content-Security-Policy",
-          value: [
-            "default-src 'self'",           // デフォルトは同一オリジンのみ
-            "script-src 'self'",             // スクリプトは同一オリジンのみ
-            "style-src 'self' 'unsafe-inline'", // スタイルは同一オリジンとインライン
-            "img-src 'self' https:",         // 画像は同一オリジンとHTTPS
-            "font-src 'self'",               // フォントは同一オリジンのみ
-          ].join("; "),
-        },
-      ],
-    },
-  ],
-};
-
-export default nextConfig;
-```
-
-CSP が設定されていると、たとえ XSS でスクリプトが注入されても、許可されていないオリジンからのスクリプトは実行されません。
-
-## Next.js が提供するセキュリティ機能
-
-Next.js はフレームワークレベルでいくつかのセキュリティ対策を提供しています。
-
-| 機能 | 対策 |
+| 属性 | 意味 |
 |------|------|
-| React の自動エスケープ | XSS 防止 |
-| Server Actions の CSRF トークン | CSRF 防止 |
-| Server Components | 機密データがブラウザに漏れない |
-| `next.config.ts` の `headers` | CSP や各種セキュリティヘッダー |
-| 環境変数（`NEXT_PUBLIC_` なし） | サーバー側のみで使える秘密の値 |
+| `HttpOnly` | JavaScript からアクセスできない（XSS 対策） |
+| `Secure` | HTTPS でのみ送信される |
+| `SameSite=Strict` | 同一サイトからのリクエストでのみ送信される（CSRF 対策） |
+| `Path=/` | Cookie が有効なパス |
+| `Max-Age=86400` | 有効期限（秒）。86400 = 24 時間 |
 
-### 環境変数のルール
+## Session（セッション）
+
+**Session** は、サーバー側でユーザーの状態を管理する仕組みです。
+
+```
+サーバーのセッションストア:
+{
+  "abc123": { userId: 1, name: "太郎", role: "admin" },
+  "def456": { userId: 2, name: "花子", role: "user" }
+}
+```
+
+ブラウザから送られる Cookie のセッション ID（`abc123`）をキーにして、サーバーがユーザー情報を参照します。ユーザー情報はサーバー側にあるため、ブラウザからは改ざんできません。
+
+## JWT（JSON Web Token）
+
+**JWT** はもう 1 つのアプローチで、ユーザー情報をトークン（署名された文字列）自体に含めます。
+
+```
+eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsIm5hbWUiOiLlpKrpg44iLCJyb2xlIjoiYWRtaW4ifQ.xxxxx
+```
+
+この文字列は 3 つのパートから成り、ドット（`.`）で区切られています。
+
+```
+ヘッダー.ペイロード.署名
+
+ヘッダー: 使用しているアルゴリズム
+ペイロード: ユーザー情報（userId, name, role など）
+署名: 改ざん検知用（サーバーの秘密鍵で生成）
+```
+
+> **重要**: JWT のペイロードは Base64Url エンコードされているだけで、誰でもデコードして内容を読めます。JWT は改ざんを検知するための「署名」であり、内容を隠すための「暗号化」ではありません。パスワードなどの機密情報は JWT に含めないでください。
+
+### Session vs JWT
+
+| 特徴 | Session | JWT |
+|------|---------|-----|
+| ユーザー情報の保存場所 | サーバー | トークン自体 |
+| スケーラビリティ | サーバー間で共有が必要 | サーバー間共有不要 |
+| 無効化 | 即座にログアウト可能 | 有効期限まで無効化が難しい |
+| サイズ | Cookie は小さい（ID のみ） | トークンが大きくなりがち |
+
+どちらが優れているかは状況次第です。Auth.js は Session ベースをデフォルトとしています。
+
+## OAuth
+
+**OAuth**（Open Authorization）は、外部サービス（Google、GitHub など）のアカウントでログインする仕組みです。「Google でログイン」ボタンが OAuth の典型的な例です。
+
+### OAuth のフロー（簡略版）
+
+```
+1. ユーザーが「Google でログイン」をクリック
+   ↓
+2. Google のログインページにリダイレクト
+   ↓
+3. ユーザーが Google にログイン & アプリへの権限を許可
+   ↓
+4. Google がアプリにリダイレクト（認証コード付き）
+   ↓
+5. アプリが認証コードを使って Google からアクセストークンを取得
+   ↓
+6. アクセストークンでユーザー情報を取得
+   ↓
+7. ログイン完了（セッション作成）
+```
+
+OAuth の重要な点は、**ユーザーのパスワードがアプリに渡らない**ことです。パスワードは Google（認証プロバイダ）だけが知っています。
+
+## Auth.js（NextAuth v5）による認証
+
+**Auth.js**（旧 NextAuth.js、現在 v5）は、Next.js で認証を実装するためのライブラリです。OAuth プロバイダとの連携、Session 管理、JWT 処理などを簡単に行えます。
+
+### セットアップ
+
+```bash
+npm install next-auth@beta
+```
+
+### 基本設定
+
+```ts
+// src/auth.ts
+import NextAuth from "next-auth";
+import GitHub from "next-auth/providers/github";
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID!,
+      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+    }),
+  ],
+});
+```
 
 ```
 # .env.local
-
-# サーバーでのみ使える（ブラウザに送られない）
-DATABASE_URL=postgresql://...
-AUTH_SECRET=your-secret-key
-
-# ブラウザでも使える（NEXT_PUBLIC_ プレフィックス）
-NEXT_PUBLIC_SITE_URL=https://myapp.example.com
+AUTH_SECRET=your-random-secret-key
+AUTH_GITHUB_ID=your-github-oauth-app-id
+AUTH_GITHUB_SECRET=your-github-oauth-app-secret
 ```
 
-`NEXT_PUBLIC_` プレフィックスがない環境変数は、Server Components、Server Actions、Route Handlers でしかアクセスできません。データベースの接続情報や API キーなどの機密情報は、`NEXT_PUBLIC_` を付けないでください。
+### Route Handler の設定
 
-## セキュリティチェックリスト
+```ts
+// src/app/api/auth/[...nextauth]/route.ts
+import { handlers } from "@/auth";
 
-Web アプリケーションを作る際に確認すべき最低限の項目です。
+export const { GET, POST } = handlers;
+```
 
-- [ ] ユーザー入力を `dangerouslySetInnerHTML` に渡していないか
-- [ ] 機密情報（API キー、DB 接続情報）がブラウザに漏れていないか
-- [ ] Cookie に `HttpOnly`、`Secure`、`SameSite` を設定しているか
-- [ ] Server Actions やフォームで CSRF 対策がされているか
-- [ ] 認証チェックをサーバー側で行っているか（クライアントだけで判断しない）
-- [ ] セキュリティヘッダー（CSP など）を設定しているか
+### ログイン/ログアウトボタン
+
+```tsx
+// src/components/auth-button.tsx
+import { auth, signIn, signOut } from "@/auth";
+
+export default async function AuthButton() {
+  const session = await auth();
+
+  if (session?.user) {
+    return (
+      <div>
+        <p>{session.user.name} としてログイン中</p>
+        <form
+          action={async () => {
+            "use server";
+            await signOut();
+          }}
+        >
+          <button type="submit">ログアウト</button>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      action={async () => {
+        "use server";
+        await signIn("github");
+      }}
+    >
+      <button type="submit">GitHub でログイン</button>
+    </form>
+  );
+}
+```
+
+### ページの保護
+
+ログインしていないユーザーがアクセスできないページを作るには、`auth()` でセッションを確認します。
+
+```tsx
+// src/app/dashboard/page.tsx
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+
+export default async function DashboardPage() {
+  const session = await auth();
+
+  if (!session) {
+    redirect("/api/auth/signin");
+  }
+
+  return (
+    <main>
+      <h1>ダッシュボード</h1>
+      <p>ようこそ、{session.user?.name} さん</p>
+    </main>
+  );
+}
+```
+
+Day 37 で学んだ `proxy.ts` を使えば、複数のページをまとめて保護することもできます。
 
 ## まとめ
 
-- XSS はページにスクリプトを注入する攻撃。React の自動エスケープが基本対策
-- CSRF はログイン済みユーザーに意図しない操作をさせる攻撃。Server Actions は自動で対策済み
-- CORS はブラウザのセキュリティ機構。Server Components からの fetch には影響しない
-- CSP で読み込み可能なリソースを制限し、XSS の被害を軽減する
-- 環境変数は `NEXT_PUBLIC_` プレフィックスの有無でサーバー専用かブラウザ共有かが決まる
+- 認証は「誰か」を確認、認可は「権限があるか」を確認する仕組み
+- Cookie と Session でステートレスな HTTP に状態を持たせる
+- JWT はトークン自体にユーザー情報を含める方式
+- OAuth は外部サービスのアカウントでログインする仕組み。パスワードがアプリに渡らない
+- Auth.js（NextAuth v5）を使うと、Next.js で OAuth やセッション管理を簡単に実装できる
 
-**次のレッスン**: [Day 49: コンポーネント設計パターン](/lessons/day49/)
+**次のレッスン**: [Day 48: Web セキュリティ](/lessons/day48/)

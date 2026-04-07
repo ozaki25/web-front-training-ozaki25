@@ -1,252 +1,262 @@
-# Day 47: 認証の基礎
+# Day 46: Web パフォーマンス応用
 
 ## 今日のゴール
 
-- 認証と認可の違いを説明できる
-- Cookie / Session / JWT の仕組みを理解する
-- OAuth の概念を知る
-- Next.js での認証フロー（Auth.js）の全体像を把握する
+- コード分割と dynamic import の仕組みを理解する
+- lazy loading の使い方を知る
+- バンドルサイズの分析方法を学ぶ
+- SSR/SSG のパフォーマンス特性を理解する
 
-## 認証と認可
+## コード分割（Code Splitting）
 
-まず、よく混同される 2 つの概念を明確にしましょう。
+ブラウザが Web ページを表示するとき、JavaScript ファイルをダウンロードして実行します。アプリが大きくなると JavaScript のファイルサイズも大きくなり、ダウンロードと実行に時間がかかります。
 
-- **認証（Authentication）** — 「あなたは誰ですか？」を確認すること。ログイン処理
-- **認可（Authorization）** — 「あなたにはその操作の権限がありますか？」を確認すること。アクセス制御
+**コード分割**は、JavaScript を複数のファイル（チャンク）に分け、必要なものだけをダウンロードする仕組みです。
 
-```
-例: 会社のオフィスビル
-- 認証 = 社員証で入館ゲートを通る（本人確認）
-- 認可 = 社員証のランクで入れるフロアが決まる（権限確認）
-```
+Next.js は自動的にページ単位でコード分割を行います。`/about` にアクセスしたとき、`/blog` のコードはダウンロードされません。しかし、1 つのページ内でも分割が必要な場合があります。
 
-Web アプリケーションでは、まず認証（ログイン）でユーザーを識別し、次に認可でそのユーザーの権限に基づいてアクセスを制御します。
+## dynamic import
 
-## HTTP はステートレス
+`next/dynamic` を使うと、コンポーネントを必要なタイミングで読み込めます。
 
-Web の通信プロトコルである HTTP は**ステートレス**（stateless）です。つまり、サーバーは 1 つのリクエストが終わると、次のリクエストが同じユーザーかどうかわかりません。
+### 基本的な使い方
 
-```
-リクエスト1: GET /dashboard → サーバー:「誰？」
-リクエスト2: GET /settings  → サーバー:「誰？」（同じ人かわからない）
-```
+```tsx
+import dynamic from "next/dynamic";
 
-これでは、ページを移動するたびにログインが必要になってしまいます。この問題を解決するのが Cookie と Session です。
+// 通常のインポート（ページ読み込み時にダウンロードされる）
+// import HeavyChart from "./heavy-chart";
 
-## Cookie
-
-**Cookie** は、ブラウザに保存される小さなデータです。サーバーがレスポンスで「この情報を保存しておいて」とブラウザに指示し、ブラウザは次のリクエストからその情報を自動的に送ります。
-
-```
-1. ログインリクエスト
-   ブラウザ → サーバー: 「メール: user@example.com、パスワード: ****」
-
-2. サーバーがCookieを設定
-   サーバー → ブラウザ: 「ログイン成功。このCookieを保存して」
-   Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict
-
-3. 以降のリクエスト
-   ブラウザ → サーバー: 「GET /dashboard」（Cookie: session_id=abc123 が自動で付く）
-   サーバー: 「abc123 は太郎さんだな」→ 太郎さんのダッシュボードを返す
-```
-
-### Cookie のセキュリティ属性
-
-```
-Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400
-```
-
-| 属性 | 意味 |
-|------|------|
-| `HttpOnly` | JavaScript からアクセスできない（XSS 対策） |
-| `Secure` | HTTPS でのみ送信される |
-| `SameSite=Strict` | 同一サイトからのリクエストでのみ送信される（CSRF 対策） |
-| `Path=/` | Cookie が有効なパス |
-| `Max-Age=86400` | 有効期限（秒）。86400 = 24 時間 |
-
-## Session（セッション）
-
-**Session** は、サーバー側でユーザーの状態を管理する仕組みです。
-
-```
-サーバーのセッションストア:
-{
-  "abc123": { userId: 1, name: "太郎", role: "admin" },
-  "def456": { userId: 2, name: "花子", role: "user" }
-}
-```
-
-ブラウザから送られる Cookie のセッション ID（`abc123`）をキーにして、サーバーがユーザー情報を参照します。ユーザー情報はサーバー側にあるため、ブラウザからは改ざんできません。
-
-## JWT（JSON Web Token）
-
-**JWT** はもう 1 つのアプローチで、ユーザー情報をトークン（署名された文字列）自体に含めます。
-
-```
-eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsIm5hbWUiOiLlpKrpg44iLCJyb2xlIjoiYWRtaW4ifQ.xxxxx
-```
-
-この文字列は 3 つのパートから成り、ドット（`.`）で区切られています。
-
-```
-ヘッダー.ペイロード.署名
-
-ヘッダー: 使用しているアルゴリズム
-ペイロード: ユーザー情報（userId, name, role など）
-署名: 改ざん検知用（サーバーの秘密鍵で生成）
-```
-
-> **重要**: JWT のペイロードは Base64Url エンコードされているだけで、誰でもデコードして内容を読めます。JWT は改ざんを検知するための「署名」であり、内容を隠すための「暗号化」ではありません。パスワードなどの機密情報は JWT に含めないでください。
-
-### Session vs JWT
-
-| 特徴 | Session | JWT |
-|------|---------|-----|
-| ユーザー情報の保存場所 | サーバー | トークン自体 |
-| スケーラビリティ | サーバー間で共有が必要 | サーバー間共有不要 |
-| 無効化 | 即座にログアウト可能 | 有効期限まで無効化が難しい |
-| サイズ | Cookie は小さい（ID のみ） | トークンが大きくなりがち |
-
-どちらが優れているかは状況次第です。Auth.js は Session ベースをデフォルトとしています。
-
-## OAuth
-
-**OAuth**（Open Authorization）は、外部サービス（Google、GitHub など）のアカウントでログインする仕組みです。「Google でログイン」ボタンが OAuth の典型的な例です。
-
-### OAuth のフロー（簡略版）
-
-```
-1. ユーザーが「Google でログイン」をクリック
-   ↓
-2. Google のログインページにリダイレクト
-   ↓
-3. ユーザーが Google にログイン & アプリへの権限を許可
-   ↓
-4. Google がアプリにリダイレクト（認証コード付き）
-   ↓
-5. アプリが認証コードを使って Google からアクセストークンを取得
-   ↓
-6. アクセストークンでユーザー情報を取得
-   ↓
-7. ログイン完了（セッション作成）
-```
-
-OAuth の重要な点は、**ユーザーのパスワードがアプリに渡らない**ことです。パスワードは Google（認証プロバイダ）だけが知っています。
-
-## Auth.js（NextAuth v5）による認証
-
-**Auth.js**（旧 NextAuth.js、現在 v5）は、Next.js で認証を実装するためのライブラリです。OAuth プロバイダとの連携、Session 管理、JWT 処理などを簡単に行えます。
-
-### セットアップ
-
-```bash
-npm install next-auth@beta
-```
-
-### 基本設定
-
-```ts
-// src/auth.ts
-import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
-
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID!,
-      clientSecret: process.env.AUTH_GITHUB_SECRET!,
-    }),
-  ],
+// dynamic import（必要になったときにダウンロードされる）
+const HeavyChart = dynamic(() => import("./heavy-chart"), {
+  loading: () => <p role="status">グラフを読み込み中...</p>,
 });
-```
 
-```
-# .env.local
-AUTH_SECRET=your-random-secret-key
-AUTH_GITHUB_ID=your-github-oauth-app-id
-AUTH_GITHUB_SECRET=your-github-oauth-app-secret
-```
-
-### Route Handler の設定
-
-```ts
-// src/app/api/auth/[...nextauth]/route.ts
-import { handlers } from "@/auth";
-
-export const { GET, POST } = handlers;
-```
-
-### ログイン/ログアウトボタン
-
-```tsx
-// src/components/auth-button.tsx
-import { auth, signIn, signOut } from "@/auth";
-
-export default async function AuthButton() {
-  const session = await auth();
-
-  if (session?.user) {
-    return (
-      <div>
-        <p>{session.user.name} としてログイン中</p>
-        <form
-          action={async () => {
-            "use server";
-            await signOut();
-          }}
-        >
-          <button type="submit">ログアウト</button>
-        </form>
-      </div>
-    );
-  }
-
-  return (
-    <form
-      action={async () => {
-        "use server";
-        await signIn("github");
-      }}
-    >
-      <button type="submit">GitHub でログイン</button>
-    </form>
-  );
-}
-```
-
-### ページの保護
-
-ログインしていないユーザーがアクセスできないページを作るには、`auth()` でセッションを確認します。
-
-```tsx
-// src/app/dashboard/page.tsx
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-
-export default async function DashboardPage() {
-  const session = await auth();
-
-  if (!session) {
-    redirect("/api/auth/signin");
-  }
-
+export default function DashboardPage() {
   return (
     <main>
       <h1>ダッシュボード</h1>
-      <p>ようこそ、{session.user?.name} さん</p>
+      <p>概要テキスト</p>
+      {/* この部分は後からダウンロードされる */}
+      <HeavyChart />
     </main>
   );
 }
 ```
 
-Day 37 で学んだ `proxy.ts` を使えば、複数のページをまとめて保護することもできます。
+`dynamic` は内部的に React の `lazy` と `Suspense` を使っています。コンポーネントが必要になるまで JavaScript のダウンロードが遅延されます。
+
+### SSR を無効にする
+
+ブラウザの API（`window`、`document` など）に依存するライブラリは、サーバーでは動きません。`ssr: false` を指定すると、クライアントでのみレンダリングされます。
+
+```tsx
+const MapComponent = dynamic(() => import("./map"), {
+  ssr: false,
+  loading: () => <p role="status">地図を読み込み中...</p>,
+});
+```
+
+### dynamic import が効果的なケース
+
+| ケース | 理由 |
+|-------|------|
+| 重いライブラリ（グラフ、エディタ、地図） | 初期表示に不要なコードを遅延読み込み |
+| モーダルやダイアログ | ユーザーが開くまで不要 |
+| 条件付きで表示するコンポーネント | 管理者だけが見るUIなど |
+| 画面下部のコンポーネント | ファーストビューに影響しない |
+
+## lazy loading
+
+**lazy loading**（遅延読み込み）は、コンテンツを必要になるまで読み込まないテクニックです。
+
+### 画像の lazy loading
+
+Day 39 で学んだ `next/image` はデフォルトで lazy loading が有効です。
+
+```tsx
+import Image from "next/image";
+
+// デフォルトで lazy loading（画面内に入るまで読み込まない）
+<Image src="/photo.jpg" alt="写真" width={600} height={400} />
+
+// ファーストビューの画像は priority で即座に読み込む
+<Image src="/hero.jpg" alt="ヒーロー" fill priority />
+```
+
+### Intersection Observer
+
+コンポーネントが画面内に入ったことを検知する仕組みです。React ではカスタムフックとして実装できます。
+
+```tsx
+"use client";
+
+import { useRef, useEffect, useState } from "react";
+
+function useIntersectionObserver() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // 一度表示されたら監視を止める
+        }
+      },
+      { threshold: 0.1 } // 10% 見えたら発火
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, isVisible };
+}
+
+export default function LazySection() {
+  const { ref, isVisible } = useIntersectionObserver();
+
+  return (
+    <div ref={ref}>
+      {isVisible ? (
+        <HeavyContent />
+      ) : (
+        <div style={{ height: "400px" }} /> // プレースホルダー
+      )}
+    </div>
+  );
+}
+```
+
+## バンドルサイズ分析
+
+JavaScript のバンドルサイズが大きいと、ダウンロードと解析に時間がかかります。何がサイズを大きくしているか分析しましょう。
+
+### @next/bundle-analyzer
+
+```bash
+npm install -D @next/bundle-analyzer
+```
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+import withBundleAnalyzer from "@next/bundle-analyzer";
+
+const nextConfig: NextConfig = {
+  // ...
+};
+
+export default withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+})(nextConfig);
+```
+
+```bash
+ANALYZE=true npm run build
+```
+
+ビルドが完了すると、ブラウザにバンドルの内訳がビジュアルで表示されます。各ライブラリがどれだけのサイズを占めているか一目でわかります。
+
+### バンドルサイズ削減のコツ
+
+```tsx
+// ❌ ライブラリ全体をインポート
+import _ from "lodash";
+const result = _.groupBy(data, "category");
+
+// ✅ 必要な関数だけインポート（tree shaking が効く）
+import groupBy from "lodash/groupBy";
+const result = groupBy(data, "category");
+```
+
+**Tree shaking** とは、使われていないコードをビルド時に自動で除去する仕組みです。ただし、ライブラリの書き方によっては tree shaking が効かないことがあります。個別インポートを使うのが確実です。
+
+### 大きなライブラリに注意
+
+```
+よくある大きなライブラリ:
+- moment.js → day.js に置き換え（サイズ 1/20）
+- lodash → lodash-es（tree shaking 対応版）または自前実装
+- chart.js → 必要な要素だけインポート
+```
+
+## SSR / SSG のパフォーマンス特性
+
+Next.js のレンダリング戦略によって、パフォーマンス特性が異なります。
+
+### SSG（Static Site Generation）
+
+ビルド時に HTML を生成します。リクエストのたびに生成する必要がないため、最も高速です。
+
+```tsx
+// 特に設定しなければ、データ取得のないページは自動で SSG になる
+export default function AboutPage() {
+  return <h1>About</h1>;
+}
+
+// generateStaticParams があるページもビルド時に生成される
+export async function generateStaticParams() {
+  return [{ slug: "post-1" }, { slug: "post-2" }];
+}
+```
+
+**特性**:
+- TTFB（Time to First Byte）が最も速い（CDN から配信可能）
+- データの更新にはビルドし直す必要がある
+- ブログや企業サイトなど、頻繁に変わらないコンテンツに最適
+
+### SSR（Server-Side Rendering）
+
+リクエストのたびにサーバーで HTML を生成します。
+
+```tsx
+// Server Component でデータを取得すると SSR になる
+export default async function DashboardPage() {
+  const data = await fetch("https://api.example.com/stats");
+  const stats = await data.json();
+
+  return <div>{stats.visitors} visitors</div>;
+}
+```
+
+**特性**:
+- 常に最新のデータを表示できる
+- TTFB は SSG より遅い（サーバー処理の時間がかかる）
+- ユーザーごとに異なるコンテンツ（ダッシュボードなど）に適している
+
+### 使い分け
+
+| コンテンツの性質 | 推奨戦略 |
+|---------------|---------|
+| 変更頻度が低い（ブログ、ドキュメント） | SSG |
+| 定期的に更新（商品一覧など） | SSR + キャッシュ（`"use cache"`） |
+| リアルタイムデータ（ダッシュボード） | SSR |
+| ユーザー固有のデータ（マイページ） | SSR |
+
+## パフォーマンスチェックリスト
+
+Next.js プロジェクトで確認すべき項目をまとめます。
+
+- [ ] `next/image` で画像を最適化しているか
+- [ ] ファーストビューの画像に `priority` を付けているか
+- [ ] `next/font` でフォントを最適化しているか
+- [ ] 重いライブラリを `dynamic` で遅延読み込みしているか
+- [ ] 不要なライブラリがバンドルに含まれていないか
+- [ ] Server Components を活用してクライアント JavaScript を減らしているか
+- [ ] 適切なレンダリング戦略（SSG/SSR）を選択しているか
 
 ## まとめ
 
-- 認証は「誰か」を確認、認可は「権限があるか」を確認する仕組み
-- Cookie と Session でステートレスな HTTP に状態を持たせる
-- JWT はトークン自体にユーザー情報を含める方式
-- OAuth は外部サービスのアカウントでログインする仕組み。パスワードがアプリに渡らない
-- Auth.js（NextAuth v5）を使うと、Next.js で OAuth やセッション管理を簡単に実装できる
+- `next/dynamic` でコンポーネントを必要なタイミングに遅延読み込みできる
+- バンドルサイズ分析で、何がページを重くしているか特定する
+- tree shaking を活かすために、ライブラリは個別インポートを使う
+- SSG は最も高速だが静的コンテンツ向き、SSR は動的コンテンツに使う
+- パフォーマンス改善は推測ではなく、測定に基づいて行う
 
-**次のレッスン**: [Day 48: Web セキュリティ](/lessons/day48/)
+**次のレッスン**: [Day 47: 認証の基礎](/lessons/day47/)

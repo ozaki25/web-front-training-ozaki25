@@ -1,288 +1,374 @@
-# Day 43: アクセシビリティ実践
+# Day 43: コンポーネントテスト
 
 ## 今日のゴール
 
-- WCAG の概要と重要性を理解する
-- セマンティック HTML の知識を総復習する
-- aria 属性の使い方を知る
-- キーボードナビゲーションの実装方法を理解する
+- Testing Library の考え方を理解する
+- React コンポーネントのテストを書けるようになる
+- ユーザー操作のシミュレーション方法を知る
 
-## アクセシビリティとは
+## Testing Library の考え方
 
-**アクセシビリティ**（accessibility、略して a11y）とは、障害のある人も含めて、誰もが Web コンテンツを利用できるようにすることです。
+Day 42 では純粋な関数のテストを学びました。今日は React コンポーネントのテストです。
 
-これまでのレッスンで、`<nav>` の `aria-label` や `<button>` の `aria-pressed`、`role="alert"` など、アクセシビリティに関する要素を自然に使ってきました。今日はそれらを体系的に整理します。
+React コンポーネントのテストには **Testing Library** を使います。Testing Library の最も重要な哲学は次のものです。
 
-### なぜ重要か
+> **「ソフトウェアの使われ方に近いテストを書くほど、テストの信頼性は高まる」**
 
-- **ユーザーの多様性** — 視覚障害、聴覚障害、運動障害、認知障害など、さまざまなユーザーがいる
-- **一時的な障害** — 腕を骨折してマウスが使えない、明るい屋外でスマートフォンを見ているなど、誰でも一時的に障害を抱えることがある
-- **法的要件** — 多くの国でアクセシビリティは法的に求められている
-- **SEO** — 検索エンジンもスクリーンリーダーと同様に HTML の構造を読み取る
+つまり、コンポーネントの内部実装（state の値、メソッド名など）ではなく、**ユーザーが見るもの・操作するもの**をテストします。
 
-## WCAG の概要
+- ❌ 「state の値が `true` になっている」をテストする
+- ✅ 「ボタンをクリックしたらテキストが表示される」をテストする
 
-**WCAG**（Web Content Accessibility Guidelines）は、W3C が策定した Web アクセシビリティの国際的なガイドラインです。4 つの原則に基づいています。
+## セットアップ
 
-| 原則 | 説明 | 例 |
-|------|------|-----|
-| **知覚可能** | 情報を認識できること | 画像に alt テキストがある |
-| **操作可能** | UI を操作できること | キーボードだけで操作できる |
-| **理解可能** | 内容が理解できること | エラーメッセージが明確 |
-| **堅牢** | 支援技術が解釈できること | セマンティックな HTML |
+Testing Library を導入します。
 
-適合レベルは A（最低限）、AA（標準）、AAA（最高）の 3 段階があります。多くのプロジェクトでは **AA** を目指します。
-
-## セマンティック HTML の総復習
-
-Day 1〜3 で学んだセマンティック HTML は、アクセシビリティの基盤です。
-
-### ランドマーク要素
-
-```html
-<header>サイトヘッダー</header>
-<nav aria-label="メインナビゲーション">ナビゲーション</nav>
-<main>メインコンテンツ</main>
-<aside>サイドバー</aside>
-<footer>フッター</footer>
+```bash
+npm install -D @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
 ```
 
-スクリーンリーダーのユーザーは、これらのランドマークを使ってページ内を素早く移動できます。
+Vitest の設定にセットアップファイルを追加します。
 
-### 見出しの階層
+```ts
+// vitest.config.ts
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
 
-```html
-<!-- ✅ 正しい: 階層が連続している -->
-<h1>サイトタイトル</h1>
-<h2>セクション</h2>
-<h3>サブセクション</h3>
-
-<!-- ❌ 間違い: h2 を飛ばしている -->
-<h1>サイトタイトル</h1>
-<h3>サブセクション</h3>
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./vitest.setup.ts"],
+  },
+  resolve: {
+    alias: {
+      "@": "./src",
+    },
+  },
+});
 ```
 
-スクリーンリーダーのユーザーは見出しの一覧を表示してページの構造を把握します。見出しレベルを飛ばすと、構造が正しく伝わりません。
+```ts
+// vitest.setup.ts
+import "@testing-library/jest-dom/vitest";
+```
 
-### フォーム要素
+これで `toBeInTheDocument()` などの便利なマッチャーが使えるようになります。
+
+## 最初のコンポーネントテスト
+
+シンプルなコンポーネントから始めましょう。
 
 ```tsx
-{/* ✅ label と input が関連付けられている */}
-<div>
-  <label htmlFor="email">メールアドレス</label>
-  <input type="email" id="email" name="email" required />
-</div>
+// src/components/greeting.tsx
+type Props = {
+  name: string;
+};
 
-{/* ❌ label がない — スクリーンリーダーが何の入力欄かわからない */}
-<div>
-  <input type="email" placeholder="メールアドレス" />
-</div>
+export default function Greeting({ name }: Props) {
+  return (
+    <div>
+      <h1>こんにちは、{name}さん！</h1>
+      <p>今日も良い一日を。</p>
+    </div>
+  );
+}
 ```
 
-`placeholder` は `label` の代わりにはなりません。入力を始めると `placeholder` は消えてしまいます。
-
-### ボタンとリンクの使い分け
-
 ```tsx
-{/* ✅ ページ遷移にはリンク */}
-<a href="/about">About ページへ</a>
+// src/components/greeting.test.tsx
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import Greeting from "./greeting";
 
-{/* ✅ アクション（操作）にはボタン */}
-<button onClick={handleSubmit} type="button">送信</button>
+describe("Greeting", () => {
+  it("名前を表示する", () => {
+    render(<Greeting name="太郎" />);
 
-{/* ❌ div をボタンのように使わない */}
-<div onClick={handleSubmit}>送信</div>
+    expect(screen.getByText("こんにちは、太郎さん！")).toBeInTheDocument();
+  });
+
+  it("挨拶メッセージを表示する", () => {
+    render(<Greeting name="花子" />);
+
+    expect(screen.getByText("今日も良い一日を。")).toBeInTheDocument();
+  });
+});
 ```
 
-`<button>` と `<a>` は、キーボード操作（Tab で移動、Enter で実行）やスクリーンリーダーの認識が自動的に行われます。`<div>` にはこれらの機能がありません。
+### テストの流れ
 
-## aria 属性
+1. **`render`** — コンポーネントを仮想的な DOM にレンダリングする
+2. **`screen`** — レンダリングされた画面を操作するためのオブジェクト
+3. **`getByText`** — テキストで要素を検索する
+4. **`toBeInTheDocument`** — その要素が DOM に存在することを確認する
 
-ARIA（Accessible Rich Internet Applications）属性は、HTML だけでは伝えきれない情報を補足するためのものです。
+## 要素の検索方法
 
-### 重要な原則: ARIA を使う前に
+Testing Library は、ユーザーの視点で要素を検索する方法を提供しています。
 
-> **ネイティブ HTML で実現できるなら、ARIA は不要です。**
+### 推奨される検索（優先度順）
 
 ```tsx
-{/* ❌ ARIA 不要 — button 要素がすでに role="button" を持っている */}
-<button role="button">送信</button>
+// 1. getByRole — ロール（役割）で検索（最も推奨）
+screen.getByRole("button", { name: "送信" });
+screen.getByRole("heading", { name: "タイトル" });
+screen.getByRole("textbox", { name: "メールアドレス" });
 
-{/* ✅ これだけで十分 */}
-<button>送信</button>
+// 2. getByLabelText — ラベルで検索（フォーム要素に推奨）
+screen.getByLabelText("メールアドレス");
+
+// 3. getByPlaceholderText — プレースホルダーで検索
+screen.getByPlaceholderText("メールアドレスを入力");
+
+// 4. getByText — テキストで検索
+screen.getByText("送信しました");
+
+// 5. getByDisplayValue — 入力値で検索
+screen.getByDisplayValue("test@example.com");
+
+// 6. getByAltText — alt テキストで検索（画像）
+screen.getByAltText("ユーザーのプロフィール写真");
+
+// 7. getByTestId — data-testid で検索（最終手段）
+screen.getByTestId("custom-element");
 ```
 
-ARIA は、ネイティブ HTML では表現できないケースで使います。
+`getByRole` が最も推奨されるのは、**スクリーンリーダーがコンテンツを認識する方法と同じ**だからです。`getByRole` でテストが書けるということは、アクセシビリティが適切に実装されていることの証明にもなります。
 
-### よく使う aria 属性
-
-#### aria-label — 見えないラベル
+### get / query / find の違い
 
 ```tsx
-{/* アイコンだけのボタンにラベルを付ける */}
-<button aria-label="メニューを開く" type="button">
-  ☰
-</button>
+// getBy — 要素が見つからないとエラーを投げる（存在するはずの要素に使う）
+screen.getByText("必ず存在する要素");
 
-{/* 閉じるボタン */}
-<button aria-label="ダイアログを閉じる" type="button">
-  ×
-</button>
+// queryBy — 要素が見つからないと null を返す（存在しないことの確認に使う）
+expect(screen.queryByText("まだ表示されない要素")).not.toBeInTheDocument();
+
+// findBy — 要素が見つかるまで待つ（非同期で表示される要素に使う）
+const element = await screen.findByText("読み込み後に表示される要素");
 ```
 
-#### aria-describedby — 補足説明
+## ユーザー操作のシミュレーション
+
+### userEvent のセットアップ
 
 ```tsx
-<div>
-  <label htmlFor="password">パスワード</label>
-  <input
-    type="password"
-    id="password"
-    aria-describedby="password-hint"
-  />
-  <p id="password-hint">8文字以上で、英数字を含めてください</p>
-</div>
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 ```
 
-`aria-describedby` で関連付けると、スクリーンリーダーが入力欄にフォーカスしたとき「パスワード、8文字以上で英数字を含めてください」と読み上げます。
-
-#### aria-expanded — 展開状態
+### クリック操作
 
 ```tsx
+// src/components/counter.tsx
 "use client";
 
 import { useState } from "react";
 
-export default function Accordion({ title, children }: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function Counter() {
+  const [count, setCount] = useState(0);
 
   return (
     <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-        type="button"
-      >
-        {title}
+      <p>カウント: {count}</p>
+      <button onClick={() => setCount(count + 1)} type="button">
+        増やす
       </button>
-      {isOpen && <div role="region">{children}</div>}
+      <button onClick={() => setCount(0)} type="button">
+        リセット
+      </button>
     </div>
   );
 }
 ```
 
-#### aria-live — 動的な変化の通知
-
 ```tsx
-{/* ポライト: 現在の読み上げが終わった後に通知 */}
-<div aria-live="polite">
-  {message && <p>{message}</p>}
-</div>
+// src/components/counter.test.tsx
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import Counter from "./counter";
 
-{/* アサーティブ: 即座に通知（重要なエラーなど） */}
-<div aria-live="assertive">
-  {error && <p>{error}</p>}
-</div>
+describe("Counter", () => {
+  it("初期値は0", () => {
+    render(<Counter />);
+
+    expect(screen.getByText("カウント: 0")).toBeInTheDocument();
+  });
+
+  it("ボタンをクリックするとカウントが増える", async () => {
+    const user = userEvent.setup();
+    render(<Counter />);
+
+    await user.click(screen.getByRole("button", { name: "増やす" }));
+
+    expect(screen.getByText("カウント: 1")).toBeInTheDocument();
+  });
+
+  it("リセットボタンでカウントが0に戻る", async () => {
+    const user = userEvent.setup();
+    render(<Counter />);
+
+    await user.click(screen.getByRole("button", { name: "増やす" }));
+    await user.click(screen.getByRole("button", { name: "増やす" }));
+    await user.click(screen.getByRole("button", { name: "リセット" }));
+
+    expect(screen.getByText("カウント: 0")).toBeInTheDocument();
+  });
+});
 ```
 
-`aria-live` を付けた要素の中身が変わると、スクリーンリーダーが変更を読み上げます。
+`userEvent.setup()` で作成した `user` オブジェクトを使って操作をシミュレートします。`user.click` は `await` が必要です。
 
-#### aria-hidden — スクリーンリーダーから隠す
-
-```tsx
-{/* 装飾的なアイコンはスクリーンリーダーに読ませない */}
-<button type="button">
-  <span aria-hidden="true">🗑️</span>
-  削除
-</button>
-```
-
-## キーボードナビゲーション
-
-すべての操作がキーボードだけで完結できることが重要です。
-
-### 基本のキー操作
-
-| キー | 操作 |
-|------|------|
-| Tab | 次のフォーカス可能な要素に移動 |
-| Shift + Tab | 前のフォーカス可能な要素に移動 |
-| Enter | リンクやボタンを実行 |
-| Space | ボタンを実行、チェックボックスを切り替え |
-| Escape | モーダルやドロップダウンを閉じる |
-| 矢印キー | ラジオボタンやタブの切り替え |
-
-### フォーカス管理
+### テキスト入力
 
 ```tsx
+// src/components/search-form.tsx
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useState } from "react";
 
-export default function Modal({
-  isOpen,
-  onClose,
-  children,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
+type Props = {
+  onSearch: (query: string) => void;
+};
 
-  useEffect(() => {
-    if (isOpen) {
-      // モーダルが開いたら閉じるボタンにフォーカス
-      closeButtonRef.current?.focus();
+export default function SearchForm({ onSearch }: Props) {
+  const [query, setQuery] = useState("");
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (query.trim()) {
+      onSearch(query);
     }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
+  }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="ダイアログ"
-      onKeyDown={(e) => {
-        if (e.key === "Escape") onClose();
-      }}
-    >
-      <div>
-        {children}
-        <button ref={closeButtonRef} onClick={onClose} type="button">
-          閉じる
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="search">検索</label>
+      <input
+        type="text"
+        id="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="キーワードを入力"
+      />
+      <button type="submit">検索する</button>
+    </form>
+  );
+}
+```
+
+```tsx
+// src/components/search-form.test.tsx
+import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import SearchForm from "./search-form";
+
+describe("SearchForm", () => {
+  it("検索キーワードを入力して送信できる", async () => {
+    const mockOnSearch = vi.fn();
+    const user = userEvent.setup();
+    render(<SearchForm onSearch={mockOnSearch} />);
+
+    await user.type(screen.getByLabelText("検索"), "Next.js");
+    await user.click(screen.getByRole("button", { name: "検索する" }));
+
+    expect(mockOnSearch).toHaveBeenCalledWith("Next.js");
+  });
+
+  it("空のクエリでは送信されない", async () => {
+    const mockOnSearch = vi.fn();
+    const user = userEvent.setup();
+    render(<SearchForm onSearch={mockOnSearch} />);
+
+    await user.click(screen.getByRole("button", { name: "検索する" }));
+
+    expect(mockOnSearch).not.toHaveBeenCalled();
+  });
+});
+```
+
+`vi.fn()` は**モック関数**です。関数が呼ばれたかどうか、どんな引数で呼ばれたかを記録してくれます。コールバック関数のテストに便利です。
+
+## 条件付き表示のテスト
+
+```tsx
+// src/components/alert.tsx
+type Props = {
+  type: "success" | "error";
+  message: string;
+  onClose?: () => void;
+};
+
+export default function Alert({ type, message, onClose }: Props) {
+  return (
+    <div role="alert" className={type === "error" ? "alert-error" : "alert-success"}>
+      <p>{message}</p>
+      {onClose && (
+        <button onClick={onClose} type="button" aria-label="閉じる">
+          ×
         </button>
-      </div>
+      )}
     </div>
   );
 }
 ```
 
-モーダルを開いたとき、フォーカスをモーダル内に移動させ、Escape キーで閉じられるようにするのが基本パターンです。
+```tsx
+// src/components/alert.test.tsx
+import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import Alert from "./alert";
 
-## スクリーンリーダー体験
+describe("Alert", () => {
+  it("メッセージを表示する", () => {
+    render(<Alert type="success" message="保存しました" />);
 
-実際にスクリーンリーダーを使ってみると、アクセシビリティの重要性を肌で感じられます。
+    expect(screen.getByText("保存しました")).toBeInTheDocument();
+  });
 
-### 試してみる方法
+  it("role=alert が設定されている", () => {
+    render(<Alert type="error" message="エラーが発生しました" />);
 
-- **macOS**: VoiceOver（`Cmd + F5` で起動）
-- **Windows**: NVDA（無料でダウンロード可能）またはナレーター（`Win + Ctrl + Enter`）
-- **Chrome**: [Screen Reader 拡張機能](https://chrome.google.com/webstore/detail/screen-reader/)
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
 
-VoiceOver を起動して、自分が作ったページを Tab キーで操作してみてください。「何のボタンかわからない」「見出しが見つからない」という体験をすると、セマンティック HTML や aria 属性の重要性が理解できます。
+  it("onClose が渡された場合は閉じるボタンが表示される", () => {
+    render(<Alert type="success" message="OK" onClose={() => {}} />);
+
+    expect(screen.getByRole("button", { name: "閉じる" })).toBeInTheDocument();
+  });
+
+  it("onClose が渡されない場合は閉じるボタンが表示されない", () => {
+    render(<Alert type="success" message="OK" />);
+
+    expect(screen.queryByRole("button", { name: "閉じる" })).not.toBeInTheDocument();
+  });
+
+  it("閉じるボタンをクリックすると onClose が呼ばれる", async () => {
+    const mockOnClose = vi.fn();
+    const user = userEvent.setup();
+    render(<Alert type="success" message="OK" onClose={mockOnClose} />);
+
+    await user.click(screen.getByRole("button", { name: "閉じる" }));
+
+    expect(mockOnClose).toHaveBeenCalledOnce();
+  });
+});
+```
 
 ## まとめ
 
-- アクセシビリティは特別な対応ではなく、すべてのユーザーが使えるようにする基本
-- WCAG は Web アクセシビリティの国際ガイドライン。通常は AA レベルを目指す
-- セマンティック HTML（ランドマーク、見出し階層、label）がアクセシビリティの基盤
-- ARIA はネイティブ HTML で足りない情報を補足するもの。使いすぎに注意
-- キーボードだけですべての操作ができることが重要
-- スクリーンリーダーを実際に試すと、自分のコードの改善点が見えてくる
+- Testing Library は「ユーザーの使い方に近いテスト」を書くための道具
+- `render` でコンポーネントを描画し、`screen` で要素を検索する
+- `getByRole` が最も推奨される検索方法で、アクセシビリティの確認にもなる
+- `userEvent` でクリックやテキスト入力をシミュレートする
+- `vi.fn()` でモック関数を作り、コールバックの呼び出しを検証する
+- 要素が存在しないことの確認には `queryBy` を使う
 
-**次のレッスン**: [Day 44: アクセシビリティとテスト](/lessons/day44/)
+**次のレッスン**: [Day 44: アクセシビリティ実践](/lessons/day44/)

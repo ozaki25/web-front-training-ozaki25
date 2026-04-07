@@ -1,248 +1,288 @@
-# Day 44: アクセシビリティとテスト
+# Day 44: アクセシビリティ実践
 
 ## 今日のゴール
 
-- axe を使ったアクセシビリティの自動テストを書けるようになる
-- eslint-plugin-jsx-a11y でコーディング時にアクセシビリティ問題を検出する
-- 自動チェックでカバーできる範囲とできない範囲を理解する
+- WCAG の概要と重要性を理解する
+- セマンティック HTML の知識を総復習する
+- aria 属性の使い方を知る
+- キーボードナビゲーションの実装方法を理解する
 
-## 自動テストでアクセシビリティを守る
+## アクセシビリティとは
 
-Day 43 でアクセシビリティの基本を学びました。しかし、すべてのルールを常に覚えて手動で確認するのは現実的ではありません。自動テストと静的解析を組み合わせて、アクセシビリティの問題を早期に検出しましょう。
+**アクセシビリティ**（accessibility、略して a11y）とは、障害のある人も含めて、誰もが Web コンテンツを利用できるようにすることです。
 
-## axe によるアクセシビリティテスト
+これまでのレッスンで、`<nav>` の `aria-label` や `<button>` の `aria-pressed`、`role="alert"` など、アクセシビリティに関する要素を自然に使ってきました。今日はそれらを体系的に整理します。
 
-**axe**（アクス）は、Deque Systems が開発したアクセシビリティテストエンジンです。HTML をスキャンして、WCAG のルールに違反している箇所を検出します。
+### なぜ重要か
 
-### セットアップ
+- **ユーザーの多様性** — 視覚障害、聴覚障害、運動障害、認知障害など、さまざまなユーザーがいる
+- **一時的な障害** — 腕を骨折してマウスが使えない、明るい屋外でスマートフォンを見ているなど、誰でも一時的に障害を抱えることがある
+- **法的要件** — 多くの国でアクセシビリティは法的に求められている
+- **SEO** — 検索エンジンもスクリーンリーダーと同様に HTML の構造を読み取る
 
-```bash
-npm install -D vitest-axe
+## WCAG の概要
+
+**WCAG**（Web Content Accessibility Guidelines）は、W3C が策定した Web アクセシビリティの国際的なガイドラインです。4 つの原則に基づいています。
+
+| 原則 | 説明 | 例 |
+|------|------|-----|
+| **知覚可能** | 情報を認識できること | 画像に alt テキストがある |
+| **操作可能** | UI を操作できること | キーボードだけで操作できる |
+| **理解可能** | 内容が理解できること | エラーメッセージが明確 |
+| **堅牢** | 支援技術が解釈できること | セマンティックな HTML |
+
+適合レベルは A（最低限）、AA（標準）、AAA（最高）の 3 段階があります。多くのプロジェクトでは **AA** を目指します。
+
+## セマンティック HTML の総復習
+
+Day 1〜3 で学んだセマンティック HTML は、アクセシビリティの基盤です。
+
+### ランドマーク要素
+
+```html
+<header>サイトヘッダー</header>
+<nav aria-label="メインナビゲーション">ナビゲーション</nav>
+<main>メインコンテンツ</main>
+<aside>サイドバー</aside>
+<footer>フッター</footer>
 ```
 
-Vitest のセットアップファイルに追加します。
+スクリーンリーダーのユーザーは、これらのランドマークを使ってページ内を素早く移動できます。
 
-```ts
-// vitest.setup.ts
-import "@testing-library/jest-dom/vitest";
-import "vitest-axe/extend-expect";
+### 見出しの階層
+
+```html
+<!-- ✅ 正しい: 階層が連続している -->
+<h1>サイトタイトル</h1>
+<h2>セクション</h2>
+<h3>サブセクション</h3>
+
+<!-- ❌ 間違い: h2 を飛ばしている -->
+<h1>サイトタイトル</h1>
+<h3>サブセクション</h3>
 ```
 
-### 基本的なテスト
+スクリーンリーダーのユーザーは見出しの一覧を表示してページの構造を把握します。見出しレベルを飛ばすと、構造が正しく伝わりません。
+
+### フォーム要素
 
 ```tsx
-// src/components/article-card.test.tsx
-import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
-import { axe } from "vitest-axe";
+{/* ✅ label と input が関連付けられている */}
+<div>
+  <label htmlFor="email">メールアドレス</label>
+  <input type="email" id="email" name="email" required />
+</div>
 
-function ArticleCard() {
-  return (
-    <article>
-      <h2>記事タイトル</h2>
-      <p>記事の説明文がここに入ります。</p>
-      <a href="/blog/article-1">続きを読む</a>
-    </article>
-  );
-}
-
-describe("ArticleCard", () => {
-  it("アクセシビリティ違反がない", async () => {
-    const { container } = render(<ArticleCard />);
-    const results = await axe(container);
-
-    expect(results).toHaveNoViolations();
-  });
-});
+{/* ❌ label がない — スクリーンリーダーが何の入力欄かわからない */}
+<div>
+  <input type="email" placeholder="メールアドレス" />
+</div>
 ```
 
-`toHaveNoViolations()` は、axe が検出した違反が 0 件であることを確認します。
+`placeholder` は `label` の代わりにはなりません。入力を始めると `placeholder` は消えてしまいます。
 
-### 違反が検出される例
-
-実際に違反がどう報告されるか見てみましょう。
+### ボタンとリンクの使い分け
 
 ```tsx
-// ❌ アクセシビリティ違反があるコンポーネント
-function BadCard() {
+{/* ✅ ページ遷移にはリンク */}
+<a href="/about">About ページへ</a>
+
+{/* ✅ アクション（操作）にはボタン */}
+<button onClick={handleSubmit} type="button">送信</button>
+
+{/* ❌ div をボタンのように使わない */}
+<div onClick={handleSubmit}>送信</div>
+```
+
+`<button>` と `<a>` は、キーボード操作（Tab で移動、Enter で実行）やスクリーンリーダーの認識が自動的に行われます。`<div>` にはこれらの機能がありません。
+
+## aria 属性
+
+ARIA（Accessible Rich Internet Applications）属性は、HTML だけでは伝えきれない情報を補足するためのものです。
+
+### 重要な原則: ARIA を使う前に
+
+> **ネイティブ HTML で実現できるなら、ARIA は不要です。**
+
+```tsx
+{/* ❌ ARIA 不要 — button 要素がすでに role="button" を持っている */}
+<button role="button">送信</button>
+
+{/* ✅ これだけで十分 */}
+<button>送信</button>
+```
+
+ARIA は、ネイティブ HTML では表現できないケースで使います。
+
+### よく使う aria 属性
+
+#### aria-label — 見えないラベル
+
+```tsx
+{/* アイコンだけのボタンにラベルを付ける */}
+<button aria-label="メニューを開く" type="button">
+  ☰
+</button>
+
+{/* 閉じるボタン */}
+<button aria-label="ダイアログを閉じる" type="button">
+  ×
+</button>
+```
+
+#### aria-describedby — 補足説明
+
+```tsx
+<div>
+  <label htmlFor="password">パスワード</label>
+  <input
+    type="password"
+    id="password"
+    aria-describedby="password-hint"
+  />
+  <p id="password-hint">8文字以上で、英数字を含めてください</p>
+</div>
+```
+
+`aria-describedby` で関連付けると、スクリーンリーダーが入力欄にフォーカスしたとき「パスワード、8文字以上で英数字を含めてください」と読み上げます。
+
+#### aria-expanded — 展開状態
+
+```tsx
+"use client";
+
+import { useState } from "react";
+
+export default function Accordion({ title, children }: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div>
-      <img src="/photo.jpg" />  {/* alt がない */}
-      <div onClick={() => {}}>クリック</div>  {/* div をボタンとして使用 */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        type="button"
+      >
+        {title}
+      </button>
+      {isOpen && <div role="region">{children}</div>}
     </div>
   );
 }
 ```
 
-テストを実行すると、以下のような違反が報告されます。
-
-```
-Expected the HTML found at $('img') to have no violations:
-- image-alt: Images must have alternate text
-  Impact: critical
-
-Expected the HTML found at $('div') to have no violations:  
-- interactive element is not focusable
-  Impact: serious
-```
-
-### 既存プロジェクトへの段階的な導入
-
-すでに多くの違反があるプロジェクトでは、一度にすべて修正するのは困難です。特定のルールだけを対象にすることもできます。
+#### aria-live — 動的な変化の通知
 
 ```tsx
-it("画像にalt属性がある", async () => {
-  const { container } = render(<MyComponent />);
-  const results = await axe(container, {
-    rules: {
-      "image-alt": { enabled: true },
-      // 他のルールは無効化
-    },
-  });
+{/* ポライト: 現在の読み上げが終わった後に通知 */}
+<div aria-live="polite">
+  {message && <p>{message}</p>}
+</div>
 
-  expect(results).toHaveNoViolations();
-});
+{/* アサーティブ: 即座に通知（重要なエラーなど） */}
+<div aria-live="assertive">
+  {error && <p>{error}</p>}
+</div>
 ```
 
-## eslint-plugin-jsx-a11y
+`aria-live` を付けた要素の中身が変わると、スクリーンリーダーが変更を読み上げます。
 
-**eslint-plugin-jsx-a11y** は、JSX のコードを書いている段階でアクセシビリティの問題を指摘してくれる ESLint プラグインです。テストを実行する前、コーディング中に問題を見つけられます。
-
-### セットアップ
-
-```bash
-npm install -D eslint-plugin-jsx-a11y
-```
-
-ESLint の設定に追加します。
-
-```js
-// eslint.config.mjs
-import jsxA11y from "eslint-plugin-jsx-a11y";
-
-export default [
-  // ... 既存の設定
-  jsxA11y.flatConfigs.recommended,
-];
-```
-
-### 検出される問題の例
+#### aria-hidden — スクリーンリーダーから隠す
 
 ```tsx
-// ❌ eslint-plugin-jsx-a11y が警告する例
-
-// alt 属性がない画像
-<img src="/photo.jpg" />
-// → jsx-a11y/alt-text: img elements must have an alt prop
-
-// onClick があるのに role がない div
-<div onClick={handleClick}>クリック</div>
-// → jsx-a11y/click-events-have-key-events
-// → jsx-a11y/no-static-element-interactions
-
-// 空のリンク
-<a href="#">リンク</a>
-// → jsx-a11y/anchor-is-valid
-
-// autoFocus の使用
-<input autoFocus />
-// → jsx-a11y/no-autofocus
+{/* 装飾的なアイコンはスクリーンリーダーに読ませない */}
+<button type="button">
+  <span aria-hidden="true">🗑️</span>
+  削除
+</button>
 ```
+
+## キーボードナビゲーション
+
+すべての操作がキーボードだけで完結できることが重要です。
+
+### 基本のキー操作
+
+| キー | 操作 |
+|------|------|
+| Tab | 次のフォーカス可能な要素に移動 |
+| Shift + Tab | 前のフォーカス可能な要素に移動 |
+| Enter | リンクやボタンを実行 |
+| Space | ボタンを実行、チェックボックスを切り替え |
+| Escape | モーダルやドロップダウンを閉じる |
+| 矢印キー | ラジオボタンやタブの切り替え |
+
+### フォーカス管理
 
 ```tsx
-// ✅ 修正後
+"use client";
 
-<img src="/photo.jpg" alt="森の風景写真" />
+import { useRef, useEffect } from "react";
 
-<button onClick={handleClick} type="button">クリック</button>
+export default function Modal({
+  isOpen,
+  onClose,
+  children,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-<a href="/about">About</a>
+  useEffect(() => {
+    if (isOpen) {
+      // モーダルが開いたら閉じるボタンにフォーカス
+      closeButtonRef.current?.focus();
+    }
+  }, [isOpen]);
 
-<input />  {/* autoFocus は削除、フォーカス管理は別の方法で */}
+  if (!isOpen) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="ダイアログ"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
+    >
+      <div>
+        {children}
+        <button ref={closeButtonRef} onClick={onClose} type="button">
+          閉じる
+        </button>
+      </div>
+    </div>
+  );
+}
 ```
 
-## Testing Library と アクセシビリティ
+モーダルを開いたとき、フォーカスをモーダル内に移動させ、Escape キーで閉じられるようにするのが基本パターンです。
 
-Day 42 で学んだ Testing Library の `getByRole` は、実はアクセシビリティのテストにもなっています。
+## スクリーンリーダー体験
 
-```tsx
-// この検索が成功すること自体が、
-// アクセシビリティが正しいことの証明
+実際にスクリーンリーダーを使ってみると、アクセシビリティの重要性を肌で感じられます。
 
-// ボタンにアクセシブルな名前がある
-screen.getByRole("button", { name: "送信" });
+### 試してみる方法
 
-// 見出しが正しく使われている
-screen.getByRole("heading", { name: "記事タイトル" });
+- **macOS**: VoiceOver（`Cmd + F5` で起動）
+- **Windows**: NVDA（無料でダウンロード可能）またはナレーター（`Win + Ctrl + Enter`）
+- **Chrome**: [Screen Reader 拡張機能](https://chrome.google.com/webstore/detail/screen-reader/)
 
-// フォームにラベルがある
-screen.getByLabelText("メールアドレス");
-
-// ナビゲーションにラベルがある
-screen.getByRole("navigation", { name: "メインナビゲーション" });
-```
-
-`getByRole` で要素が見つからないということは、スクリーンリーダーもその要素を適切に認識できないということです。
-
-## 自動チェックの限界
-
-ここが今日最も重要なポイントです。**自動チェックでカバーできるのは、アクセシビリティの問題全体の約 30〜40% と言われています**。
-
-### 自動でカバーできるもの
-
-| チェック項目 | ツール |
-|------------|-------|
-| 画像に alt がある | axe, ESLint |
-| フォームに label がある | axe, ESLint |
-| 色のコントラスト比が十分 | axe |
-| 見出しレベルが連続している | axe |
-| ARIA 属性が正しい構文 | axe, ESLint |
-| フォーカス可能な要素がある | axe |
-| lang 属性が設定されている | axe |
-
-### 自動ではカバーできないもの
-
-| チェック項目 | なぜ自動で検出できないか |
-|------------|---------------------|
-| alt テキストが適切な内容か | 「画像」と書かれていても、機械には妥当性が判断できない |
-| Tab 順序が論理的か | 正しい順序は文脈に依存する |
-| モーダルのフォーカストラップ | 操作シナリオのテストが必要 |
-| 読み上げ内容が理解可能か | 人間が聞いて判断する必要がある |
-| キーボード操作が直感的か | ユーザーの期待と合っているかは主観的 |
-| 動画に字幕があるか | コンテンツの中身は機械では判断困難 |
-
-### だから両方が必要
-
-```
-自動テスト（axe, ESLint） → 明確なルール違反を検出
-       +
-手動テスト（スクリーンリーダー、キーボード操作） → 体験の質を検証
-```
-
-自動テストは「最低限の品質」を保証するセーフティネットです。その上で、定期的にスクリーンリーダーやキーボードだけでの操作テストを行うことが理想です。
-
-## 実践的なテスト戦略
-
-プロジェクトに導入する際の推奨アプローチです。
-
-```
-1. eslint-plugin-jsx-a11y を導入（コーディング時にリアルタイム検出）
-     ↓
-2. 主要コンポーネントに axe テストを追加（CI で自動実行）
-     ↓
-3. 新規コンポーネントには getByRole ベースのテストを書く
-     ↓
-4. 定期的にスクリーンリーダーで手動テスト
-```
-
-すべてを一度に完璧にする必要はありません。まず自動チェックで基盤を作り、徐々に手動テストも組み合わせていきましょう。
+VoiceOver を起動して、自分が作ったページを Tab キーで操作してみてください。「何のボタンかわからない」「見出しが見つからない」という体験をすると、セマンティック HTML や aria 属性の重要性が理解できます。
 
 ## まとめ
 
-- axe はレンダリングされた HTML をスキャンして WCAG 違反を検出する
-- eslint-plugin-jsx-a11y はコーディング中にアクセシビリティ問題を指摘する
-- Testing Library の `getByRole` は、暗黙的にアクセシビリティのテストにもなっている
-- 自動チェックでカバーできるのはアクセシビリティ問題の約 30〜40%
-- 自動テストは最低限の品質を保証するセーフティネット。手動テストと組み合わせて初めて十分になる
+- アクセシビリティは特別な対応ではなく、すべてのユーザーが使えるようにする基本
+- WCAG は Web アクセシビリティの国際ガイドライン。通常は AA レベルを目指す
+- セマンティック HTML（ランドマーク、見出し階層、label）がアクセシビリティの基盤
+- ARIA はネイティブ HTML で足りない情報を補足するもの。使いすぎに注意
+- キーボードだけですべての操作ができることが重要
+- スクリーンリーダーを実際に試すと、自分のコードの改善点が見えてくる
 
-**次のレッスン**: [Day 45: Web パフォーマンス基礎](/lessons/day45/)
+**次のレッスン**: [Day 45: アクセシビリティとテスト](/lessons/day45/)
