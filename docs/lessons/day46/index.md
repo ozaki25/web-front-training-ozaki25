@@ -1,4 +1,4 @@
-# Day 45: Web パフォーマンス基礎
+# Day 46: Web パフォーマンス基礎
 
 ## 今日のゴール
 
@@ -37,13 +37,13 @@ LCP の対象になるのは、画像、`<video>` のポスター画像、背景
 ```tsx
 import Image from "next/image";
 
-// ✅ ファーストビューの画像に priority を付ける（Day 39 で学習）
+// ✅ ファーストビューの画像に priority を付ける（Day 40 で学習）
 <Image src="/hero.jpg" alt="ヒーロー画像" fill priority />
 
-// ✅ Server Components でデータ取得（Day 34 で学習）
+// ✅ Server Components でデータ取得（Day 35 で学習）
 // → データを含んだ HTML が最初から送られるため、表示が速い
 
-// ✅ フォントの最適化（Day 39 で学習）
+// ✅ フォントの最適化（Day 40 で学習）
 // → next/font でフォントをビルド時に取得しておく
 ```
 
@@ -112,9 +112,9 @@ Lighthouse は以下の 5 つのカテゴリでスコアを表示します。
 | カテゴリ | 内容 |
 |---------|------|
 | Performance | ページの表示速度 |
-| Accessibility | アクセシビリティ（Day 43-44 で学習） |
+| Accessibility | アクセシビリティ（Day 44-45 で学習） |
 | Best Practices | Web 開発のベストプラクティス |
-| SEO | 検索エンジン最適化（Day 38 で学習） |
+| SEO | 検索エンジン最適化（Day 39 で学習） |
 | PWA | Progressive Web App 対応 |
 
 Performance スコアの内訳として、LCP / CLS / INP などの Core Web Vitals の値が表示されます。各指標の横に具体的な改善提案も表示されるので、それに従って改善します。
@@ -209,4 +209,4 @@ export function WebVitals() {
 - 推測ではなく、必ずデータに基づいて改善する
 - Next.js の `next/image`、`next/font`、Server Components は多くのパフォーマンス最適化を自動で行ってくれる
 
-**次のレッスン**: [Day 46: Web パフォーマンス応用](/lessons/day46/)
+**次のレッスン**: [Day 47: Web パフォーマンス応用](/lessons/day47/)

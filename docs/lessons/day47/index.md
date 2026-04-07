@@ -1,4 +1,4 @@
-# Day 46: Web パフォーマンス応用
+# Day 47: Web パフォーマンス応用
 
 ## 今日のゴール
 
@@ -72,7 +72,7 @@ const MapComponent = dynamic(() => import("./map"), {
 
 ### 画像の lazy loading
 
-Day 39 で学んだ `next/image` はデフォルトで lazy loading が有効です。
+Day 40 で学んだ `next/image` はデフォルトで lazy loading が有効です。
 
 ```tsx
 import Image from "next/image";
@@ -259,4 +259,4 @@ Next.js プロジェクトで確認すべき項目をまとめます。
 - SSG は最も高速だが静的コンテンツ向き、SSR は動的コンテンツに使う
 - パフォーマンス改善は推測ではなく、測定に基づいて行う
 
-**次のレッスン**: [Day 47: 認証の基礎](/lessons/day47/)
+**次のレッスン**: [Day 48: 認証の基礎](/lessons/day48/)
