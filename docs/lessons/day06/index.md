@@ -171,6 +171,16 @@ Flexbox を理解するカギは「2 つの軸」です。
 }
 ```
 
+`flex` は 3 つの値をまとめたショートハンドです。
+
+| 値 | 意味 | 例 |
+|-----|------|-----|
+| `flex-grow` | 余白があるとき、どれだけ伸びるか（0 なら伸びない） | `1` |
+| `flex-shrink` | スペースが足りないとき、どれだけ縮むか（0 なら縮まない） | `0` |
+| `flex-basis` | 伸縮する前の基本サイズ | `250px` |
+
+`flex: 1` は `flex: 1 1 0` の省略形で、「均等に伸び縮みし、基本サイズは 0」という意味です。これを理解すると、次のようなコードが読めるようになります。
+
 ```css
 .sidebar {
   flex: 0 0 250px;  /* 伸びない・縮まない・幅250px固定 */
@@ -180,91 +190,142 @@ Flexbox を理解するカギは「2 つの軸」です。
 }
 ```
 
-`flex` は `flex-grow`（伸び率）、`flex-shrink`（縮み率）、`flex-basis`（基本サイズ）の 3 つの値をまとめたショートハンドです。
-
 ## 実用パターン
 
-### ナビゲーションバー
+ナビゲーションバー、カードの横並び、フッターの下端固定という 3 つの定番パターンを、1 つの完全なページにまとめました。
 
 ```html
-<nav class="navbar" aria-label="メインナビゲーション">
-  <a href="/" class="logo">MySite</a>
-  <ul class="nav-links">
-    <li><a href="/about">会社概要</a></li>
-    <li><a href="/services">サービス</a></li>
-    <li><a href="/contact">お問い合わせ</a></li>
-  </ul>
-</nav>
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flexbox 実用パターン</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: sans-serif;
+        margin: 0;
+      }
+
+      /* --- ナビバー ---
+         space-between でロゴとリンクを両端に配置 */
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 24px;
+        background-color: #1a1a2e;
+      }
+
+      .logo {
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 24px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-links a {
+        color: white;
+        text-decoration: none;
+      }
+
+      /* --- スティッキーフッター ---
+         ページ全体を column 方向の Flex にし、
+         main に flex: 1 を指定してフッターを下端に押し出す */
+      .page {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .page-content {
+        flex: 1;
+        padding: 24px;
+      }
+
+      /* --- カードグリッド ---
+         flex-wrap: wrap で折り返し、
+         flex: 1 1 300px で最小 300px・均等に伸縮 */
+      .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .card {
+        flex: 1 1 300px;
+        padding: 24px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+
+      .card h2 {
+        margin-top: 0;
+      }
+
+      .page-footer {
+        padding: 16px 24px;
+        background-color: #333;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <nav class="navbar" aria-label="メインナビゲーション">
+        <a href="/" class="logo">MySite</a>
+        <ul class="nav-links">
+          <li><a href="/about">会社概要</a></li>
+          <li><a href="/services">サービス</a></li>
+          <li><a href="/contact">お問い合わせ</a></li>
+        </ul>
+      </nav>
+
+      <main class="page-content">
+        <h1>サービス一覧</h1>
+        <div class="card-container">
+          <article class="card">
+            <h2>Web 制作</h2>
+            <p>レスポンシブ対応のサイトを制作します。</p>
+          </article>
+          <article class="card">
+            <h2>アプリ開発</h2>
+            <p>モバイル・デスクトップアプリを開発します。</p>
+          </article>
+          <article class="card">
+            <h2>コンサルティング</h2>
+            <p>技術選定や設計の相談に対応します。</p>
+          </article>
+        </div>
+      </main>
+
+      <footer class="page-footer">
+        <p>&copy; 2026 MySite</p>
+      </footer>
+    </div>
+  </body>
+</html>
 ```
 
-```css
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 24px;
-  background-color: #1a1a2e;
-}
+ポイントを整理します。
 
-.logo {
-  color: white;
-  font-size: 20px;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.nav-links {
-  display: flex;
-  gap: 24px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-links a {
-  color: white;
-  text-decoration: none;
-}
-```
-
-`<nav>` タグに `aria-label` 属性を付けています。ページ内に複数のナビゲーションがある場合、スクリーンリーダーのユーザーがどのナビゲーションかを区別できるようになります。
-
-### カードの横並び
-
-```css
-.card-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.card {
-  flex: 1 1 300px;  /* 最小300px、余白があれば均等に伸びる */
-  padding: 24px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-```
-
-### フッターの項目を下端に配置
-
-```css
-.page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.page-content {
-  flex: 1;  /* 残りの高さを占める → フッターが下に押される */
-}
-
-.page-footer {
-  padding: 16px;
-  background-color: #333;
-  color: white;
-}
-```
+- **ナビバー**: `justify-content: space-between` でロゴとリンクを左右に配置し、`align-items: center` で縦方向を揃えています。`<nav>` タグに `aria-label` 属性を付けると、ページ内に複数のナビゲーションがある場合にスクリーンリーダーで区別できます
+- **スティッキーフッター**: `.page` を `flex-direction: column` + `min-height: 100vh` にし、`.page-content` に `flex: 1` を指定します。メインコンテンツが残りの高さをすべて占めるので、フッターは常に画面の下端に押し出されます
+- **カードグリッド**: `flex-wrap: wrap` と `flex: 1 1 300px` の組み合わせです。各カードは最小 300px を確保しつつ、余白があれば均等に伸びます。画面幅が狭くなると自動的に折り返します
 
 ## まとめ
 
