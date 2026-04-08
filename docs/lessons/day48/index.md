@@ -37,17 +37,21 @@ Web の通信プロトコルである HTTP は**ステートレス**（stateless
 
 **Cookie** は、ブラウザに保存される小さなデータです。サーバーがレスポンスで「この情報を保存しておいて」とブラウザに指示し、ブラウザは次のリクエストからその情報を自動的に送ります。
 
-```
-1. ログインリクエスト
-   ブラウザ → サーバー: 「メール: user@example.com、パスワード: ****」
+```mermaid
+sequenceDiagram
+    participant B as ブラウザ
+    participant S as サーバー
 
-2. サーバーがCookieを設定
-   サーバー → ブラウザ: 「ログイン成功。このCookieを保存して」
-   Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict
+    Note over B,S: 1. ログインリクエスト
+    B->>S: メール: user@example.com、パスワード: ****
 
-3. 以降のリクエスト
-   ブラウザ → サーバー: 「GET /dashboard」（Cookie: session_id=abc123 が自動で付く）
-   サーバー: 「abc123 は太郎さんだな」→ 太郎さんのダッシュボードを返す
+    Note over B,S: 2. サーバーが Cookie を設定
+    S-->>B: ログイン成功（Set-Cookie: session_id=abc123）
+
+    Note over B,S: 3. 以降のリクエスト
+    B->>S: GET /dashboard（Cookie: session_id=abc123 が自動で付く）
+    Note over S: abc123 は太郎さんだな
+    S-->>B: 太郎さんのダッシュボード
 ```
 
 ### Cookie のセキュリティ属性
@@ -115,20 +119,21 @@ eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsIm5hbWUiOiLlpKrpg44iLCJyb2xlIjoiYWRtaW4ifQ.
 
 ### OAuth のフロー（簡略版）
 
-```
-1. ユーザーが「Google でログイン」をクリック
-   ↓
-2. Google のログインページにリダイレクト
-   ↓
-3. ユーザーが Google にログイン & アプリへの権限を許可
-   ↓
-4. Google がアプリにリダイレクト（認証コード付き）
-   ↓
-5. アプリが認証コードを使って Google からアクセストークンを取得
-   ↓
-6. アクセストークンでユーザー情報を取得
-   ↓
-7. ログイン完了（セッション作成）
+```mermaid
+sequenceDiagram
+    participant U as ユーザー
+    participant A as アプリ
+    participant G as Google
+
+    U->>A: 「Google でログイン」をクリック
+    A->>G: Google のログインページにリダイレクト
+    U->>G: ログイン & アプリへの権限を許可
+    G->>A: アプリにリダイレクト（認証コード付き）
+    A->>G: 認証コードでアクセストークンを要求
+    G-->>A: アクセストークン
+    A->>G: アクセストークンでユーザー情報を取得
+    G-->>A: ユーザー情報
+    Note over A: セッション作成 → ログイン完了
 ```
 
 OAuth の重要な点は、**ユーザーのパスワードがアプリに渡らない**ことです。パスワードは Google（認証プロバイダ）だけが知っています。
