@@ -172,7 +172,6 @@ grep -rl "Day [0-9]" docs/lessons/day{01..NN-1}/
 2. **`docs/index.md`** — トップページのレッスン一覧を更新
 3. **`curriculum.md`** — カリキュラムの Day 番号とテーマを更新
 4. **`docs/introduction/index.md`** — 日数（平日XX日分）を更新
-5. **`CLAUDE.md`** — 日数（約XX日分）を更新
 
 #### Step 9: ビルド確認
 
@@ -347,7 +346,6 @@ def replace_day_link(match):
 | `docs/index.md` | トップページのレッスン一覧 |
 | `curriculum.md` | カリキュラムの Day 番号・テーマ |
 | `docs/introduction/index.md` | 総日数（「平日XX日分」） |
-| `CLAUDE.md` | 総日数（「約XX日分」） |
 
 ## 検証チェックリスト
 

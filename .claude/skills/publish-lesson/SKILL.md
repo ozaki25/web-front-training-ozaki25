@@ -66,11 +66,19 @@ npx vitepress build docs
 
 ### 7. コミット & プッシュ
 
+変更対象のファイルのみを明示的にステージングしてください。
+
 ```bash
-git add -A
+git add docs/lessons/dayXX/index.md
+git add docs/.vitepress/config.mts
+git add docs/index.md
+# 前日のレッスンに「次のレッスン」リンクを追加した場合のみ
+# git add docs/lessons/dayXX-1/index.md
 git commit -m "Day XX「テーマ名」を公開"
 git push -u origin publish/dayXX
 ```
+
+コミット後、`git diff --stat main..HEAD` で意図したファイルのみが含まれていることを確認してください。
 
 ### 8. プルリクエストの作成
 
