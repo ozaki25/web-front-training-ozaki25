@@ -3,9 +3,9 @@
 ## 今日のゴール
 
 - React のレンダリングの仕組みをもう一度整理する
-- React Compiler による自動最適化を理解する
+- React Compiler による自動最適化を知る
 - `memo`, `useMemo`, `useCallback` が不要になりつつある背景を知る
-- React Profiler で実際のレンダリングを確認できるようになる
+- React Profiler で実際のレンダリングを確認する方法を知る
 
 ## レンダリングの復習
 

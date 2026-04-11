@@ -2,9 +2,9 @@
 
 ## 今日のゴール
 
-- Server Actions の仕組みと `"use server"` の意味を理解する
+- Server Actions の仕組みと `"use server"` の意味を知る
 - フォーム送信でのデータ変更パターンを知る
-- revalidation（キャッシュ再検証）の仕組みを理解する
+- revalidation（キャッシュ再検証）の仕組みを知る
 - Server Actions のセキュリティ上の注意点を知る
 
 ## Server Actions とは
@@ -277,7 +277,7 @@ export async function deletePost(postId: string) {
 
 ### 2. 入力値は必ずバリデーションする
 
-ブラウザ側の `required` 属性は回避できます。サーバー側でも必ず検証しましょう。
+ブラウザ側の `required` 属性は回避できます。そのため、サーバー側でも必ず検証する必要があります。
 
 ```ts
 "use server";

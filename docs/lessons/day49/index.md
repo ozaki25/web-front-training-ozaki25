@@ -2,9 +2,9 @@
 
 ## 今日のゴール
 
-- XSS、CSRF、CORS の仕組みと対策を理解する
+- XSS、CSRF、CORS の仕組みと対策を知る
 - Content Security Policy の概念を知る
-- Next.js が提供するセキュリティ機能を把握する
+- Next.js が提供するセキュリティ機能を知る
 
 ## なぜ Web セキュリティを学ぶのか
 

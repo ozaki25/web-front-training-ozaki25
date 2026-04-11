@@ -2,9 +2,9 @@
 
 ## 今日のゴール
 
-- SPA（Single Page Application）の仕組みと特徴を説明できる
-- CSR（Client-Side Rendering）と SSR（Server-Side Rendering）の違いを説明できる
-- それぞれの方式のメリット・デメリットを理解する
+- SPA（Single Page Application）の仕組みと特徴を知る
+- CSR（Client-Side Rendering）と SSR（Server-Side Rendering）の違いを知る
+- それぞれの方式のメリット・デメリットを知る
 - Next.js がこれらの課題をどう解決するか概要を知る
 
 ## React アプリの動き方を振り返る
@@ -60,7 +60,7 @@ SPA（Single Page Application）:
 
 ## CSR の仕組みをもう少し詳しく
 
-SPA は通常 CSR で動作します。サーバーが返す HTML の中身を見てみましょう。
+SPA は通常 CSR で動作します。サーバーが返す HTML の中身は次のようになっています。
 
 ```html
 <!DOCTYPE html>
@@ -156,7 +156,7 @@ sequenceDiagram
     Note over B: 操作可能（インタラクティブ）
 ```
 
-CSR と比べて、「画面が見える」タイミングが大幅に早くなっていることに注目してください。
+CSR と比べて、「画面が見える」タイミングが大幅に早くなっている点がポイントです。
 
 ## SSG — ビルド時に HTML を生成する
 

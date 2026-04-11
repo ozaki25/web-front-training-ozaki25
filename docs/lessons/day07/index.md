@@ -2,10 +2,10 @@
 
 ## 今日のゴール
 
-- CSS Grid の基本的な仕組みを理解する
-- `grid-template-columns` / `grid-template-rows` でグリッドを定義できる
+- CSS Grid の基本的な仕組みを知る
+- `grid-template-columns` / `grid-template-rows` によるグリッド定義の方法を知る
 - `fr` 単位の意味と使い方を知る
-- Flexbox と Grid をどう使い分けるか説明できる
+- Flexbox と Grid の使い分けの考え方を知る
 
 ## CSS Grid とは
 

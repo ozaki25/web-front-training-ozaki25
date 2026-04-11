@@ -2,9 +2,9 @@
 
 ## 今日のゴール
 
-- Server Components でのデータ取得の仕組みを理解する
+- Server Components でのデータ取得の仕組みを知る
 - async コンポーネントの書き方を知る
-- `"use cache"` ディレクティブによるキャッシュ戦略を理解する
+- `"use cache"` ディレクティブによるキャッシュ戦略を知る
 
 ## Server Components でのデータ取得
 
@@ -37,7 +37,7 @@ export default async function PostsPage() {
 
 ### なぜ Server Components での fetch が優れているのか
 
-Day 28 で学んだ Client Component でのデータ取得と比較してみましょう。
+Day 28 で学んだ Client Component でのデータ取得と比較すると、違いが明確になります。
 
 **Client Component の場合（従来の方法）**:
 
@@ -254,7 +254,7 @@ async function getPosts() {
 
 ## エラーハンドリング
 
-データ取得は失敗する可能性があります。適切にエラーを処理しましょう。
+データ取得は失敗する可能性があります。適切なエラー処理の例を見てみます。
 
 ```tsx
 export default async function PostsPage() {

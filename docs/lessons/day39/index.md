@@ -2,9 +2,9 @@
 
 ## 今日のゴール
 
-- Next.js の Metadata API を使ってページのメタデータを設定できる
-- OGP（Open Graph Protocol）の役割と設定方法を理解する
-- `generateMetadata` で動的なメタデータを生成できる
+- Next.js の Metadata API によるメタデータの設定方法を知る
+- OGP（Open Graph Protocol）の役割と設定方法を知る
+- `generateMetadata` で動的なメタデータを生成する方法を知る
 
 ## メタデータとは
 
@@ -124,7 +124,7 @@ export const metadata: Metadata = {
 
 OGP 画像のサイズは `1200 x 630` ピクセルが推奨されています。
 
-> **アクセシビリティ**: OGP 画像にも `alt` テキストを設定しましょう。スクリーンリーダーを使っている人が SNS で共有されたリンクにアクセスしたときに役立ちます。
+> **アクセシビリティ**: OGP 画像にも `alt` テキストを設定するのが望ましいです。スクリーンリーダーを使っている人が SNS で共有されたリンクにアクセスしたときに役立ちます。
 
 ## generateMetadata — 動的なメタデータ
 

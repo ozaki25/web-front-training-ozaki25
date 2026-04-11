@@ -2,10 +2,10 @@
 
 ## 今日のゴール
 
-- 型の絞り込み（narrowing）の仕組みを理解する
-- discriminated union で安全に型を判別できるようになる
+- 型の絞り込み（narrowing）の仕組みを知る
+- discriminated union で安全に型を判別する方法を知る
 - `satisfies` 演算子と `as const` の使いどころを知る
-- 型安全なイベントハンドリングの書き方を覚える
+- 型安全なイベントハンドリングの書き方を知る
 
 ## 型の絞り込み（Narrowing）
 
@@ -67,7 +67,7 @@ function makeSound(animal: Dog | Cat): void {
 
 ## Discriminated Union
 
-Day 18 の最後で予告した **discriminated union**（判別可能なユニオン）を詳しく見ましょう。共通のプロパティ（**判別プロパティ**）を使って型を安全に判別するパターンです。
+Day 18 の最後で予告した **discriminated union**（判別可能なユニオン）を詳しく見ていきます。共通のプロパティ（**判別プロパティ**）を使って型を安全に判別するパターンです。
 
 ```typescript
 interface LoadingState {
@@ -186,7 +186,7 @@ type Status = (typeof STATUS)[keyof typeof STATUS];
 
 `satisfies` は TypeScript 4.9 で追加された演算子です。「この値はこの型を満たしている」ことを検証しつつ、推論された型を保持します。
 
-通常の型注釈との違いを見てみましょう。
+通常の型注釈との違いを見てみます。
 
 ```typescript
 type Colors = Record<string, string | string[]>;
@@ -228,7 +228,7 @@ const invalid = {
 
 ## 型安全なイベントハンドリング
 
-Phase 4 で React を学ぶ準備として、DOM イベントの型について見ておきましょう。Day 12 で学んだイベントリスナーを TypeScript で書くとこうなります。
+Phase 4 で React を学ぶ準備として、DOM イベントの型について見ておきます。Day 12 で学んだイベントリスナーを TypeScript で書くとこうなります。
 
 ```typescript
 const button = document.querySelector("button");
@@ -261,7 +261,7 @@ TypeScript の型推論では判断しきれない場面で使います。
 const input = event.target as HTMLInputElement;
 ```
 
-型アサーションは型チェックをすり抜けるため、**本当にその型であると確信がある場合にだけ**使いましょう。このレッスンで学んだ narrowing（型の絞り込み）で安全に型を判別できる場合は、そちらを優先します。
+型アサーションは型チェックをすり抜けるため、**本当にその型であると確信がある場合にだけ**使います。このレッスンで学んだ narrowing（型の絞り込み）で安全に型を判別できる場合は、そちらを優先します。
 
 ```typescript
 const input = document.querySelector("input");
@@ -275,7 +275,7 @@ if (input) {
 }
 ```
 
-フォームの例も見てみましょう。
+フォームの例も見てみます。
 
 ```typescript
 const form = document.querySelector("form");

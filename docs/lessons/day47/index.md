@@ -2,10 +2,10 @@
 
 ## 今日のゴール
 
-- コード分割と dynamic import の仕組みを理解する
+- コード分割と dynamic import の仕組みを知る
 - lazy loading の使い方を知る
-- バンドルサイズの分析方法を学ぶ
-- SSR/SSG のパフォーマンス特性を理解する
+- バンドルサイズの分析方法を知る
+- SSR/SSG のパフォーマンス特性を知る
 
 ## コード分割（Code Splitting）
 
@@ -135,7 +135,7 @@ export default function LazySection() {
 
 ## バンドルサイズ分析
 
-JavaScript のバンドルサイズが大きいと、ダウンロードと解析に時間がかかります。何がサイズを大きくしているか分析しましょう。
+JavaScript のバンドルサイズが大きいと、ダウンロードと解析に時間がかかります。何がサイズを大きくしているかを分析する方法を紹介します。
 
 ### @next/bundle-analyzer
 

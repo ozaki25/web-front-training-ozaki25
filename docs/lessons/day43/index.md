@@ -2,8 +2,8 @@
 
 ## 今日のゴール
 
-- Testing Library の考え方を理解する
-- React コンポーネントのテストを書けるようになる
+- Testing Library の考え方を知る
+- React コンポーネントのテストの書き方を知る
 - ユーザー操作のシミュレーション方法を知る
 
 ## Testing Library の考え方
@@ -58,7 +58,7 @@ import "@testing-library/jest-dom/vitest";
 
 ## 最初のコンポーネントテスト
 
-シンプルなコンポーネントから始めましょう。
+シンプルなコンポーネントから見ていきます。
 
 ```tsx
 // src/components/greeting.tsx

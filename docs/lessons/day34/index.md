@@ -2,8 +2,8 @@
 
 ## 今日のゴール
 
-- `layout.tsx`、`page.tsx`、`loading.tsx`、`error.tsx` の役割を理解する
-- ネストレイアウトの仕組みを理解する
+- `layout.tsx`、`page.tsx`、`loading.tsx`、`error.tsx` の役割を知る
+- ネストレイアウトの仕組みを知る
 - テンプレート（`template.tsx`）とレイアウトの違いを知る
 
 ## 特別なファイル群
@@ -156,7 +156,7 @@ export default function Loading() {
 </Suspense>
 ```
 
-> **アクセシビリティ**: ローディング UI には `role="status"` を付けましょう。スクリーンリーダーが状態の変化を自動的に読み上げてくれます。
+> **アクセシビリティ**: ローディング UI には `role="status"` を付けるのが望ましいです。スクリーンリーダーが状態の変化を自動的に読み上げてくれます。
 
 ## error.tsx — エラー UI
 
@@ -241,11 +241,11 @@ export default function BlogTemplate({
 - ページ遷移時に `useEffect` を再実行したい
 - ページごとにフォームの state をリセットしたい
 
-ほとんどの場合は `layout.tsx` で十分です。「遷移のたびにリセットしたい」という明確な理由があるときだけ `template.tsx` を使いましょう。
+ほとんどの場合は `layout.tsx` で十分です。「遷移のたびにリセットしたい」という明確な理由があるときだけ `template.tsx` を使います。
 
 ## ファイルの組み合わせ方
 
-これらのファイルがどう組み合わされるか、全体像を見てみましょう。
+これらのファイルがどう組み合わされるか、全体像は次のようになります。
 
 ```
 src/app/blog/

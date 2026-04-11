@@ -2,9 +2,9 @@
 
 ## 今日のゴール
 
-- props を使ってコンポーネントにデータを渡せるようになる
-- children の使い方を理解する
-- TypeScript で props の型を定義できるようになる
+- props を使ってコンポーネントにデータを渡す方法を知る
+- children の使い方を知る
+- TypeScript で props の型を定義する方法を知る
 
 ## props とは
 
@@ -206,7 +206,7 @@ function Greeting({ name }: { name: string }) {
 
 ## コンポーネントの組み合わせ
 
-複数のコンポーネントを組み合わせて画面を構築してみましょう。
+複数のコンポーネントを組み合わせて画面を構築する例を見てみます。
 
 ```tsx
 interface Todo {

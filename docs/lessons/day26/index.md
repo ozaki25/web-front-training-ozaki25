@@ -2,9 +2,9 @@
 
 ## 今日のゴール
 
-- React 19 の form actions を理解する
-- `useActionState` でフォームの状態を管理できるようになる
-- `useFormStatus` で送信中の状態を表示できるようになる
+- React 19 の form actions を知る
+- `useActionState` でフォームの状態を管理する方法を知る
+- `useFormStatus` で送信中の状態を表示する方法を知る
 - 従来の制御コンポーネントとの違いを知る
 
 ## 従来のフォーム処理
@@ -93,7 +93,7 @@ function SimpleForm() {
 }
 ```
 
-HTML の `<form>` はもともと `action` 属性に URL を指定してデータを送信する仕組みでした（Day 3 を思い出してください）。React 19 ではこれを拡張し、URL の代わりに関数を渡せるようにしたのです。
+HTML の `<form>` はもともと `action` 属性に URL を指定してデータを送信する仕組みでした（Day 3 で扱った内容です）。React 19 ではこれを拡張し、URL の代わりに関数を渡せるようにしたのです。
 
 `action` に渡した関数は、フォーム送信時に `FormData` オブジェクトを引数として受け取ります。`FormData` は `<input>` の `name` 属性を元にデータを収集します。`event.preventDefault()` も不要です。
 

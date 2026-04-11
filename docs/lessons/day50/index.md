@@ -2,10 +2,10 @@
 
 ## 今日のゴール
 
-- 代表的なコンポーネント設計パターンを理解する
+- 代表的なコンポーネント設計パターンを知る
 - Presentational / Container パターンの考え方を知る
-- Compound Components パターンを使えるようになる
-- Render Props と Hooks の使い分けを理解する
+- Compound Components パターンの作り方を知る
+- Render Props と Hooks の使い分けを知る
 
 ## なぜ設計パターンを学ぶのか
 
@@ -119,7 +119,7 @@ Day 33 で学んだ「デフォルト Server Component、必要な部分だけ C
 
 ### Tabs コンポーネントの例
 
-タブ UI を Compound Components で実装してみましょう。
+タブ UI を Compound Components で実装する例を見てみます。
 
 ```tsx
 // src/components/tabs.tsx
@@ -259,7 +259,7 @@ Compound Components の利点は以下のとおりです。
 - **柔軟** — タブの順番や数を自由に変えられる
 - **内部状態が隠蔽されている** — `activeTab` の管理を利用者が意識しなくていい
 
-> **アクセシビリティ**: タブ UI には `role="tablist"`、`role="tab"`、`role="tabpanel"`、`aria-selected` を適切に設定しましょう。
+> **アクセシビリティ**: タブ UI には `role="tablist"`、`role="tab"`、`role="tabpanel"`、`aria-selected` を適切に設定することが重要です。
 
 ## Render Props vs Custom Hooks
 

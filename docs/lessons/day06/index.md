@@ -2,9 +2,9 @@
 
 ## 今日のゴール
 
-- Flexbox の基本的な仕組み（主軸と交差軸）を理解する
-- `justify-content` と `align-items` で要素を配置できる
-- 実用的なレイアウトパターンを Flexbox で作れる
+- Flexbox の基本的な仕組み（主軸と交差軸）を知る
+- `justify-content` と `align-items` による要素の配置方法を知る
+- Flexbox を使った実用的なレイアウトパターンを知る
 
 ## Flexbox とは
 
@@ -41,7 +41,7 @@ Flexbox を理解するカギは「2 つの軸」です。
 .container { display: flex; flex-direction: row-reverse; }  /* 横方向（逆順） */
 ```
 
-## 実際に見てみよう
+## Flexbox の基本例
 
 ```html
 <!DOCTYPE html>
@@ -90,7 +90,7 @@ Flexbox を理解するカギは「2 つの軸」です。
 </html>
 ```
 
-ブラウザで開くと、3 つのアイテムが横に並んでいるはずです。`display: flex` を 1 行書くだけで横並びになります。
+ブラウザで表示すると、3 つのアイテムが横に並びます。`display: flex` を 1 行書くだけで横並びになります。
 
 **`gap`** はアイテム同士の間隔を指定するプロパティです。以前は margin で調整する必要がありましたが、`gap` なら簡潔に書けます。
 
@@ -114,7 +114,7 @@ Flexbox を理解するカギは「2 つの軸」です。
 | `space-around` | 各アイテムの周囲に均等な余白 |
 | `space-evenly` | すべての間隔が完全に均等 |
 
-先ほどのコードの `.container` に `justify-content` の値をいろいろ変えて試してみてください。
+`justify-content` の値を変えると、アイテムの配置が変わります。
 
 ## align-items — 交差軸方向の配置
 

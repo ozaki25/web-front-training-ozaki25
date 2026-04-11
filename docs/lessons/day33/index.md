@@ -2,9 +2,9 @@
 
 ## 今日のゴール
 
-- Server Components と Client Components の違いを説明できる
-- `"use client"` の意味と効果を理解する
-- どちらを使うべきか判断できるようになる
+- Server Components と Client Components の違いを知る
+- `"use client"` の意味と効果を知る
+- どちらを使うべきかの判断基準を知る
 
 ## 2 種類のコンポーネント
 
@@ -229,7 +229,7 @@ export default function ServerContent() {
 
 ## 実際の設計例
 
-ブログ記事ページを例に、Server Component と Client Component の使い分けを見てみましょう。
+ブログ記事ページを例に、Server Component と Client Component の使い分けを見てみます。
 
 ```tsx
 // app/blog/[slug]/page.tsx（Server Component）
@@ -280,7 +280,7 @@ export default function LikeButton({ postId }: { postId: string }) {
 
 記事の本文（タイトル、日付、テキスト）は静的な表示なので Server Component で十分です。「いいね」ボタンはクリックに反応する必要があるので Client Component にしています。
 
-> **アクセシビリティ**: `<button>` に `aria-pressed` を付けると、スクリーンリーダーがボタンの ON/OFF 状態を読み上げてくれます。トグル（切り替え）ボタンには必ず付けましょう。
+> **アクセシビリティ**: `<button>` に `aria-pressed` を付けると、スクリーンリーダーがボタンの ON/OFF 状態を読み上げてくれます。トグル（切り替え）ボタンには必ず付けるのが望ましいです。
 
 ## まとめ
 
