@@ -125,6 +125,23 @@ if [[ "$COMMAND" =~ git\ commit ]]; then
     fi
   fi
 
+  # --- Markdown 太字の描画チェック ---
+  # 全角閉じ括弧の直後の ** は VitePress (markdown-it) で太字が閉じない
+  # 例: **目次（アウトライン）**を → アスタリスクがそのまま表示される
+  staged_md=$(echo "$STAGED" | grep '\.md$' || true)
+  if [ -n "$staged_md" ]; then
+    broken_bold=""
+    for f in $staged_md; do
+      issues=$(git show ":$f" 2>/dev/null | grep -n '[）」】〉》]\*\*[^ *]' || true)
+      if [ -n "$issues" ]; then
+        broken_bold="${broken_bold}${f}:\n${issues}\n"
+      fi
+    done
+    if [ -n "$broken_bold" ]; then
+      block "Markdown 太字の描画不具合: 全角閉じ括弧の直後の ** は太字として描画されません。太字の範囲を変更してください（例: **目次（アウトライン）** → **目次**（アウトライン））。\n${broken_bold}"
+    fi
+  fi
+
   # .claude/ ファイルの削除を禁止
   deleted=$(git diff --cached --diff-filter=D --name-only | grep '^\.claude/' || true)
   if [ -n "$deleted" ]; then
