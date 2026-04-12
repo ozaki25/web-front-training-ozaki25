@@ -3,9 +3,9 @@
 ## 今日のゴール
 
 - コード分割と dynamic import の仕組みを知る
-- lazy loading の使い方を知る
-- バンドルサイズの分析方法を知る
-- SSR/SSG のパフォーマンス特性を知る
+- バンドルサイズの分析ツールがあることを知る
+- tree shaking の仕組みを知る
+- SSR/SSG のパフォーマンス特性の違いを知る
 
 ## コード分割（Code Splitting）
 
@@ -15,13 +15,12 @@
 
 Next.js は自動的にページ単位でコード分割を行います。`/about` にアクセスしたとき、`/blog` のコードはダウンロードされません。しかし、1 つのページ内でも分割が必要な場合があります。
 
-## dynamic import
+## next/dynamic による遅延読み込み
 
 `next/dynamic` を使うと、コンポーネントを必要なタイミングで読み込めます。
 
-### 基本的な使い方
-
 ```tsx
+// src/app/dashboard/page.tsx
 import dynamic from "next/dynamic";
 
 // 通常のインポート（ページ読み込み時にダウンロードされる）
@@ -44,13 +43,12 @@ export default function DashboardPage() {
 }
 ```
 
-`dynamic` は内部的に React の `lazy` と `Suspense` を使っています。コンポーネントが必要になるまで JavaScript のダウンロードが遅延されます。
-
-### SSR を無効にする
+`dynamic` は内部的に React の `lazy`（コンポーネントの遅延読み込み機能）と `Suspense`（読み込み中の表示を制御する機能）を使っています。コンポーネントが必要になるまで JavaScript のダウンロードが遅延されます。
 
 ブラウザの API（`window`、`document` など）に依存するライブラリは、サーバーでは動きません。`ssr: false` を指定すると、クライアントでのみレンダリングされます。
 
 ```tsx
+// src/components/map.tsx を使う側
 const MapComponent = dynamic(() => import("./map"), {
   ssr: false,
   loading: () => <p role="status">地図を読み込み中...</p>,
@@ -75,6 +73,7 @@ const MapComponent = dynamic(() => import("./map"), {
 Day 40 で学んだ `next/image` はデフォルトで lazy loading が有効です。
 
 ```tsx
+// src/components/photo-gallery.tsx
 import Image from "next/image";
 
 // デフォルトで lazy loading（画面内に入るまで読み込まない）
@@ -86,84 +85,19 @@ import Image from "next/image";
 
 ### Intersection Observer
 
-コンポーネントが画面内に入ったことを検知する仕組みです。React ではカスタムフックとして実装できます。
+画像以外のコンテンツ（コンポーネントやセクション全体）を画面内に入ったタイミングで読み込みたい場合は、ブラウザの **Intersection Observer API** が使えます。これは「ある要素が画面の表示領域（ビューポート）に入ったかどうか」を監視する API です。
 
-```tsx
-"use client";
+React では `useRef` と `useEffect` を使ったカスタムフックとして実装し、要素が画面内に入ったら `isVisible` を `true` に切り替えてコンテンツを表示する、というパターンが一般的です。`next/image` が内部で行っている lazy loading も、この Intersection Observer の仕組みを利用しています。
 
-import { useRef, useEffect, useState } from "react";
+## バンドルサイズの分析
 
-function useIntersectionObserver() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+JavaScript のバンドルサイズが大きいと、ダウンロードと解析に時間がかかります。「何がサイズを大きくしているか」を可視化するツールとして **`@next/bundle-analyzer`** があります。
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect(); // 一度表示されたら監視を止める
-        }
-      },
-      { threshold: 0.1 } // 10% 見えたら発火
-    );
+構成イメージとしては、`next.config.ts` に `withBundleAnalyzer` をラップし、環境変数 `ANALYZE=true` を付けてビルドすると、ブラウザにバンドルの内訳がビジュアルで表示されます。各ライブラリがどれだけのサイズを占めているか一目でわかるため、「どのライブラリが重いのか」「不要なコードが含まれていないか」を判断する根拠になります。
 
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
+## tree shaking
 
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, isVisible };
-}
-
-export default function LazySection() {
-  const { ref, isVisible } = useIntersectionObserver();
-
-  return (
-    <div ref={ref}>
-      {isVisible ? (
-        <HeavyContent />
-      ) : (
-        <div style={{ height: "400px" }} /> // プレースホルダー
-      )}
-    </div>
-  );
-}
-```
-
-## バンドルサイズ分析
-
-JavaScript のバンドルサイズが大きいと、ダウンロードと解析に時間がかかります。何がサイズを大きくしているかを分析する方法を紹介します。
-
-### @next/bundle-analyzer
-
-```bash
-npm install -D @next/bundle-analyzer
-```
-
-```ts
-// next.config.ts
-import type { NextConfig } from "next";
-import withBundleAnalyzer from "@next/bundle-analyzer";
-
-const nextConfig: NextConfig = {
-  // ...
-};
-
-export default withBundleAnalyzer({
-  enabled: process.env.ANALYZE === "true",
-})(nextConfig);
-```
-
-```bash
-ANALYZE=true npm run build
-```
-
-ビルドが完了すると、ブラウザにバンドルの内訳がビジュアルで表示されます。各ライブラリがどれだけのサイズを占めているか一目でわかります。
-
-### バンドルサイズ削減のコツ
+**Tree shaking** とは、使われていないコードをビルド時に自動で除去する仕組みです。木を揺さぶって枯れ葉（不要なコード）を落とすイメージです。
 
 ```tsx
 // ❌ ライブラリ全体をインポート
@@ -175,16 +109,17 @@ import groupBy from "lodash/groupBy";
 const result = groupBy(data, "category");
 ```
 
-**Tree shaking** とは、使われていないコードをビルド時に自動で除去する仕組みです。ただし、ライブラリの書き方によっては tree shaking が効かないことがあります。個別インポートを使うのが確実です。
+ライブラリの書き方によっては tree shaking が効かないことがあります。個別インポートを使うのが確実です。
 
 ### 大きなライブラリに注意
 
-```
-よくある大きなライブラリ:
-- moment.js → day.js に置き換え（サイズ 1/20）
-- lodash → lodash-es（tree shaking 対応版）または自前実装
-- chart.js → 必要な要素だけインポート
-```
+よく知られた大きなライブラリには、より軽量な代替手段があります。
+
+| ライブラリ | 問題点 | 代替手段 |
+|-----------|-------|---------|
+| moment.js | サイズが大きい | day.js（サイズ約 1/20） |
+| lodash | デフォルトでは tree shaking が効かない | lodash-es（tree shaking 対応版）または自前実装 |
+| chart.js | 全機能をインポートしがち | 必要な要素だけ個別インポート |
 
 ## SSR / SSG のパフォーマンス特性
 
@@ -195,19 +130,17 @@ Next.js のレンダリング戦略によって、パフォーマンス特性が
 ビルド時に HTML を生成します。リクエストのたびに生成する必要がないため、最も高速です。
 
 ```tsx
+// src/app/about/page.tsx
 // 特に設定しなければ、データ取得のないページは自動で SSG になる
 export default function AboutPage() {
   return <h1>About</h1>;
 }
-
-// generateStaticParams があるページもビルド時に生成される
-export async function generateStaticParams() {
-  return [{ slug: "post-1" }, { slug: "post-2" }];
-}
 ```
 
+`generateStaticParams` を定義すると、動的ルートでもビルド時に HTML を生成できます。
+
 **特性**:
-- TTFB（Time to First Byte）が最も速い（CDN から配信可能）
+- TTFB（Time to First Byte）が最も速い（CDN（世界中のサーバーからコンテンツを配信する仕組み）から配信可能）
 - データの更新にはビルドし直す必要がある
 - ブログや企業サイトなど、頻繁に変わらないコンテンツに最適
 
@@ -216,6 +149,7 @@ export async function generateStaticParams() {
 リクエストのたびにサーバーで HTML を生成します。
 
 ```tsx
+// src/app/dashboard/page.tsx
 // Server Component でデータを取得すると SSR になる
 export default async function DashboardPage() {
   const data = await fetch("https://api.example.com/stats");
@@ -239,24 +173,12 @@ export default async function DashboardPage() {
 | リアルタイムデータ（ダッシュボード） | SSR |
 | ユーザー固有のデータ（マイページ） | SSR |
 
-## パフォーマンスチェックリスト
-
-Next.js プロジェクトで確認すべき項目をまとめます。
-
-- [ ] `next/image` で画像を最適化しているか
-- [ ] ファーストビューの画像に `priority` を付けているか
-- [ ] `next/font` でフォントを最適化しているか
-- [ ] 重いライブラリを `dynamic` で遅延読み込みしているか
-- [ ] 不要なライブラリがバンドルに含まれていないか
-- [ ] Server Components を活用してクライアント JavaScript を減らしているか
-- [ ] 適切なレンダリング戦略（SSG/SSR）を選択しているか
-
 ## まとめ
 
 - `next/dynamic` でコンポーネントを必要なタイミングに遅延読み込みできる
-- バンドルサイズ分析で、何がページを重くしているか特定する
+- `@next/bundle-analyzer` でバンドルの内訳を可視化し、何がページを重くしているか特定できる
 - tree shaking を活かすために、ライブラリは個別インポートを使う
 - SSG は最も高速だが静的コンテンツ向き、SSR は動的コンテンツに使う
-- パフォーマンス改善は推測ではなく、測定に基づいて行う
+- パフォーマンス改善は推測ではなく、測定に基づいて行う（Day 46 参照）
 
 **次のレッスン**: [Day 48: 認証の基礎](/lessons/day48/)

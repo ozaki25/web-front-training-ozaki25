@@ -2,33 +2,24 @@
 
 ## 今日のゴール
 
-- axe を使ったアクセシビリティの自動テストの書き方を知る
-- eslint-plugin-jsx-a11y でコーディング時にアクセシビリティ問題を検出する方法を知る
+- axe を使ったアクセシビリティの自動テストの仕組みを知る
+- ESLint プラグインでコーディング中にもアクセシビリティ問題を検出できることを知る
 - 自動チェックでカバーできる範囲とできない範囲を知る
 
 ## 自動テストでアクセシビリティを守る
 
-Day 44 でアクセシビリティの基本を学びました。しかし、すべてのルールを常に覚えて手動で確認するのは現実的ではありません。自動テストと静的解析を組み合わせることで、アクセシビリティの問題を早期に検出できます。
+Day 44 でアクセシビリティの基本を学びました。しかし、すべてのルールを常に覚えて手動で確認するのは現実的ではありません。そこで活躍するのが自動テストと静的解析です。
 
-## axe によるアクセシビリティテスト
+アクセシビリティの自動チェックには主に 2 つのアプローチがあります。
 
-**axe**（アクス）は、Deque Systems が開発したアクセシビリティテストエンジンです。HTML をスキャンして、WCAG のルールに違反している箇所を検出します。
+- **axe**（アクス）: レンダリング済みの HTML をスキャンして WCAG（Web Content Accessibility Guidelines、アクセシビリティの国際ガイドライン）違反を検出するテストエンジン
+- **eslint-plugin-jsx-a11y**: JSX を書いている段階でアクセシビリティ問題を指摘する ESLint プラグイン
 
-### セットアップ
+axe はテスト実行時に問題を発見し、eslint-plugin-jsx-a11y はコーディング中にリアルタイムで問題を発見します。どちらも `vitest-axe` や `eslint-plugin-jsx-a11y` パッケージとして導入でき、ESLint は Flat Config で `jsxA11y.flatConfigs.recommended` を追加するだけで使い始められます。
 
-```bash
-npm install -D vitest-axe
-```
+## axe によるテストのパターン
 
-Vitest のセットアップファイルに追加します。
-
-```ts
-// vitest.setup.ts
-import "@testing-library/jest-dom/vitest";
-import "vitest-axe/extend-expect";
-```
-
-### 基本的なテスト
+axe のテストは非常にシンプルです。コンポーネントをレンダリングして、`axe()` に渡すだけです。
 
 ```tsx
 // src/components/article-card.test.tsx
@@ -56,77 +47,13 @@ describe("ArticleCard", () => {
 });
 ```
 
-`toHaveNoViolations()` は、axe が検出した違反が 0 件であることを確認します。
+`toHaveNoViolations()` は、axe が検出した違反が 0 件であることを確認します。違反があると、どの要素がどのルールに違反しているか（例: `image-alt: Images must have alternate text`）と影響度（critical / serious など）が報告されます。
 
-### 違反が検出される例
+既存プロジェクトに導入する場合、すべてのルールを一度に適用するのが難しければ、`rules` オプションで対象を絞ることもできます。
 
-実際に違反がどう報告されるかの例です。
+## eslint-plugin-jsx-a11y が検出する問題
 
-```tsx
-// ❌ アクセシビリティ違反があるコンポーネント
-function BadCard() {
-  return (
-    <div>
-      <img src="/photo.jpg" />  {/* alt がない */}
-      <div onClick={() => {}}>クリック</div>  {/* div をボタンとして使用 */}
-    </div>
-  );
-}
-```
-
-テストを実行すると、以下のような違反が報告されます。
-
-```
-Expected the HTML found at $('img') to have no violations:
-- image-alt: Images must have alternate text
-  Impact: critical
-
-Expected the HTML found at $('div') to have no violations:  
-- interactive element is not focusable
-  Impact: serious
-```
-
-### 既存プロジェクトへの段階的な導入
-
-すでに多くの違反があるプロジェクトでは、一度にすべて修正するのは困難です。特定のルールだけを対象にすることもできます。
-
-```tsx
-it("画像にalt属性がある", async () => {
-  const { container } = render(<MyComponent />);
-  const results = await axe(container, {
-    rules: {
-      "image-alt": { enabled: true },
-      // 他のルールは無効化
-    },
-  });
-
-  expect(results).toHaveNoViolations();
-});
-```
-
-## eslint-plugin-jsx-a11y
-
-**eslint-plugin-jsx-a11y** は、JSX のコードを書いている段階でアクセシビリティの問題を指摘してくれる ESLint プラグインです。テストを実行する前、コーディング中に問題を見つけられます。
-
-### セットアップ
-
-```bash
-npm install -D eslint-plugin-jsx-a11y
-```
-
-ESLint の設定に追加します。
-
-```js
-// eslint.config.mjs
-import jsxA11y from "eslint-plugin-jsx-a11y";
-
-export default [
-  // ... 既存の設定
-  jsxA11y.flatConfigs.recommended,
-];
-```
-
-### 検出される問題の例
+eslint-plugin-jsx-a11y はテスト実行を待たず、コードを書いている段階で問題を指摘してくれます。
 
 ```tsx
 // ❌ eslint-plugin-jsx-a11y が警告する例
@@ -143,10 +70,6 @@ export default [
 // 空のリンク
 <a href="#">リンク</a>
 // → jsx-a11y/anchor-is-valid
-
-// autoFocus の使用
-<input autoFocus />
-// → jsx-a11y/no-autofocus
 ```
 
 ```tsx
@@ -157,8 +80,6 @@ export default [
 <button onClick={handleClick} type="button">クリック</button>
 
 <a href="/about">About</a>
-
-<input />  {/* autoFocus は削除、フォーカス管理は別の方法で */}
 ```
 
 ## Testing Library と アクセシビリティ
@@ -221,18 +142,16 @@ flowchart LR
 
 自動テストは「最低限の品質」を保証するセーフティネットです。その上で、定期的にスクリーンリーダーやキーボードだけでの操作テストを行うことが理想です。
 
-## 実践的なテスト戦略
-
-プロジェクトに導入する際の推奨アプローチです。
+## テスト戦略の全体像
 
 ```mermaid
 flowchart TD
-    A["1. eslint-plugin-jsx-a11y を導入\n（コーディング時にリアルタイム検出）"] --> B["2. 主要コンポーネントに axe テストを追加\n（CI で自動実行）"]
-    B --> C["3. 新規コンポーネントには\ngetByRole ベースのテストを書く"]
+    A["1. eslint-plugin-jsx-a11y\n（コーディング時にリアルタイム検出）"] --> B["2. 主要コンポーネントに axe テスト\n（CI で自動実行）"]
+    B --> C["3. getByRole ベースのテスト\n（コンポーネントテストと兼用）"]
     C --> D["4. 定期的にスクリーンリーダーで手動テスト"]
 ```
 
-すべてを一度に完璧にする必要はありません。まず自動チェックで基盤を作り、徐々に手動テストも組み合わせていきましょう。
+すべてを一度に完璧にする必要はありません。まず ESLint プラグインで日常的にキャッチし、主要コンポーネントに axe テストを追加して CI で回す。それでもカバーできない残り 60〜70% は、定期的な手動テストで補います。
 
 ## まとめ
 

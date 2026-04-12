@@ -60,11 +60,13 @@ sequenceDiagram
 Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400
 ```
 
+`Set-Cookie` はサーバーがレスポンスに含める HTTP ヘッダーで、ブラウザに Cookie の保存を指示します。
+
 | 属性 | 意味 |
 |------|------|
-| `HttpOnly` | JavaScript からアクセスできない（XSS 対策） |
-| `Secure` | HTTPS でのみ送信される |
-| `SameSite=Strict` | 同一サイトからのリクエストでのみ送信される（CSRF 対策） |
+| `HttpOnly` | JavaScript からアクセスできない（XSS（悪意あるスクリプト注入）対策） |
+| `Secure` | HTTPS（HTTP の暗号化版）でのみ送信される |
+| `SameSite=Strict` | 同一サイトからのリクエストでのみ送信される（CSRF（別サイトからの偽リクエスト）対策） |
 | `Path=/` | Cookie が有効なパス |
 | `Max-Age=86400` | 有効期限（秒）。86400 = 24 時間 |
 
@@ -100,7 +102,7 @@ eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsIm5hbWUiOiLlpKrpg44iLCJyb2xlIjoiYWRtaW4ifQ.
 署名: 改ざん検知用（サーバーの秘密鍵で生成）
 ```
 
-> **重要**: JWT のペイロードは Base64Url エンコードされているだけで、誰でもデコードして内容を読めます。JWT は改ざんを検知するための「署名」であり、内容を隠すための「暗号化」ではありません。パスワードなどの機密情報は JWT に含めないでください。
+> **重要**: JWT のペイロードは Base64Url エンコード（バイナリデータを URL で安全に使える文字列に変換する方式）されているだけで、誰でもデコードして内容を読めます。JWT は改ざんを検知するための「署名」であり、内容を隠すための「暗号化」ではありません。パスワードなどの機密情報は JWT に含めないでください。
 
 ### Session vs JWT
 
@@ -140,15 +142,9 @@ OAuth の重要な点は、**ユーザーのパスワードがアプリに渡ら
 
 ## Auth.js（NextAuth v5）による認証
 
-**Auth.js**（旧 NextAuth.js、現在 v5）は、Next.js で認証を実装するためのライブラリです。OAuth プロバイダとの連携、Session 管理、JWT 処理などを簡単に行えます。
+**Auth.js**（旧 NextAuth.js、現在 v5）は、Next.js で認証を実装するためのライブラリです。OAuth プロバイダとの連携、Session 管理、JWT 処理などをまとめて扱えます。
 
-### セットアップ
-
-```bash
-npm install next-auth@beta
-```
-
-### 基本設定
+Auth.js の中心となるのは設定ファイルです。ここで「どの OAuth プロバイダを使うか」を定義し、認証に必要な関数をエクスポートします。
 
 ```ts
 // src/auth.ts
@@ -165,63 +161,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 });
 ```
 
-```
-# .env.local
-AUTH_SECRET=your-random-secret-key
-AUTH_GITHUB_ID=your-github-oauth-app-id
-AUTH_GITHUB_SECRET=your-github-oauth-app-secret
-```
+この設定から得られる `handlers` を Route Handler（Day 36 参照）でエクスポートすると、ログイン・ログアウト・コールバックなどの認証エンドポイントが自動的に生成されます。
 
-### Route Handler の設定
-
-```ts
-// src/app/api/auth/[...nextauth]/route.ts
-import { handlers } from "@/auth";
-
-export const { GET, POST } = handlers;
-```
-
-### ログイン/ログアウトボタン
-
-```tsx
-// src/components/auth-button.tsx
-import { auth, signIn, signOut } from "@/auth";
-
-export default async function AuthButton() {
-  const session = await auth();
-
-  if (session?.user) {
-    return (
-      <div>
-        <p>{session.user.name} としてログイン中</p>
-        <form
-          action={async () => {
-            "use server";
-            await signOut();
-          }}
-        >
-          <button type="submit">ログアウト</button>
-        </form>
-      </div>
-    );
-  }
-
-  return (
-    <form
-      action={async () => {
-        "use server";
-        await signIn("github");
-      }}
-    >
-      <button type="submit">GitHub でログイン</button>
-    </form>
-  );
-}
-```
-
-### ページの保護
-
-ログインしていないユーザーがアクセスできないページを作るには、`auth()` でセッションを確認します。
+認証後のセッション情報は `auth()` 関数で取得できます。Server Component でもServer Action でも使えるのが特徴です。
 
 ```tsx
 // src/app/dashboard/page.tsx
@@ -244,7 +186,7 @@ export default async function DashboardPage() {
 }
 ```
 
-Day 38 で学んだ `proxy.ts` を使えば、複数のページをまとめて保護することもできます。
+ログイン・ログアウトのボタンは、Server Action として `signIn("github")` / `signOut()` を呼ぶ `<form>` として実装します。Day 38 で学んだ Middleware を使えば、複数のページをまとめて保護することもできます。
 
 ## まとめ
 
