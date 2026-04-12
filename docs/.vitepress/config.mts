@@ -186,6 +186,23 @@ export default withMermaid(
             },
           ],
         },
+        {
+          text: "HTML LT 候補（レビュー用）",
+          items: [
+            { text: "01: セマンティック HTML", link: "/html-candidates/01/" },
+            { text: "02: 見出しレベルの設計", link: "/html-candidates/02/" },
+            { text: "03: a と button", link: "/html-candidates/03/" },
+            { text: "04: フォーム", link: "/html-candidates/04/" },
+            { text: "05: ネスティングルール", link: "/html-candidates/05/" },
+            { text: "06: alt 属性", link: "/html-candidates/06/" },
+            { text: "07: HTML の基本構造", link: "/html-candidates/07/" },
+            { text: "08: head の中身", link: "/html-candidates/08/" },
+            { text: "09: パースと DOM ツリー", link: "/html-candidates/09/" },
+            { text: "10: テーブル", link: "/html-candidates/10/" },
+            { text: "11: HTML の進化", link: "/html-candidates/11/" },
+            { text: "12: AI の HTML をレビュー", link: "/html-candidates/12/" },
+          ],
+        },
       ],
       outline: {
         label: "目次",
