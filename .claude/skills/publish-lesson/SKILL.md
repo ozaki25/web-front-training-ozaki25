@@ -87,3 +87,16 @@ GitHub にプルリクエストを作成します。
 - **ベースブランチ**: `main`
 - **タイトル**: `Day XX: テーマ名`
 - **本文**: レッスンの概要（今日のゴールの内容を含める）
+
+### 9. マージ後の同期
+
+PR がマージされたら、main の内容を draft に取り込みます。
+
+```bash
+git checkout draft
+git pull origin draft
+git merge origin/main --no-edit
+git push origin draft
+```
+
+これにより、公開済みのレッスンが draft にも反映されます。この手順を省略すると、draft が古い状態のまま残り、以降の作業で不整合が起きます。

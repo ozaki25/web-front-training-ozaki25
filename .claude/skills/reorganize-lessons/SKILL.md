@@ -171,7 +171,6 @@ grep -rl "Day [0-9]" docs/lessons/day{01..NN-1}/
 1. **`docs/.vitepress/config.mts`** — サイドバーに新 Day を追加、以降の Day 番号を +1
 2. **`docs/index.md`** — トップページのレッスン一覧を更新
 3. **`curriculum.md`** — カリキュラムの Day 番号とテーマを更新
-4. **`docs/introduction/index.md`** — 日数（平日XX日分）を更新
 
 #### Step 9: ビルド確認
 
@@ -345,7 +344,6 @@ def replace_day_link(match):
 | `docs/.vitepress/config.mts` | サイドバーの Day 番号・タイトル・リンク |
 | `docs/index.md` | トップページのレッスン一覧 |
 | `curriculum.md` | カリキュラムの Day 番号・テーマ |
-| `docs/introduction/index.md` | 総日数（「平日XX日分」） |
 
 ## 検証チェックリスト
 
