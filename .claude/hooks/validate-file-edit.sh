@@ -38,7 +38,7 @@ fi
 
 # publish ブランチで許可されたファイル以外を編集しようとしている
 if [[ "$BRANCH" =~ ^publish/day[0-9]{2}$ ]]; then
-  if [[ "$FILE_PATH" =~ docs/lessons/day[0-9]+/ ]] || [[ "$FILE_PATH" =~ docs/\.vitepress/config\.mts ]] || [[ "$FILE_PATH" =~ docs/index\.md ]]; then
+  if [[ "$FILE_PATH" =~ docs/lessons/day[0-9]+/ ]] || [[ "$FILE_PATH" =~ docs/\.vitepress/config\.mts ]] || [[ "$FILE_PATH" =~ docs/index\.md ]] || [[ "$FILE_PATH" =~ docs/introduction/ ]]; then
     : # 許可
   else
     block "ブランチ運用違反: publish ブランチでは該当 Day のレッスン、サイドバー、index.md のみ変更できます。対象: $FILE_PATH"

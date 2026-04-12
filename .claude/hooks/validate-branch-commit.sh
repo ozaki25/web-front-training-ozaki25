@@ -79,7 +79,7 @@ if [[ "$COMMAND" =~ git\ commit ]]; then
 
   # publish ブランチで許可外のファイルをコミットしようとしている
   if [[ "$BRANCH" =~ ^publish/day[0-9]{2}$ ]]; then
-    bad=$(echo "$STAGED" | grep -vE '^docs/lessons/day[0-9]+/|^docs/\.vitepress/config\.mts$|^docs/index\.md$' | grep -v '^$' || true)
+    bad=$(echo "$STAGED" | grep -vE '^docs/lessons/day[0-9]+/|^docs/\.vitepress/config\.mts$|^docs/index\.md$|^docs/introduction/' | grep -v '^$' || true)
     if [ -n "$bad" ]; then
       block "ブランチ運用違反: publish ブランチでは該当 Day のレッスン、サイドバー、index.md のみコミットできます。対象: $bad"
     fi
