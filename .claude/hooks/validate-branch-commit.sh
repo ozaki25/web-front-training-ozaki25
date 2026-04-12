@@ -31,6 +31,17 @@ if [[ "$COMMAND" =~ git\ push ]] && [[ "$COMMAND" =~ origin\ ([^ ]+) ]]; then
   if [[ ! "$PUSHBRANCH" =~ ^(main|draft|publish/day[0-9]{2})$ ]]; then
     block "ブランチ運用違反: 許可されたブランチは main, draft, publish/dayXX のみです。'$PUSHBRANCH' にはプッシュできません"
   fi
+
+  # publish ブランチへの push 時にリマインダー
+  if [[ "$PUSHBRANCH" =~ ^publish/day[0-9]{2}$ ]]; then
+    jq -n '{
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        outputMessage: "リマインダー: publish ブランチにプッシュしました。PR の本文が最新の内容を反映しているか確認してください。"
+      }
+    }'
+    exit 0
+  fi
 fi
 
 # --- git commit の検証 ---
