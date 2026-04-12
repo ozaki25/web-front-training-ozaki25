@@ -62,7 +62,7 @@ describe("Greeting", () => {
 
 コンポーネントテストの流れは3ステップです。
 
-1. **`render`** — コンポーネントを仮想的な DOM にレンダリングする
+1. **`render`** — コンポーネントを仮想的な DOM（ブラウザが管理するページの構造）にレンダリングする
 2. **`screen`** で要素を検索する（`getByText`、`getByRole` など）
 3. **`expect`** で検証する（`toBeInTheDocument()` など）
 
@@ -153,7 +153,7 @@ describe("Counter", () => {
 
 `userEvent.setup()` で作成した `user` オブジェクトで操作をシミュレートします。`user.click` や `user.type` は `await` が必要です。
 
-フォーム送信のテストでは `vi.fn()` でモック関数（呼び出しを記録するダミー関数）を作り、`toHaveBeenCalledWith` で引数を検証します。要素が存在しないことの確認には `queryBy` を使います。
+より複雑なテスト（フォーム送信やコールバックの検証）では、`vi.fn()` でモック関数（呼び出しを記録するダミー関数）を使います。
 
 ## まとめ
 
@@ -161,6 +161,6 @@ describe("Counter", () => {
 - `render` でコンポーネントを描画し、`screen` で要素を検索する
 - `getByRole` が最も推奨される検索方法で、アクセシビリティの確認にもなる
 - `getBy`（存在する要素）、`queryBy`（不在確認）、`findBy`（非同期待ち）を使い分ける
-- `userEvent` でクリックやテキスト入力をシミュレートできる
+- `userEvent` でクリックなどのユーザー操作をシミュレートできる
 
 **次のレッスン**: [Day 44: アクセシビリティ実践](/lessons/day44/)
