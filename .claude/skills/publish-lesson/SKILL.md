@@ -34,6 +34,20 @@ git checkout -b publish/dayXX origin/main
 git checkout origin/draft -- docs/lessons/dayXX/index.md
 ```
 
+### 2b. 未公開レッスンへのリンクを除外
+
+取り出したファイルの末尾にある「次のレッスン」リンクを確認します。リンク先の Day が main に公開済みでなければ、そのリンクを削除してください。
+
+```bash
+# 次の Day が main に存在するか確認
+git show origin/main:docs/lessons/dayXX+1/index.md 2>/dev/null
+# 存在しなければ「次のレッスン」リンクを削除する
+```
+
+**重要**: この変更は publish ブランチ上でのみ行います。draft のファイルは変更しないでください。
+
+※ コミット時に hook がデッドリンクを自動検知するため、この手順を忘れてもブロックされます。
+
 ### 3. 前日のレッスンに「次のレッスン」リンクを追加
 
 前日のレッスンが `main` に存在する場合、前日の `index.md` の末尾に「次のレッスン」リンクを追加してください。
