@@ -119,7 +119,7 @@ Day 33 で学んだ「デフォルト Server Component、必要な部分だけ C
 
 ### Tabs コンポーネントの例
 
-タブ UI を Compound Components で実装する例を見てみます。
+タブ UI を Compound Components で実装する例です。
 
 ```tsx
 // src/components/tabs.tsx
@@ -267,34 +267,24 @@ Compound Components の利点は以下のとおりです。
 
 ```tsx
 // Render Props パターン
-type Props = {
+function DataFetcher({ url, render }: {
   url: string;
   render: (data: unknown, isLoading: boolean) => ReactNode;
-};
-
-function DataFetcher({ url, render }: Props) {
+}) {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setIsLoading(false);
-      });
+    fetch(url).then((res) => res.json()).then((d) => { setData(d); setIsLoading(false); });
   }, [url]);
 
   return <>{render(data, isLoading)}</>;
 }
 
 // 使い方
-<DataFetcher
-  url="/api/users"
-  render={(data, isLoading) =>
-    isLoading ? <p>読み込み中...</p> : <UserList users={data} />
-  }
-/>
+<DataFetcher url="/api/users" render={(data, isLoading) =>
+  isLoading ? <p>読み込み中...</p> : <UserList users={data} />
+} />
 ```
 
 しかし現在は、同じことを **Custom Hook** でよりシンプルに実現できます。

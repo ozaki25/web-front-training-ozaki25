@@ -291,7 +291,7 @@ function App() {
 
 ## Context を使う前に考えること
 
-Context が必要になる前に、まずこれらのアプローチを検討しましょう。
+Context が必要になる前に、まずこれらのアプローチを検討する価値があります。
 
 ### 1. コンポーネント合成で解決できないか
 
@@ -330,7 +330,7 @@ function Layout({ sidebar }: { sidebar: React.ReactNode }) {
 | アプリ全体で共有する | Context（テーマ、認証情報など） |
 | サーバーから取得するデータ | Server Components で取得（Next.js, Day 35 で学ぶ） |
 
-> **ポイント**: state は「必要な場所に、できるだけ近くに」置くのが原則です。最初から Context を使わず、props で不便になってから Context を検討しましょう。
+> **ポイント**: state は「必要な場所に、できるだけ近くに」置くのが原則です。最初から Context を使わず、props で不便になってから Context を検討するのが定石です。
 
 ## まとめ
 

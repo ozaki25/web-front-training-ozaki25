@@ -49,7 +49,7 @@ export default function Comment() {
 <div dangerouslySetInnerHTML={{ __html: userInput }} />
 ```
 
-`dangerouslySetInnerHTML` は、Day 39 の構造化データのように**信頼できる HTML だけ**に使いましょう。名前に「dangerously（危険に）」と付いているのは、この理由からです。
+`dangerouslySetInnerHTML` は、Day 39 の構造化データのように**信頼できる HTML だけ**に使うべきです。名前に「dangerously（危険に）」と付いているのは、この理由からです。
 
 ### XSS の対策まとめ
 
@@ -127,7 +127,7 @@ export async function GET() {
 }
 ```
 
-> **`Access-Control-Allow-Origin: *`（すべてのオリジンを許可）は慎重に使いましょう**。公開 API 以外では、許可するオリジンを明示的に指定するべきです。
+> **`Access-Control-Allow-Origin: *`（すべてのオリジンを許可）は慎重に扱う必要があります**。公開 API 以外では、許可するオリジンを明示的に指定するべきです。
 
 ### Next.js での CORS
 
@@ -200,7 +200,7 @@ AUTH_SECRET=your-secret-key
 NEXT_PUBLIC_SITE_URL=https://myapp.example.com
 ```
 
-`NEXT_PUBLIC_` プレフィックスがない環境変数は、Server Components、Server Actions、Route Handlers でしかアクセスできません。データベースの接続情報や API キーなどの機密情報は、`NEXT_PUBLIC_` を付けないでください。
+`NEXT_PUBLIC_` プレフィックスがない環境変数は、Server Components、Server Actions、Route Handlers でしかアクセスできません。データベースの接続情報や API キーなどの機密情報には `NEXT_PUBLIC_` を付けてはいけません。
 
 ## セキュリティチェックリスト
 

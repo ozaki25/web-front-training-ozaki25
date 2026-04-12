@@ -100,7 +100,7 @@ function Chat() {
 
 ## いいねボタンの例
 
-よりシンプルな例を見てみます。
+よりシンプルな例です。
 
 ```tsx
 import { useOptimistic } from "react";
@@ -211,7 +211,7 @@ const allItems = Array.from({ length: 10000 }, (_, i) => `アイテム ${i + 1}`
 
 ## タブ切り替えの例
 
-`useTransition` の典型的な使用例をもう1つ見てみます。
+`useTransition` の典型的な使用例をもう1つ紹介します。
 
 ```tsx
 import { useState, useTransition } from "react";

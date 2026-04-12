@@ -9,7 +9,7 @@
 
 ## 従来のフォーム処理
 
-Day 23 で学んだ `useState` を使ったフォーム処理を振り返りましょう。
+Day 23 で学んだ `useState` を使ったフォーム処理を振り返ります。
 
 ```tsx
 import { useState } from "react";

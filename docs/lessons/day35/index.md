@@ -254,7 +254,7 @@ async function getPosts() {
 
 ## エラーハンドリング
 
-データ取得は失敗する可能性があります。適切なエラー処理の例を見てみます。
+データ取得は失敗する可能性があります。適切なエラー処理の例です。
 
 ```tsx
 export default async function PostsPage() {

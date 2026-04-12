@@ -52,7 +52,7 @@ function Settings() {
 }
 ```
 
-データ取得のロジックが重複しています。これをカスタム Hook に抽出しましょう。
+データ取得のロジックが重複しています。これをカスタム Hook に抽出できます。
 
 ## カスタム Hook の作り方
 
@@ -284,29 +284,14 @@ function ContactPage() {
 ```tsx
 interface ButtonProps {
   variant: "primary" | "danger" | "ghost";
-  size?: "sm" | "md" | "lg";
   children: React.ReactNode;
   onClick?: () => void;
-  disabled?: boolean;
   type?: "button" | "submit";
 }
 
-function Button({
-  variant,
-  size = "md",
-  children,
-  onClick,
-  disabled,
-  type = "button",
-}: ButtonProps) {
-  const className = `btn btn-${variant} btn-${size}`;
+function Button({ variant, children, onClick, type = "button" }: ButtonProps) {
   return (
-    <button
-      type={type}
-      className={className}
-      onClick={onClick}
-      disabled={disabled}
-    >
+    <button type={type} className={`btn btn-${variant}`} onClick={onClick}>
       {children}
     </button>
   );
