@@ -227,54 +227,13 @@ export default async function BlogPostPage({ params }: Props) {
 
 ### robots.txt
 
-検索エンジンのクローラー（Web ページを自動的に巡回するプログラム）に対して、どのページをクロールしてよいか指示するファイルです。
-
-```tsx
-// src/app/robots.ts
-import type { MetadataRoute } from "next";
-
-export default function robots(): MetadataRoute.Robots {
-  return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-      disallow: "/dashboard/",
-    },
-    sitemap: "https://myapp.example.com/sitemap.xml",
-  };
-}
-```
+検索エンジンのクローラー（Web ページを自動的に巡回するプログラム）に対して、どのページをクロールしてよいか指示するファイルです。Next.js では `src/app/robots.ts` を作り、`MetadataRoute.Robots` 型のオブジェクトを返す関数をエクスポートします。ここで「全ページを許可するが `/dashboard/` は除外する」といったルールを定義できます。
 
 ### sitemap.xml
 
-サイト内のすべてのページを一覧にしたファイルです。検索エンジンがページを見つけやすくなります。
+サイト内のすべてのページを一覧にしたファイルです。検索エンジンがページを見つけやすくなります。Next.js では `src/app/sitemap.ts` を作り、`MetadataRoute.Sitemap` 型の配列を返す関数をエクスポートします。
 
-```tsx
-// src/app/sitemap.ts
-import type { MetadataRoute } from "next";
-
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const res = await fetch("https://api.example.com/posts");
-  const posts = await res.json();
-
-  const blogEntries = posts.map((post: { slug: string; updatedAt: string }) => ({
-    url: `https://myapp.example.com/blog/${post.slug}`,
-    lastModified: post.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
-
-  return [
-    {
-      url: "https://myapp.example.com",
-      lastModified: new Date(),
-      changeFrequency: "yearly",
-      priority: 1,
-    },
-    ...blogEntries,
-  ];
-}
-```
+静的なページだけでなく、データベースからブログ記事の一覧を取得して動的に URL を生成することもできます。各エントリには URL、最終更新日、更新頻度、優先度などを指定できます。
 
 ## まとめ
 

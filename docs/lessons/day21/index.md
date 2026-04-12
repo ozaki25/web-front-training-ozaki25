@@ -228,9 +228,9 @@ function App() {
 }
 ```
 
-## React が画面に表示するまでの流れ
+## React が画面に表示するまでの裏側
 
-React アプリケーションのエントリーポイントは、通常このようになっています。
+React アプリケーションの内部では、画面表示までに次のような処理が行われています。エントリーポイントのコードで見てみましょう。
 
 ```tsx
 import { createRoot } from "react-dom/client";
@@ -240,12 +240,9 @@ const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
 ```
 
-1. HTML に `<div id="root"></div>` という空の要素がある
-2. `createRoot` でその要素を React のルートとして指定する
-3. `render` でルートコンポーネント（`App`）を描画する
-4. React が `App` を実行し、返された JSX から仮想 DOM を作り、実際の DOM に反映する
+HTML には `<div id="root"></div>` という空の要素だけがあり、`createRoot` がこの要素を React の管理下に置きます。`render` が呼ばれると、React は `App` コンポーネントを実行し、返された JSX から仮想 DOM を作り、実際の DOM に反映します。つまり、最初は空っぽの HTML が、JavaScript の実行によって画面に変わるという仕組みです。
 
-> **ポイント**: Next.js ではこのセットアップは自動で行われるので、自分で書く必要はありません。ただし、裏でこの仕組みが動いていることを知っておくと理解が深まります。
+> **ポイント**: Next.js ではこのセットアップは自動で行われるので、自分で書く必要はありません。ただし、裏でこの仕組みが動いていることを知っておくと、React の動作を理解する助けになります。
 
 ## まとめ
 

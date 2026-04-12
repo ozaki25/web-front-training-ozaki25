@@ -104,27 +104,23 @@ export default function HeroSection() {
 
 これは「画面幅 768px 以下では画面幅いっぱい、1200px 以下では半分、それ以上では 3 分の 1」という意味です。ブラウザはこの情報を元に、最適なサイズの画像だけをダウンロードします。
 
-### 外部画像の設定
+### 外部画像の許可設定
 
-外部サイトの画像を使う場合は、`next.config.ts` でドメインを許可する必要があります。
+セキュリティ上の理由から、`next/image` はデフォルトで外部サイトの画像を最適化しません。外部画像を使う場合は、`next.config.ts` の `images.remotePatterns` で許可するドメインを明示的に指定します。
 
 ```ts
-// next.config.ts
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.example.com",
-      },
-    ],
-  },
-};
-
-export default nextConfig;
+// next.config.ts の images 設定（抜粋）
+images: {
+  remotePatterns: [
+    {
+      protocol: "https",
+      hostname: "images.example.com",
+    },
+  ],
+}
 ```
+
+これは「どのドメインの画像をサーバーで処理してよいか」を宣言するものです。許可していないドメインの画像を `<Image>` に渡すとビルドエラーになります。悪意のある外部画像を処理させる攻撃を防ぐための仕組みです。
 
 ## next/font — フォントの最適化
 

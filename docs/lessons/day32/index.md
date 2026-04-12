@@ -22,38 +22,26 @@ Next.js は React をベースにした**フルスタックフレームワーク
 
 Day 31 で学んだように、React 単体で作ると CSR（Client-Side Rendering）になり、初期表示の遅さや SEO の弱さが課題になります。Next.js は SSR（Server-Side Rendering）を標準でサポートし、これらの問題を解決します。
 
-## Next.js プロジェクトを作る
+## Next.js プロジェクトの作成ツール
 
-プロジェクトを作成するには、ターミナルで以下を実行します。
+Next.js には `create-next-app` という公式のプロジェクト作成ツールがあります。これを実行すると、必要なファイル構成や設定が整った状態のプロジェクトが自動生成されます。
 
-```bash
-npx create-next-app@latest my-app
-```
+作成時にいくつかのオプションを選択できます。配属先のプロジェクトで使われる構成は以下の通りです。
 
-対話形式でいくつか質問されます。配属先のプロジェクトに合わせた選択肢は以下の通りです。
+| オプション | 選択 | 意味 |
+|-----------|------|------|
+| TypeScript | Yes | 型付きの JavaScript で開発する |
+| ESLint | Yes | コードの問題を自動検出するツールを導入する |
+| Tailwind CSS | Yes | ユーティリティファーストの CSS フレームワークを導入する |
+| `src/` ディレクトリ | Yes | ソースコードを `src/` 配下にまとめる |
+| App Router | Yes | Next.js の最新ルーティング方式を使う |
+| Turbopack | Yes | 高速な開発サーバーを使う |
 
-```
-✔ Would you like to use TypeScript? … Yes
-✔ Would you like to use ESLint? … Yes
-✔ Would you like to use Tailwind CSS? … Yes
-✔ Would you like your code inside a `src/` directory? … Yes
-✔ Would you like to use App Router? (recommended) … Yes
-✔ Would you like to use Turbopack for next dev? … Yes
-✔ Would you like to customize the import alias? … No
-```
-
-作成されたプロジェクトに移動して、開発サーバーを起動します。
-
-```bash
-cd my-app
-npm run dev
-```
-
-ブラウザで `http://localhost:3000` を開くと、Next.js のウェルカムページが表示されます。
+これらのオプションにより、TypeScript + App Router + Tailwind CSS という現在の主流な構成が整います。
 
 ## ディレクトリ構成を理解する
 
-生成されたプロジェクトの構成は以下のようになっています。
+作成されたプロジェクトの構成は以下のようになっています。
 
 ```
 my-app/
@@ -96,7 +84,7 @@ src/app/
 - **`page.tsx`** がそのパスで表示されるページになる
 - `page.tsx` がないフォルダは URL としてアクセスできない
 
-たとえば `src/app/about/page.tsx` を作成すると、以下のようになります。
+たとえば `src/app/about/page.tsx` は以下のようなコンポーネントになります。
 
 ```tsx
 export default function AboutPage() {
@@ -109,7 +97,7 @@ export default function AboutPage() {
 }
 ```
 
-ブラウザで `http://localhost:3000/about` にアクセスすると、作成したページが表示されます。ルーティングの設定コードは一切書いていません。
+このファイルを置くだけで `/about` という URL が使えるようになります。ルーティングの設定コードは一切書いていません。
 
 ### 特別な意味を持つファイル名
 
