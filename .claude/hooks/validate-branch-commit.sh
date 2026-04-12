@@ -26,7 +26,7 @@ if [[ "$COMMAND" =~ git\ checkout\ -b\ ([^ ]+) ]] || [[ "$COMMAND" =~ git\ switc
 fi
 
 # --- 許可外ブランチへの push 禁止 ---
-if [[ "$COMMAND" =~ git\ push ]] && [[ "$COMMAND" =~ origin\ ([^ ]+) ]]; then
+if [[ "$COMMAND" =~ git\ push ]] && [[ ! "$COMMAND" =~ --delete ]] && [[ "$COMMAND" =~ origin\ ([^ ]+) ]]; then
   PUSHBRANCH="${BASH_REMATCH[1]}"
   if [[ ! "$PUSHBRANCH" =~ ^(main|draft|publish/day[0-9]{2})$ ]]; then
     block "ブランチ運用違反: 許可されたブランチは main, draft, publish/dayXX のみです。'$PUSHBRANCH' にはプッシュできません"
@@ -67,6 +67,22 @@ if [[ "$COMMAND" =~ git\ commit ]]; then
         block "ブランチ運用違反: main の docs/index.md に直接レッスンリンクを追加しないでください。publish-lesson スキルを使ってください"
       fi
     fi
+
+    # main の config.mts にレッスンリンクを追加しようとしている
+    if echo "$STAGED" | grep -q '^docs/\.vitepress/config\.mts$'; then
+      lesson_links=$(git diff --cached -- docs/.vitepress/config.mts | grep '^\+.*\/lessons\/day' || true)
+      if [ -n "$lesson_links" ]; then
+        block "ブランチ運用違反: main の config.mts に直接レッスンリンクを追加しないでください。publish-lesson スキルを使ってください"
+      fi
+    fi
+
+    # main の introduction にレッスンリンクを追加しようとしている
+    if echo "$STAGED" | grep -q '^docs/introduction/'; then
+      lesson_links=$(git diff --cached -- docs/introduction/ | grep '^\+.*\/lessons\/day' || true)
+      if [ -n "$lesson_links" ]; then
+        block "ブランチ運用違反: main の introduction に直接レッスンリンクを追加しないでください。publish-lesson スキルを使ってください"
+      fi
+    fi
   fi
 
   # draft に方針・設定・main 専用ファイルをコミットしようとしている
@@ -77,11 +93,35 @@ if [[ "$COMMAND" =~ git\ commit ]]; then
     fi
   fi
 
-  # publish ブランチで許可外のファイルをコミットしようとしている
+  # publish ブランチのチェック
   if [[ "$BRANCH" =~ ^publish/day[0-9]{2}$ ]]; then
+    # 許可外のファイルをコミットしようとしている
     bad=$(echo "$STAGED" | grep -vE '^docs/lessons/day[0-9]+/|^docs/\.vitepress/config\.mts$|^docs/index\.md$' | grep -v '^$' || true)
     if [ -n "$bad" ]; then
       block "ブランチ運用違反: publish ブランチでは該当 Day のレッスン、サイドバー、index.md のみコミットできます。対象: $bad"
+    fi
+
+    # デッドリンクチェック: ステージされた md ファイル内のレッスンリンクが存在するか検証
+    staged_md=$(echo "$STAGED" | grep '\.md$' || true)
+    if [ -n "$staged_md" ]; then
+      dead_links=""
+      for f in $staged_md; do
+        links=$(git diff --cached -- "$f" | grep '^\+' | grep -oE '/lessons/day[0-9]+/' || true)
+        for link in $links; do
+          dir="docs${link}index.md"
+          # main に存在するか
+          git show "origin/main:$dir" >/dev/null 2>&1 && continue
+          # 同じコミットにステージされているか
+          echo "$STAGED" | grep -q "^${dir}$" && continue
+          # ステージされたディレクトリ内か
+          link_dir="docs${link}"
+          echo "$STAGED" | grep -q "^${link_dir}" && continue
+          dead_links="${dead_links}${link} (in ${f})\n"
+        done
+      done
+      if [ -n "$dead_links" ]; then
+        block "デッドリンク検出: 以下のリンク先が main に存在せず、このコミットにも含まれていません。\n${dead_links}draft のファイルは変更せず、publish ブランチ上でリンクを削除してください。"
+      fi
     fi
   fi
 

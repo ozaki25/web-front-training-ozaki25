@@ -15,6 +15,12 @@ block() {
   exit 0
 }
 
+# プロジェクト外のファイルはチェック対象外
+PROJECT_DIR=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
+if [ -n "$PROJECT_DIR" ] && [[ "$FILE_PATH" != "$PROJECT_DIR"/* ]]; then
+  exit 0
+fi
+
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 
 # 許可外ブランチでの編集をすべてブロック
