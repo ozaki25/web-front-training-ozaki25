@@ -44,10 +44,6 @@ graph LR
     A["header<br/>（banner）"] --> B["nav<br/>（navigation）"]
     B --> C["main<br/>（main）"]
     C --> D["footer<br/>（contentinfo）"]
-    style A fill:#e8f5e9
-    style B fill:#e3f2fd
-    style C fill:#fff3e0
-    style D fill:#fce4ec
 ```
 
 カッコ内の `banner`、`navigation` などは、ブラウザがタグから自動的に割り当てる**ロール**（役割）です。スクリーンリーダーはこのロールを使って「ナビゲーションに移動」「メインコンテンツに移動」といった操作を提供します。
