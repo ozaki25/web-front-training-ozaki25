@@ -29,10 +29,19 @@ if [ "$BRANCH" = "main" ]; then
   fi
 fi
 
-# draft で方針・設定ファイルを編集しようとしている
+# draft で方針・設定・main 専用ファイルを編集しようとしている
 if [ "$BRANCH" = "draft" ]; then
-  if [[ "$FILE_PATH" =~ CLAUDE\.md ]] || [[ "$FILE_PATH" =~ \.claude/skills/ ]] || [[ "$FILE_PATH" =~ \.claude/hooks/ ]] || [[ "$FILE_PATH" =~ \.claude/settings\.json ]]; then
-    block "ブランチ運用違反: 方針・設定ファイルは main で編集してください。対象: $FILE_PATH"
+  if [[ "$FILE_PATH" =~ CLAUDE\.md ]] || [[ "$FILE_PATH" =~ \.claude/ ]] || [[ "$FILE_PATH" =~ docs/introduction/ ]] || [[ "$FILE_PATH" =~ ^package\.json$ ]] || [[ "$FILE_PATH" == *"/package.json" ]]; then
+    block "ブランチ運用違反: このファイルは main で編集してください。対象: $FILE_PATH"
+  fi
+fi
+
+# publish ブランチで許可されたファイル以外を編集しようとしている
+if [[ "$BRANCH" =~ ^publish/day[0-9]{2}$ ]]; then
+  if [[ "$FILE_PATH" =~ docs/lessons/day[0-9]+/ ]] || [[ "$FILE_PATH" =~ docs/\.vitepress/config\.mts ]] || [[ "$FILE_PATH" =~ docs/index\.md ]]; then
+    : # 許可
+  else
+    block "ブランチ運用違反: publish ブランチでは該当 Day のレッスン、サイドバー、index.md のみ変更できます。対象: $FILE_PATH"
   fi
 fi
 

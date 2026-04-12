@@ -37,6 +37,11 @@ fi
 if [[ "$COMMAND" =~ git\ commit ]]; then
   STAGED=$(git diff --cached --name-only)
 
+  # マージ中の場合はスキップ（main → draft の同期でCLAUDE.md等が含まれるため）
+  if [ -f .git/MERGE_HEAD ]; then
+    exit 0
+  fi
+
   # main にコンテンツファイルをコミットしようとしている
   if [ "$BRANCH" = "main" ]; then
     bad=$(echo "$STAGED" | grep -E '^docs/lessons/|^curriculum\.md$|^tech-versions\.md$' || true)
@@ -53,11 +58,19 @@ if [[ "$COMMAND" =~ git\ commit ]]; then
     fi
   fi
 
-  # draft に方針・スキルファイルをコミットしようとしている
+  # draft に方針・設定・main 専用ファイルをコミットしようとしている
   if [ "$BRANCH" = "draft" ]; then
-    bad=$(echo "$STAGED" | grep -E '^CLAUDE\.md$|^\.claude/skills/|^\.claude/hooks/|^\.claude/settings\.json$' || true)
+    bad=$(echo "$STAGED" | grep -E '^CLAUDE\.md$|^\.claude/|^docs/introduction/|^package\.json$' || true)
     if [ -n "$bad" ]; then
-      block "ブランチ運用違反: 方針・設定ファイルは main にコミットしてください。対象: $bad"
+      block "ブランチ運用違反: このファイルは main にコミットしてください。対象: $bad"
+    fi
+  fi
+
+  # publish ブランチで許可外のファイルをコミットしようとしている
+  if [[ "$BRANCH" =~ ^publish/day[0-9]{2}$ ]]; then
+    bad=$(echo "$STAGED" | grep -vE '^docs/lessons/day[0-9]+/|^docs/\.vitepress/config\.mts$|^docs/index\.md$' | grep -v '^$' || true)
+    if [ -n "$bad" ]; then
+      block "ブランチ運用違反: publish ブランチでは該当 Day のレッスン、サイドバー、index.md のみコミットできます。対象: $bad"
     fi
   fi
 
