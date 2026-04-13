@@ -128,11 +128,13 @@ if [[ "$COMMAND" =~ git\ commit ]]; then
   # --- Markdown 太字の描画チェック ---
   # 全角閉じ括弧の直後の ** は VitePress (markdown-it) で太字が閉じない
   # 例: **目次（アウトライン）**を → アスタリスクがそのまま表示される
+  # 注: LC_ALL=C.UTF-8 を指定しないと grep -P がバイト単位で動作し、
+  # 日本語文字の末尾バイトが全角括弧の一部と誤マッチする
   staged_md=$(echo "$STAGED" | grep '\.md$' || true)
   if [ -n "$staged_md" ]; then
     broken_bold=""
     for f in $staged_md; do
-      issues=$(git show ":$f" 2>/dev/null | grep -Pn '[）」】〉》]\*\*[^ *]' || true)
+      issues=$(git show ":$f" 2>/dev/null | LC_ALL=C.UTF-8 grep -Pn '[）」】〉》]\*\*[^ *]' || true)
       if [ -n "$issues" ]; then
         broken_bold="${broken_bold}${f}:\n${issues}\n"
       fi
