@@ -94,35 +94,36 @@ email=user@example.com&message=こんにちは
 <input type="email" id="email" name="email" />
 ```
 
-## button の type — デフォルトが submit という落とし穴
+## button の type — フォームを送信するのは「submit ボタン」
 
-`<button>` タグには `type` 属性があります。
+ここまで「送信ボタンを押すとフォームが送信される」と書いてきましたが、もう少し正確に言うと、フォームを送信するのは `<button>` の中でも **`type="submit"` のボタン** です。
+
+`<button>` タグには `type` 属性があり、押したときの動作を3種類から選べます。
 
 | type | 動作 |
 |------|------|
-| `submit` | フォームを送信する（**デフォルト**） |
-| `button` | 何もしない（JavaScript で制御する） |
+| `submit` | フォームを送信する |
+| `button` | 何もしない（JavaScript で動作を付ける） |
 | `reset` | フォームの入力値をリセットする |
 
-**`type` を省略すると `submit` になります。** これがフォーム内で予期しない送信を引き起こすことがあります。
+そして注意点として、**`type` を省略すると `submit` になります。** つまり何も指定しないボタンは「フォーム送信ボタン」として扱われます。
 
 ```html
 <form action="/search" method="get">
   <label for="keyword">検索</label>
   <input type="text" id="keyword" name="q" />
 
-  <!-- ❌ type を省略すると submit になる -->
-  <!-- このボタンを押すとフォームが送信されてしまう -->
+  <!-- ❌ type を省略している → 押すとフォームが送信されてしまう -->
   <button onclick="toggleFilter()">フィルターを表示</button>
 
   <button type="submit">検索する</button>
 </form>
 ```
 
-「フィルターを表示」のつもりが、フォームが送信されてしまいます。
+「フィルターを表示」のつもりが、ボタンを押した瞬間にフォームが送信されてしまいます。
 
 ```html
-<!-- ✅ type="button" を明示する -->
+<!-- ✅ type="button" を明示する → 送信されない -->
 <button type="button" onclick="toggleFilter()">フィルターを表示</button>
 ```
 
