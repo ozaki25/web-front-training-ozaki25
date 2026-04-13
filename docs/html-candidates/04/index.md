@@ -1,10 +1,10 @@
-# Day X: フォーム — HTML だけで送信もバリデーションもできる
+# Day X: フォーム — HTML だけで送信できる仕組み
 
 ## 今日のゴール
 
 - HTML だけでフォーム送信ができることを知る
-- name、label、type、required などの属性が、それぞれ何を担当しているかを知る
-- フォームを「正しく」実装するために HTML が用意している仕組みを知る
+- form、name、button の type が送信の仕組みをどう支えているかを知る
+- label や fieldset がフォームの操作性とアクセシビリティを支えていることを知る
 
 ## フォームは JavaScript なしで送信できる
 
@@ -150,90 +150,6 @@ email=user@example.com&message=こんにちは
 
 `<label>` の `for` 属性と `<input>` の `id` 属性を同じ値にするだけで、ラベルクリックで入力欄にフォーカスが移り、スクリーンリーダーも「メールアドレス、テキスト入力」と読み上げてくれます。
 
-## input の type — ブラウザの振る舞いを変えるスイッチ
-
-`<input>` の `type` を正しく選ぶだけで、ブラウザが **自動で** 以下をやってくれます。
-
-1. **スマートフォンのキーボードを最適化** する
-2. **入力値のバリデーション（チェック）** を行う
-3. **専用の入力 UI** を表示する
-
-```html
-<!-- type="email": メールアドレス用キーボード（@ が打ちやすい）+ 形式チェック -->
-<input type="email" name="email" />
-
-<!-- type="tel": 電話番号用の数字キーボード -->
-<input type="tel" name="phone" />
-
-<!-- type="url": URL 用キーボード（/ や .com が打ちやすい）+ 形式チェック -->
-<input type="url" name="website" />
-
-<!-- type="date": カレンダー UI が表示される -->
-<input type="date" name="birthday" />
-
-<!-- type="number": 数値専用。増減ボタンが付く -->
-<input type="number" name="quantity" min="1" max="99" />
-```
-
-| type | キーボード | バリデーション | 専用 UI |
-|------|-----------|---------------|---------|
-| `email` | @ キーが表示される | メールアドレス形式をチェック | - |
-| `tel` | 数字キーボード | なし（電話番号の形式は国によって違うため） | - |
-| `url` | / や .com が表示される | URL 形式をチェック | - |
-| `date` | - | 日付形式をチェック | カレンダー |
-| `number` | 数字キーボード | 数値かどうかをチェック | 増減ボタン |
-
-`type="text"` のままでも JavaScript で同じことはできますが、HTML だけでこれだけの機能が手に入ります。
-
-## ブラウザ組み込みバリデーション
-
-JavaScript を1行も書かなくても、HTML の属性だけで入力チェックができます。
-
-```html
-<form action="/register" method="post">
-  <!-- required: 必須入力 -->
-  <label for="username">ユーザー名</label>
-  <input type="text" id="username" name="username" required />
-
-  <!-- minlength / maxlength: 文字数の範囲 -->
-  <label for="password">パスワード（8文字以上）</label>
-  <input
-    type="password"
-    id="password"
-    name="password"
-    required
-    minlength="8"
-  />
-
-  <!-- min / max: 数値の範囲 -->
-  <label for="age">年齢（18〜120）</label>
-  <input type="number" id="age" name="age" min="18" max="120" />
-
-  <!-- pattern: 正規表現で形式を指定 -->
-  <label for="zipcode">郵便番号（例: 123-4567）</label>
-  <input
-    type="text"
-    id="zipcode"
-    name="zipcode"
-    pattern="\d{3}-\d{4}"
-    title="半角数字3桁-半角数字4桁の形式で入力してください"
-  />
-
-  <button type="submit">登録</button>
-</form>
-```
-
-| 属性 | 効果 |
-|------|------|
-| `required` | 空のまま送信できない |
-| `minlength` / `maxlength` | 文字数の最小・最大 |
-| `min` / `max` | 数値の最小・最大 |
-| `pattern` | 正規表現にマッチするかチェック。`title` 属性でエラー時のヒントを指定できる |
-
-このフォームで空欄のまま送信ボタンを押すと、ブラウザが自動で「このフィールドを入力してください」のようなメッセージを表示してくれます。
-
-> **注意**: ブラウザのバリデーションだけでは十分ではありません。ユーザーが DevTools で `required` を削除することもできます。サーバー側でのチェックは別途必要です。ただし HTML のバリデーションは「最初の防御線」として有効で、ユーザーに即座にフィードバックを返せます。
-
 ## fieldset と legend — 入力欄をグループ化する
 
 関連する入力欄をまとめるのが `<fieldset>` と `<legend>` です。
@@ -273,6 +189,4 @@ JavaScript を1行も書かなくても、HTML の属性だけで入力チェッ
 - `name` 属性がない入力欄は送信データに含まれない
 - `<button>` の `type` はデフォルトが `submit`。フォーム内で送信目的でない button には `type="button"` を付ける
 - `<label>` の `for` と `<input>` の `id` を紐付けないと、操作性もアクセシビリティも壊れる
-- `<input>` の `type` を正しく選ぶと、キーボード最適化・バリデーション・専用 UI が手に入る
-- `required`、`min`/`max`、`pattern` で HTML の属性だけで入力チェックができる
 - `<fieldset>` と `<legend>` で関連する入力欄をグループ化できる
