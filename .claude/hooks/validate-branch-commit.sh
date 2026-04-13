@@ -132,7 +132,7 @@ if [[ "$COMMAND" =~ git\ commit ]]; then
   if [ -n "$staged_md" ]; then
     broken_bold=""
     for f in $staged_md; do
-      issues=$(git show ":$f" 2>/dev/null | grep -n '[）」】〉》]\*\*[^ *]' || true)
+      issues=$(git show ":$f" 2>/dev/null | grep -Pn '[）」】〉》]\*\*[^ *]' || true)
       if [ -n "$issues" ]; then
         broken_bold="${broken_bold}${f}:\n${issues}\n"
       fi
