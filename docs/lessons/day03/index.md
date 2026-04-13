@@ -1,308 +1,192 @@
-# Day 3: フォームとテーブル
+# Day 3: フォーム — HTML だけで送信できる仕組み
 
 ## 今日のゴール
 
-- フォーム要素（input、select、textarea）の使い方を知る
-- `<label>` と入力欄の紐付けが重要な理由を知る
-- テーブルの正しいマークアップ方法を知る
-- フォームとテーブルにおけるアクセシビリティの考え方を知る
+- HTML だけでフォーム送信ができることを知る
+- form、name、button の type が送信の仕組みをどう支えているかを知る
+- label や fieldset がフォームの操作性とアクセシビリティを支えていることを知る
 
-## フォーム — ユーザーからデータを受け取る
+## フォームは JavaScript なしで送信できる
 
-Web アプリケーションではログイン、検索、お問い合わせなど、ユーザーにデータを入力してもらう場面がたくさんあります。そのための仕組みがフォームです。
+React や Next.js でフォームを作るとき、`onSubmit` で関数を呼んで、入力値を集めて、`fetch` で送信する ── そんなコードを見たことがあるかもしれません。
 
-### フォームの基本構造
+実は **HTML だけでフォーム送信はできます。** JavaScript は1行もいりません。
 
 ```html
-<form action="/submit" method="post">
-  <!-- 入力欄をここに書く -->
+<form action="/api/contact" method="post">
+  <label for="email">メールアドレス</label>
+  <input type="email" id="email" name="email" />
+
+  <label for="message">メッセージ</label>
+  <textarea id="message" name="message"></textarea>
+
   <button type="submit">送信</button>
 </form>
 ```
 
+このフォームの送信ボタンを押すと、ブラウザが自動で:
+
+1. 入力欄のデータを集める
+2. `action` で指定された URL に
+3. `method` で指定された方法で
+4. データを送信する
+
+JavaScript で同じことを書こうとすると、データの収集、サーバーへの送信、エラー処理などを自分で実装することになります。HTML はこれらをすべて、タグと属性だけで提供しています。
+
+## 送信先と送信方法 — action と method
+
+`<form>` タグには「どこに」「どうやって」データを送るかを指定します。
+
 | 属性 | 役割 |
 |------|------|
 | `action` | データの送信先 URL |
-| `method` | 送信方法。`get`（URL に付けて送信）または `post`（本文に含めて送信） |
-
-> 今回はフォームの見た目と構造に集中します。実際にデータを送信する処理は、JavaScript や Next.js で学びます。
-
-## input — さまざまな入力欄
-
-`<input>` は `type` 属性によって全く異なる入力欄になります。
+| `method` | `get` は URL のクエリパラメータとして、`post` はリクエスト本文として送信 |
 
 ```html
-<form action="/register" method="post">
-  <div>
-    <label for="username">ユーザー名</label>
-    <input type="text" id="username" name="username" />
-  </div>
+<!-- 検索フォーム: get を使う -->
+<!-- 送信すると /search?q=入力内容 という URL になる -->
+<form action="/search" method="get">
+  <label for="q">検索</label>
+  <input type="search" id="q" name="q" />
+  <button type="submit">検索する</button>
+</form>
 
-  <div>
-    <label for="email">メールアドレス</label>
-    <input type="email" id="email" name="email" />
-  </div>
-
-  <div>
-    <label for="password">パスワード</label>
-    <input type="password" id="password" name="password" />
-  </div>
-
-  <div>
-    <label for="age">年齢</label>
-    <input type="number" id="age" name="age" min="0" max="150" />
-  </div>
-
-  <div>
-    <label for="birthday">生年月日</label>
-    <input type="date" id="birthday" name="birthday" />
-  </div>
-
-  <button type="submit">登録</button>
+<!-- お問い合わせフォーム: post を使う -->
+<form action="/api/contact" method="post">
+  <label for="email">メールアドレス</label>
+  <input type="email" id="email" name="email" />
+  <button type="submit">送信</button>
 </form>
 ```
 
-このコードをブラウザで開くと、`type` によって入力欄の見た目や動作が変わることがわかります。`email` はメールアドレスの形式チェックが自動で入り、`number` は数値しか入力できません。
+使い分けの基準は **「サーバーの状態を変えるかどうか」** です。
 
-### よく使う input の type
+- **`get`**: データの取得や検索など、サーバーの状態を変えない操作。結果は URL に残るのでブックマークや共有ができ、ブラウザのキャッシュも効く
+- **`post`**: 登録・更新・送信など、サーバーの状態を変える操作。リロードや戻る操作で気軽に再送信されたくないもの
 
-| type | 用途 |
+## name 属性 — 送信データのキー
+
+`name` 属性は、フォームデータを送信するときの **キー名** になります。
+
+```html
+<form action="/api/contact" method="post">
+  <input type="email" name="email" value="user@example.com" />
+  <textarea name="message">こんにちは</textarea>
+  <button type="submit">送信</button>
+</form>
+```
+
+このフォームを送信すると、ブラウザは以下のようなデータを送ります。
+
+```
+email=user@example.com&message=こんにちは
+```
+
+`name` 属性がない入力欄は、**送信データに含まれません。** 見た目には入力できるのにデータが送られないので、気づきにくいバグの原因になります。
+
+```html
+<!-- ❌ name がない → データが送信されない -->
+<input type="email" id="email" />
+
+<!-- ✅ name がある → email=... として送信される -->
+<input type="email" id="email" name="email" />
+```
+
+## button の type — フォームを送信するのは「submit ボタン」
+
+ここまで「送信ボタンを押すとフォームが送信される」と書いてきましたが、もう少し正確に言うと、フォームを送信するのは `<button>` の中でも **`type="submit"` のボタン** です。
+
+`<button>` タグには `type` 属性があり、押したときの動作を3種類から選べます。
+
+| type | 動作 |
 |------|------|
-| `text` | 一般的なテキスト入力 |
-| `email` | メールアドレス（形式の自動バリデーション付き） |
-| `password` | パスワード（入力文字が隠れる） |
-| `number` | 数値 |
-| `date` | 日付（カレンダーUI が出る） |
-| `checkbox` | チェックボックス |
-| `radio` | ラジオボタン（複数から 1 つ選択） |
-| `search` | 検索（クリアボタンが付くことがある） |
-| `tel` | 電話番号（スマホで数字キーボードが出る） |
+| `submit` | フォームを送信する |
+| `button` | フォーム送信は行わず、クリック時の処理を JavaScript で自由に書きたいときに使う |
+| `reset` | フォームの入力値をリセットする |
 
-適切な `type` を選ぶことで、ブラウザが自動的にバリデーション（入力チェック）を行ってくれたり、スマートフォンで最適なキーボードが表示されたりします。
+`type="button"` は、たとえば「フィルターを開く」「モーダルを表示する」のように、送信ではない独自のクリック処理を JavaScript で実装したいときに使います。
 
-## label — 入力欄に名前を付ける
-
-`<label>` は入力欄の「ラベル（名前）」を表すタグです。
-
-### label と input の紐付け方
-
-**方法 1: `for` 属性と `id` を一致させる（推奨）**
+そして注意点として、**`type` を省略すると `submit` になります。** つまり何も指定しないボタンは「フォーム送信ボタン」として扱われます。
 
 ```html
-<label for="username">ユーザー名</label>
-<input type="text" id="username" name="username" />
+<form action="/search" method="get">
+  <label for="keyword">検索</label>
+  <input type="text" id="keyword" name="q" />
+
+  <!-- ❌ type を省略している → 押すとフォームが送信されてしまう -->
+  <button onclick="toggleFilter()">フィルターを表示</button>
+
+  <button type="submit">検索する</button>
+</form>
 ```
 
-**方法 2: label で input を囲む**
+「フィルターを表示」のつもりが、ボタンを押した瞬間にフォームが送信されてしまいます。
 
 ```html
-<label>
-  ユーザー名
-  <input type="text" name="username" />
-</label>
+<!-- ✅ type="button" を明示する → 送信されない -->
+<button type="button" onclick="toggleFilter()">フィルターを表示</button>
 ```
 
-### なぜ label の紐付けが重要なのか
+**フォーム送信が目的でない button には、必ず `type="button"` を付ける。** これは習慣にしておくとバグを防げます。
 
-1. **クリック範囲の拡大**: ラベルをクリックすると対応する入力欄にフォーカスが移ります。チェックボックスなど小さな要素で特に便利です
-2. **アクセシビリティ**: スクリーンリーダーは入力欄にフォーカスしたとき、紐付けられた label のテキストを読み上げます。label がなければ「テキスト入力」としか読み上げられず、何を入力すればいいのかわかりません
-3. **スマートフォンでの操作性**: タッチ領域が広くなり、押し間違いが減ります
+## label の紐付け — ないと何が壊れるか
 
-**label なしの input は、名前のない入力欄です。** 見た目ではわかっていても、スクリーンリーダーには伝わりません。
-
-## select と textarea
-
-### ドロップダウン選択
+`<label>` を `<input>` に紐付けないと、以下が壊れます。
 
 ```html
-<label for="prefecture">都道府県</label>
-<select id="prefecture" name="prefecture">
-  <option value="">選択してください</option>
-  <option value="tokyo">東京都</option>
-  <option value="osaka">大阪府</option>
-  <option value="fukuoka">福岡県</option>
-</select>
+<!-- ❌ 紐付けがない -->
+<label>メールアドレス</label>
+<input type="email" id="email" name="email" />
 ```
 
-最初の `<option>` に空の `value` を設定してプレースホルダーにするのが一般的です。
-
-### 複数行テキスト
+1. **クリック範囲**: 「メールアドレス」というテキストをクリックしても入力欄にフォーカスが移らない。特にチェックボックスやラジオボタンでは、小さなボックス部分をピンポイントでクリックする必要がある
+2. **スクリーンリーダー**: 入力欄にフォーカスしたとき「テキスト入力」としか読み上げられない。何を入力すればいいかわからない
 
 ```html
-<label for="message">お問い合わせ内容</label>
-<textarea id="message" name="message" rows="5" cols="40"></textarea>
+<!-- ✅ for と id で紐付ける -->
+<label for="email">メールアドレス</label>
+<input type="email" id="email" name="email" />
 ```
 
-`<textarea>` は `<input>` と違い、閉じタグがあります。`rows` と `cols` で初期サイズを指定できます。
+`<label>` の `for` 属性と `<input>` の `id` 属性を同じ値にするだけで、ラベルクリックで入力欄にフォーカスが移り、スクリーンリーダーも「メールアドレス、テキスト入力」と読み上げてくれます。
 
-## チェックボックスとラジオボタン
+## fieldset と legend — 入力欄をグループ化する
+
+関連する入力欄をまとめるのが `<fieldset>` と `<legend>` です。
 
 ```html
-<fieldset>
-  <legend>利用規約</legend>
-  <label>
-    <input type="checkbox" name="agree" value="yes" />
-    利用規約に同意します
-  </label>
-</fieldset>
+<form action="/order" method="post">
+  <fieldset>
+    <legend>お届け先</legend>
+    <label for="address-name">お名前</label>
+    <input type="text" id="address-name" name="address_name" required />
+    <label for="address-zip">郵便番号</label>
+    <input type="text" id="address-zip" name="address_zip" />
+  </fieldset>
 
-<fieldset>
-  <legend>お支払い方法</legend>
-  <label>
-    <input type="radio" name="payment" value="credit" />
-    クレジットカード
-  </label>
-  <label>
-    <input type="radio" name="payment" value="bank" />
-    銀行振込
-  </label>
-  <label>
-    <input type="radio" name="payment" value="convenience" />
-    コンビニ払い
-  </label>
-</fieldset>
+  <fieldset>
+    <legend>お支払い方法</legend>
+    <label>
+      <input type="radio" name="payment" value="credit" />
+      クレジットカード
+    </label>
+    <label>
+      <input type="radio" name="payment" value="bank" />
+      銀行振込
+    </label>
+  </fieldset>
+
+  <button type="submit">注文を確定する</button>
+</form>
 ```
 
-- **`<fieldset>`** は関連するフォーム要素をグループ化するタグです
-- **`<legend>`** はそのグループのタイトルです
-- ラジオボタンは同じ `name` 属性を持つもの同士で「どれか 1 つだけ選択」になります
-- スクリーンリーダーは fieldset に入ったとき legend の内容を読み上げるので、「お支払い方法、クレジットカード」のように文脈がわかります
-
-## テーブル — 表形式のデータ
-
-テーブルは「行と列で構成される表形式のデータ」を表示するためのタグです。レイアウト（ページの配置）のために使ってはいけません。
-
-```html
-<table>
-  <thead>
-    <tr>
-      <th>商品名</th>
-      <th>価格</th>
-      <th>在庫</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>りんご</td>
-      <td>150円</td>
-      <td>あり</td>
-    </tr>
-    <tr>
-      <td>みかん</td>
-      <td>100円</td>
-      <td>あり</td>
-    </tr>
-    <tr>
-      <td>ぶどう</td>
-      <td>300円</td>
-      <td>なし</td>
-    </tr>
-  </tbody>
-</table>
-```
-
-| タグ | 役割 |
-|------|------|
-| `<table>` | テーブル全体 |
-| `<thead>` | ヘッダー行のグループ |
-| `<tbody>` | データ行のグループ |
-| `<tr>` | 1 行（table row） |
-| `<th>` | ヘッダーセル（table header）。自動的に太字・中央揃えになる |
-| `<td>` | データセル（table data） |
-
-### テーブルのアクセシビリティ
-
-`<th>` と `<td>` の区別は重要です。スクリーンリーダーは `<th>` を「見出しセル」として認識し、データセルを読み上げるときに対応するヘッダーも一緒に読み上げます。たとえば「価格、150円」のように読み上げてくれます。
-
-テーブルの内容がわかりやすいように `<caption>` を付けることもできます。
-
-```html
-<table>
-  <caption>果物の価格一覧</caption>
-  <thead>
-    <!-- ... -->
-  </thead>
-  <tbody>
-    <!-- ... -->
-  </tbody>
-</table>
-```
-
-## 完成形のコード
-
-ここまでの要素を組み合わせると、以下のようなお問い合わせフォームのページになります。
-
-```html
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>お問い合わせ</title>
-  </head>
-  <body>
-    <header>
-      <h1>お問い合わせ</h1>
-      <nav>
-        <ul>
-          <li><a href="index.html">トップに戻る</a></li>
-        </ul>
-      </nav>
-    </header>
-
-    <main>
-      <form action="/contact" method="post">
-        <div>
-          <label for="name">お名前</label>
-          <input type="text" id="name" name="name" required />
-        </div>
-
-        <div>
-          <label for="email">メールアドレス</label>
-          <input type="email" id="email" name="email" required />
-        </div>
-
-        <fieldset>
-          <legend>お問い合わせ種別</legend>
-          <label>
-            <input type="radio" name="category" value="question" checked />
-            質問
-          </label>
-          <label>
-            <input type="radio" name="category" value="request" />
-            要望
-          </label>
-          <label>
-            <input type="radio" name="category" value="bug" />
-            不具合報告
-          </label>
-        </fieldset>
-
-        <div>
-          <label for="message">お問い合わせ内容</label>
-          <textarea id="message" name="message" rows="5" required></textarea>
-        </div>
-
-        <button type="submit">送信する</button>
-      </form>
-    </main>
-
-    <footer>
-      <p>© 2026 サンプルサイト</p>
-    </footer>
-  </body>
-</html>
-```
-
-`required` 属性を付けた入力欄は、空のまま送信しようとするとブラウザが警告を出します。JavaScript を書かなくても基本的なバリデーションが効くのは、適切な HTML 属性を使うメリットです。
+スクリーンリーダーは `<fieldset>` に入ったとき `<legend>` の内容を読み上げます。「お届け先、お名前、テキスト入力」のように、グループ名と一緒に読まれるので、フォームの構造がわかりやすくなります。視覚的にも枠線で囲まれるので、関連する入力欄がひとまとまりだと一目でわかります。
 
 ## まとめ
 
-- `<form>` でフォーム全体を囲み、`<input>`、`<select>`、`<textarea>` で入力欄を作る
-- `<input>` の `type` を適切に選ぶと、ブラウザが自動で入力補助やバリデーションを行う
-- `<label>` と入力欄の紐付けはアクセシビリティの基本。必ずセットで使う
-- `<fieldset>` と `<legend>` で関連する入力欄をグループ化する
-- テーブルは表形式のデータ用。`<th>` と `<td>` を正しく使い分ける
-- `required` や `type="email"` など、HTML の機能だけでも基本的なバリデーションができる
-
-**次のレッスン**: [Day 4: CSS の基本と適用方法](/lessons/day04/)
+- HTML だけでフォーム送信ができる。JavaScript は不要
+- `<form>` の `action` と `method` で送信先と送信方法を指定する
+- `name` 属性がない入力欄は送信データに含まれない
+- `<button>` の `type` はデフォルトが `submit`。フォーム内で送信目的でない button には `type="button"` を付ける
+- `<label>` の `for` と `<input>` の `id` を紐付けないと、操作性もアクセシビリティも壊れる
+- `<fieldset>` と `<legend>` で関連する入力欄をグループ化できる

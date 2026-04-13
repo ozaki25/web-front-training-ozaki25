@@ -26,7 +26,7 @@ export default withMermaid(
           items: [
             { text: "Day 1: HTML の基本構造", link: "/lessons/day01/" },
             { text: "Day 2: セマンティック HTML", link: "/lessons/day02/" },
-            { text: "Day 3: フォームとテーブル", link: "/lessons/day03/" },
+            { text: "Day 3: フォーム", link: "/lessons/day03/" },
             { text: "Day 4: CSS の基本と適用方法", link: "/lessons/day04/" },
             {
               text: "Day 5: CSS ボックスモデルとレイアウト",
