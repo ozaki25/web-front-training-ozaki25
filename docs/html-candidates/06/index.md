@@ -161,6 +161,10 @@ flowchart TD
 1. **情報を伝えている画像か？** → 装飾なら `alt=""`
 2. **テキストだけで同じ情報が伝わるか？** → 隣にテキストがあるなら `alt=""`、なければ内容を書く
 
+より詳しく迷いやすいパターンまで整理したものが W3C WAI にあります。実務で判断に迷ったら参照してみてください。
+
+- [altディシジョンツリー（W3C WAI 日本語版）](https://www.w3.org/WAI/tutorials/images/decision-tree/ja)
+
 ## next/image でも同じルール
 
 Next.js の `next/image` コンポーネントを使う場合でも、`alt` のルールは同じです。
