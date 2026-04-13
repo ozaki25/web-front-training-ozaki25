@@ -201,14 +201,9 @@ export default withMermaid(
             { text: "10: テーブル", link: "/html-candidates/10/" },
             { text: "11: HTML の進化", link: "/html-candidates/11/" },
             { text: "12: AI の HTML をレビュー", link: "/html-candidates/12/" },
-          ],
-        },
-        {
-          text: "追加候補（レビュー用）",
-          items: [
             {
-              text: "カスタムフォーム UI とアクセシビリティ",
-              link: "/drafts/custom-form-ui/",
+              text: "13: カスタムフォーム UI とアクセシビリティ",
+              link: "/html-candidates/13/",
             },
           ],
         },
