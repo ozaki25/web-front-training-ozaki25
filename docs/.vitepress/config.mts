@@ -203,6 +203,15 @@ export default withMermaid(
             { text: "12: AI の HTML をレビュー", link: "/html-candidates/12/" },
           ],
         },
+        {
+          text: "追加候補（レビュー用）",
+          items: [
+            {
+              text: "カスタムフォーム UI とアクセシビリティ",
+              link: "/drafts/custom-form-ui/",
+            },
+          ],
+        },
       ],
       outline: {
         label: "目次",
