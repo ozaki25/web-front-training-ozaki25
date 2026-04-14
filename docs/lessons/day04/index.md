@@ -198,14 +198,15 @@ Chrome 系ブラウザならデモで確認できます（Safari / Firefox で�
 <style>
 .demo-base-select select,
 .demo-base-select ::picker(select) { appearance:base-select !important }
-.demo-base-select select { color-scheme:light !important;border:1px solid #e0e0e0 !important;border-radius:10px !important;font-size:1.1em !important;min-width:280px !important;background:white !important;color:#999 !important;cursor:pointer !important;padding:0 !important }
-.demo-base-select select:hover { border-color:#ccc !important }
-.demo-base-select select button { padding:16px 20px !important;border:none !important;background:transparent !important;color:inherit !important;font:inherit !important;cursor:pointer !important }
-.demo-base-select select::picker-icon { color:#888 !important;font-size:1.3em !important }
-.demo-base-select select::picker(select) { color-scheme:light !important;border:none !important;border-radius:18px !important;padding:16px 0 !important;box-shadow:0 4px 24px rgba(0,0,0,0.1) !important;background:white !important;color:#333 !important }
-.demo-base-select option { padding:28px 28px !important;font-size:1.15em !important;background:white !important;color:#333 !important;border-radius:0 !important }
-.demo-base-select option:hover { background:#f8f8f8 !important }
-.demo-base-select option:checked { font-weight:500 !important;color:#333 !important;background:white !important }
+.demo-base-select select { color-scheme:light !important;border:1px solid #d1d5db !important;border-radius:8px !important;font-size:0.95em !important;min-width:240px !important;background:white !important;color:#374151 !important;cursor:pointer !important;padding:0 !important }
+.demo-base-select select:hover { border-color:#aaa !important }
+.demo-base-select select button { padding:10px 14px !important;border:none !important;background:transparent !important;color:inherit !important;font:inherit !important;cursor:pointer !important }
+.demo-base-select select::picker-icon { color:#888 !important }
+.demo-base-select select::picker(select) { color-scheme:light !important;border:none !important;border-radius:12px !important;padding:4px 0 !important;box-shadow:0 4px 16px rgba(0,0,0,0.1) !important;background:white !important;color:#333 !important }
+.demo-base-select option { padding:14px 18px !important;font-size:0.95em !important;background:white !important;color:#333 !important;border-radius:0 !important;border-bottom:1px solid #f0f0f0 !important }
+.demo-base-select option:last-child { border-bottom:none !important }
+.demo-base-select option:hover { background:#f5f5f5 !important }
+.demo-base-select option:checked { font-weight:500 !important;color:#333 !important;background:#f5f5f5 !important }
 .demo-base-select option::checkmark { display:none !important }
 </style>
 <div class="demo-base-select" style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
