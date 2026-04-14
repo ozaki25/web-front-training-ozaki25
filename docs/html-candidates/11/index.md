@@ -1,4 +1,4 @@
-# Day 11: HTML の進化 — dialog, details/summary, popover
+# HTML だけで作れる UI — dialog, popover, details
 
 ## 今日のゴール
 

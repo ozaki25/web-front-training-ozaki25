@@ -199,7 +199,7 @@ export default withMermaid(
             { text: "08: head の中身", link: "/html-candidates/08/" },
             { text: "09: パースと DOM ツリー", link: "/html-candidates/09/" },
             { text: "10: テーブル", link: "/html-candidates/10/" },
-            { text: "11: HTML の進化", link: "/html-candidates/11/" },
+            { text: "11: HTML だけで作れる UI", link: "/html-candidates/11/" },
             { text: "12: AI の HTML をレビュー", link: "/html-candidates/12/" },
             {
               text: "13: カスタムフォーム UI とアクセシビリティ",
