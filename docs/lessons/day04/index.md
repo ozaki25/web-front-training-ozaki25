@@ -60,22 +60,48 @@
 
 ## 基本方針: ネイティブの input を捨てない
 
-**ネイティブの input を残したまま、見た目だけ差し替える**のが王道です。
+**ネイティブの input を残したまま、見た目だけ差し替える**のが王道です。コードで見てみましょう。
 
-やり方:
+```html
+<label class="custom-checkbox">
+  <!-- 本物の input。sr-only で視覚的に隠す -->
+  <input type="checkbox" class="sr-only" name="agree" />
+  <!-- 見た目用の要素 -->
+  <span class="checkbox-visual"></span>
+  利用規約に同意する
+</label>
+```
 
-1. 本物の `<input>` を目に見えないように隠す
-2. 隣に置いた要素で好きな見た目を作る
-3. クリックやキー操作は裏の `<input>` が受け取る
+```css
+/* 視覚的に隠すが、スクリーンリーダーからはアクセスできる */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
 
-`<input>` が裏にいるので、キーボード操作もフォーム送信もそのまま動きます。
+/* チェックされたら隣の要素の見た目を変える */
+.sr-only:checked + .checkbox-visual {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
 
-注意点が 2 つ:
+/* キーボード操作時のフォーカスリング */
+.sr-only:focus-visible + .checkbox-visual {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+```
 
-- **隠し方**: `display: none` だとスクリーンリーダー（画面読み上げソフト）からも消える。`sr-only` なら「見えないがアクセスできる」状態になる（Tailwind CSS にも同名のクラスあり）
-- **フォーカスリング**: Tab 移動時にどこにフォーカスがあるか見える状態を維持する。上のデモで Tab を押すと青い枠線が出るのがそれ
+ポイント:
 
-ラジオボタンやカード型 UI、ファイル選択ボタンなども同じ考え方です。
+- **`sr-only`**: `display: none` だとスクリーンリーダー（画面読み上げソフト）からも消える。`sr-only` なら「見えないがアクセスできる」状態になる（Tailwind CSS にも同名のクラスあり）
+- **`:checked`**: チェック状態に応じて CSS だけで見た目が切り替わる
+- **`:focus-visible`**: Tab 移動時にフォーカスの位置が見えるようにする
+
+`<input>` が裏にいるので、キーボード操作もフォーム送信もそのまま動きます。ラジオボタンやカード型 UI、ファイル選択ボタンなども同じ考え方です。
 
 ## div で作り直すのはアンチパターン
 
