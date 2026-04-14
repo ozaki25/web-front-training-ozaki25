@@ -5,7 +5,7 @@
 - デザイン上の要求でフォーム部品をカスタマイズする場面があることを知る
 - ネイティブの input を捨てずに見た目だけ変えるアプローチを知る
 - select やコンボボックスなど、自作が難しい部品があることを知る
-- React Aria のようなヘッドレス UI ライブラリの役割を知る
+- ヘッドレス UI ライブラリという解決策があることを知る
 
 ## なぜカスタマイズが必要になるのか
 
@@ -312,59 +312,15 @@ option {
 
 ネイティブのファイル選択ダイアログはそのまま使いつつ、トリガーとなるボタンの見た目だけを変えるアプローチです。
 
-## Headless UI / Radix UI / React Aria
+## ヘッドレス UI ライブラリ
 
 ここまで見てきたように、チェックボックスやラジオボタンは CSS で対応できますが、select やコンボボックスのように「ゼロから組む必要がある」部品も存在します。そこで登場するのが**ヘッドレス UI ライブラリ**です。
 
-「ヘッドレス（headless）」とは「見た目（head）がない」という意味です。これらのライブラリは、**アクセシビリティとキーボード操作のロジックだけを提供し、見た目は開発者が自由に作る**という設計思想を持っています。
+「ヘッドレス（headless）」とは「見た目（head）がない」という意味です。**アクセシビリティとキーボード操作のロジックだけを提供し、見た目は開発者が自由に作る**という設計思想を持ったライブラリの総称です。たとえば React Aria（Adobe が開発）のようなライブラリがあります。
 
-代表的なライブラリを紹介します:
+こうしたライブラリを使うと、select のような複雑な部品でも、開発者はスタイリングに集中できます。キーボード操作（上下キーで移動、Enter で選択、Escape で閉じる）、ARIA 属性の管理、フォーカス制御 — こうしたアクセシビリティに関わる複雑な処理は、すべてライブラリが裏側で面倒を見てくれます。
 
-| ライブラリ | 特徴 |
-|-----------|------|
-| **Headless UI** | Tailwind CSS チーム（Tailwind Labs）が開発。Tailwind CSS との相性が良い。React と Vue に対応 |
-| **Radix UI** | 豊富なコンポーネント群。React 向け。スタイルなしの Primitives と、スタイル付きの Themes がある |
-| **React Aria** | Adobe が開発。React のフック（hooks）として提供され、最も柔軟にカスタマイズ可能 |
-
-たとえば React Aria の `useSelect` フックを使うと、こんな感じになります（雰囲気だけ掴んでください）:
-
-```tsx
-import { Button, Label, ListBox, ListBoxItem, Popover, Select, SelectValue } from "react-aria-components";
-
-const plans = [
-  { id: "basic", name: "ベーシック" },
-  { id: "premium", name: "プレミアム" },
-  { id: "enterprise", name: "エンタープライズ" },
-];
-
-function PlanSelect() {
-  return (
-    <Select defaultSelectedKey="basic">
-      <Label className="text-sm font-medium text-gray-700">プラン</Label>
-      <Button className="w-full rounded border p-2 text-left">
-        <SelectValue />
-      </Button>
-      <Popover className="mt-1 rounded border bg-white shadow">
-        <ListBox>
-          {plans.map((plan) => (
-            <ListBoxItem
-              key={plan.id}
-              id={plan.id}
-              className="cursor-pointer p-2 hover:bg-blue-50"
-            >
-              {plan.name}
-            </ListBoxItem>
-          ))}
-        </ListBox>
-      </Popover>
-    </Select>
-  );
-}
-```
-
-開発者が書いているのは見た目（className）だけです。キーボード操作（上下キーで移動、Enter で選択、Escape で閉じる）、ARIA 属性の管理、フォーカス制御 — こうしたアクセシビリティに関わる複雑な処理は、すべてライブラリが裏側で面倒を見てくれます。
-
-配属先のプロジェクトでは React Aria を使います。「見た目は CSS（Tailwind CSS）で自由に作り、振る舞いとアクセシビリティはライブラリに任せる」という分担を覚えておきましょう。
+「見た目は CSS で自由に作り、振る舞いとアクセシビリティはライブラリに任せる」という分担を覚えておきましょう。
 
 ## まとめ
 
@@ -373,4 +329,4 @@ function PlanSelect() {
 - `<div>` でフォーム部品をゼロから作り直すと、キーボード操作・スクリーンリーダー対応・フォーム送信がすべて壊れる
 - `<select>` やコンボボックスは CSS だけではカスタマイズできず、自作の難易度が非常に高い
 - カスタマイザブル `<select>`（`appearance: base-select`）という標準化の動きがあり、将来的にはネイティブの `<select>` を自由にスタイリングできるようになる。ただし 2026 年 4 月時点では Chrome 系のみ対応で、本番投入には早い
-- 現時点での現実解は、Headless UI / Radix UI / React Aria のようなヘッドレス UI ライブラリに頼ること。アクセシビリティのロジックを提供し、見た目だけ自分で作ればよい状態にしてくれる
+- 現時点での現実解は、React Aria のようなヘッドレス UI ライブラリに頼ること。アクセシビリティのロジックを提供し、見た目だけ自分で作ればよい状態にしてくれる
