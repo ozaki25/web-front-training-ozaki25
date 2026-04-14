@@ -1,295 +1,247 @@
-# Day 41: Tailwind CSS
+# Day 41: メタデータと SEO
 
 ## 今日のゴール
 
-- ユーティリティファーストという考え方を知る
-- Tailwind CSS v4 の CSS ファーストな設定方法を知る
-- レスポンシブデザインとダークモードの実装方法を知る
+- Next.js の Metadata API によるメタデータの設定方法を知る
+- OGP（Open Graph Protocol）の役割と設定方法を知る
+- `generateMetadata` で動的なメタデータを生成する方法を知る
 
-## Tailwind CSS の仕組み
+## メタデータとは
 
-Tailwind CSS が何をしているのかを理解したうえで使い方を見ていきます。
-
-### ブラウザのデフォルトスタイルと reset CSS
-
-ブラウザには HTML 要素に対する**デフォルトスタイル**があります。`<h1>` が大きく表示されたり、`<ul>` にマーカー（・）がついたりするのは、ブラウザが最初からスタイルを持っているからです。
-
-しかし、このデフォルトスタイルはブラウザごとに微妙に異なります。Chrome と Safari で余白が違う、ということが起こりえます。そこで、プロジェクトの最初にブラウザ間の差異をリセットする CSS を読み込む手法が広く使われてきました。これが **reset CSS** です。
-
-Tailwind CSS は `@import "tailwindcss"` を書くだけで、**Preflight** と呼ばれる reset CSS を自動的に適用します。Preflight は以下のようなことを行います。
-
-- すべての要素の `margin` と `padding` を `0` にリセット
-- `box-sizing` を `border-box` に統一（Day 5 で学んだ設定です）
-- 見出し（`<h1>` 等）のフォントサイズや太字を解除し、すべてのテキストを均一にする
-- リスト（`<ul>`, `<ol>`）のマーカーを非表示にする
-- 画像をブロック要素にする
-
-つまり、Tailwind を導入すると**すべてのデフォルトスタイルが消えて、まっさらな状態からスタート**します。「`<h1>` を書いたのに大きくならない」と思ったら、それは Preflight が働いているからです。すべてのスタイルをユーティリティクラスで明示的に指定する — これが Tailwind のアプローチです。
-
-### Tailwind CSS の全体像
-
-Tailwind CSS は大きく 3 つの層で構成されています。
-
-| 層 | 役割 |
-|---|------|
-| **Preflight** | ブラウザのデフォルトスタイルをリセットし、統一された出発点を作る |
-| **ユーティリティクラス** | `p-4`、`text-lg` など、1 プロパティ = 1 クラスの小さな CSS クラス群 |
-| **ビルド時の最適化** | 実際に使われているクラスだけを CSS ファイルに含め、ファイルサイズを最小化する |
-
-3 番目のポイントが重要です。Tailwind は何千ものユーティリティクラスを定義していますが、**ビルド時にコードをスキャンし、使われているクラスだけを最終的な CSS に含めます**。だから、どれだけ多くのクラスが存在しても、最終的な CSS ファイルは数十 KB 程度に収まります。
-
-## ユーティリティファースト CSS とは
-
-Day 4〜6 で CSS の基礎を学びました。従来の CSS では、クラス名を考えてスタイルを書くのが一般的でした。
-
-```css
-/* 従来の CSS */
-.card {
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #1a202c;
-}
-```
+メタデータとは、ページの「情報についての情報」です。Day 1 で学んだ HTML の `<head>` 内に書く `<title>` や `<meta>` タグが該当します。
 
 ```html
-<div class="card">
-  <h2 class="card-title">タイトル</h2>
-</div>
+<head>
+  <title>ページのタイトル</title>
+  <meta name="description" content="ページの説明文" />
+</head>
 ```
 
-Tailwind CSS は、これとは異なる**ユーティリティファースト**というアプローチを取ります。1 つのクラスが 1 つの CSS プロパティに対応する小さなクラス（ユーティリティクラス）を組み合わせてスタイリングします。
+メタデータはブラウザの画面には直接表示されませんが、以下の場面で重要です。
 
-```html
-<div class="p-4 rounded-lg bg-white shadow-sm">
-  <h2 class="text-xl font-bold text-gray-900">タイトル</h2>
-</div>
-```
+- **検索エンジン** — Google などがページの内容を理解するために使う
+- **SNS シェア** — Twitter や LINE でリンクを共有したときに表示されるカード画像やタイトル
+- **ブラウザ** — タブに表示されるタイトル、ブックマークの名前
 
-| ユーティリティクラス | 対応する CSS |
-|-------------------|------------|
-| `p-4` | `padding: 1rem` |
-| `rounded-lg` | `border-radius: 0.5rem` |
-| `bg-white` | `background-color: white` |
-| `shadow-sm` | `box-shadow: 0 1px 3px ...` |
-| `text-xl` | `font-size: 1.25rem` |
-| `font-bold` | `font-weight: bold` |
-| `text-gray-900` | `color: #111827` |
+## Metadata API — 静的なメタデータ
 
-### なぜユーティリティファーストなのか
-
-最初は「クラス名が多くて読みにくい」と感じるかもしれません。しかし、実際のプロジェクトでは大きなメリットがあります。
-
-1. **クラス名を考えなくていい** — `.card-wrapper-inner-title` のような命名に悩む時間がなくなる
-2. **CSS ファイルが肥大化しない** — 同じユーティリティクラスが再利用されるため、CSS の総量が増えない
-3. **HTML を見ればスタイルがわかる** — CSS ファイルを行き来する必要がない
-4. **スタイルの衝突が起きない** — Day 6 で学んだ CSS のグローバルスコープ問題が発生しない
-
-## Tailwind CSS v4 のセットアップ
-
-Tailwind CSS v4 は、従来の JavaScript 設定ファイル（`tailwind.config.js`）ではなく、**CSS ファイルで設定する**というアプローチに変わりました。これを「CSS ファースト」と呼びます。
-
-### Next.js プロジェクトでのセットアップ
-
-`create-next-app` で Tailwind CSS を選択した場合、すでにセットアップ済みです。手動で設定する場合は以下のようになります。
-
-```css
-/* src/app/globals.css */
-@import "tailwindcss";
-```
-
-これだけで Tailwind CSS が使えるようになります。v3 以前の `@tailwind base;` `@tailwind components;` `@tailwind utilities;` という 3 行は不要になりました。
-
-### @theme ブロックでカスタマイズ
-
-プロジェクト固有の色やフォントを定義するには、`@theme` ブロックを使います。
-
-```css
-/* src/app/globals.css */
-@import "tailwindcss";
-
-@theme {
-  --color-primary: #3b82f6;
-  --color-primary-dark: #1d4ed8;
-  --color-secondary: #10b981;
-  --font-sans: "Noto Sans JP", sans-serif;
-  --breakpoint-xs: 475px;
-}
-```
-
-`@theme` で定義した値は、ユーティリティクラスとして自動的に使えるようになります。
-
-```html
-<!-- --color-primary が bg-primary として使える -->
-<button class="bg-primary text-white font-sans">ボタン</button>
-```
-
-従来の `tailwind.config.js` で `theme.extend` に書いていた内容が、CSS で完結するようになりました。
-
-## よく使うユーティリティクラス
-
-### レイアウト
-
-```html
-<!-- Flexbox -->
-<div class="flex items-center justify-between gap-4">
-  <span>左</span>
-  <span>右</span>
-</div>
-
-<!-- Grid -->
-<div class="grid grid-cols-3 gap-4">
-  <div>1</div>
-  <div>2</div>
-  <div>3</div>
-</div>
-```
-
-### スペーシング
-
-```html
-<!-- padding -->
-<div class="p-4">全方向に 1rem</div>
-<div class="px-4 py-2">横 1rem、縦 0.5rem</div>
-
-<!-- margin -->
-<div class="m-4">全方向に 1rem</div>
-<div class="mt-8">上に 2rem</div>
-```
-
-数値の対応: `1` = 0.25rem、`2` = 0.5rem、`4` = 1rem、`8` = 2rem、`16` = 4rem
-
-### テキスト
-
-```html
-<p class="text-sm text-gray-600">小さめのグレー文字</p>
-<p class="text-2xl font-bold text-gray-900">大きい太字</p>
-<p class="text-center leading-relaxed">中央揃えでゆったり行間</p>
-```
-
-### 背景・ボーダー
-
-```html
-<div class="bg-gray-100 border border-gray-300 rounded-lg">
-  角丸のカード
-</div>
-```
-
-## レスポンシブデザイン
-
-Tailwind では、ブレークポイント（画面幅の区切り）のプレフィックスを付けるだけでレスポンシブデザインが実現できます。
-
-```html
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  <div class="p-4 bg-white rounded-lg shadow-sm">カード 1</div>
-  <div class="p-4 bg-white rounded-lg shadow-sm">カード 2</div>
-  <div class="p-4 bg-white rounded-lg shadow-sm">カード 3</div>
-</div>
-```
-
-| プレフィックス | 画面幅 | 意味 |
-|-------------|-------|------|
-| なし | 0px〜 | モバイル（デフォルト） |
-| `sm:` | 640px〜 | 小型タブレット |
-| `md:` | 768px〜 | タブレット |
-| `lg:` | 1024px〜 | デスクトップ |
-| `xl:` | 1280px〜 | 大画面 |
-| `2xl:` | 1536px〜 | 超大画面 |
-
-Tailwind は**モバイルファースト**です。プレフィックスなしのスタイルがモバイル用で、`md:` や `lg:` でより大きい画面のスタイルを上書きしていきます。
-
-上の例では、スマートフォンでは 1 列、タブレットでは 2 列、デスクトップでは 3 列のグリッドになります。
-
-## ダークモード
-
-Tailwind では `dark:` プレフィックスでダークモード用のスタイルを指定します。
-
-```html
-<div class="bg-white dark:bg-gray-900">
-  <h1 class="text-gray-900 dark:text-white">タイトル</h1>
-  <p class="text-gray-600 dark:text-gray-300">本文テキスト</p>
-</div>
-```
-
-ダークモードは、ユーザーの OS 設定に従います（`prefers-color-scheme: dark`）。
-
-### 完全なカードコンポーネント例
-
-ここまでの内容を組み合わせた実践的な例です。
+Next.js では、`metadata` オブジェクトをエクスポートすることでメタデータを設定します。直接 `<head>` タグを書く必要はありません。
 
 ```tsx
-// src/app/components/article-card.tsx
-import Image from "next/image";
-import Link from "next/link";
+// src/app/page.tsx
+import type { Metadata } from "next";
 
-type Props = {
-  title: string;
-  excerpt: string;
-  image: string;
-  href: string;
+export const metadata: Metadata = {
+  title: "My App - ホーム",
+  description: "Next.js で作った Web アプリケーション",
 };
 
-export default function ArticleCard({ title, excerpt, image, href }: Props) {
+export default function HomePage() {
   return (
-    <article className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
-      <div className="relative h-48 w-full">
-        <Image
-          src={image}
-          alt=""
-          fill
-          className="rounded-t-lg object-cover"
-        />
-      </div>
-      <div className="p-4">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-          <Link href={href} className="hover:underline">
-            {title}
-          </Link>
-        </h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          {excerpt}
-        </p>
-      </div>
+    <main>
+      <h1>ホームページ</h1>
+    </main>
+  );
+}
+```
+
+Next.js がこの `metadata` オブジェクトを読み取り、自動的に `<head>` 内に適切なタグを生成します。
+
+### ルートレイアウトでの共通メタデータ
+
+`layout.tsx` に書いた `metadata` は、配下のすべてのページに適用されます。
+
+```tsx
+// src/app/layout.tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | My App",  // %s がページごとのタイトルに置換される
+    default: "My App",         // タイトルが設定されていないページのデフォルト
+  },
+  description: "Next.js で作った Web アプリケーション",
+  metadataBase: new URL("https://myapp.example.com"),
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="ja">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+`title.template` を使うと、各ページのタイトルにサイト名を自動で付加できます。
+
+```tsx
+// src/app/about/page.tsx
+export const metadata: Metadata = {
+  title: "About",  // → "About | My App" とレンダリングされる
+};
+```
+
+## OGP — SNS シェア時の表示
+
+OGP（Open Graph Protocol）は、SNS でリンクが共有されたときに表示される情報を制御するための仕様です。
+
+```tsx
+// src/app/page.tsx
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "My App",
+  description: "Next.js で作った Web アプリケーション",
+  openGraph: {
+    title: "My App",
+    description: "Next.js で作った Web アプリケーション",
+    url: "https://myapp.example.com",
+    siteName: "My App",
+    images: [
+      {
+        url: "/og-image.png",  // public フォルダ内の画像
+        width: 1200,
+        height: 630,
+        alt: "My App のトップページ",
+      },
+    ],
+    locale: "ja_JP",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "My App",
+    description: "Next.js で作った Web アプリケーション",
+    images: ["/og-image.png"],
+  },
+};
+```
+
+OGP 画像のサイズは `1200 x 630` ピクセルが推奨されています。
+
+> **アクセシビリティ**: OGP 画像にも `alt` テキストを設定するのが望ましいです。スクリーンリーダーを使っている人が SNS で共有されたリンクにアクセスしたときに役立ちます。
+
+## generateMetadata — 動的なメタデータ
+
+ブログ記事のようにページごとにタイトルや説明が異なる場合、`generateMetadata` 関数を使います。
+
+```tsx
+// src/app/blog/[slug]/page.tsx
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const res = await fetch(`https://api.example.com/posts/${slug}`);
+
+  if (!res.ok) {
+    return { title: "記事が見つかりません" };
+  }
+
+  const post = await res.json();
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      images: [{ url: post.coverImage, alt: post.title }],
+      type: "article",
+      publishedTime: post.publishedAt,
+    },
+  };
+}
+
+export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
+  const res = await fetch(`https://api.example.com/posts/${slug}`);
+
+  if (!res.ok) {
+    notFound();
+  }
+
+  const post = await res.json();
+
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <p>{post.body}</p>
     </article>
   );
 }
 ```
 
-## hover・focus などの状態
+`generateMetadata` と `page` コンポーネントで同じ `fetch` を呼んでいますが、Next.js は同じ URL への `fetch` を自動的に重複排除（deduplication）するため、実際のリクエストは 1 回だけです。
 
-ユーザーの操作状態に応じたスタイルも、プレフィックスで指定できます。
+## 構造化データ
 
-```html
-<button
-  class="rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-blue-700"
->
-  ボタン
-</button>
+構造化データ（Structured Data）は、検索エンジンにページの内容を機械的に伝えるための仕組みです。Google の検索結果にリッチスニペット（レビューの星、レシピの調理時間など）が表示されるのは、構造化データのおかげです。
+
+JSON-LD 形式で `<script>` タグとして埋め込みます。
+
+```tsx
+// src/app/blog/[slug]/page.tsx
+export default async function BlogPostPage({ params }: Props) {
+  const { slug } = await params;
+  const res = await fetch(`https://api.example.com/posts/${slug}`);
+  const post = await res.json();
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    datePublished: post.publishedAt,
+    author: {
+      "@type": "Person",
+      name: post.author,
+    },
+    description: post.excerpt,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <article>
+        <h1>{post.title}</h1>
+        <p>{post.body}</p>
+      </article>
+    </>
+  );
+}
 ```
 
-| プレフィックス | 状態 |
-|-------------|------|
-| `hover:` | マウスを乗せたとき |
-| `focus:` | フォーカスしたとき |
-| `active:` | クリック中 |
-| `disabled:` | 無効状態 |
-| `first:` | 最初の子要素 |
-| `last:` | 最後の子要素 |
+## robots と sitemap
 
-> **アクセシビリティ**: `focus:ring` による視覚的なフォーカスインジケーターは、キーボード操作のユーザーにとって非常に重要です。フォーカススタイルは必ず設定することが重要です。
+### robots.txt
+
+検索エンジンのクローラー（Web ページを自動的に巡回するプログラム）に対して、どのページをクロールしてよいか指示するファイルです。Next.js では `src/app/robots.ts` を作り、`MetadataRoute.Robots` 型のオブジェクトを返す関数をエクスポートします。ここで「全ページを許可するが `/dashboard/` は除外する」といったルールを定義できます。
+
+### sitemap.xml
+
+サイト内のすべてのページを一覧にしたファイルです。検索エンジンがページを見つけやすくなります。Next.js では `src/app/sitemap.ts` を作り、`MetadataRoute.Sitemap` 型の配列を返す関数をエクスポートします。
+
+静的なページだけでなく、データベースからブログ記事の一覧を取得して動的に URL を生成することもできます。各エントリには URL、最終更新日、更新頻度、優先度などを指定できます。
 
 ## まとめ
 
-- Tailwind CSS はユーティリティファーストのアプローチで、クラス名の命名やスタイルの衝突から解放される
-- v4 では `@import "tailwindcss"` だけで使い始められ、`@theme` ブロックでカスタマイズする
-- レスポンシブデザインは `md:`、`lg:` などのプレフィックスで、モバイルファーストに実装する
-- ダークモードは `dark:` プレフィックスで対応する
-- `hover:`、`focus:` などの状態プレフィックスで、インタラクション時のスタイルを指定する
+- `metadata` オブジェクトのエクスポートで静的なメタデータを設定する
+- `title.template` でサイト名の自動付加ができる
+- `generateMetadata` で動的ルートのメタデータを生成する
+- OGP を設定すると SNS シェア時の表示をコントロールできる
+- 構造化データ（JSON-LD）で検索エンジンにリッチな情報を伝える
+- `robots.ts` と `sitemap.ts` で検索エンジンのクロールを最適化する
 
-**次のレッスン**: [Day 42: テスト基礎（Vitest）](/lessons/day42/)
+**次のレッスン**: [Day 42: 画像・フォント最適化](/lessons/day42/)

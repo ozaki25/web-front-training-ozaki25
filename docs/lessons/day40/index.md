@@ -1,220 +1,281 @@
-# Day 40: 画像・フォント最適化
+# Day 40: 動的ルーティングとミドルウェア
 
 ## 今日のゴール
 
-- `next/image` が画像をどう最適化するかを知る
-- `next/font` でフォントを最適化する方法を知る
-- Core Web Vitals との関係を知る
+- 動的セグメント（`[slug]`）と catch-all セグメントの使い方を知る
+- `proxy.ts` による認証チェックやリダイレクトの方法を知る
+- 動的ルーティングの実際の使いどころを知る
 
-## なぜ最適化が必要か
+## 動的ルーティング
 
-Web ページの表示速度は、ユーザー体験に直結します。表示が遅いとユーザーは離脱し、検索順位にも影響します。そして、ページの表示を遅くする最大の原因の 1 つが**画像**です。
+Day 34 でファイルベースルーティングを学びました。`about/page.tsx` が `/about` に対応するという静的なルーティングでした。しかし実際のアプリでは、ブログ記事の URL（`/blog/my-first-post`）やユーザーページ（`/users/123`）のように、URL の一部が動的に変わるケースが大半です。
 
-一般的な Web ページのデータ量の 50% 以上を画像が占めていると言われています。そしてフォント（Web フォント）も、読み込み方を誤るとテキストが一瞬見えなくなるなどの問題を引き起こします。
+### 動的セグメント `[param]`
 
-Next.js はこれらを自動的に最適化する仕組みを組み込みで提供しています。
+フォルダ名を角括弧 `[]` で囲むと、その部分が動的なパラメータになります。
 
-## next/image — 画像の最適化
-
-### HTML の img タグの問題
-
-まず、普通の `<img>` タグにはどんな問題があるかを見てみます。
-
-```html
-<!-- ❌ 問題のあるコード -->
-<img src="/photo.jpg" />
+```
+src/app/
+└── blog/
+    └── [slug]/
+        └── page.tsx    → /blog/hello-world, /blog/nextjs-intro, ...
 ```
 
-このコードには複数の問題があります。
+```tsx
+// src/app/blog/[slug]/page.tsx
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
-1. **画像サイズが最適化されない** — スマートフォンの小さな画面にも 4000px の画像がそのまま送られる
-2. **フォーマットが最適化されない** — WebP や AVIF など効率的なフォーマットに変換されない
-3. **レイアウトシフトが起きる** — 画像が読み込まれると突然レイアウトがガタッとずれる
-4. **遅延読み込みがない** — 画面外の画像もすべて一度に読み込まれる
-5. **alt がない** — スクリーンリーダーが画像の内容を伝えられない
+  return (
+    <article>
+      <h1>ブログ記事: {slug}</h1>
+      <p>このページの URL は /blog/{slug} です</p>
+    </article>
+  );
+}
+```
 
-### next/image の使い方
+`/blog/hello-world` にアクセスすると `slug` に `"hello-world"` が入ります。`/blog/nextjs-intro` なら `"nextjs-intro"` です。
 
-Next.js の `<Image>` コンポーネントは、これらの問題をすべて解決します。
+> **注意**: 最新の Next.js では `params` は `Promise` です。使用する前に `await` で解決する必要があります。
+
+### 実際のデータ取得と組み合わせる
 
 ```tsx
-import Image from "next/image";
+// src/app/blog/[slug]/page.tsx
+import { notFound } from "next/navigation";
 
-export default function ProfilePage() {
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const res = await fetch(`https://api.example.com/posts/${slug}`);
+
+  if (!res.ok) {
+    notFound(); // 記事が見つからなければ 404 ページを表示
+  }
+
+  const post = await res.json();
+
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <time dateTime={post.publishedAt}>{post.publishedAt}</time>
+      <div>{post.body}</div>
+    </article>
+  );
+}
+```
+
+`notFound()` を呼ぶと、最も近い `not-found.tsx`（Day 36 で学習）が表示されます。
+
+### 複数の動的セグメント
+
+動的セグメントは複数持てます。
+
+```
+src/app/
+└── shop/
+    └── [category]/
+        └── [productId]/
+            └── page.tsx    → /shop/electronics/42
+```
+
+```tsx
+export default async function ProductPage({
+  params,
+}: {
+  params: Promise<{ category: string; productId: string }>;
+}) {
+  const { category, productId } = await params;
+
   return (
     <main>
-      <h1>プロフィール</h1>
-      <Image
-        src="/profile.jpg"
-        alt="山田太郎のプロフィール写真"
-        width={300}
-        height={300}
-      />
+      <p>カテゴリ: {category}</p>
+      <p>商品ID: {productId}</p>
     </main>
   );
 }
 ```
 
-### next/image が裏でやっていること
+## Catch-all セグメント `[...param]`
 
-1. **自動フォーマット変換** — ブラウザが対応していれば WebP や AVIF に変換して配信する。JPEG より大幅にファイルサイズが小さくなる
-2. **自動リサイズ** — デバイスの画面サイズに合わせて適切なサイズの画像を生成・配信する
-3. **レイアウトシフト防止** — `width` と `height` を指定することで、画像の読み込み前からスペースが確保される
-4. **遅延読み込み（lazy loading）** — 画面内に入るまで画像を読み込まない（デフォルトで有効）
-5. **キャッシュ** — 一度変換した画像はキャッシュされ、次のリクエストから高速に配信される
+`[...param]` と書くと、そのセグメント以降のすべてのパスをまとめて受け取れます。
 
-### レスポンシブ画像
+```
+src/app/
+└── docs/
+    └── [...slug]/
+        └── page.tsx
+```
 
-画面幅に合わせて画像サイズを変えたい場合は `fill` を使います。
+| URL | `slug` の値 |
+|-----|------------|
+| `/docs/getting-started` | `["getting-started"]` |
+| `/docs/guides/routing` | `["guides", "routing"]` |
+| `/docs/api/auth/login` | `["api", "auth", "login"]` |
 
 ```tsx
-import Image from "next/image";
+// src/app/docs/[...slug]/page.tsx
+export default async function DocsPage({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>;
+}) {
+  const { slug } = await params;
 
-export default function HeroSection() {
   return (
-    <div style={{ position: "relative", width: "100%", height: "400px" }}>
-      <Image
-        src="/hero.jpg"
-        alt="緑豊かな森の風景"
-        fill
-        style={{ objectFit: "cover" }}
-        priority  // ファーストビューの画像には priority を付ける
-      />
-    </div>
+    <main>
+      <h1>ドキュメント</h1>
+      <p>パス: {slug.join(" / ")}</p>
+    </main>
   );
 }
 ```
 
-- **`fill`** — 親要素いっぱいに画像を広げる（親要素に `position: relative` が必要）
-- **`priority`** — ファーストビュー（最初に見える領域）の画像に付ける。遅延読み込みを無効にして即座に読み込む
-- **`objectFit: "cover"`** — 画像のアスペクト比を保ちつつ、コンテナいっぱいに表示する
+ドキュメントサイトや CMS のように、階層構造が不定のコンテンツを扱うときに便利です。
 
-### sizes プロパティ
+### Optional Catch-all `[[...param]]`
 
-`fill` を使うとき、`sizes` を指定するとブラウザが最適なサイズの画像を選択できます。
+二重角括弧 `[[...param]]` にすると、パラメータなしの URL（`/docs`）にもマッチします。
 
-```tsx
-<Image
-  src="/hero.jpg"
-  alt="ヒーローイメージ"
-  fill
-  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-/>
+```
+src/app/
+└── docs/
+    └── [[...slug]]/
+        └── page.tsx    → /docs, /docs/intro, /docs/guides/routing
 ```
 
-これは「画面幅 768px 以下では画面幅いっぱい、1200px 以下では半分、それ以上では 3 分の 1」という意味です。ブラウザはこの情報を元に、最適なサイズの画像だけをダウンロードします。
+`/docs` にアクセスした場合、`slug` は `undefined` になります。
 
-### 外部画像の許可設定
+## proxy.ts — リクエストの中継と制御
 
-セキュリティ上の理由から、`next/image` はデフォルトで外部サイトの画像を最適化しません。外部画像を使う場合は、`next.config.ts` の `images.remotePatterns` で許可するドメインを明示的に指定します。
+Next.js の最新バージョンでは、`proxy.ts` がリクエストの中継・制御を担当します（以前は `middleware.ts` がこの役割でした）。`proxy.ts` はプロジェクトのルート（`src/` 配下の場合は `src/proxy.ts`）に配置します。
+
+`proxy.ts` は、**すべてのリクエストがページや API に到達する前に実行されます**。これを利用して、認証チェックやリダイレクトを行えます。
+
+### 基本構造
 
 ```ts
-// next.config.ts の images 設定（抜粋）
-images: {
-  remotePatterns: [
-    {
-      protocol: "https",
-      hostname: "images.example.com",
-    },
-  ],
+// src/proxy.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export function proxy(request: NextRequest) {
+  // すべてのリクエストに対して実行される
+  console.log("リクエスト:", request.nextUrl.pathname);
+
+  // 次の処理に進む
+  return NextResponse.next();
 }
+
+// どのパスで実行するか指定
+export const config = {
+  matcher: ["/dashboard/:path*", "/settings/:path*"],
+};
 ```
 
-これは「どのドメインの画像をサーバーで処理してよいか」を宣言するものです。許可していないドメインの画像を `<Image>` に渡すとビルドエラーになります。悪意のある外部画像を処理させる攻撃を防ぐための仕組みです。
+`config.matcher` で、proxy が実行されるパスを指定します。上の例では `/dashboard` と `/settings` 配下のリクエストだけが対象です。
 
-## next/font — フォントの最適化
+### 認証チェックの例
 
-### Web フォントの問題
+ログインしていないユーザーをログインページにリダイレクトする典型的なパターンです。
 
-Web フォントを使うと、以下の問題が起きることがあります。
+```ts
+// src/proxy.ts
+import { NextRequest, NextResponse } from "next/server";
 
-- **FOUT（Flash of Unstyled Text）** — フォント読み込み前にシステムフォントで表示され、読み込み後にフォントが切り替わる（テキストがちらつく）
-- **FOIT（Flash of Invisible Text）** — フォント読み込みまでテキストが非表示になる
-- **外部リクエスト** — Google Fonts などの外部サーバーへのリクエストが発生し、プライバシーやパフォーマンスに影響する
+export function proxy(request: NextRequest) {
+  const token = request.cookies.get("auth-token");
 
-### next/font の使い方
+  // 認証トークンがなければログインページにリダイレクト
+  if (!token) {
+    const loginUrl = new URL("/login", request.url);
+    // ログイン後に元のページに戻れるように、リダイレクト先を保存
+    loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
 
-`next/font` はこれらの問題を解決します。
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/dashboard/:path*", "/settings/:path*"],
+};
+```
+
+### リダイレクトの例
+
+URL の変更やリニューアル時に、古い URL から新しい URL へリダイレクトするケースです。
+
+```ts
+// src/proxy.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // 古い URL から新しい URL へリダイレクト
+  if (pathname === "/old-blog") {
+    return NextResponse.redirect(new URL("/blog", request.url));
+  }
+
+  // レスポンスヘッダーの追加
+  const response = NextResponse.next();
+  response.headers.set("x-custom-header", "my-value");
+  return response;
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};
+```
+
+### proxy.ts の注意点
+
+- **Node.js ランタイムで実行される** — サーバー側の Node.js API を利用できる
+- **軽い処理だけ行う** — すべてのリクエストで実行されるため、重い処理を入れるとパフォーマンスに影響する
+- **データベースアクセスは避ける** — 認証チェックは Cookie やトークンの検証だけにし、データベースへの問い合わせはページ側で行う
+
+## generateStaticParams — 静的生成
+
+動的ルーティングのページを事前にビルドしておきたい場合、`generateStaticParams` を使います。
 
 ```tsx
-// src/app/layout.tsx
-import { Noto_Sans_JP } from "next/font/google";
+// src/app/blog/[slug]/page.tsx
 
-const notoSansJP = Noto_Sans_JP({
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "700"],
-});
+export async function generateStaticParams() {
+  const res = await fetch("https://api.example.com/posts");
+  const posts = await res.json();
 
-export default function RootLayout({
-  children,
+  return posts.map((post: { slug: string }) => ({
+    slug: post.slug,
+  }));
+}
+
+export default async function BlogPostPage({
+  params,
 }: {
-  children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }) {
-  return (
-    <html lang="ja" className={notoSansJP.className}>
-      <body>{children}</body>
-    </html>
-  );
+  const { slug } = await params;
+  // ...
 }
 ```
 
-### next/font が裏でやっていること
-
-1. **ビルド時にフォントをダウンロード** — Google Fonts への外部リクエストが本番では発生しない
-2. **セルフホスティング** — フォントファイルを自サーバーから配信する
-3. **CSS の `size-adjust`** — フォント読み込み前後でレイアウトがずれないよう、自動でサイズ調整する
-4. **サブセット化** — 必要な文字だけを含むフォントファイルを生成し、ファイルサイズを削減
-
-### ローカルフォントの使用
-
-プロジェクト内にフォントファイルを持っている場合は `next/font/local` を使います。
-
-```tsx
-import localFont from "next/font/local";
-
-const myFont = localFont({
-  src: "./fonts/MyFont.woff2",
-  display: "swap",
-});
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="ja" className={myFont.className}>
-      <body>{children}</body>
-    </html>
-  );
-}
-```
-
-## Core Web Vitals との関係
-
-**Core Web Vitals** は Google が定めた Web ページの品質指標です。Day 46 で詳しく学びますが、画像・フォントの最適化と特に関係が深い指標を紹介します。
-
-### LCP（Largest Contentful Paint）
-
-ページ内の最も大きなコンテンツ（多くの場合は画像）が表示されるまでの時間です。
-
-- `next/image` の自動フォーマット変換とリサイズで画像のファイルサイズが減り、LCP が改善する
-- ファーストビューの画像に `priority` を付けると即座に読み込まれ、LCP が改善する
-
-### CLS（Cumulative Layout Shift）
-
-ページ読み込み中にレイアウトがどれだけずれるかの指標です。
-
-- `next/image` の `width`/`height` 指定でスペースが事前に確保され、CLS が改善する
-- `next/font` の `size-adjust` でフォント切り替え時のずれが防止され、CLS が改善する
+ビルド時に `generateStaticParams` が返したすべての `slug` に対して HTML が生成されます。これにより、リクエスト時にサーバーで処理する必要がなく、非常に高速にページが表示されます。
 
 ## まとめ
 
-- `next/image` は自動フォーマット変換、リサイズ、遅延読み込み、レイアウトシフト防止を行う
-- ファーストビューの画像には `priority` を付けて即座に読み込む
-- `next/font` はフォントをビルド時にダウンロードし、セルフホスティングとサイズ調整を自動で行う
-- これらの最適化は Core Web Vitals（特に LCP と CLS）の改善に直結する
-- 画像には必ず適切な `alt` テキストを設定する
+- `[param]` で動的セグメント、`[...param]` で catch-all、`[[...param]]` で optional catch-all を実現する
+- `params` は `Promise` なので `await` で解決してから使う
+- `proxy.ts` はリクエストがページに到達する前に実行され、認証チェックやリダイレクトに使う
+- `proxy.ts` は軽い処理だけ行い、重い処理はページ側で行う
+- `generateStaticParams` で動的ルートを事前にビルドできる
 
-**次のレッスン**: [Day 41: Tailwind CSS](/lessons/day41/)
+**次のレッスン**: [Day 41: メタデータと SEO](/lessons/day41/)

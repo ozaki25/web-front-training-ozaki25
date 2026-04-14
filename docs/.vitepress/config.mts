@@ -27,86 +27,94 @@ export default withMermaid(
             { text: "Day 1: HTML の基本構造", link: "/lessons/day01/" },
             { text: "Day 2: セマンティック HTML", link: "/lessons/day02/" },
             { text: "Day 3: フォーム", link: "/lessons/day03/" },
-            { text: "Day 4: CSS の基本と適用方法", link: "/lessons/day04/" },
             {
-              text: "Day 5: CSS ボックスモデルとレイアウト",
+              text: "Day 4: カスタムフォーム UI",
+              link: "/lessons/day04/",
+            },
+            {
+              text: "Day 5: HTML だけで作れる UI",
               link: "/lessons/day05/",
             },
-            { text: "Day 6: Flexbox", link: "/lessons/day06/" },
-            { text: "Day 7: CSS Grid", link: "/lessons/day07/" },
+            { text: "Day 6: CSS の基本と適用方法", link: "/lessons/day06/" },
             {
-              text: "Day 8: レスポンシブデザインと CSS の課題",
-              link: "/lessons/day08/",
+              text: "Day 7: CSS ボックスモデルとレイアウト",
+              link: "/lessons/day07/",
+            },
+            { text: "Day 8: Flexbox", link: "/lessons/day08/" },
+            { text: "Day 9: CSS Grid", link: "/lessons/day09/" },
+            {
+              text: "Day 10: レスポンシブデザインと CSS の課題",
+              link: "/lessons/day10/",
             },
           ],
         },
         {
           text: "Phase 2: JavaScript の基礎",
           items: [
-            { text: "Day 9: JavaScript の基本文法", link: "/lessons/day09/" },
-            { text: "Day 10: 関数とスコープ", link: "/lessons/day10/" },
-            { text: "Day 11: オブジェクトと配列", link: "/lessons/day11/" },
-            { text: "Day 12: DOM 操作", link: "/lessons/day12/" },
-            { text: "Day 13: 非同期処理", link: "/lessons/day13/" },
+            { text: "Day 11: JavaScript の基本文法", link: "/lessons/day11/" },
+            { text: "Day 12: 関数とスコープ", link: "/lessons/day12/" },
+            { text: "Day 13: オブジェクトと配列", link: "/lessons/day13/" },
+            { text: "Day 14: DOM 操作", link: "/lessons/day14/" },
+            { text: "Day 15: 非同期処理", link: "/lessons/day15/" },
             {
-              text: "Day 14: HTTP とネットワーク基礎",
-              link: "/lessons/day14/",
-            },
-            { text: "Day 15: ES Modules", link: "/lessons/day15/" },
-            {
-              text: "Day 16: エラーハンドリングとデバッグ",
+              text: "Day 16: HTTP とネットワーク基礎",
               link: "/lessons/day16/",
+            },
+            { text: "Day 17: ES Modules", link: "/lessons/day17/" },
+            {
+              text: "Day 18: エラーハンドリングとデバッグ",
+              link: "/lessons/day18/",
             },
           ],
         },
         {
           text: "Phase 3: TypeScript",
           items: [
-            { text: "Day 17: TypeScript の基本", link: "/lessons/day17/" },
-            { text: "Day 18: 型の応用", link: "/lessons/day18/" },
+            { text: "Day 19: TypeScript の基本", link: "/lessons/day19/" },
+            { text: "Day 20: 型の応用", link: "/lessons/day20/" },
             {
-              text: "Day 19: ジェネリクスとユーティリティ型",
-              link: "/lessons/day19/",
+              text: "Day 21: ジェネリクスとユーティリティ型",
+              link: "/lessons/day21/",
             },
-            { text: "Day 20: TypeScript 応用", link: "/lessons/day20/" },
+            { text: "Day 22: TypeScript 応用", link: "/lessons/day22/" },
           ],
         },
         {
           text: "Phase 4: React の基礎",
           items: [
-            { text: "Day 21: React の概要と JSX", link: "/lessons/day21/" },
+            { text: "Day 23: React の概要と JSX", link: "/lessons/day23/" },
             {
-              text: "Day 22: コンポーネントと props",
-              link: "/lessons/day22/",
-            },
-            {
-              text: "Day 23: state とイベント処理",
-              link: "/lessons/day23/",
-            },
-            {
-              text: "Day 24: 条件分岐とリストレンダリング",
+              text: "Day 24: コンポーネントと props",
               link: "/lessons/day24/",
             },
             {
-              text: "Day 25: useEffect とライフサイクル",
+              text: "Day 25: state とイベント処理",
               link: "/lessons/day25/",
             },
-            { text: "Day 26: フォームと Actions", link: "/lessons/day26/" },
             {
-              text: "Day 27: useOptimistic と Transition",
+              text: "Day 26: 条件分岐とリストレンダリング",
+              link: "/lessons/day26/",
+            },
+            {
+              text: "Day 27: useEffect とライフサイクル",
               link: "/lessons/day27/",
             },
+            { text: "Day 28: フォームと Actions", link: "/lessons/day28/" },
             {
-              text: "Day 28: カスタム Hooks とコンポーネント設計",
-              link: "/lessons/day28/",
-            },
-            {
-              text: "Day 29: Context と状態管理パターン",
+              text: "Day 29: useOptimistic と Transition",
               link: "/lessons/day29/",
             },
             {
-              text: "Day 30: React のレンダリング最適化",
+              text: "Day 30: カスタム Hooks とコンポーネント設計",
               link: "/lessons/day30/",
+            },
+            {
+              text: "Day 31: Context と状態管理パターン",
+              link: "/lessons/day31/",
+            },
+            {
+              text: "Day 32: React のレンダリング最適化",
+              link: "/lessons/day32/",
             },
           ],
         },
@@ -114,75 +122,75 @@ export default withMermaid(
           text: "Phase 5: Next.js の基礎",
           items: [
             {
-              text: "Day 31: SPA・CSR・SSR — レンダリング戦略",
-              link: "/lessons/day31/",
-            },
-            {
-              text: "Day 32: Next.js の概要とプロジェクト構成",
-              link: "/lessons/day32/",
-            },
-            {
-              text: "Day 33: Server Components と Client Components",
+              text: "Day 33: SPA・CSR・SSR — レンダリング戦略",
               link: "/lessons/day33/",
             },
             {
-              text: "Day 34: レイアウトとページ",
+              text: "Day 34: Next.js の概要とプロジェクト構成",
               link: "/lessons/day34/",
             },
             {
-              text: "Day 35: データ取得（Server Components）",
+              text: "Day 35: Server Components と Client Components",
               link: "/lessons/day35/",
             },
-            { text: "Day 36: Route Handlers", link: "/lessons/day36/" },
-            { text: "Day 37: Server Actions", link: "/lessons/day37/" },
             {
-              text: "Day 38: 動的ルーティングとミドルウェア",
-              link: "/lessons/day38/",
+              text: "Day 36: レイアウトとページ",
+              link: "/lessons/day36/",
             },
-            { text: "Day 39: メタデータと SEO", link: "/lessons/day39/" },
             {
-              text: "Day 40: 画像・フォント最適化",
+              text: "Day 37: データ取得（Server Components）",
+              link: "/lessons/day37/",
+            },
+            { text: "Day 38: Route Handlers", link: "/lessons/day38/" },
+            { text: "Day 39: Server Actions", link: "/lessons/day39/" },
+            {
+              text: "Day 40: 動的ルーティングとミドルウェア",
               link: "/lessons/day40/",
             },
-            { text: "Day 41: Tailwind CSS", link: "/lessons/day41/" },
+            { text: "Day 41: メタデータと SEO", link: "/lessons/day41/" },
+            {
+              text: "Day 42: 画像・フォント最適化",
+              link: "/lessons/day42/",
+            },
+            { text: "Day 43: Tailwind CSS", link: "/lessons/day43/" },
           ],
         },
         {
           text: "Phase 6: 実践的なスキル",
           items: [
             {
-              text: "Day 42: テスト基礎（Vitest）",
-              link: "/lessons/day42/",
-            },
-            {
-              text: "Day 43: コンポーネントテスト",
-              link: "/lessons/day43/",
-            },
-            {
-              text: "Day 44: アクセシビリティ実践",
+              text: "Day 44: テスト基礎（Vitest）",
               link: "/lessons/day44/",
             },
             {
-              text: "Day 45: アクセシビリティとテスト",
+              text: "Day 45: コンポーネントテスト",
               link: "/lessons/day45/",
             },
             {
-              text: "Day 46: Web パフォーマンス基礎",
+              text: "Day 46: アクセシビリティ実践",
               link: "/lessons/day46/",
             },
             {
-              text: "Day 47: Web パフォーマンス応用",
+              text: "Day 47: アクセシビリティとテスト",
               link: "/lessons/day47/",
             },
-            { text: "Day 48: 認証の基礎", link: "/lessons/day48/" },
-            { text: "Day 49: Web セキュリティ", link: "/lessons/day49/" },
             {
-              text: "Day 50: コンポーネント設計パターン",
-              link: "/lessons/day50/",
+              text: "Day 48: Web パフォーマンス基礎",
+              link: "/lessons/day48/",
             },
             {
-              text: "Day 51: アーキテクチャ総まとめ",
-              link: "/lessons/day51/",
+              text: "Day 49: Web パフォーマンス応用",
+              link: "/lessons/day49/",
+            },
+            { text: "Day 50: 認証の基礎", link: "/lessons/day50/" },
+            { text: "Day 51: Web セキュリティ", link: "/lessons/day51/" },
+            {
+              text: "Day 52: コンポーネント設計パターン",
+              link: "/lessons/day52/",
+            },
+            {
+              text: "Day 53: アーキテクチャ総まとめ",
+              link: "/lessons/day53/",
             },
           ],
         },

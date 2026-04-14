@@ -1,272 +1,287 @@
-# Day 26: フォームと Actions
+# Day 26: 条件分岐とリストレンダリング
 
 ## 今日のゴール
 
-- React 19 の form actions を知る
-- `useActionState` でフォームの状態を管理する方法を知る
-- `useFormStatus` で送信中の状態を表示する方法を知る
-- 従来の制御コンポーネントとの違いを知る
+- JSX の中で条件に応じて表示を切り替える方法を知る
+- `map` で配列をリスト表示する方法を知る
+- `key` の役割と仕組みを知る
 
-## 従来のフォーム処理
+## 条件付きレンダリング
 
-Day 23 で学んだ `useState` を使ったフォーム処理を振り返ります。
+アプリケーションでは「ログインしていたら名前を表示」「エラーがあればエラーメッセージを表示」のように、条件に応じて表示を変えたい場面が頻繁にあります。
+
+### if 文で分岐
+
+最もシンプルな方法は、`return` の前に `if` 文を使うことです。
 
 ```tsx
-import { useState } from "react";
+interface StatusProps {
+  isLoggedIn: boolean;
+}
 
-function ContactForm() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email }),
-      });
-      if (!response.ok) throw new Error("送信に失敗しました");
-      // 成功処理
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "エラーが発生しました");
-    } finally {
-      setIsSubmitting(false);
-    }
+function Status({ isLoggedIn }: StatusProps) {
+  if (isLoggedIn) {
+    return <p>ようこそ！</p>;
   }
+  return <p>ログインしてください。</p>;
+}
+```
 
+### 三項演算子
+
+JSX の `{}` の中で三項演算子を使えば、インラインで分岐できます。
+
+```tsx
+function Status({ isLoggedIn }: StatusProps) {
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <p role="alert">{error}</p>}
-      <div>
-        <label htmlFor="name">名前</label>
-        <input
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={isSubmitting}
-        />
-      </div>
-      <div>
-        <label htmlFor="email">メール</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={isSubmitting}
-        />
-      </div>
-      <button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "送信中..." : "送信"}
-      </button>
-    </form>
+    <p>{isLoggedIn ? "ようこそ！" : "ログインしてください。"}</p>
   );
 }
 ```
 
-動きますが、`useState` が4つもあり、`event.preventDefault()`、ローディング管理、エラー管理など、定型的なコードが多いです。React 19 ではこれをもっとシンプルに書けます。
-
-## form actions
-
-React 19 では `<form>` の `action` 属性に関数を渡せるようになりました。
+要素ごと切り替えることもできます。
 
 ```tsx
-function SimpleForm() {
-  async function submitAction(formData: FormData) {
-    const name = formData.get("name") as string;
-    console.log(`名前: ${name}`);
-  }
-
+function AuthButton({ isLoggedIn }: StatusProps) {
   return (
-    <form action={submitAction}>
-      <label htmlFor="name">名前</label>
-      <input id="name" name="name" type="text" />
-      <button type="submit">送信</button>
-    </form>
+    <div>
+      {isLoggedIn ? (
+        <button>ログアウト</button>
+      ) : (
+        <button>ログイン</button>
+      )}
+    </div>
   );
 }
 ```
 
-HTML の `<form>` はもともと `action` 属性に URL を指定してデータを送信する仕組みでした（Day 3 で扱った内容です）。React 19 ではこれを拡張し、URL の代わりに関数を渡せるようにしたのです。
+### && 演算子（短絡評価）
 
-`action` に渡した関数は、フォーム送信時に `FormData` オブジェクトを引数として受け取ります。`FormData` は `<input>` の `name` 属性を元にデータを収集します。`event.preventDefault()` も不要です。
-
-## useActionState
-
-`useActionState` は、form action の状態（結果やエラー）を管理する Hook です。
+「条件を満たすときだけ表示、満たさないときは何も表示しない」場合は `&&` が便利です。
 
 ```tsx
-import { useActionState } from "react";
-
-interface FormState {
-  message: string;
-  errors?: {
-    name?: string;
-    email?: string;
-  };
+interface NotificationProps {
+  count: number;
 }
 
-function ContactForm() {
-  async function submitAction(
-    prevState: FormState,
-    formData: FormData
-  ): Promise<FormState> {
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
+function Notification({ count }: NotificationProps) {
+  return (
+    <div>
+      {count > 0 && (
+        <span className="badge">
+          {count}件の通知があります
+        </span>
+      )}
+    </div>
+  );
+}
+```
 
-    // バリデーション
-    if (!name.trim()) {
-      return { message: "", errors: { name: "名前を入力してください" } };
-    }
-    if (!email.includes("@")) {
-      return { message: "", errors: { email: "有効なメールアドレスを入力してください" } };
-    }
+`count > 0` が `true` のときだけ `<span>` が描画されます。`false` のときは何も描画されません。
 
-    // API 呼び出し
-    const response = await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email }),
-    });
+> **注意**: `&&` の左側に数値を直接書くと意図しない表示になることがあります。`{0 && <span>...</span>}` は `0` が画面に表示されてしまいます。数値の場合は `{count > 0 && ...}` のように必ず比較式にする必要があります。
 
-    if (!response.ok) {
-      return { message: "送信に失敗しました" };
-    }
+### 何も表示しないとき
 
-    return { message: "送信しました！" };
+条件によって何も表示したくない場合は `null` を返します。
+
+```tsx
+interface ErrorMessageProps {
+  error: string | null;
+}
+
+function ErrorMessage({ error }: ErrorMessageProps) {
+  if (!error) {
+    return null; // 何も描画しない
   }
+  return <p role="alert">{error}</p>;
+}
+```
 
-  const [state, formAction, isPending] = useActionState(submitAction, {
-    message: "",
+`role="alert"` はスクリーンリーダーに「これは重要なメッセージです」と伝えるための属性です。エラーメッセージが動的に表示されたとき、支援技術がユーザーに通知できます。
+
+## リストレンダリング
+
+配列のデータをリスト表示するには、Day 13 で学んだ `map` メソッドを使います。
+
+```tsx
+function FruitList() {
+  const fruits = ["りんご", "みかん", "バナナ"];
+
+  return (
+    <ul>
+      {fruits.map((fruit) => (
+        <li key={fruit}>{fruit}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+`map` で配列の各要素を JSX に変換しています。Day 13 で `map` を学んだときは値を変換していましたが、ここでは値を JSX 要素に変換しているのがポイントです。
+
+### オブジェクトの配列
+
+実際のアプリでは、オブジェクトの配列を表示することがほとんどです。
+
+```tsx
+interface User {
+  id: number;
+  name: string;
+  department: string;
+}
+
+function UserList() {
+  const users: User[] = [
+    { id: 1, name: "田中太郎", department: "開発部" },
+    { id: 2, name: "佐藤花子", department: "デザイン部" },
+    { id: 3, name: "鈴木一郎", department: "開発部" },
+  ];
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">名前</th>
+          <th scope="col">部署</th>
+        </tr>
+      </thead>
+      <tbody>
+        {users.map((user) => (
+          <tr key={user.id}>
+            <td>{user.name}</td>
+            <td>{user.department}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+```
+
+Day 3 で学んだテーブルのセマンティクスを活かし、`<thead>`, `<tbody>`, `scope` 属性をきちんと使っています。
+
+## key の役割
+
+リストの各要素に `key` を付けているのに気づいたでしょうか。これは React の仕組み上、必須です。
+
+### key がないとどうなるか
+
+```tsx
+// key がないと警告が出る
+{fruits.map((fruit) => (
+  <li>{fruit}</li>  // Warning: Each child in a list should have a unique "key" prop.
+))}
+```
+
+### key が必要な理由
+
+React は仮想 DOM の差分を計算するとき、リストの要素を「どの要素が追加/削除/移動されたか」判断する必要があります。`key` はそのための目印です。
+
+例えば、リストの先頭に要素を追加する場合を考えます。
+
+```
+変更前: [B, C]
+変更後: [A, B, C]
+```
+
+**key がない場合**: React はインデックスで比較します。
+- 0番目: B → A に変更（更新）
+- 1番目: C → B に変更（更新）
+- 2番目: なし → C を追加
+
+3つの操作が必要です。
+
+**key がある場合**: React は key で要素を追跡します。
+- key="B": そのまま
+- key="C": そのまま
+- key="A": 新しく追加
+
+1つの操作で済みます。さらに、B と C の内部の state も保持されます。
+
+### key のルール
+
+1. **兄弟要素の間で一意であること**（全体で一意である必要はない）
+2. **安定した値であること**（レンダリングのたびに変わらない）
+
+```tsx
+// 良い例: id を key にする
+{users.map((user) => (
+  <UserCard key={user.id} user={user} />
+))}
+
+// 悪い例: インデックスを key にする
+{users.map((user, index) => (
+  <UserCard key={index} user={user} />  // 並び替えや削除で問題が起きる
+))}
+
+// 悪い例: ランダムな値を key にする
+{users.map((user) => (
+  <UserCard key={Math.random()} user={user} />  // 毎回再作成される
+))}
+```
+
+> **ポイント**: データに `id` がある場合は `id` を使うのが基本です。`id` がなく、リストが固定で並び替えや削除がない場合に限り、インデックスを key にしても問題ありません。
+
+## 条件分岐とリストの組み合わせ
+
+実際のアプリでは、条件分岐とリストを組み合わせることが多いです。
+
+```tsx
+interface Task {
+  id: number;
+  title: string;
+  completed: boolean;
+}
+
+interface TaskListProps {
+  tasks: Task[];
+  filter: "all" | "active" | "completed";
+}
+
+function TaskList({ tasks, filter }: TaskListProps) {
+  const filteredTasks = tasks.filter((task) => {
+    switch (filter) {
+      case "active":
+        return !task.completed;
+      case "completed":
+        return task.completed;
+      default:
+        return true;
+    }
   });
 
-  return (
-    <form action={formAction}>
-      {state.message && <p role="status">{state.message}</p>}
-
-      <div>
-        <label htmlFor="contact-name">名前</label>
-        <input id="contact-name" name="name" type="text" disabled={isPending} />
-        {state.errors?.name && (
-          <p role="alert">{state.errors.name}</p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="contact-email">メール</label>
-        <input id="contact-email" name="email" type="email" disabled={isPending} />
-        {state.errors?.email && (
-          <p role="alert">{state.errors.email}</p>
-        )}
-      </div>
-
-      <button type="submit" disabled={isPending}>
-        {isPending ? "送信中..." : "送信"}
-      </button>
-    </form>
-  );
-}
-```
-
-`useActionState` は3つの値を返します。
-
-| 値 | 説明 |
-|---|------|
-| `state` | アクションが返した最新の状態 |
-| `formAction` | `<form>` の `action` に渡す関数 |
-| `isPending` | アクションが実行中かどうか |
-
-アクション関数は2つの引数を受け取ります。
-
-- `prevState` — 前回の状態（初回は `useActionState` の第2引数）
-- `formData` — フォームのデータ
-
-従来の方法と比べて `useState` が不要になり、ローディングやエラーの管理が `useActionState` に集約されました。
-
-## useFormStatus
-
-`useFormStatus` は、**フォーム内の子コンポーネント**から送信中の状態を取得する Hook です。
-
-```tsx
-import { useFormStatus } from "react-dom";
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <button type="submit" disabled={pending}>
-      {pending ? "送信中..." : "送信"}
-    </button>
-  );
-}
-```
-
-`useFormStatus` は必ず `<form>` の子コンポーネントの中で使う必要があります。フォーム自身のコンポーネントでは使えません。
-
-```tsx
-function ContactForm() {
-  async function submitAction(
-    prevState: { message: string },
-    formData: FormData
-  ) {
-    // 送信処理...
-    await fetch("/api/contact", {
-      method: "POST",
-      body: formData,
-    });
-    return { message: "送信しました！" };
+  if (filteredTasks.length === 0) {
+    return <p>タスクがありません。</p>;
   }
 
-  const [state, formAction] = useActionState(submitAction, { message: "" });
-
   return (
-    <form action={formAction}>
-      {state.message && <p role="status">{state.message}</p>}
-
-      <div>
-        <label htmlFor="msg-name">名前</label>
-        <input id="msg-name" name="name" type="text" />
-      </div>
-
-      <div>
-        <label htmlFor="msg-email">メール</label>
-        <input id="msg-email" name="email" type="email" />
-      </div>
-
-      {/* SubmitButton は form の子コンポーネント */}
-      <SubmitButton />
-    </form>
+    <ul>
+      {filteredTasks.map((task) => (
+        <li key={task.id}>
+          <span
+            style={{
+              textDecoration: task.completed ? "line-through" : "none",
+            }}
+          >
+            {task.title}
+          </span>
+          {task.completed && <span aria-label="完了済み"> ✓</span>}
+        </li>
+      ))}
+    </ul>
   );
 }
 ```
 
-`useFormStatus` を使うメリットは、送信ボタンが独立したコンポーネントになり、再利用できることです。どのフォームに入れても、そのフォームの送信状態を自動的に取得します。
-
-## 従来の方法と Actions の使い分け
-
-| 観点 | 従来（useState + onSubmit） | Actions（useActionState） |
-|------|---------------------------|--------------------------|
-| 状態管理 | 複数の useState が必要 | useActionState に集約 |
-| ローディング | 自分で管理 | isPending が自動 |
-| プログレッシブエンハンスメント | JavaScript 必須 | JS なしでも動く可能性 |
-| 入力中のバリデーション | 得意（onChange で即座に） | 送信時のバリデーション向き |
-
-入力中にリアルタイムでバリデーションしたい場合は、従来の `useState` + `onChange` が適しています。送信時にまとめてバリデーションする場合は、Actions が簡潔に書けます。
-
-実際のプロジェクトでは両方を組み合わせることもあります。
+Day 13 で学んだ `filter` メソッドで配列を絞り込み、Day 22 の `switch` で条件を分岐しています。これまで学んだ知識がつながっていることを感じてもらえるでしょうか。
 
 ## まとめ
 
-- React 19 の form actions で `<form action={関数}>` とすることで、フォーム送信をシンプルに処理できる
-- `useActionState` で送信結果（成功/エラー）とローディング状態を一括管理できる
-- `useFormStatus` は子コンポーネントから送信状態を取得する Hook
-- 入力中のリアルタイムバリデーションには従来の `useState` + `onChange` が適する
-- 送信時のバリデーションには Actions が簡潔
+- 条件付きレンダリングには `if` 文、三項演算子、`&&` を使い分ける
+- `&&` で数値を直接使うと `0` が表示されるので比較式にする
+- `map` で配列を JSX に変換してリスト表示する
+- `key` は React がリストの差分を効率的に計算するために必要
+- `key` にはデータの `id` を使い、インデックスやランダム値は避ける
 
-**次のレッスン**: [Day 27: useOptimistic と Transition](/lessons/day27/)
+**次のレッスン**: [Day 27: useEffect とライフサイクル](/lessons/day27/)

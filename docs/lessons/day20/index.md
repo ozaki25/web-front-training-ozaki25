@@ -1,305 +1,277 @@
-# Day 20: TypeScript 応用
+# Day 20: 型の応用
 
 ## 今日のゴール
 
-- 型の絞り込み（narrowing）の仕組みを知る
-- discriminated union で安全に型を判別する方法を知る
-- `satisfies` 演算子と `as const` の使いどころを知る
-- 型安全なイベントハンドリングの書き方を知る
+- ユニオン型とリテラル型で「取りうる値」を制限する方法を知る
+- 型エイリアスと interface でオブジェクトの型を定義する方法を知る
+- Optional と Readonly の使い方を知る
 
-## 型の絞り込み（Narrowing）
+## ユニオン型
 
-Day 18 でユニオン型を学びました。ユニオン型の値を使うとき、TypeScript は条件分岐を読み取って型を自動的に絞り込みます。この仕組みを**ナローイング**と呼びます。
+Day 19 では1つの型だけを指定しました。しかし、実際の開発では「文字列または数値」のように複数の型を受け付けたい場面があります。
 
-### typeof による絞り込み
+ユニオン型（union type）は `|`（パイプ）で型をつなぎます。
 
 ```typescript
-function format(value: string | number): string {
-  if (typeof value === "string") {
-    // ここでは value は string
-    return value.toUpperCase();
-  }
-  // ここでは value は number（string の可能性が排除された）
-  return value.toFixed(2);
+// string または number を受け付ける
+let id: string | number;
+
+id = "abc";  // OK
+id = 123;    // OK
+id = true;   // エラー！ boolean は代入できません
+```
+
+関数の引数にも使えます。
+
+```typescript
+function printId(id: string | number): void {
+  console.log(`ID: ${id}`);
+}
+
+printId("abc"); // OK
+printId(123);   // OK
+```
+
+ユニオン型の値を使うときは注意が必要です。
+
+```typescript
+function printId(id: string | number): void {
+  // id は string かもしれないし number かもしれない
+  console.log(id.toUpperCase()); // エラー！ number には toUpperCase がない
 }
 ```
 
-TypeScript のコンパイラは `if (typeof value === "string")` を見て、ブロック内では `value` が `string` であることを理解します。これは TypeScript の重要な機能で、**制御フロー分析**（control flow analysis）と呼ばれます。
-
-### truthiness による絞り込み
-
-`null` や `undefined` の可能性がある値は、真偽チェックで絞り込めます。
+`string` 固有のメソッドを使いたい場合は、`typeof` で型を確認します（これを**型の絞り込み**と呼びます。Day 22 で詳しく学びます）。
 
 ```typescript
-function printName(name: string | null): void {
-  if (name) {
-    // ここでは name は string（null と空文字列が排除された）
-    console.log(name.toUpperCase());
+function printId(id: string | number): void {
+  if (typeof id === "string") {
+    // このブロック内では id は string として扱われる
+    console.log(id.toUpperCase());
   } else {
-    console.log("名前が設定されていません");
+    // このブロック内では id は number として扱われる
+    console.log(id.toFixed(2));
   }
 }
 ```
 
-### in 演算子による絞り込み
+## リテラル型
 
-オブジェクトが特定のプロパティを持つかで絞り込めます。
+リテラル型は、特定の値だけを許可する型です。
 
 ```typescript
-interface Dog {
-  bark(): void;
-}
-
-interface Cat {
-  meow(): void;
-}
-
-function makeSound(animal: Dog | Cat): void {
-  if ("bark" in animal) {
-    // ここでは animal は Dog
-    animal.bark();
-  } else {
-    // ここでは animal は Cat
-    animal.meow();
-  }
-}
+// "admin" という文字列だけを受け付ける型
+let role: "admin";
+role = "admin"; // OK
+role = "user";  // エラー！
 ```
 
-## Discriminated Union
-
-Day 18 の最後で予告した **discriminated union**（判別可能なユニオン）を詳しく見ていきます。共通のプロパティ（**判別プロパティ**）を使って型を安全に判別するパターンです。
+単独ではあまり使いませんが、ユニオン型と組み合わせると強力です。
 
 ```typescript
-interface LoadingState {
-  status: "loading";
-}
+type Status = "loading" | "success" | "error";
 
-interface SuccessState {
-  status: "success";
-  data: string[];
-}
-
-interface ErrorState {
-  status: "error";
-  message: string;
-}
-
-type State = LoadingState | SuccessState | ErrorState;
-```
-
-`status` プロパティの値がリテラル型になっているので、`switch` で安全に分岐できます。
-
-```typescript
-function render(state: State): string {
-  switch (state.status) {
+function showMessage(status: Status): string {
+  switch (status) {
     case "loading":
       return "読み込み中...";
     case "success":
-      // ここでは state は SuccessState → data にアクセスできる
-      return `${state.data.length}件のデータ`;
+      return "完了しました！";
     case "error":
-      // ここでは state は ErrorState → message にアクセスできる
-      return `エラー: ${state.message}`;
+      return "エラーが発生しました";
   }
 }
+
+showMessage("loading"); // OK
+showMessage("pending"); // エラー！ "pending" は Status に含まれない
 ```
 
-### 網羅性チェック
+これにより、「ありえない値」を型レベルで排除できます。JavaScript だけなら `showMessage("pending")` と書いてもエラーにならず、実行時に初めて不具合に気づきますが、TypeScript なら書いた瞬間にわかります。
 
-discriminated union の大きなメリットは、**すべてのケースを処理しているか**をコンパイラがチェックできることです。
+## 型エイリアス（type）
+
+Day 19 ではオブジェクトの型を直接書きました。
 
 ```typescript
-// 後から新しい状態を追加した場合
-interface RetryingState {
-  status: "retrying";
-  attempt: number;
-}
-
-type State = LoadingState | SuccessState | ErrorState | RetryingState;
-
-function render(state: State): string {
-  switch (state.status) {
-    case "loading":
-      return "読み込み中...";
-    case "success":
-      return `${state.data.length}件のデータ`;
-    case "error":
-      return `エラー: ${state.message}`;
-    // "retrying" のケースがない！
-    default: {
-      // never 型を使って網羅性をチェック
-      const _exhaustive: never = state;
-      // RetryingState が処理されていないのでエラーになる
-      return _exhaustive;
-    }
-  }
-}
+const user: { name: string; age: number } = { name: "田中", age: 25 };
 ```
 
-`never` 型は「ありえない値」を表す型です。すべてのケースを処理していれば `default` に到達する型は `never` になりますが、処理漏れがあるとエラーになります。
-
-## as const
-
-`as const` は、値をリテラル型として固定するアサーション（型の断言）です。
+同じ型を何度も使うなら、`type` キーワードで名前を付けられます。これを型エイリアス（type alias）と呼びます。
 
 ```typescript
-// as const なし
-const colors = ["red", "green", "blue"];
-// 型: string[]
-
-// as const あり
-const colors = ["red", "green", "blue"] as const;
-// 型: readonly ["red", "green", "blue"]
-```
-
-`as const` をつけると、配列の要素がリテラル型になり、配列自体が `readonly`（変更不可）になります。
-
-オブジェクトにも使えます。
-
-```typescript
-const config = {
-  apiUrl: "https://api.example.com",
-  maxRetries: 3,
-} as const;
-// 型: { readonly apiUrl: "https://api.example.com"; readonly maxRetries: 3; }
-
-config.apiUrl = "other"; // エラー！ readonly
-```
-
-### as const の実用的な使い方
-
-定数の集合を定義するときに便利です。
-
-```typescript
-const STATUS = {
-  LOADING: "loading",
-  SUCCESS: "success",
-  ERROR: "error",
-} as const;
-
-// オブジェクトの値からユニオン型を作る
-type Status = (typeof STATUS)[keyof typeof STATUS];
-// "loading" | "success" | "error"
-```
-
-## satisfies 演算子
-
-`satisfies` は TypeScript 4.9 で追加された演算子です。「この値はこの型を満たしている」ことを検証しつつ、推論された型を保持します。
-
-通常の型注釈との違いを見てみます。
-
-```typescript
-type Colors = Record<string, string | string[]>;
-
-// 型注釈を使う場合
-const palette: Colors = {
-  red: "#ff0000",
-  green: "#00ff00",
-  blue: ["#0000ff", "#0000cc"],
+type User = {
+  name: string;
+  age: number;
 };
 
-// red は string | string[] になってしまう
-palette.red.toUpperCase(); // エラー！ string[] かもしれない
+const user: User = { name: "田中", age: 25 };
+const admin: User = { name: "佐藤", age: 30 };
+```
+
+型エイリアスはオブジェクトだけでなく、あらゆる型に名前を付けられます。
+
+```typescript
+type ID = string | number;
+type Status = "loading" | "success" | "error";
+```
+
+## interface
+
+オブジェクトの型を定義するもう1つの方法が `interface` です。
+
+```typescript
+interface User {
+  name: string;
+  age: number;
+}
+
+const user: User = { name: "田中", age: 25 };
+```
+
+`type` と `interface` はオブジェクトの型定義においてほぼ同じことができます。
+
+### type と interface の違い
+
+| 特徴 | `type` | `interface` |
+|------|--------|-------------|
+| オブジェクト型の定義 | できる | できる |
+| ユニオン型の定義 | できる | できない |
+| 拡張 | `&`（交差型） | `extends` |
+| 同名の宣言マージ | できない | できる |
+
+```typescript
+// interface は extends で拡張できる
+interface Animal {
+  name: string;
+}
+
+interface Dog extends Animal {
+  breed: string;
+}
+
+const dog: Dog = { name: "ポチ", breed: "柴犬" };
 ```
 
 ```typescript
-type Colors = Record<string, string | string[]>;
+// type は & で型を組み合わせる（交差型）
+type Animal = {
+  name: string;
+};
 
-// satisfies を使う場合
-const palette = {
-  red: "#ff0000",
-  green: "#00ff00",
-  blue: ["#0000ff", "#0000cc"],
-} satisfies Colors;
+type Dog = Animal & {
+  breed: string;
+};
 
-// red は string と推論される（具体的な型が保持される）
-palette.red.toUpperCase(); // OK!
-
-// blue は string[] と推論される
-palette.blue.map((c) => c.toUpperCase()); // OK!
-
-// Colors 型を満たしているかもチェックされる
-const invalid = {
-  red: 123, // エラー！ number は string | string[] に代入できない
-} satisfies Colors;
+const dog: Dog = { name: "ポチ", breed: "柴犬" };
 ```
 
-`satisfies` は「型の検証はしたいが、推論された具体的な型を失いたくない」場面で使います。
+> **実務でのルール**: プロジェクトによって「オブジェクトは interface で定義する」「すべて type で統一する」などルールが異なります。配属先のルールに従うことになります。Next.js の公式ドキュメントでは両方が使われています。
 
-## 型安全なイベントハンドリング
+## Optional プロパティ
 
-Phase 4 で React を学ぶ準備として、DOM イベントの型について見ておきます。Day 12 で学んだイベントリスナーを TypeScript で書くとこうなります。
+プロパティ名の後ろに `?` を付けると、そのプロパティは省略可能になります。
 
 ```typescript
-const button = document.querySelector("button");
+interface User {
+  name: string;
+  age: number;
+  email?: string; // 省略可能
+}
 
-// button は HTMLButtonElement | null（要素が見つからない可能性がある）
-if (button) {
-  button.addEventListener("click", (event: MouseEvent) => {
-    console.log(`クリック座標: (${event.clientX}, ${event.clientY})`);
-  });
+// email がなくても OK
+const user1: User = { name: "田中", age: 25 };
+
+// email があっても OK
+const user2: User = { name: "佐藤", age: 30, email: "sato@example.com" };
+```
+
+Optional なプロパティの型は自動的に `string | undefined` になります。使うときは `undefined` かもしれないことを考慮する必要があります。
+
+```typescript
+function printEmail(user: User): void {
+  // user.email は string | undefined なので直接使えない
+  if (user.email) {
+    console.log(user.email.toUpperCase()); // OK: この中では string
+  } else {
+    console.log("メールアドレス未登録");
+  }
 }
 ```
 
-イベントの種類ごとに型が異なります。
+## Readonly
 
-| イベント | 型 |
-|---------|-----|
-| click, mousedown | `MouseEvent` |
-| keydown, keyup | `KeyboardEvent` |
-| submit | `SubmitEvent` |
-| input, change | `Event` |
-| focus, blur | `FocusEvent` |
-
-### 型アサーション（as）
-
-TypeScript には、開発者が「この値はこの型である」と明示的に伝える**型アサーション**（`as`）という構文があります。
-
-TypeScript の型推論では判断しきれない場面で使います。
+プロパティを変更不可にするには `readonly` を付けます。
 
 ```typescript
-const input = event.target as HTMLInputElement;
+interface Config {
+  readonly apiUrl: string;
+  readonly maxRetries: number;
+}
+
+const config: Config = {
+  apiUrl: "https://api.example.com",
+  maxRetries: 3,
+};
+
+config.apiUrl = "https://other.com"; // エラー！ readonly なので変更できない
 ```
 
-型アサーションは型チェックをすり抜けるため、**本当にその型であると確信がある場合にだけ**使います。このレッスンで学んだ narrowing（型の絞り込み）で安全に型を判別できる場合は、そちらを優先します。
+`Readonly` ユーティリティ型を使うと、すべてのプロパティを一括で `readonly` にできます。
 
 ```typescript
-const input = document.querySelector("input");
+interface User {
+  name: string;
+  age: number;
+}
 
-if (input) {
-  input.addEventListener("input", (event: Event) => {
-    // event.target は EventTarget | null なので型アサーションが必要
-    const target = event.target as HTMLInputElement;
-    console.log(target.value);
-  });
+const frozenUser: Readonly<User> = { name: "田中", age: 25 };
+frozenUser.name = "佐藤"; // エラー！
+```
+
+> **ポイント**: `readonly` はコンパイル時のチェックです。JavaScript に変換された後は制約がなくなります。それでもコードの意図を明示し、チーム内での誤った変更を防ぐのに役立ちます。
+
+## 型の組み合わせの実例
+
+ここまで学んだ型を組み合わせると、実際の開発で見かけるような型を定義できます。
+
+```typescript
+// API レスポンスを表す型
+type ApiResponse =
+  | { status: "loading" }
+  | { status: "success"; data: User[] }
+  | { status: "error"; message: string };
+
+interface User {
+  id: number;
+  name: string;
+  email?: string;
+  role: "admin" | "editor" | "viewer";
+}
+
+// 使用例
+function handleResponse(response: ApiResponse): void {
+  switch (response.status) {
+    case "loading":
+      console.log("読み込み中...");
+      break;
+    case "success":
+      console.log(`${response.data.length}件のユーザーを取得`);
+      break;
+    case "error":
+      console.log(`エラー: ${response.message}`);
+      break;
+  }
 }
 ```
 
-フォームの例も見てみます。
-
-```typescript
-const form = document.querySelector("form");
-
-if (form) {
-  form.addEventListener("submit", (event: SubmitEvent) => {
-    event.preventDefault();
-    const formData = new FormData(form);
-    const name = formData.get("name"); // FormDataEntryValue | null
-    if (typeof name === "string") {
-      console.log(`名前: ${name}`);
-    }
-  });
-}
-```
-
-> **ポイント**: React ではこれらの DOM イベント型を直接使わず、`React.MouseEvent` や `React.ChangeEvent<HTMLInputElement>` のようなラッパー型を使います。Phase 4 で詳しく学びます。
+この `ApiResponse` のように、`status` の値によって持つプロパティが変わるパターンを **discriminated union**（判別可能なユニオン）と呼びます。Day 22 で詳しく学びます。
 
 ## まとめ
 
-- TypeScript は `typeof`、真偽チェック、`in` 演算子などから型を自動的に絞り込む（narrowing）
-- discriminated union は共通のリテラル型プロパティで型を判別するパターン。`never` 型で網羅性もチェックできる
-- `as const` はリテラル型として固定し、定数の集合からユニオン型を作るのに便利
-- `satisfies` は型の検証をしつつ、推論された具体的な型を保持する
-- DOM イベントにも型があり、TypeScript で安全に扱える
+- ユニオン型（`A | B`）で「いずれかの型」を表現できる
+- リテラル型とユニオン型を組み合わせると、取りうる値を厳密に制限できる
+- `type` と `interface` でオブジェクトの型に名前を付けられる
+- `?` で省略可能なプロパティ、`readonly` で変更不可なプロパティを定義できる
+- 型を組み合わせることで、実際のデータ構造を正確に表現できる
 
-**次のレッスン**: [Day 21: React の概要と JSX](/lessons/day21/)
+**次のレッスン**: [Day 21: ジェネリクスとユーティリティ型](/lessons/day21/)

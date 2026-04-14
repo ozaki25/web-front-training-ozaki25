@@ -1,166 +1,295 @@
-# Day 43: コンポーネントテスト
+# Day 43: Tailwind CSS
 
 ## 今日のゴール
 
-- Testing Library の考え方を知る
-- React コンポーネントのテストがどんなものかを知る
-- 要素の検索方法と get / query / find の違いを知る
+- ユーティリティファーストという考え方を知る
+- Tailwind CSS v4 の CSS ファーストな設定方法を知る
+- レスポンシブデザインとダークモードの実装方法を知る
 
-## Testing Library の考え方
+## Tailwind CSS の仕組み
 
-Day 42 では純粋な関数のテストを見ました。今日は React コンポーネントのテストです。
+Tailwind CSS が何をしているのかを理解したうえで使い方を見ていきます。
 
-React コンポーネントのテストには **Testing Library** を使います。Testing Library の最も重要な哲学は次のものです。
+### ブラウザのデフォルトスタイルと reset CSS
 
-> **「ソフトウェアの使われ方に近いテストを書くほど、テストの信頼性は高まる」**
+ブラウザには HTML 要素に対する**デフォルトスタイル**があります。`<h1>` が大きく表示されたり、`<ul>` にマーカー（・）がついたりするのは、ブラウザが最初からスタイルを持っているからです。
 
-つまり、コンポーネントの内部実装（state の値、メソッド名など）ではなく、**ユーザーが見るもの・操作するもの**をテストします。
+しかし、このデフォルトスタイルはブラウザごとに微妙に異なります。Chrome と Safari で余白が違う、ということが起こりえます。そこで、プロジェクトの最初にブラウザ間の差異をリセットする CSS を読み込む手法が広く使われてきました。これが **reset CSS** です。
 
-- ❌ 「state の値が `true` になっている」をテストする
-- ✅ 「ボタンをクリックしたらテキストが表示される」をテストする
+Tailwind CSS は `@import "tailwindcss"` を書くだけで、**Preflight** と呼ばれる reset CSS を自動的に適用します。Preflight は以下のようなことを行います。
 
-この考え方は、テストが壊れにくくなるという利点があります。内部実装をテストすると、リファクタリングのたびにテストも書き直しになりますが、ユーザーの見た目が変わらなければテストもそのまま通ります。
+- すべての要素の `margin` と `padding` を `0` にリセット
+- `box-sizing` を `border-box` に統一（Day 7 で学んだ設定です）
+- 見出し（`<h1>` 等）のフォントサイズや太字を解除し、すべてのテキストを均一にする
+- リスト（`<ul>`, `<ol>`）のマーカーを非表示にする
+- 画像をブロック要素にする
 
-## コンポーネントテストの導入
+つまり、Tailwind を導入すると**すべてのデフォルトスタイルが消えて、まっさらな状態からスタート**します。「`<h1>` を書いたのに大きくならない」と思ったら、それは Preflight が働いているからです。すべてのスタイルをユーティリティクラスで明示的に指定する — これが Tailwind のアプローチです。
 
-Testing Library を使うには `@testing-library/react`、`@testing-library/jest-dom`、`@testing-library/user-event` をインストールし、Day 42 で作った Vitest のセットアップファイルで `jest-dom` のマッチャーを読み込みます。これで `toBeInTheDocument()` のようなマッチャーが使えるようになります。
+### Tailwind CSS の全体像
 
-## コンポーネントテストの流れ
+Tailwind CSS は大きく 3 つの層で構成されています。
 
-シンプルなコンポーネントで、テストの基本的な流れを見ます。
+| 層 | 役割 |
+|---|------|
+| **Preflight** | ブラウザのデフォルトスタイルをリセットし、統一された出発点を作る |
+| **ユーティリティクラス** | `p-4`、`text-lg` など、1 プロパティ = 1 クラスの小さな CSS クラス群 |
+| **ビルド時の最適化** | 実際に使われているクラスだけを CSS ファイルに含め、ファイルサイズを最小化する |
+
+3 番目のポイントが重要です。Tailwind は何千ものユーティリティクラスを定義していますが、**ビルド時にコードをスキャンし、使われているクラスだけを最終的な CSS に含めます**。だから、どれだけ多くのクラスが存在しても、最終的な CSS ファイルは数十 KB 程度に収まります。
+
+## ユーティリティファースト CSS とは
+
+Day 6〜6 で CSS の基礎を学びました。従来の CSS では、クラス名を考えてスタイルを書くのが一般的でした。
+
+```css
+/* 従来の CSS */
+.card {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #1a202c;
+}
+```
+
+```html
+<div class="card">
+  <h2 class="card-title">タイトル</h2>
+</div>
+```
+
+Tailwind CSS は、これとは異なる**ユーティリティファースト**というアプローチを取ります。1 つのクラスが 1 つの CSS プロパティに対応する小さなクラス（ユーティリティクラス）を組み合わせてスタイリングします。
+
+```html
+<div class="p-4 rounded-lg bg-white shadow-sm">
+  <h2 class="text-xl font-bold text-gray-900">タイトル</h2>
+</div>
+```
+
+| ユーティリティクラス | 対応する CSS |
+|-------------------|------------|
+| `p-4` | `padding: 1rem` |
+| `rounded-lg` | `border-radius: 0.5rem` |
+| `bg-white` | `background-color: white` |
+| `shadow-sm` | `box-shadow: 0 1px 3px ...` |
+| `text-xl` | `font-size: 1.25rem` |
+| `font-bold` | `font-weight: bold` |
+| `text-gray-900` | `color: #111827` |
+
+### なぜユーティリティファーストなのか
+
+最初は「クラス名が多くて読みにくい」と感じるかもしれません。しかし、実際のプロジェクトでは大きなメリットがあります。
+
+1. **クラス名を考えなくていい** — `.card-wrapper-inner-title` のような命名に悩む時間がなくなる
+2. **CSS ファイルが肥大化しない** — 同じユーティリティクラスが再利用されるため、CSS の総量が増えない
+3. **HTML を見ればスタイルがわかる** — CSS ファイルを行き来する必要がない
+4. **スタイルの衝突が起きない** — Day 8 で学んだ CSS のグローバルスコープ問題が発生しない
+
+## Tailwind CSS v4 のセットアップ
+
+Tailwind CSS v4 は、従来の JavaScript 設定ファイル（`tailwind.config.js`）ではなく、**CSS ファイルで設定する**というアプローチに変わりました。これを「CSS ファースト」と呼びます。
+
+### Next.js プロジェクトでのセットアップ
+
+`create-next-app` で Tailwind CSS を選択した場合、すでにセットアップ済みです。手動で設定する場合は以下のようになります。
+
+```css
+/* src/app/globals.css */
+@import "tailwindcss";
+```
+
+これだけで Tailwind CSS が使えるようになります。v3 以前の `@tailwind base;` `@tailwind components;` `@tailwind utilities;` という 3 行は不要になりました。
+
+### @theme ブロックでカスタマイズ
+
+プロジェクト固有の色やフォントを定義するには、`@theme` ブロックを使います。
+
+```css
+/* src/app/globals.css */
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary: #10b981;
+  --font-sans: "Noto Sans JP", sans-serif;
+  --breakpoint-xs: 475px;
+}
+```
+
+`@theme` で定義した値は、ユーティリティクラスとして自動的に使えるようになります。
+
+```html
+<!-- --color-primary が bg-primary として使える -->
+<button class="bg-primary text-white font-sans">ボタン</button>
+```
+
+従来の `tailwind.config.js` で `theme.extend` に書いていた内容が、CSS で完結するようになりました。
+
+## よく使うユーティリティクラス
+
+### レイアウト
+
+```html
+<!-- Flexbox -->
+<div class="flex items-center justify-between gap-4">
+  <span>左</span>
+  <span>右</span>
+</div>
+
+<!-- Grid -->
+<div class="grid grid-cols-3 gap-4">
+  <div>1</div>
+  <div>2</div>
+  <div>3</div>
+</div>
+```
+
+### スペーシング
+
+```html
+<!-- padding -->
+<div class="p-4">全方向に 1rem</div>
+<div class="px-4 py-2">横 1rem、縦 0.5rem</div>
+
+<!-- margin -->
+<div class="m-4">全方向に 1rem</div>
+<div class="mt-8">上に 2rem</div>
+```
+
+数値の対応: `1` = 0.25rem、`2` = 0.5rem、`4` = 1rem、`8` = 2rem、`16` = 4rem
+
+### テキスト
+
+```html
+<p class="text-sm text-gray-600">小さめのグレー文字</p>
+<p class="text-2xl font-bold text-gray-900">大きい太字</p>
+<p class="text-center leading-relaxed">中央揃えでゆったり行間</p>
+```
+
+### 背景・ボーダー
+
+```html
+<div class="bg-gray-100 border border-gray-300 rounded-lg">
+  角丸のカード
+</div>
+```
+
+## レスポンシブデザイン
+
+Tailwind では、ブレークポイント（画面幅の区切り）のプレフィックスを付けるだけでレスポンシブデザインが実現できます。
+
+```html
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="p-4 bg-white rounded-lg shadow-sm">カード 1</div>
+  <div class="p-4 bg-white rounded-lg shadow-sm">カード 2</div>
+  <div class="p-4 bg-white rounded-lg shadow-sm">カード 3</div>
+</div>
+```
+
+| プレフィックス | 画面幅 | 意味 |
+|-------------|-------|------|
+| なし | 0px〜 | モバイル（デフォルト） |
+| `sm:` | 640px〜 | 小型タブレット |
+| `md:` | 768px〜 | タブレット |
+| `lg:` | 1024px〜 | デスクトップ |
+| `xl:` | 1280px〜 | 大画面 |
+| `2xl:` | 1536px〜 | 超大画面 |
+
+Tailwind は**モバイルファースト**です。プレフィックスなしのスタイルがモバイル用で、`md:` や `lg:` でより大きい画面のスタイルを上書きしていきます。
+
+上の例では、スマートフォンでは 1 列、タブレットでは 2 列、デスクトップでは 3 列のグリッドになります。
+
+## ダークモード
+
+Tailwind では `dark:` プレフィックスでダークモード用のスタイルを指定します。
+
+```html
+<div class="bg-white dark:bg-gray-900">
+  <h1 class="text-gray-900 dark:text-white">タイトル</h1>
+  <p class="text-gray-600 dark:text-gray-300">本文テキスト</p>
+</div>
+```
+
+ダークモードは、ユーザーの OS 設定に従います（`prefers-color-scheme: dark`）。
+
+### 完全なカードコンポーネント例
+
+ここまでの内容を組み合わせた実践的な例です。
 
 ```tsx
-// src/components/greeting.tsx
+// src/app/components/article-card.tsx
+import Image from "next/image";
+import Link from "next/link";
+
 type Props = {
-  name: string;
+  title: string;
+  excerpt: string;
+  image: string;
+  href: string;
 };
 
-export default function Greeting({ name }: Props) {
+export default function ArticleCard({ title, excerpt, image, href }: Props) {
   return (
-    <div>
-      <h1>こんにちは、{name}さん！</h1>
-      <p>今日も良い一日を。</p>
-    </div>
+    <article className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+      <div className="relative h-48 w-full">
+        <Image
+          src={image}
+          alt=""
+          fill
+          className="rounded-t-lg object-cover"
+        />
+      </div>
+      <div className="p-4">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+          <Link href={href} className="hover:underline">
+            {title}
+          </Link>
+        </h2>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+          {excerpt}
+        </p>
+      </div>
+    </article>
   );
 }
 ```
 
-```tsx
-// src/components/greeting.test.tsx
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
-import Greeting from "./greeting";
+## hover・focus などの状態
 
-describe("Greeting", () => {
-  it("名前を表示する", () => {
-    render(<Greeting name="太郎" />);
+ユーザーの操作状態に応じたスタイルも、プレフィックスで指定できます。
 
-    expect(screen.getByText("こんにちは、太郎さん！")).toBeInTheDocument();
-  });
-});
+```html
+<button
+  class="rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-blue-700"
+>
+  ボタン
+</button>
 ```
 
-コンポーネントテストの流れは3ステップです。
+| プレフィックス | 状態 |
+|-------------|------|
+| `hover:` | マウスを乗せたとき |
+| `focus:` | フォーカスしたとき |
+| `active:` | クリック中 |
+| `disabled:` | 無効状態 |
+| `first:` | 最初の子要素 |
+| `last:` | 最後の子要素 |
 
-1. **`render`** — コンポーネントを仮想的な DOM（ブラウザが管理するページの構造）にレンダリングする
-2. **`screen`** で要素を検索する（`getByText`、`getByRole` など）
-3. **`expect`** で検証する（`toBeInTheDocument()` など）
-
-## 要素の検索方法
-
-Testing Library は、ユーザーの視点で要素を検索する方法を提供しています。
-
-### 推奨される検索（優先度順）
-
-```tsx
-// 1. getByRole — ロール（役割）で検索（最も推奨）
-screen.getByRole("button", { name: "送信" });
-screen.getByRole("heading", { name: "タイトル" });
-
-// 2. getByLabelText — ラベルで検索（フォーム要素に推奨）
-screen.getByLabelText("メールアドレス");
-
-// 3. getByText — テキストで検索
-screen.getByText("送信しました");
-
-// 4. getByTestId — data-testid で検索（最終手段）
-screen.getByTestId("custom-element");
-```
-
-`getByRole` が最も推奨されるのは、**スクリーンリーダーがコンテンツを認識する方法と同じ**だからです。`getByRole` でテストが書けるということは、アクセシビリティが適切に実装されている証明にもなります。
-
-### get / query / find の違い
-
-| プレフィックス | 見つからない場合 | 用途 |
-|-------------|--------------|------|
-| `getBy` | エラーを投げる | 存在するはずの要素 |
-| `queryBy` | `null` を返す | 存在しないことの確認 |
-| `findBy` | 見つかるまで待つ（非同期） | 非同期で表示される要素 |
-
-```tsx
-// 要素が存在する → getBy
-expect(screen.getByText("表示されている")).toBeInTheDocument();
-
-// 要素が存在しない → queryBy
-expect(screen.queryByText("まだない")).not.toBeInTheDocument();
-
-// 非同期で表示される → findBy
-const element = await screen.findByText("読み込み後に表示");
-```
-
-## ユーザー操作のシミュレーション
-
-`userEvent` を使うと、クリックやテキスト入力といったユーザー操作をシミュレートできます。
-
-```tsx
-// src/components/counter.tsx
-"use client";
-
-import { useState } from "react";
-
-export default function Counter() {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div>
-      <p>カウント: {count}</p>
-      <button onClick={() => setCount(count + 1)} type="button">
-        増やす
-      </button>
-    </div>
-  );
-}
-```
-
-```tsx
-// src/components/counter.test.tsx
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import Counter from "./counter";
-
-describe("Counter", () => {
-  it("ボタンをクリックするとカウントが増える", async () => {
-    const user = userEvent.setup();
-    render(<Counter />);
-
-    await user.click(screen.getByRole("button", { name: "増やす" }));
-
-    expect(screen.getByText("カウント: 1")).toBeInTheDocument();
-  });
-});
-```
-
-`userEvent.setup()` で作成した `user` オブジェクトで操作をシミュレートします。`user.click` や `user.type` は `await` が必要です。
-
-より複雑なテスト（フォーム送信やコールバックの検証）では、`vi.fn()` でモック関数（呼び出しを記録するダミー関数）を使います。
+> **アクセシビリティ**: `focus:ring` による視覚的なフォーカスインジケーターは、キーボード操作のユーザーにとって非常に重要です。フォーカススタイルは必ず設定することが重要です。
 
 ## まとめ
 
-- Testing Library は「ユーザーの使い方に近いテスト」を書くための道具
-- `render` でコンポーネントを描画し、`screen` で要素を検索する
-- `getByRole` が最も推奨される検索方法で、アクセシビリティの確認にもなる
-- `getBy`（存在する要素）、`queryBy`（不在確認）、`findBy`（非同期待ち）を使い分ける
-- `userEvent` でクリックなどのユーザー操作をシミュレートできる
+- Tailwind CSS はユーティリティファーストのアプローチで、クラス名の命名やスタイルの衝突から解放される
+- v4 では `@import "tailwindcss"` だけで使い始められ、`@theme` ブロックでカスタマイズする
+- レスポンシブデザインは `md:`、`lg:` などのプレフィックスで、モバイルファーストに実装する
+- ダークモードは `dark:` プレフィックスで対応する
+- `hover:`、`focus:` などの状態プレフィックスで、インタラクション時のスタイルを指定する
 
-**次のレッスン**: [Day 44: アクセシビリティ実践](/lessons/day44/)
+**次のレッスン**: [Day 44: テスト基礎（Vitest）](/lessons/day44/)

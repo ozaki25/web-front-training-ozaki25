@@ -1,247 +1,284 @@
-# Day 39: メタデータと SEO
+# Day 39: Server Actions
 
 ## 今日のゴール
 
-- Next.js の Metadata API によるメタデータの設定方法を知る
-- OGP（Open Graph Protocol）の役割と設定方法を知る
-- `generateMetadata` で動的なメタデータを生成する方法を知る
+- Server Actions の仕組みと `"use server"` の意味を知る
+- フォーム送信でのデータ変更パターンを知る
+- revalidation（キャッシュ再検証）の仕組みを知る
+- Server Actions のセキュリティ上の注意点を知る
 
-## メタデータとは
+## Server Actions とは
 
-メタデータとは、ページの「情報についての情報」です。Day 1 で学んだ HTML の `<head>` 内に書く `<title>` や `<meta>` タグが該当します。
+Server Actions は、**クライアント（ブラウザ）からサーバーの関数を直接呼び出す仕組み**です。フォーム送信やボタンクリックで、サーバー上の関数を実行できます。
 
-```html
-<head>
-  <title>ページのタイトル</title>
-  <meta name="description" content="ページの説明文" />
-</head>
-```
+Day 38 で Route Handlers（API エンドポイント）を学びましたが、Server Actions を使うと、API エンドポイントを作らずにサーバーの処理を呼び出せます。
 
-メタデータはブラウザの画面には直接表示されませんが、以下の場面で重要です。
+## 基本的な Server Action
 
-- **検索エンジン** — Google などがページの内容を理解するために使う
-- **SNS シェア** — Twitter や LINE でリンクを共有したときに表示されるカード画像やタイトル
-- **ブラウザ** — タブに表示されるタイトル、ブックマークの名前
-
-## Metadata API — 静的なメタデータ
-
-Next.js では、`metadata` オブジェクトをエクスポートすることでメタデータを設定します。直接 `<head>` タグを書く必要はありません。
+`"use server"` を書くと、その関数が Server Action になります。
 
 ```tsx
-// src/app/page.tsx
-import type { Metadata } from "next";
+// src/app/contact/page.tsx
 
-export const metadata: Metadata = {
-  title: "My App - ホーム",
-  description: "Next.js で作った Web アプリケーション",
-};
+async function submitContact(formData: FormData) {
+  "use server";
 
-export default function HomePage() {
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const message = formData.get("message") as string;
+
+  // サーバーで実行される（データベース保存、メール送信など）
+  console.log("お問い合わせ:", { name, email, message });
+}
+
+export default function ContactPage() {
   return (
     <main>
-      <h1>ホームページ</h1>
+      <h1>お問い合わせ</h1>
+      <form action={submitContact}>
+        <div>
+          <label htmlFor="name">お名前</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <div>
+          <label htmlFor="email">メールアドレス</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div>
+          <label htmlFor="message">メッセージ</label>
+          <textarea id="message" name="message" required />
+        </div>
+        <button type="submit">送信</button>
+      </form>
     </main>
   );
 }
 ```
 
-Next.js がこの `metadata` オブジェクトを読み取り、自動的に `<head>` 内に適切なタグを生成します。
+注目ポイントがいくつかあります。
 
-### ルートレイアウトでの共通メタデータ
+- **`"use server"`** — 関数の先頭に書くと、その関数はサーバーでのみ実行される
+- **`<form action={submitContact}>`** — HTML のフォームの `action` に関数を渡している
+- **`FormData`** — ブラウザ標準のフォームデータオブジェクトを引数として受け取る
 
-`layout.tsx` に書いた `metadata` は、配下のすべてのページに適用されます。
+### 裏で何が起きているか
 
-```tsx
-// src/app/layout.tsx
-import type { Metadata } from "next";
+1. ユーザーがフォームを送信する
+2. ブラウザが Next.js サーバーに POST リクエストを送る
+3. サーバーが `submitContact` 関数を実行する
+4. 結果に応じてページが更新される
 
-export const metadata: Metadata = {
-  title: {
-    template: "%s | My App",  // %s がページごとのタイトルに置換される
-    default: "My App",         // タイトルが設定されていないページのデフォルト
-  },
-  description: "Next.js で作った Web アプリケーション",
-  metadataBase: new URL("https://myapp.example.com"),
-};
+重要なのは、**`submitContact` の中身（コード）はブラウザに送られない**ということです。ブラウザが送るのはフォームデータだけで、サーバー側の処理内容は完全にサーバーに留まります。
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="ja">
-      <body>{children}</body>
-    </html>
-  );
+## Server Actions を別ファイルに分ける
+
+Server Actions は別ファイルにまとめることもできます。ファイルの先頭に `"use server"` を書くと、そのファイル内のすべてのエクスポートされた関数が Server Action になります。
+
+```ts
+// src/app/actions.ts
+"use server";
+
+export async function createPost(formData: FormData) {
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+  // データベースに保存...
+}
+
+export async function deletePost(postId: string) {
+  // データベースから削除...
 }
 ```
 
-`title.template` を使うと、各ページのタイトルにサイト名を自動で付加できます。
+こうして分離した Server Actions は、どのページからでも import して `<form action={createPost}>` のように使えます。
+
+## Client Component からの呼び出し
+
+Server Actions は Client Component からも呼び出せます。フォームの `action` だけでなく、イベントハンドラの中でも使えます。
 
 ```tsx
-// src/app/about/page.tsx
-export const metadata: Metadata = {
-  title: "About",  // → "About | My App" とレンダリングされる
-};
+// src/app/actions.ts
+"use server";
+
+export async function addToCart(productId: string) {
+  // カートに追加する処理（サーバーで実行）
+  console.log("カートに追加:", productId);
+}
 ```
 
-## OGP — SNS シェア時の表示
-
-OGP（Open Graph Protocol）は、SNS でリンクが共有されたときに表示される情報を制御するための仕様です。
-
 ```tsx
-// src/app/page.tsx
-import type { Metadata } from "next";
+// src/app/products/add-to-cart-button.tsx
+"use client";
 
-export const metadata: Metadata = {
-  title: "My App",
-  description: "Next.js で作った Web アプリケーション",
-  openGraph: {
-    title: "My App",
-    description: "Next.js で作った Web アプリケーション",
-    url: "https://myapp.example.com",
-    siteName: "My App",
-    images: [
-      {
-        url: "/og-image.png",  // public フォルダ内の画像
-        width: 1200,
-        height: 630,
-        alt: "My App のトップページ",
-      },
-    ],
-    locale: "ja_JP",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "My App",
-    description: "Next.js で作った Web アプリケーション",
-    images: ["/og-image.png"],
-  },
-};
-```
+import { addToCart } from "../actions";
 
-OGP 画像のサイズは `1200 x 630` ピクセルが推奨されています。
-
-> **アクセシビリティ**: OGP 画像にも `alt` テキストを設定するのが望ましいです。スクリーンリーダーを使っている人が SNS で共有されたリンクにアクセスしたときに役立ちます。
-
-## generateMetadata — 動的なメタデータ
-
-ブログ記事のようにページごとにタイトルや説明が異なる場合、`generateMetadata` 関数を使います。
-
-```tsx
-// src/app/blog/[slug]/page.tsx
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-
-type Props = {
-  params: Promise<{ slug: string }>;
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const res = await fetch(`https://api.example.com/posts/${slug}`);
-
-  if (!res.ok) {
-    return { title: "記事が見つかりません" };
+export default function AddToCartButton({ productId }: { productId: string }) {
+  async function handleClick() {
+    await addToCart(productId);
+    alert("カートに追加しました！");
   }
 
-  const post = await res.json();
-
-  return {
-    title: post.title,
-    description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      images: [{ url: post.coverImage, alt: post.title }],
-      type: "article",
-      publishedTime: post.publishedAt,
-    },
-  };
-}
-
-export default async function BlogPostPage({ params }: Props) {
-  const { slug } = await params;
-  const res = await fetch(`https://api.example.com/posts/${slug}`);
-
-  if (!res.ok) {
-    notFound();
-  }
-
-  const post = await res.json();
-
   return (
-    <article>
-      <h1>{post.title}</h1>
-      <p>{post.body}</p>
-    </article>
+    <button onClick={handleClick} type="button">
+      カートに追加
+    </button>
   );
 }
 ```
 
-`generateMetadata` と `page` コンポーネントで同じ `fetch` を呼んでいますが、Next.js は同じ URL への `fetch` を自動的に重複排除（deduplication）するため、実際のリクエストは 1 回だけです。
+## Revalidation — キャッシュの再検証
 
-## 構造化データ
+データを変更したら、表示しているデータも最新にしたいですよね。これが **revalidation**（再検証）です。
 
-構造化データ（Structured Data）は、検索エンジンにページの内容を機械的に伝えるための仕組みです。Google の検索結果にリッチスニペット（レビューの星、レシピの調理時間など）が表示されるのは、構造化データのおかげです。
+### revalidatePath — パスを指定して再検証
 
-JSON-LD 形式で `<script>` タグとして埋め込みます。
+```ts
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+export async function createPost(formData: FormData) {
+  const title = formData.get("title") as string;
+  // データベースに保存...
+
+  // /posts ページのキャッシュを無効化して再取得
+  revalidatePath("/posts");
+}
+```
+
+`revalidatePath("/posts")` を呼ぶと、`/posts` ページのキャッシュが無効になり、次のアクセス時に新しいデータで再レンダリングされます。
+
+### revalidateTag — タグを指定して再検証
+
+Day 37 で学んだ `fetch` にタグを付けておくと、そのタグ単位でキャッシュを無効化できます。
 
 ```tsx
-// src/app/blog/[slug]/page.tsx
-export default async function BlogPostPage({ params }: Props) {
-  const { slug } = await params;
-  const res = await fetch(`https://api.example.com/posts/${slug}`);
-  const post = await res.json();
+// データ取得時にタグを付ける
+async function getPosts() {
+  "use cache";
+  const res = await fetch("https://api.example.com/posts", {
+    next: { tags: ["posts"] },
+  });
+  return res.json();
+}
+```
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    datePublished: post.publishedAt,
-    author: {
-      "@type": "Person",
-      name: post.author,
+```ts
+// Server Action でタグを指定して再検証
+"use server";
+
+import { revalidateTag } from "next/cache";
+
+export async function createPost(formData: FormData) {
+  // データベースに保存...
+
+  // "posts" タグのキャッシュをすべて無効化
+  revalidateTag("posts");
+}
+```
+
+## フォーム送信中の状態管理
+
+フォーム送信中にローディング状態を表示するには、`useActionState` を使います。
+
+```tsx
+"use client";
+
+import { useActionState } from "react";
+import { createPost } from "../actions";
+
+export default function NewPostForm() {
+  const [state, formAction, isPending] = useActionState(
+    async (previousState: { message: string } | null, formData: FormData) => {
+      await createPost(formData);
+      return { message: "投稿を作成しました！" };
     },
-    description: post.excerpt,
-  };
+    null
+  );
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <article>
-        <h1>{post.title}</h1>
-        <p>{post.body}</p>
-      </article>
-    </>
+    <form action={formAction}>
+      <div>
+        <label htmlFor="title">タイトル</label>
+        <input type="text" id="title" name="title" required />
+      </div>
+      <div>
+        <label htmlFor="content">本文</label>
+        <textarea id="content" name="content" required />
+      </div>
+      <button type="submit" disabled={isPending}>
+        {isPending ? "送信中..." : "投稿する"}
+      </button>
+      {state?.message && <p role="status">{state.message}</p>}
+    </form>
   );
 }
 ```
 
-## robots と sitemap
+`isPending` が `true` の間、ボタンを無効化したりローディング表示を出したりできます。
 
-### robots.txt
+## セキュリティの注意点
 
-検索エンジンのクローラー（Web ページを自動的に巡回するプログラム）に対して、どのページをクロールしてよいか指示するファイルです。Next.js では `src/app/robots.ts` を作り、`MetadataRoute.Robots` 型のオブジェクトを返す関数をエクスポートします。ここで「全ページを許可するが `/dashboard/` は除外する」といったルールを定義できます。
+Server Actions は便利ですが、セキュリティ上の重要な注意点があります。
 
-### sitemap.xml
+### 1. Server Actions は公開エンドポイント
 
-サイト内のすべてのページを一覧にしたファイルです。検索エンジンがページを見つけやすくなります。Next.js では `src/app/sitemap.ts` を作り、`MetadataRoute.Sitemap` 型の配列を返す関数をエクスポートします。
+Server Actions は HTTP の POST エンドポイントとして公開されます。つまり、**誰でもリクエストを送れます**。ブラウザの開発者ツールやコマンドラインから直接呼び出すことも可能です。
 
-静的なページだけでなく、データベースからブログ記事の一覧を取得して動的に URL を生成することもできます。各エントリには URL、最終更新日、更新頻度、優先度などを指定できます。
+```ts
+"use server";
+
+export async function deletePost(postId: string) {
+  // ❌ 危険: 認証チェックなしで削除している
+  // await db.delete(postId);
+
+  // ✅ 安全: 認証チェックを行う
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("認証が必要です");
+  }
+
+  const post = await db.findPost(postId);
+  if (post.authorId !== user.id) {
+    throw new Error("権限がありません");
+  }
+
+  await db.delete(postId);
+}
+```
+
+### 2. 入力値は必ずバリデーションする
+
+ブラウザ側の `required` 属性は回避できます。そのため、サーバー側でも必ず検証する必要があります。
+
+```ts
+"use server";
+
+export async function createPost(formData: FormData) {
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+
+  // サーバー側でもバリデーション
+  if (!title || title.length < 1 || title.length > 100) {
+    throw new Error("タイトルは1〜100文字で入力してください");
+  }
+  if (!content || content.length < 1) {
+    throw new Error("本文を入力してください");
+  }
+
+  // バリデーション通過後に保存
+}
+```
+
+### 3. 引数に機密情報を渡さない
+
+Server Actions の引数はネットワーク上を流れます。パスワードなどの機密情報を直接渡す場合は HTTPS が必須です（Next.js の本番環境では通常 HTTPS）。
 
 ## まとめ
 
-- `metadata` オブジェクトのエクスポートで静的なメタデータを設定する
-- `title.template` でサイト名の自動付加ができる
-- `generateMetadata` で動的ルートのメタデータを生成する
-- OGP を設定すると SNS シェア時の表示をコントロールできる
-- 構造化データ（JSON-LD）で検索エンジンにリッチな情報を伝える
-- `robots.ts` と `sitemap.ts` で検索エンジンのクロールを最適化する
+- Server Actions は `"use server"` で宣言し、サーバーでのみ実行される関数
+- フォームの `action` 属性に渡すことで、API を作らずにサーバー処理を呼び出せる
+- `revalidatePath` / `revalidateTag` でデータ変更後にキャッシュを再検証できる
+- `useActionState` で送信中の状態を管理できる
+- Server Actions は公開エンドポイントなので、認証チェックとバリデーションは必須
 
-**次のレッスン**: [Day 40: 画像・フォント最適化](/lessons/day40/)
+**次のレッスン**: [Day 40: 動的ルーティングとミドルウェア](/lessons/day40/)

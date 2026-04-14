@@ -1,288 +1,144 @@
-# Day 44: アクセシビリティ実践
+# Day 44: テスト基礎（Vitest）
 
 ## 今日のゴール
 
-- WCAG の概要と重要性を知る
-- セマンティック HTML の要点を振り返る
-- aria 属性の使い方を知る
-- キーボードナビゲーションの実装方法を知る
+- なぜテストを書くのかを知る
+- テストの構造（describe / it / expect）を知る
+- AAA パターン（準備・実行・検証）を知る
 
-## アクセシビリティとは
+## なぜテストを書くのか
 
-**アクセシビリティ**（accessibility、略して a11y）とは、障害のある人も含めて、誰もが Web コンテンツを利用できるようにすることです。
+「動いているコードにテストは必要なのか？」と思うかもしれません。テストが必要な理由を見ていきます。
 
-これまでのレッスンで、`<nav>` の `aria-label` や `<button>` の `aria-pressed`、`role="alert"` など、アクセシビリティに関する要素を自然に使ってきました。今日はそれらを体系的に整理します。
+### テストがないとどうなるか
 
-### なぜ重要か
+コードを修正したとき、その修正が他の機能を壊していないか確認する方法がありません。手動で画面を操作して確認することはできますが、アプリケーションが大きくなると確認しきれなくなります。
 
-- **ユーザーの多様性** — 視覚障害、聴覚障害、運動障害、認知障害など、さまざまなユーザーがいる
-- **一時的な障害** — 腕を骨折してマウスが使えない、明るい屋外でスマートフォンを見ているなど、誰でも一時的に障害を抱えることがある
-- **法的要件** — 多くの国でアクセシビリティは法的に求められている
-- **SEO** — 検索エンジンもスクリーンリーダーと同様に HTML の構造を読み取る
+たとえば「価格のフォーマット関数を修正したら、一覧画面の表示は直ったけど請求書の表示が壊れていた」という状況は、テストがあれば防げます。修正後にテストを実行するだけで、すべてのケースが問題ないことを確認できるからです。
 
-## WCAG の概要
+### テストがもたらす価値
 
-**WCAG**（Web Content Accessibility Guidelines）は、W3C が策定した Web アクセシビリティの国際的なガイドラインです。4 つの原則に基づいています。
+1. **変更に自信が持てる** — コードを修正しても、既存の機能が壊れていないことをテストが保証する
+2. **バグの再発を防げる** — バグを見つけたらテストを書くことで、同じバグが二度と起きないようにできる
+3. **コードの仕様書になる** — テストを読めば「この関数はどう動くべきか」がわかる
+4. **リファクタリング（動作を変えずにコードの構造を整理すること）しやすくなる** — テストがあれば、コードの内部構造を安心して変更できる
 
-| 原則 | 説明 | 例 |
-|------|------|-----|
-| **知覚可能** | 情報を認識できること | 画像に alt テキストがある |
-| **操作可能** | UI を操作できること | キーボードだけで操作できる |
-| **理解可能** | 内容が理解できること | エラーメッセージが明確 |
-| **堅牢** | 支援技術が解釈できること | セマンティックな HTML |
+AI でコードを生成する場面が増えた今、テストはさらに重要になっています。AI が生成したコードが正しく動くかを検証する手段がテストだからです。
 
-適合レベルは A（最低限）、AA（標準）、AAA（最高）の 3 段階があります。多くのプロジェクトでは **AA** を目指します。
+## Vitest とは
 
-## セマンティック HTML の総復習
+Vitest は、JavaScript/TypeScript のテストフレームワークです。Vite をベースにしており、高速に動作します。以前は Jest が事実上の標準でしたが、ESM ネイティブ対応や設定なしでの TypeScript サポートにより、Vitest が主流になりつつあります。
 
-Day 1〜3 で学んだセマンティック HTML は、アクセシビリティの基盤です。
+Next.js プロジェクトに導入するには、`vitest` パッケージと React プラグインをインストールし、`vitest.config.ts` でテスト環境を設定します。設定の核は `environment: "jsdom"` で、Node.js 上でブラウザの DOM をシミュレートします。
 
-### ランドマーク要素
+```ts
+// vitest.config.ts の構成イメージ
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
 
-```html
-<header>サイトヘッダー</header>
-<nav aria-label="メインナビゲーション">ナビゲーション</nav>
-<main>メインコンテンツ</main>
-<aside>サイドバー</aside>
-<footer>フッター</footer>
+export default defineConfig({
+  plugins: [react()],       // React コンポーネントのテストに必要
+  test: {
+    environment: "jsdom",   // Node.js 上でブラウザの DOM をシミュレート
+    globals: true,           // describe, it, expect をインポートなしで使えるようにする
+  },
+  resolve: {
+    alias: { "@": "./src" }, // import パスのエイリアス（@/ = src/）
+  },
+});
 ```
 
-スクリーンリーダーのユーザーは、これらのランドマークを使ってページ内を素早く移動できます。
+テストは `npm test`（ファイル変更を監視して自動再実行）または `npm run test:run`（一回だけ実行）で実行します。
 
-### 見出しの階層
+## テストの見た目
 
-```html
-<!-- ✅ 正しい: 階層が連続している -->
-<h1>サイトタイトル</h1>
-<h2>セクション</h2>
-<h3>サブセクション</h3>
+テストがどんなコードなのか、実際に見てみます。以下は `add` 関数のテストです。
 
-<!-- ❌ 間違い: h2 を飛ばしている -->
-<h1>サイトタイトル</h1>
-<h3>サブセクション</h3>
-```
-
-スクリーンリーダーのユーザーは見出しの一覧を表示してページの構造を把握します。見出しレベルを飛ばすと、構造が正しく伝わりません。
-
-### フォーム要素
-
-```tsx
-{/* ✅ label と input が関連付けられている */}
-<div>
-  <label htmlFor="email">メールアドレス</label>
-  <input type="email" id="email" name="email" required />
-</div>
-
-{/* ❌ label がない — スクリーンリーダーが何の入力欄かわからない */}
-<div>
-  <input type="email" placeholder="メールアドレス" />
-</div>
-```
-
-`placeholder` は `label` の代わりにはなりません。入力を始めると `placeholder` は消えてしまいます。
-
-### ボタンとリンクの使い分け
-
-```tsx
-{/* ✅ ページ遷移にはリンク */}
-<a href="/about">About ページへ</a>
-
-{/* ✅ アクション（操作）にはボタン */}
-<button onClick={handleSubmit} type="button">送信</button>
-
-{/* ❌ div をボタンのように使わない */}
-<div onClick={handleSubmit}>送信</div>
-```
-
-`<button>` と `<a>` は、キーボード操作（Tab で移動、Enter で実行）やスクリーンリーダーの認識が自動的に行われます。`<div>` にはこれらの機能がありません。
-
-## aria 属性
-
-ARIA（Accessible Rich Internet Applications）属性は、HTML だけでは伝えきれない情報を補足するためのものです。
-
-### 重要な原則: ARIA を使う前に
-
-> **ネイティブ HTML で実現できるなら、ARIA は不要です。**
-
-```tsx
-{/* ❌ ARIA 不要 — button 要素がすでに role="button" を持っている */}
-<button role="button">送信</button>
-
-{/* ✅ これだけで十分 */}
-<button>送信</button>
-```
-
-ARIA は、ネイティブ HTML では表現できないケースで使います。
-
-### よく使う aria 属性
-
-#### aria-label — 見えないラベル
-
-```tsx
-{/* アイコンだけのボタンにラベルを付ける */}
-<button aria-label="メニューを開く" type="button">
-  ☰
-</button>
-
-{/* 閉じるボタン */}
-<button aria-label="ダイアログを閉じる" type="button">
-  ×
-</button>
-```
-
-#### aria-describedby — 補足説明
-
-```tsx
-<div>
-  <label htmlFor="password">パスワード</label>
-  <input
-    type="password"
-    id="password"
-    aria-describedby="password-hint"
-  />
-  <p id="password-hint">8文字以上で、英数字を含めてください</p>
-</div>
-```
-
-`aria-describedby` で関連付けると、スクリーンリーダーが入力欄にフォーカスしたとき「パスワード、8文字以上で英数字を含めてください」と読み上げます。
-
-#### aria-expanded — 展開状態
-
-```tsx
-"use client";
-
-import { useState } from "react";
-
-export default function Accordion({ title, children }: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
-        type="button"
-      >
-        {title}
-      </button>
-      {isOpen && <div role="region">{children}</div>}
-    </div>
-  );
+```ts
+// src/lib/math.ts
+export function add(a: number, b: number): number {
+  return a + b;
 }
 ```
 
-#### aria-live — 動的な変化の通知
+```ts
+// src/lib/math.test.ts
+import { describe, it, expect } from "vitest";
+import { add } from "./math";
 
-```tsx
-{/* ポライト: 現在の読み上げが終わった後に通知 */}
-<div aria-live="polite">
-  {message && <p>{message}</p>}
-</div>
+describe("add", () => {
+  it("2つの数値を足し算する", () => {
+    expect(add(1, 2)).toBe(3);
+  });
 
-{/* アサーティブ: 即座に通知（重要なエラーなど） */}
-<div aria-live="assertive">
-  {error && <p>{error}</p>}
-</div>
+  it("負の数を扱える", () => {
+    expect(add(-1, -2)).toBe(-3);
+  });
+});
 ```
 
-`aria-live` を付けた要素の中身が変わると、スクリーンリーダーが変更を読み上げます。
+テストファイルは慣例として `.test.ts` という拡張子にします。テストには3つの基本要素があります。
 
-#### aria-hidden — スクリーンリーダーから隠す
+- **`describe`** — テストをグループ化する。関数名やコンポーネント名を渡すことが多い
+- **`it`**（または `test`）— 個々のテストケース。「何をテストするか」を書く
+- **`expect`** — 期待する結果を検証する。**アサーション**（assertion = 「これはこうであるべき」という宣言）と呼ぶ
 
-```tsx
-{/* 装飾的なアイコンはスクリーンリーダーに読ませない */}
-<button type="button">
-  <span aria-hidden="true">🗑️</span>
-  削除
-</button>
+## マッチャー
+
+`expect` に続けて呼ぶメソッドを**マッチャー**（matcher）と呼びます。代表的なものを紹介します。
+
+| マッチャー | 検証内容 | 例 |
+|-----------|---------|-----|
+| `toBe` | 同一かを比較（プリミティブは値、オブジェクトは参照） | `expect(1 + 1).toBe(2)` |
+| `toEqual` | オブジェクトの中身を比較 | `expect({ a: 1 }).toEqual({ a: 1 })` |
+| `toThrow` | エラーが投げられる | `expect(() => fn()).toThrow("エラー")` |
+
+`toBe` と `toEqual` の違いは重要です。`toBe` は参照の一致で比較するため、オブジェクトや配列の中身を比較するには `toEqual` を使います。
+
+他にも `toBeTruthy`、`toContain`、`toHaveLength` など多数のマッチャーがあります。
+
+## AAA パターン
+
+テストは **Arrange（準備）→ Act（実行）→ Assert（検証）** の3ステップで書くと、構造がわかりやすくなります。
+
+```ts
+it("ユーザー名が空の場合はエラーを返す", () => {
+  // Arrange（準備）
+  const emptyName = "";
+
+  // Act（実行）
+  const result = validateUserName(emptyName);
+
+  // Assert（検証）
+  expect(result).toEqual({ valid: false, error: "名前は必須です" });
+});
 ```
 
-## キーボードナビゲーション
+シンプルなテストでは3つのステップが1行ずつになることもありますが、複雑なテストでは AAA を意識すると読みやすくなります。
 
-すべての操作がキーボードだけで完結できることが重要です。
+## テスト名のコツ
 
-### 基本のキー操作
+テスト名は「何が」「どうなるか」を書きます。
 
-| キー | 操作 |
-|------|------|
-| Tab | 次のフォーカス可能な要素に移動 |
-| Shift + Tab | 前のフォーカス可能な要素に移動 |
-| Enter | リンクやボタンを実行 |
-| Space | ボタンを実行、チェックボックスを切り替え |
-| Escape | モーダルやドロップダウンを閉じる |
-| 矢印キー | ラジオボタンやタブの切り替え |
+```ts
+// ✅ よいテスト名
+it("価格が0未満の場合はエラーを投げる", () => {});
+it("メールアドレスに@が含まれない場合はfalseを返す", () => {});
 
-### フォーカス管理
-
-```tsx
-"use client";
-
-import { useRef, useEffect } from "react";
-
-export default function Modal({
-  isOpen,
-  onClose,
-  children,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      // モーダルが開いたら閉じるボタンにフォーカス
-      closeButtonRef.current?.focus();
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="ダイアログ"
-      onKeyDown={(e) => {
-        if (e.key === "Escape") onClose();
-      }}
-    >
-      <div>
-        {children}
-        <button ref={closeButtonRef} onClick={onClose} type="button">
-          閉じる
-        </button>
-      </div>
-    </div>
-  );
-}
+// ❌ 悪いテスト名
+it("テスト1", () => {});
+it("正常系", () => {});
 ```
 
-モーダルを開いたとき、フォーカスをモーダル内に移動させ、Escape キーで閉じられるようにするのが基本パターンです。
-
-## スクリーンリーダー体験
-
-実際にスクリーンリーダーを使ってみると、アクセシビリティの重要性を肌で感じられます。
-
-### 確認する方法
-
-- **macOS**: VoiceOver（`Cmd + F5` で起動）
-- **Windows**: NVDA（無料でダウンロード可能）またはナレーター（`Win + Ctrl + Enter`）
-- **Chrome**: [Screen Reader 拡張機能](https://chrome.google.com/webstore/detail/screen-reader/)
-
-VoiceOver を起動してページを Tab キーで操作すると、「何のボタンかわからない」「見出しが見つからない」といった体験から、セマンティック HTML や aria 属性の重要性が実感できます。
+テスト名を読むだけで、テスト対象の仕様がわかることが理想です。
 
 ## まとめ
 
-- アクセシビリティは特別な対応ではなく、すべてのユーザーが使えるようにする基本
-- WCAG は Web アクセシビリティの国際ガイドライン。通常は AA レベルを目指す
-- セマンティック HTML（ランドマーク、見出し階層、label）がアクセシビリティの基盤
-- ARIA はネイティブ HTML で足りない情報を補足するもの。使いすぎに注意
-- キーボードだけですべての操作ができることが重要
-- スクリーンリーダーを実際に試すと、自分のコードの改善点が見えてくる
+- テストはコードの品質を保ち、変更に自信を持つための仕組み
+- Vitest は高速で TypeScript 対応のテストフレームワーク
+- `describe` でグループ化、`it` でテストケース、`expect` でアサーション
+- `toBe` は厳密等価、`toEqual` はオブジェクトの中身を比較
+- AAA パターン（準備 → 実行 → 検証）でテストを構造化する
+- テスト名は「何がどうなるか」を明確に書く
 
-**次のレッスン**: [Day 45: アクセシビリティとテスト](/lessons/day45/)
+**次のレッスン**: [Day 45: コンポーネントテスト](/lessons/day45/)

@@ -1,356 +1,199 @@
-# Day 50: コンポーネント設計パターン
+# Day 50: 認証の基礎
 
 ## 今日のゴール
 
-- 代表的なコンポーネント設計パターンを知る
-- Presentational / Container パターンの考え方を知る
-- Compound Components パターンの作り方を知る
-- Render Props と Hooks の使い分けを知る
+- 認証と認可の違いを知る
+- Cookie / Session / JWT の仕組みを知る
+- OAuth の概念を知る
+- Next.js での認証フロー（Auth.js）の全体像を知る
 
-## なぜ設計パターンを学ぶのか
+## 認証と認可
 
-Day 21〜30 で React の基礎を、Day 32〜41 で Next.js の機能を学びました。小さなコンポーネントは直感的に書けるようになったと思います。
+まず、よく混同される 2 つの概念を明確にします。
 
-しかし、実際のプロジェクトではコンポーネントが増え、複雑になっていきます。「この state はどこに置くべきか」「このロジックはどう共有するか」「このコンポーネントを再利用可能にするにはどうするか」という判断が必要になります。
+- **認証（Authentication）** — 「あなたは誰ですか？」を確認すること。ログイン処理
+- **認可（Authorization）** — 「あなたにはその操作の権限がありますか？」を確認すること。アクセス制御
 
-設計パターンは、こうした問題に対する先人の解決策です。パターンを知っておくと、チーム内の設計議論に参加しやすくなります。
+```
+例: 会社のオフィスビル
+- 認証 = 社員証で入館ゲートを通る（本人確認）
+- 認可 = 社員証のランクで入れるフロアが決まる（権限確認）
+```
 
-## Presentational / Container パターン
+Web アプリケーションでは、まず認証（ログイン）でユーザーを識別し、次に認可でそのユーザーの権限に基づいてアクセスを制御します。
 
-コンポーネントを「見た目」と「ロジック」に分離するパターンです。
+## HTTP はステートレス
 
-### Presentational Component（見た目担当）
+Web の通信プロトコルである HTTP は**ステートレス**（stateless）です。つまり、サーバーは 1 つのリクエストが終わると、次のリクエストが同じユーザーかどうかわかりません。
 
-```tsx
-// src/components/user-profile-view.tsx
-type Props = {
-  name: string;
-  email: string;
-  avatarUrl: string;
-  onLogout: () => void;
-};
+```
+リクエスト1: GET /dashboard → サーバー:「誰？」
+リクエスト2: GET /settings  → サーバー:「誰？」（同じ人かわからない）
+```
 
-export default function UserProfileView({
-  name,
-  email,
-  avatarUrl,
-  onLogout,
-}: Props) {
-  return (
-    <div className="flex items-center gap-4 rounded-lg bg-white p-4 shadow-sm">
-      <img
-        src={avatarUrl}
-        alt={`${name}のアバター`}
-        className="h-12 w-12 rounded-full"
-      />
-      <div>
-        <p className="font-bold text-gray-900">{name}</p>
-        <p className="text-sm text-gray-600">{email}</p>
-      </div>
-      <button
-        onClick={onLogout}
-        type="button"
-        className="ml-auto text-sm text-gray-500 hover:text-gray-700"
-      >
-        ログアウト
-      </button>
-    </div>
-  );
+これでは、ページを移動するたびにログインが必要になってしまいます。この問題を解決するのが Cookie と Session です。
+
+## Cookie
+
+**Cookie** は、ブラウザに保存される小さなデータです。サーバーがレスポンスで「この情報を保存しておいて」とブラウザに指示し、ブラウザは次のリクエストからその情報を自動的に送ります。
+
+```mermaid
+sequenceDiagram
+    participant B as ブラウザ
+    participant S as サーバー
+
+    Note over B,S: 1. ログインリクエスト
+    B->>S: メール: user@example.com、パスワード: ****
+
+    Note over B,S: 2. サーバーが Cookie を設定
+    S-->>B: ログイン成功（Set-Cookie: session_id=abc123）
+
+    Note over B,S: 3. 以降のリクエスト
+    B->>S: GET /dashboard（Cookie: session_id=abc123 が自動で付く）
+    Note over S: abc123 は太郎さんだな
+    S-->>B: 太郎さんのダッシュボード
+```
+
+### Cookie のセキュリティ属性
+
+```
+Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400
+```
+
+`Set-Cookie` はサーバーがレスポンスに含める HTTP ヘッダーで、ブラウザに Cookie の保存を指示します。
+
+| 属性 | 意味 |
+|------|------|
+| `HttpOnly` | JavaScript からアクセスできない（XSS（悪意あるスクリプト注入）対策） |
+| `Secure` | HTTPS（HTTP の暗号化版）でのみ送信される |
+| `SameSite=Strict` | 同一サイトからのリクエストでのみ送信される（CSRF（別サイトからの偽リクエスト）対策） |
+| `Path=/` | Cookie が有効なパス |
+| `Max-Age=86400` | 有効期限（秒）。86400 = 24 時間 |
+
+## Session（セッション）
+
+**Session** は、サーバー側でユーザーの状態を管理する仕組みです。
+
+```
+サーバーのセッションストア:
+{
+  "abc123": { userId: 1, name: "太郎", role: "admin" },
+  "def456": { userId: 2, name: "花子", role: "user" }
 }
 ```
 
-特徴:
-- **Props だけで完結** — 自分で state を持たず、データや関数はすべて props で受け取る
-- **再利用しやすい** — データの取得元に依存しない
-- **テストしやすい** — props を渡すだけでテストできる
+ブラウザから送られる Cookie のセッション ID（`abc123`）をキーにして、サーバーがユーザー情報を参照します。ユーザー情報はサーバー側にあるため、ブラウザからは改ざんできません。
 
-### Container Component（ロジック担当）
+## JWT（JSON Web Token）
+
+**JWT** はもう 1 つのアプローチで、ユーザー情報をトークン（署名された文字列）自体に含めます。
+
+```
+eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsIm5hbWUiOiLlpKrpg44iLCJyb2xlIjoiYWRtaW4ifQ.xxxxx
+```
+
+この文字列は 3 つのパートから成り、ドット（`.`）で区切られています。
+
+```
+ヘッダー.ペイロード.署名
+
+ヘッダー: 使用しているアルゴリズム
+ペイロード: ユーザー情報（userId, name, role など）
+署名: 改ざん検知用（サーバーの秘密鍵で生成）
+```
+
+> **重要**: JWT のペイロードは Base64Url エンコード（バイナリデータを URL で安全に使える文字列に変換する方式）されているだけで、誰でもデコードして内容を読めます。JWT は改ざんを検知するための「署名」であり、内容を隠すための「暗号化」ではありません。パスワードなどの機密情報は JWT に含めないでください。
+
+### Session vs JWT
+
+| 特徴 | Session | JWT |
+|------|---------|-----|
+| ユーザー情報の保存場所 | サーバー | トークン自体 |
+| スケーラビリティ | サーバー間で共有が必要 | サーバー間共有不要 |
+| 無効化 | 即座にログアウト可能 | 有効期限まで無効化が難しい |
+| サイズ | Cookie は小さい（ID のみ） | トークンが大きくなりがち |
+
+どちらが優れているかは状況次第です。Auth.js は Session ベースをデフォルトとしています。
+
+## OAuth
+
+**OAuth**（Open Authorization）は、外部サービス（Google、GitHub など）のアカウントでログインする仕組みです。「Google でログイン」ボタンが OAuth の典型的な例です。
+
+### OAuth のフロー（簡略版）
+
+```mermaid
+sequenceDiagram
+    participant U as ユーザー
+    participant A as アプリ
+    participant G as Google
+
+    U->>A: 「Google でログイン」をクリック
+    A->>G: Google のログインページにリダイレクト
+    U->>G: ログイン & アプリへの権限を許可
+    G->>A: アプリにリダイレクト（認証コード付き）
+    A->>G: 認証コードでアクセストークンを要求
+    G-->>A: アクセストークン
+    A->>G: アクセストークンでユーザー情報を取得
+    G-->>A: ユーザー情報
+    Note over A: セッション作成 → ログイン完了
+```
+
+OAuth の重要な点は、**ユーザーのパスワードがアプリに渡らない**ことです。パスワードは Google（認証プロバイダ）だけが知っています。
+
+## Auth.js（NextAuth v5）による認証
+
+**Auth.js**（旧 NextAuth.js、現在 v5）は、Next.js で認証を実装するためのライブラリです。OAuth プロバイダとの連携、Session 管理、JWT 処理などをまとめて扱えます。
+
+Auth.js の中心となるのは設定ファイルです。ここで「どの OAuth プロバイダを使うか」を定義し、認証に必要な関数をエクスポートします。
+
+```ts
+// src/auth.ts
+import NextAuth from "next-auth";
+import GitHub from "next-auth/providers/github";
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID!,
+      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+    }),
+  ],
+});
+```
+
+この設定から得られる `handlers` を Route Handler（Day 38 参照）でエクスポートすると、ログイン・ログアウト・コールバックなどの認証エンドポイントが自動的に生成されます。
+
+認証後のセッション情報は `auth()` 関数で取得できます。Server Component でもServer Action でも使えるのが特徴です。
 
 ```tsx
-// src/components/user-profile.tsx
-import { auth, signOut } from "@/auth";
-import UserProfileView from "./user-profile-view";
+// src/app/dashboard/page.tsx
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
-export default async function UserProfile() {
+export default async function DashboardPage() {
   const session = await auth();
 
-  if (!session?.user) {
-    return null;
+  if (!session) {
+    redirect("/api/auth/signin");
   }
 
-  return (
-    <UserProfileView
-      name={session.user.name ?? "名無し"}
-      email={session.user.email ?? ""}
-      avatarUrl={session.user.image ?? "/default-avatar.png"}
-      onLogout={async () => {
-        "use server";
-        await signOut();
-      }}
-    />
-  );
-}
-```
-
-特徴:
-- **データ取得やロジックを担当** — API 呼び出し、認証チェックなど
-- **見た目のコードがない**（または最小限） — 表示は Presentational に委譲
-
-### Server Components 時代の Presentational / Container
-
-Next.js の App Router では、この分離がさらに自然になりました。
-
-- **Server Component** = Container の役割（データ取得、ビジネスロジック）
-- **Client Component** = Presentational の役割（インタラクション、表示）
-
-Day 33 で学んだ「デフォルト Server Component、必要な部分だけ Client Component」の方針は、まさにこのパターンの実践です。
-
-## Compound Components パターン
-
-**Compound Components**（複合コンポーネント）は、複数のコンポーネントが協調して動くパターンです。HTML の `<select>` と `<option>` の関係に似ています。
-
-```html
-<!-- HTML の select と option も Compound Components の一種 -->
-<select>
-  <option value="a">オプション A</option>
-  <option value="b">オプション B</option>
-</select>
-```
-
-### Tabs コンポーネントの例
-
-タブ UI を Compound Components で実装する例です。
-
-```tsx
-// src/components/tabs.tsx
-"use client";
-
-import {
-  createContext,
-  useContext,
-  useState,
-  type ReactNode,
-} from "react";
-
-// タブの状態を共有するための Context
-type TabsContextType = {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-};
-
-const TabsContext = createContext<TabsContextType | null>(null);
-
-function useTabsContext() {
-  const context = useContext(TabsContext);
-  if (!context) {
-    throw new Error("Tabs コンポーネントの中で使ってください");
-  }
-  return context;
-}
-
-// 親コンポーネント
-function Tabs({
-  defaultTab,
-  children,
-}: {
-  defaultTab: string;
-  children: ReactNode;
-}) {
-  const [activeTab, setActiveTab] = useState(defaultTab);
-
-  return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      <div>{children}</div>
-    </TabsContext.Provider>
-  );
-}
-
-// タブリスト
-function TabList({ children }: { children: ReactNode }) {
-  return (
-    <div role="tablist" className="flex gap-1 border-b border-gray-200">
-      {children}
-    </div>
-  );
-}
-
-// 個々のタブ
-function Tab({ value, children }: { value: string; children: ReactNode }) {
-  const { activeTab, setActiveTab } = useTabsContext();
-  const isActive = activeTab === value;
-
-  return (
-    <button
-      role="tab"
-      type="button"
-      aria-selected={isActive}
-      onClick={() => setActiveTab(value)}
-      className={`px-4 py-2 ${
-        isActive
-          ? "border-b-2 border-blue-500 font-bold text-blue-600"
-          : "text-gray-500 hover:text-gray-700"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-// タブパネル
-function TabPanel({
-  value,
-  children,
-}: {
-  value: string;
-  children: ReactNode;
-}) {
-  const { activeTab } = useTabsContext();
-
-  if (activeTab !== value) return null;
-
-  return (
-    <div role="tabpanel" className="p-4">
-      {children}
-    </div>
-  );
-}
-
-// 名前空間としてエクスポート
-Tabs.List = TabList;
-Tabs.Tab = Tab;
-Tabs.Panel = TabPanel;
-
-export default Tabs;
-```
-
-### 使い方
-
-```tsx
-import Tabs from "@/components/tabs";
-
-export default function SettingsPage() {
   return (
     <main>
-      <h1>設定</h1>
-      <Tabs defaultTab="profile">
-        <Tabs.List>
-          <Tabs.Tab value="profile">プロフィール</Tabs.Tab>
-          <Tabs.Tab value="notifications">通知</Tabs.Tab>
-          <Tabs.Tab value="security">セキュリティ</Tabs.Tab>
-        </Tabs.List>
-        <Tabs.Panel value="profile">
-          <p>プロフィール設定の内容</p>
-        </Tabs.Panel>
-        <Tabs.Panel value="notifications">
-          <p>通知設定の内容</p>
-        </Tabs.Panel>
-        <Tabs.Panel value="security">
-          <p>セキュリティ設定の内容</p>
-        </Tabs.Panel>
-      </Tabs>
+      <h1>ダッシュボード</h1>
+      <p>ようこそ、{session.user?.name} さん</p>
     </main>
   );
 }
 ```
 
-Compound Components の利点は以下のとおりです。
-
-- **API が宣言的** — JSX の構造を見ればどんな UI か直感的にわかる
-- **柔軟** — タブの順番や数を自由に変えられる
-- **内部状態が隠蔽されている** — `activeTab` の管理を利用者が意識しなくていい
-
-> **アクセシビリティ**: タブ UI には `role="tablist"`、`role="tab"`、`role="tabpanel"`、`aria-selected` を適切に設定することが重要です。
-
-## Render Props vs Custom Hooks
-
-**Render Props** は、関数を props として渡して表示内容を委譲するパターンです。
-
-```tsx
-// Render Props パターン
-function DataFetcher({ url, render }: {
-  url: string;
-  render: (data: unknown, isLoading: boolean) => ReactNode;
-}) {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(url).then((res) => res.json()).then((d) => { setData(d); setIsLoading(false); });
-  }, [url]);
-
-  return <>{render(data, isLoading)}</>;
-}
-
-// 使い方
-<DataFetcher url="/api/users" render={(data, isLoading) =>
-  isLoading ? <p>読み込み中...</p> : <UserList users={data} />
-} />
-```
-
-しかし現在は、同じことを **Custom Hook** でよりシンプルに実現できます。
-
-```tsx
-// Custom Hook パターン（推奨）
-function useDataFetcher(url: string) {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setIsLoading(false);
-      });
-  }, [url]);
-
-  return { data, isLoading };
-}
-
-// 使い方
-function UserPage() {
-  const { data, isLoading } = useDataFetcher("/api/users");
-
-  if (isLoading) return <p>読み込み中...</p>;
-  return <UserList users={data} />;
-}
-```
-
-**基本方針: ロジックの共有には Custom Hook を使う。Render Props は特殊なケース（Compound Components の内部など）でのみ使う。**
-
-## 実プロジェクトでの設計判断
-
-「どのパターンを使うべきか」はケースバイケースです。判断の指針をまとめます。
-
-| 状況 | 推奨パターン |
-|------|-----------|
-| データ取得とUIの分離 | Presentational / Container（Server / Client Component） |
-| 関連するUI部品のセット | Compound Components |
-| ロジックの共有 | Custom Hooks |
-| 条件分岐が複雑な表示 | Compound Components or 単純な条件分岐 |
-
-### オーバーエンジニアリングに注意
-
-パターンを知ると、何でもパターンに当てはめたくなります。しかし、**シンプルなコンポーネントにパターンを適用すると、かえって複雑になります**。
-
-```tsx
-// ❌ やりすぎ: 単純なボタンに Compound Components は不要
-<Button>
-  <Button.Icon name="save" />
-  <Button.Label>保存</Button.Label>
-</Button>
-
-// ✅ シンプルが十分
-<Button icon="save">保存</Button>
-```
-
-パターンは「問題が発生してから適用する」くらいのタイミングが適切です。
+ログイン・ログアウトのボタンは、Server Action として `signIn("github")` / `signOut()` を呼ぶ `<form>` として実装します。Day 40 で学んだ Middleware を使えば、複数のページをまとめて保護することもできます。
 
 ## まとめ
 
-- Presentational / Container はUIとロジックの分離。Server / Client Component の境界と自然に一致する
-- Compound Components は関連するUI部品を協調させるパターン。タブやアコーディオンに適する
-- ロジックの共有には Custom Hooks が最も適している
-- パターンは問題解決のための道具。シンプルなケースに無理に適用しない
+- 認証は「誰か」を確認、認可は「権限があるか」を確認する仕組み
+- Cookie と Session でステートレスな HTTP に状態を持たせる
+- JWT はトークン自体にユーザー情報を含める方式
+- OAuth は外部サービスのアカウントでログインする仕組み。パスワードがアプリに渡らない
+- Auth.js（NextAuth v5）を使うと、Next.js で OAuth やセッション管理を簡単に実装できる
 
-**次のレッスン**: [Day 51: アーキテクチャ総まとめ](/lessons/day51/)
+**次のレッスン**: [Day 51: Web セキュリティ](/lessons/day51/)

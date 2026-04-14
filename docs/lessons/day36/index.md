@@ -1,249 +1,284 @@
-# Day 36: Route Handlers
+# Day 36: レイアウトとページ
 
 ## 今日のゴール
 
-- Route Handlers（`route.ts`）で API エンドポイントを作る方法を知る
-- リクエストとレスポンスの処理方法を知る
-- Route Handlers をいつ使うべきかの判断基準を知る
+- `layout.tsx`、`page.tsx`、`loading.tsx`、`error.tsx` の役割を知る
+- ネストレイアウトの仕組みを知る
+- テンプレート（`template.tsx`）とレイアウトの違いを知る
 
-## Route Handlers とは
+## 特別なファイル群
 
-Day 32 で、`page.tsx` はページを表示するファイルだと学びました。一方、`route.ts`（`.tsx` ではなく `.ts`）は **API エンドポイント**を作るためのファイルです。
+Day 34 で「App Router にはファイル名に特別な意味がある」と紹介しました。今日はその中でも特に重要な 4 つのファイルを詳しく見ていきます。
 
-API エンドポイントとは、ブラウザの画面ではなく、JSON などのデータを返す URL のことです。外部サービスとの連携や、Client Component からのデータ送信に使います。
+## layout.tsx — 共通の枠
 
-## 基本的な Route Handler
+`layout.tsx` は、複数のページで共有される**共通の UI**を定義します。ナビゲーションバーやフッターなど、どのページでも表示したい要素を置く場所です。
 
-`src/app/api/hello/route.ts` を作成する例です。
+### ルートレイアウト
 
-```ts
-// src/app/api/hello/route.ts
-import { NextResponse } from "next/server";
+`src/app/layout.tsx` はアプリ全体のルートレイアウトです。これは**必須**ファイルで、`<html>` タグと `<body>` タグを含める必要があります。
 
-export async function GET() {
-  return NextResponse.json({ message: "こんにちは！" });
-}
-```
+```tsx
+// src/app/layout.tsx
+import type { Metadata } from "next";
+import Link from "next/link";
+import "./globals.css";
 
-ブラウザで `http://localhost:3000/api/hello` にアクセスすると、JSON が返されます。
+export const metadata: Metadata = {
+  title: "My App",
+  description: "Next.js で作ったアプリ",
+};
 
-```json
-{ "message": "こんにちは！" }
-```
-
-### HTTP メソッドと関数名
-
-Route Handler では、HTTP メソッドに対応する関数名をエクスポートします。
-
-```ts
-// src/app/api/posts/route.ts
-import { NextRequest, NextResponse } from "next/server";
-
-// GET /api/posts — データの取得
-export async function GET() {
-  const posts = [
-    { id: 1, title: "最初の投稿" },
-    { id: 2, title: "2番目の投稿" },
-  ];
-  return NextResponse.json(posts);
-}
-
-// POST /api/posts — データの作成
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  // 本来はデータベースに保存する
-  const newPost = { id: 3, title: body.title };
-  return NextResponse.json(newPost, { status: 201 });
-}
-```
-
-| 関数名 | HTTP メソッド | 用途 |
-|--------|-------------|------|
-| `GET` | GET | データの取得 |
-| `POST` | POST | データの作成 |
-| `PUT` | PUT | データの更新（全体） |
-| `PATCH` | PATCH | データの更新（一部） |
-| `DELETE` | DELETE | データの削除 |
-
-> **HTTP メソッド**とは、リクエストの「目的」を表すものです。Day 8 で学んだ HTML フォームでは `GET` と `POST` を使いましたが、API ではより細かく使い分けます。
-
-## リクエストの処理
-
-### URL パラメータの取得
-
-URL のクエリパラメータ（`?key=value` の部分）を取得する方法です。
-
-```ts
-// src/app/api/search/route.ts
-import { NextRequest, NextResponse } from "next/server";
-
-// GET /api/search?q=nextjs
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const query = searchParams.get("q");
-
-  if (!query) {
-    return NextResponse.json(
-      { error: "検索クエリが必要です" },
-      { status: 400 }
-    );
-  }
-
-  // 本来はデータベースを検索する
-  const results = [{ id: 1, title: `「${query}」の検索結果` }];
-  return NextResponse.json(results);
-}
-```
-
-### リクエストボディの取得
-
-POST や PUT で送られてくるデータを取得します。
-
-```ts
-// src/app/api/contact/route.ts
-import { NextRequest, NextResponse } from "next/server";
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-
-  // バリデーション（入力チェック）
-  if (!body.name || !body.email || !body.message) {
-    return NextResponse.json(
-      { error: "名前、メール、メッセージは必須です" },
-      { status: 400 }
-    );
-  }
-
-  // 本来はメール送信やデータベース保存を行う
-  console.log("お問い合わせ:", body);
-
-  return NextResponse.json(
-    { success: true, message: "お問い合わせを受け付けました" },
-    { status: 200 }
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="ja">
+      <body>
+        <header>
+          <nav aria-label="メインナビゲーション">
+            <Link href="/">ホーム</Link>
+            <Link href="/about">About</Link>
+          </nav>
+        </header>
+        <main>{children}</main>
+        <footer>
+          <p>&copy; 2026 My App</p>
+        </footer>
+      </body>
+    </html>
   );
 }
 ```
 
-### リクエストヘッダーの取得
+`{children}` の部分に、各ページの内容が入ります。ページを切り替えても、ヘッダーやフッターは再レンダリングされません。これがレイアウトの大きな特徴です。
 
-```ts
-import { NextRequest, NextResponse } from "next/server";
+> **アクセシビリティ**: `<nav>` に `aria-label` を付けると、スクリーンリーダーが「メインナビゲーション」とそのナビゲーションの目的を読み上げます。ページに複数のナビゲーションがある場合に特に重要です。
 
-export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
+### ネストレイアウト
 
-  if (!authHeader) {
-    return NextResponse.json(
-      { error: "認証が必要です" },
-      { status: 401 }
-    );
-  }
+フォルダごとに `layout.tsx` を置くと、レイアウトがネスト（入れ子）になります。
 
-  return NextResponse.json({ data: "認証済みデータ" });
+```
+src/app/
+├── layout.tsx          ← ルートレイアウト（全ページ共通）
+├── page.tsx            ← /
+└── blog/
+    ├── layout.tsx      ← ブログ用レイアウト（/blog 以下で共通）
+    ├── page.tsx        ← /blog
+    └── [slug]/
+        └── page.tsx    ← /blog/hello-world など
+```
+
+```tsx
+// src/app/blog/layout.tsx
+import Link from "next/link";
+
+export default function BlogLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div style={{ display: "flex", gap: "2rem" }}>
+      <aside>
+        <nav aria-label="ブログカテゴリ">
+          <h2>カテゴリ</h2>
+          <ul>
+            <li><Link href="/blog?category=tech">Tech</Link></li>
+            <li><Link href="/blog?category=life">Life</Link></li>
+          </ul>
+        </nav>
+      </aside>
+      <section>{children}</section>
+    </div>
+  );
 }
 ```
 
-## レスポンスの返し方
+`/blog/hello-world` にアクセスすると、以下のようにレイアウトが組み合わされます。
 
-### JSON レスポンス
-
-最も一般的なパターンです。
-
-```ts
-return NextResponse.json(
-  { data: "値" },       // レスポンスボディ
-  { status: 200 }       // ステータスコード（省略すると 200）
-);
+```
+RootLayout（ヘッダー、フッター）
+  └── BlogLayout（サイドバー）
+       └── BlogPost ページ
 ```
 
-### リダイレクト
+レイアウトが入れ子になるだけで、ブログセクションにサイドバーを追加できました。他のページ（`/about` など）にはサイドバーは表示されません。
 
-```ts
-import { redirect } from "next/navigation";
+### レイアウトの重要な性質
 
-export async function GET() {
-  redirect("/login");
+レイアウトは**ページ遷移をまたいで状態が保持されます**。つまり、`/blog/post-1` から `/blog/post-2` に移動しても、`BlogLayout` は再レンダリングされず、state があればそれも維持されます。
+
+## page.tsx — ページの本体
+
+`page.tsx` はルートの UI を定義するファイルです。Day 34 で見たように、`page.tsx` がないフォルダは URL としてアクセスできません。
+
+```tsx
+// src/app/about/page.tsx
+export default function AboutPage() {
+  return (
+    <article>
+      <h1>About</h1>
+      <p>このアプリについての説明です。</p>
+    </article>
+  );
 }
 ```
 
-### ストリーミングレスポンス
+`page.tsx` は必ず**デフォルトエクスポート**でコンポーネントを返す必要があります。
 
-大量のデータを少しずつ返したい場合に使います。
+## loading.tsx — ローディング UI
 
-```ts
-export async function GET() {
-  const stream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(new TextEncoder().encode("Hello "));
-      controller.enqueue(new TextEncoder().encode("World"));
-      controller.close();
-    },
-  });
+`loading.tsx` を置くと、ページの読み込み中に自動でローディング UI が表示されます。
 
-  return new Response(stream, {
-    headers: { "Content-Type": "text/plain" },
-  });
+```tsx
+// src/app/blog/loading.tsx
+export default function Loading() {
+  return (
+    <div role="status" aria-label="読み込み中">
+      <p>読み込み中...</p>
+    </div>
+  );
 }
 ```
 
-## 動的ルートの Route Handler
+これは React の **Suspense**（サスペンス）という仕組みを利用しています。Next.js は `page.tsx` を自動的に `<Suspense>` で包み、`loading.tsx` をフォールバック（代替 UI）として使います。
 
-Day 38 で詳しく学ぶ動的ルーティングは、Route Handler でも使えます。
+内部的にはこうなっています。
 
-```ts
-// src/app/api/posts/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
+```tsx
+// Next.js が内部でやっていること（イメージ）
+<Suspense fallback={<Loading />}>
+  <Page />
+</Suspense>
+```
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
+> **アクセシビリティ**: ローディング UI には `role="status"` を付けるのが望ましいです。スクリーンリーダーが状態の変化を自動的に読み上げてくれます。
 
-  // 本来はデータベースから取得
-  const post = { id, title: `記事 ${id}` };
-  return NextResponse.json(post);
-}
+## error.tsx — エラー UI
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
+`error.tsx` は、そのルートセグメントでエラーが発生したときに表示される UI です。
 
-  // 本来はデータベースから削除
-  return NextResponse.json({ message: `記事 ${id} を削除しました` });
+```tsx
+// src/app/blog/error.tsx
+"use client"; // error.tsx は必ず Client Component
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <div role="alert">
+      <h2>エラーが発生しました</h2>
+      <p>{error.message}</p>
+      <button onClick={() => reset()} type="button">
+        もう一度試す
+      </button>
+    </div>
+  );
 }
 ```
 
-`GET /api/posts/42` にアクセスすると `{ id: "42", title: "記事 42" }` が返されます。
+注目ポイントがあります。
 
-## Route Handlers をいつ使うか
+- **`"use client"` が必須** — エラーバウンダリはクライアントで動作する必要がある
+- **`reset` 関数** — 呼び出すとエラーからの回復を試みる（コンポーネントを再レンダリング）
+- **`role="alert"`** — スクリーンリーダーにエラーを即座に通知する
 
-Server Components や Server Actions（Day 37 で学習）がある今、Route Handlers の出番はどこでしょうか。
+`error.tsx` は React の **Error Boundary**（エラーバウンダリ）を利用しています。エラーが発生してもアプリ全体がクラッシュせず、エラーが起きたセクションだけを置き換えてくれます。
 
-### Route Handlers が適しているケース
+## not-found.tsx — 404 ページ
 
-| ケース | 理由 |
-|-------|------|
-| 外部サービスへの Webhook 受信 | 外部サービスが POST する先として URL が必要 |
-| OAuth のコールバック | 認証プロバイダからのリダイレクト先 |
-| 外部に公開する API | 他のサービスやモバイルアプリから呼ばれる |
-| ストリーミングレスポンス | Server Components では難しい応答パターン |
+存在しないページにアクセスされたときの UI です。
 
-### Server Components / Server Actions で十分なケース
+```tsx
+// src/app/not-found.tsx
+import Link from "next/link";
 
-- ページ表示のためのデータ取得 → Server Components で直接 fetch（Day 35）
-- フォーム送信やデータ変更 → Server Actions（Day 37）
+export default function NotFound() {
+  return (
+    <main>
+      <h1>404 - ページが見つかりません</h1>
+      <p>お探しのページは存在しないか、移動した可能性があります。</p>
+      <Link href="/">ホームに戻る</Link>
+    </main>
+  );
+}
+```
 
-**基本方針: まず Server Components と Server Actions で実現できないか考える。外部とのインターフェースが必要な場合に Route Handlers を使う。**
+## template.tsx — レイアウトとの違い
+
+`template.tsx` は `layout.tsx` と似ていますが、重要な違いがあります。
+
+- **`layout.tsx`**: ページ遷移をまたいで**状態が保持される**（再レンダリングされない）
+- **`template.tsx`**: ページ遷移のたびに**新しいインスタンスが作られる**（状態がリセットされる）
+
+```tsx
+// src/app/blog/template.tsx
+export default function BlogTemplate({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p>このテンプレートはページ遷移のたびに再マウントされます</p>
+      {children}
+    </div>
+  );
+}
+```
+
+`template.tsx` が有効な場面としては次のようなケースがあります。
+
+- ページ遷移時にアニメーションを再実行したい
+- ページ遷移時に `useEffect` を再実行したい
+- ページごとにフォームの state をリセットしたい
+
+ほとんどの場合は `layout.tsx` で十分です。「遷移のたびにリセットしたい」という明確な理由があるときだけ `template.tsx` を使います。
+
+## ファイルの組み合わせ方
+
+これらのファイルがどう組み合わされるか、全体像は次のようになります。
+
+```
+src/app/blog/
+├── layout.tsx     ← 共通レイアウト
+├── template.tsx   ← テンプレート（任意）
+├── loading.tsx    ← ローディング UI
+├── error.tsx      ← エラー UI
+├── not-found.tsx  ← 404 UI
+└── page.tsx       ← ページ本体
+```
+
+Next.js はこれらを以下のように組み立てます（概念的なイメージ）。
+
+```tsx
+<Layout>
+  <Template>
+    <ErrorBoundary fallback={<Error />}>
+      <Suspense fallback={<Loading />}>
+        <Page />
+      </Suspense>
+    </ErrorBoundary>
+  </Template>
+</Layout>
+```
+
+外側から順にレイアウト → テンプレート → エラーバウンダリ → サスペンス → ページという構造です。この順序を覚えておくと、どのファイルがどの範囲をカバーするかがわかります。
 
 ## まとめ
 
-- `route.ts` で API エンドポイントを作成でき、HTTP メソッドに対応する関数をエクスポートする
-- `NextRequest` でリクエスト情報を取得し、`NextResponse` でレスポンスを返す
-- リクエストボディ、URL パラメータ、ヘッダーなどを処理できる
-- 外部サービスとの連携や公開 API には Route Handlers が適している
-- ページのデータ取得やフォーム送信は Server Components / Server Actions が基本
+- `layout.tsx` は共通 UI を定義し、ページ遷移をまたいで状態が保持される
+- ネストレイアウトにより、セクションごとに異なるレイアウトを適用できる
+- `loading.tsx` は Suspense、`error.tsx` は Error Boundary を利用して自動的に表示される
+- `template.tsx` はレイアウトと似ているが、遷移のたびに再マウントされる
+- これらのファイルを組み合わせることで、ローディングやエラー処理を宣言的に実現できる
 
-**次のレッスン**: [Day 37: Server Actions](/lessons/day37/)
+**次のレッスン**: [Day 37: データ取得（Server Components）](/lessons/day37/)

@@ -1,164 +1,259 @@
-# Day 12: DOM 操作
+# Day 12: 関数とスコープ
 
 ## 今日のゴール
 
-- DOM（Document Object Model）が何かを知る
-- JavaScript で HTML 要素を取得・変更・追加できることを知る
-- DOM 操作の煩雑さを知り、React のような宣言的 UI が求められる背景を知る
+- 関数の 3 つの書き方（関数宣言・関数式・アロー関数）を知る
+- スコープ（変数の有効範囲）の仕組みを知る
+- クロージャの基本的な概念を知る
 
-## DOM とは
+## 関数とは
 
-**DOM（Document Object Model）**は、ブラウザが HTML を読み込んだ後に作る「HTML のツリー構造のデータ」です。
+**関数**は、一連の処理をまとめて名前を付けたものです。同じ処理を何度も書く代わりに、関数として定義しておけば呼び出すだけで実行できます。
 
-```html
-<html>
-  <body>
-    <h1>タイトル</h1>
-    <p>本文</p>
-  </body>
-</html>
-```
+## 関数宣言
 
-ブラウザはこの HTML を読み込むと、内部に以下のようなツリー構造を作ります。
-
-```
-html
-└── body
-    ├── h1
-    │   └── "タイトル"
-    └── p
-        └── "本文"
-```
-
-このツリーの各点を**ノード**（node = 節）と呼びます。JavaScript は DOM を通じて HTML の要素にアクセスし、内容を変更したり、新しい要素を追加したりできます。
-
-## DOM 操作の基本
-
-### 要素の取得
-
-JavaScript で DOM を操作するには、まず対象の要素を取得します。
+最も基本的な関数の定義方法です。
 
 ```javascript
-// CSS セレクタで要素を取得する
-const title = document.querySelector("h1");       // 最初の1つ
-const items = document.querySelectorAll("li");     // 条件に合う全て
-```
-
-`querySelector` は最初に見つかった1つ、`querySelectorAll` は条件に合うすべての要素を返します。Day 4-7 で学んだ CSS セレクタの書き方がそのまま使えます。
-
-### 要素の変更
-
-取得した要素のテキストやスタイルを変更できます。
-
-```javascript
-const title = document.querySelector("#title");
-
-// テキストの変更
-title.textContent = "変更後のタイトル";
-
-// スタイルの変更
-title.style.color = "darkblue";
-
-// クラスの追加・削除
-title.classList.add("highlight");
-```
-
-> **セキュリティの注意**: `innerHTML` というプロパティを使うと HTML を直接書き換えられますが、ユーザー入力を含む場合はクロスサイトスクリプティング（XSS = 悪意あるスクリプトを注入する攻撃）の危険があります。テキストの表示には `textContent` を使います。
-
-### 要素の作成と追加
-
-新しい要素を作って DOM に追加することもできます。
-
-```javascript
-const newItem = document.createElement("li");
-newItem.textContent = "新しい項目";
-
-const list = document.querySelector("ul");
-list.appendChild(newItem);
-```
-
-### イベントリスナー
-
-ユーザーの操作（クリック、キー入力など）に反応する処理を登録できます。
-
-```javascript
-const button = document.querySelector("#my-button");
-button.addEventListener("click", () => {
-  console.log("クリックされました");
-});
-```
-
-## DOM 操作はなぜ煩雑なのか
-
-ここまでの API を組み合わせると、たとえば「ボタンを押すとカウントが増える」だけのシンプルな機能でも、こうなります。
-
-```javascript
-// データ
-let count = 0;
-
-// DOM 要素の取得
-const countDisplay = document.querySelector("#count");
-const incrementButton = document.querySelector("#increment");
-
-// イベントの登録
-incrementButton.addEventListener("click", () => {
-  // データの更新
-  count += 1;
-  // 画面の更新（手動で同期）
-  countDisplay.textContent = `カウント: ${count}`;
-});
-```
-
-シンプルに見えるかもしれません。しかし、ここにはある構造的な問題が潜んでいます。
-
-**「データ」と「画面（DOM）」を自分で同期しなければならない**ということです。
-
-カウンターなら `textContent` を1箇所更新するだけですが、実際のアプリケーションでは:
-
-- ToDo リストの追加・削除・完了状態の切り替え
-- フィルターや並び替えの反映
-- フォームのバリデーション結果の表示
-- 複数の箇所に同じデータを表示
-
-これらすべてで「データが変わったら、画面のどこをどう更新するか」を手動で書く必要があります。1つの状態変更が画面の複数箇所に影響する場合、更新漏れやタイミングのバグが頻発します。
-
-## 宣言的 UI という解決策
-
-この問題を解決するのが、React のような**宣言的 UI ライブラリ**です。
-
-先ほどのカウンターを React で書くと、考え方がまったく変わります。
-
-```jsx
-import { useState } from "react";
-
-function Counter() {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div>
-      <p>カウント: {count}</p>
-      <button onClick={() => setCount(count + 1)}>+1</button>
-    </div>
-  );
+function greet(name) {
+  return `こんにちは、${name}さん！`;
 }
+
+const message = greet("山田");
+console.log(message);  // "こんにちは、山田さん！"
 ```
 
-ここには `querySelector` も `textContent =` もありません。React では「データ（`count`）がこの値のとき、画面はこう表示される」というルールだけを書きます。データが変わったら、画面のどこを更新すべきかは React が自動的に判断します。
+- `function` キーワードで関数を定義
+- `name` は**引数（ひきすう）** — 関数に渡すデータ
+- `return` は**戻り値（もどりち）** — 関数が返すデータ
 
-| | 命令的 UI（DOM 操作） | 宣言的 UI（React） |
-|---|---|---|
-| 考え方 | 「この要素のテキストをこう変えろ」 | 「データがこうなら画面はこう」 |
-| DOM の更新 | 開発者が手動で行う | ライブラリが自動で行う |
-| 状態と画面の同期 | 自分で管理 | フレームワークが保証 |
-| 規模が大きくなると | 更新漏れ・バグが増える | 複雑さが増えにくい |
+引数は複数取れます。
 
-DOM 操作の存在と、その煩雑さを知っておくことが重要です。Day 21 以降で学ぶ React は、まさにこの問題を解決するために作られました。
+```javascript
+function add(a, b) {
+  return a + b;
+}
+
+console.log(add(3, 5));  // 8
+```
+
+### 引数のデフォルト値
+
+```javascript
+function greet(name = "ゲスト") {
+  return `こんにちは、${name}さん！`;
+}
+
+console.log(greet("山田"));  // "こんにちは、山田さん！"
+console.log(greet());        // "こんにちは、ゲストさん！"
+```
+
+引数が渡されなかった場合にデフォルト値が使われます。
+
+## 関数式
+
+関数を変数に代入する書き方です。
+
+```javascript
+const greet = function (name) {
+  return `こんにちは、${name}さん！`;
+};
+
+console.log(greet("佐藤"));  // "こんにちは、佐藤さん！"
+```
+
+関数宣言との大きな違いは**巻き上げ**（hoisting）の挙動です。関数宣言は定義より前で呼び出せますが、関数式はできません。
+
+```javascript
+// 関数宣言 — 定義より前でも呼べる（巻き上げ）
+console.log(hello());  // "Hello!"
+function hello() {
+  return "Hello!";
+}
+
+// 関数式 — 定義より前では呼べない
+console.log(hi());  // ❌ エラー
+const hi = function () {
+  return "Hi!";
+};
+```
+
+## アロー関数
+
+ES2015（ES6）で追加された簡潔な書き方です。実務ではアロー関数が最も多く使われます。
+
+```javascript
+const greet = (name) => {
+  return `こんにちは、${name}さん！`;
+};
+```
+
+### 省略記法
+
+**引数が 1 つなら `()` を省略できる:**
+
+```javascript
+const double = n => {
+  return n * 2;
+};
+```
+
+**処理が 1 行なら `{}` と `return` を省略できる:**
+
+```javascript
+const double = n => n * 2;
+
+console.log(double(5));  // 10
+```
+
+**複数行の場合は `{}` と `return` が必要:**
+
+```javascript
+const describe = (name, age) => {
+  const label = age >= 18 ? "成人" : "未成年";
+  return `${name}さんは${label}です`;
+};
+```
+
+### 3 つの書き方の比較
+
+```javascript
+// 関数宣言
+function add1(a, b) {
+  return a + b;
+}
+
+// 関数式
+const add2 = function (a, b) {
+  return a + b;
+};
+
+// アロー関数
+const add3 = (a, b) => a + b;
+```
+
+どれも `add(3, 5)` で `8` が返ります。実務では**アロー関数が最もよく使われます**。特に、関数を引数として渡す場面（コールバック関数）で簡潔に書けるのが大きなメリットです。
+
+## コールバック関数
+
+関数を別の関数の引数として渡すことができます。これを**コールバック関数**と呼びます。
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// forEach に関数を渡す
+numbers.forEach((num) => {
+  console.log(num * 2);
+});
+// 2, 4, 6, 8, 10
+```
+
+`forEach` は配列の各要素に対して渡された関数を実行します。ここでのアロー関数 `(num) => { ... }` がコールバック関数です。
+
+Day 13 で学ぶ `map`、`filter` などの配列メソッドでも、コールバック関数を多用します。React でもイベント処理やデータ変換でコールバック関数は頻出なので、この考え方に慣れておきましょう。
+
+## スコープ — 変数の有効範囲
+
+**スコープ**とは、変数がアクセスできる範囲のことです。
+
+### ブロックスコープ
+
+`const` と `let` で宣言した変数は、`{}` の中でだけ有効です。
+
+```javascript
+if (true) {
+  const message = "ブロックの中";
+  console.log(message);  // ✅ "ブロックの中"
+}
+
+console.log(message);  // ❌ エラー: message is not defined
+```
+
+### 関数スコープ
+
+関数の中で宣言した変数は、その関数の中でだけ有効です。
+
+```javascript
+function greet() {
+  const name = "山田";
+  console.log(name);  // ✅ "山田"
+}
+
+greet();
+console.log(name);  // ❌ エラー: name is not defined
+```
+
+### グローバルスコープ
+
+関数やブロックの外で宣言した変数は、どこからでもアクセスできます。
+
+```javascript
+const appName = "MyApp";  // グローバルスコープ
+
+function showAppName() {
+  console.log(appName);  // ✅ アクセスできる
+}
+
+showAppName();
+```
+
+> グローバル変数は便利ですが、どこからでも変更できてしまうため、大規模なプログラムではバグの原因になります。Day 10 で学んだ CSS のグローバルスコープ問題と同じ構図です。変数はできるだけ狭いスコープで宣言しましょう。
+
+## スコープチェーン
+
+内側のスコープから外側のスコープの変数にアクセスできます。
+
+```javascript
+const outer = "外側の変数";
+
+function myFunction() {
+  const inner = "内側の変数";
+  console.log(outer);  // ✅ 外側の変数にアクセスできる
+  console.log(inner);  // ✅ 自分のスコープの変数
+}
+
+myFunction();
+console.log(inner);  // ❌ 内側の変数には外からアクセスできない
+```
+
+JavaScript は変数を探すとき、まず自分のスコープを見て、なければ 1 つ外のスコープ、その外……と**外側に向かって順に探していきます**。この仕組みをスコープチェーンと呼びます。
+
+## クロージャ
+
+スコープチェーンを利用した強力なパターンが**クロージャ**です。
+
+```javascript
+function createCounter() {
+  let count = 0;  // この変数は createCounter の中に閉じ込められている
+
+  return () => {
+    count++;
+    return count;
+  };
+}
+
+const counter = createCounter();
+console.log(counter());  // 1
+console.log(counter());  // 2
+console.log(counter());  // 3
+```
+
+`createCounter()` は関数を返します。返された関数は、`createCounter` の中の `count` 変数を「覚えて」います。
+
+- `count` は `createCounter` の中でしかアクセスできない（外から直接変更できない）
+- 返された関数だけが `count` を操作できる
+
+これがクロージャです。**関数が、自分が定義されたスコープの変数を保持し続ける**仕組みです。
+
+React の `useState` フック（後の Day で学びます）も、内部的にはクロージャの仕組みを使っています。今は「関数が外側の変数を覚えている」というイメージだけ掴んでおけば大丈夫です。
 
 ## まとめ
 
-- DOM はブラウザが HTML から作るツリー構造のデータ
-- JavaScript で DOM を操作して画面を変更できる（`querySelector`、`textContent`、`createElement` など）
-- DOM 操作は「データと画面の手動同期」が必要で、規模が大きくなると煩雑になる
-- この煩雑さが React のような宣言的 UI ライブラリが生まれた理由
+- 関数の書き方は 3 種類: 関数宣言、関数式、アロー関数。**実務ではアロー関数が主流**
+- アロー関数は引数 1 つで `()` 省略可、1 行の処理で `{}` と `return` 省略可
+- コールバック関数 = 関数を別の関数の引数として渡すパターン。React で頻出
+- スコープは変数の有効範囲。`const` / `let` はブロックスコープ
+- スコープチェーン: 内側から外側に向かって変数を探す
+- クロージャ: 関数が定義時のスコープの変数を保持し続ける仕組み
 
-**次のレッスン**: [Day 13: 非同期処理](/lessons/day13/)
+**次のレッスン**: [Day 13: オブジェクトと配列](/lessons/day13/)

@@ -1,284 +1,184 @@
-# Day 34: レイアウトとページ
+# Day 34: Next.js の概要とプロジェクト構成
 
 ## 今日のゴール
 
-- `layout.tsx`、`page.tsx`、`loading.tsx`、`error.tsx` の役割を知る
-- ネストレイアウトの仕組みを知る
-- テンプレート（`template.tsx`）とレイアウトの違いを知る
+- Next.js が何を解決するフレームワークかを知る
+- App Router のディレクトリ構成を知る
+- ファイルベースルーティングの仕組みを知る
 
-## 特別なファイル群
+## React だけでは足りないもの
 
-Day 32 で「App Router にはファイル名に特別な意味がある」と紹介しました。今日はその中でも特に重要な 4 つのファイルを詳しく見ていきます。
+Day 23〜30 で React の基礎を学びました。React は UI を宣言的に構築する優れたライブラリですが、実際のプロダクトを作ろうとすると、React 単体では解決できない課題が出てきます。
 
-## layout.tsx — 共通の枠
+| 課題 | React 単体 | Next.js |
+|------|-----------|---------|
+| ルーティング（ページ遷移） | 別ライブラリが必要 | ファイルベースで自動 |
+| サーバーサイドレンダリング | 自分で構築 | 組み込み |
+| データ取得とキャッシュ | 自分で設計 | フレームワークが提供 |
+| 画像・フォント最適化 | 自分で対応 | 組み込みコンポーネント |
+| バンドル・ビルド設定 | Vite 等を自分で設定 | ゼロコンフィグ |
 
-`layout.tsx` は、複数のページで共有される**共通の UI**を定義します。ナビゲーションバーやフッターなど、どのページでも表示したい要素を置く場所です。
+Next.js は React をベースにした**フルスタックフレームワーク**です。「フルスタック」とは、ブラウザ側（フロントエンド）だけでなく、サーバー側の処理も 1 つのプロジェクト内で扱えるという意味です。
 
-### ルートレイアウト
+Day 33 で学んだように、React 単体で作ると CSR（Client-Side Rendering）になり、初期表示の遅さや SEO の弱さが課題になります。Next.js は SSR（Server-Side Rendering）を標準でサポートし、これらの問題を解決します。
 
-`src/app/layout.tsx` はアプリ全体のルートレイアウトです。これは**必須**ファイルで、`<html>` タグと `<body>` タグを含める必要があります。
+## Next.js プロジェクトの作成ツール
 
-```tsx
-// src/app/layout.tsx
-import type { Metadata } from "next";
-import Link from "next/link";
-import "./globals.css";
+Next.js には `create-next-app` という公式のプロジェクト作成ツールがあります。これを実行すると、必要なファイル構成や設定が整った状態のプロジェクトが自動生成されます。
 
-export const metadata: Metadata = {
-  title: "My App",
-  description: "Next.js で作ったアプリ",
-};
+作成時にいくつかのオプションを選択できます。配属先のプロジェクトで使われる構成は以下の通りです。
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="ja">
-      <body>
-        <header>
-          <nav aria-label="メインナビゲーション">
-            <Link href="/">ホーム</Link>
-            <Link href="/about">About</Link>
-          </nav>
-        </header>
-        <main>{children}</main>
-        <footer>
-          <p>&copy; 2026 My App</p>
-        </footer>
-      </body>
-    </html>
-  );
-}
+| オプション | 選択 | 意味 |
+|-----------|------|------|
+| TypeScript | Yes | 型付きの JavaScript で開発する |
+| ESLint | Yes | コードの問題を自動検出するツールを導入する |
+| Tailwind CSS | Yes | ユーティリティファーストの CSS フレームワークを導入する |
+| `src/` ディレクトリ | Yes | ソースコードを `src/` 配下にまとめる |
+| App Router | Yes | Next.js の最新ルーティング方式を使う |
+| Turbopack | Yes | 高速な開発サーバーを使う |
+
+これらのオプションにより、TypeScript + App Router + Tailwind CSS という現在の主流な構成が整います。
+
+## ディレクトリ構成を理解する
+
+作成されたプロジェクトの構成は以下のようになっています。
+
+```
+my-app/
+├── src/
+│   └── app/            ← App Router のルートディレクトリ
+│       ├── layout.tsx   ← ルートレイアウト（全ページ共通の枠）
+│       ├── page.tsx     ← トップページ（"/"）
+│       ├── globals.css  ← グローバルスタイル
+│       └── favicon.ico
+├── public/              ← 静的ファイル（画像など）
+├── next.config.ts       ← Next.js の設定ファイル
+├── tsconfig.json        ← TypeScript 設定
+└── package.json
 ```
 
-`{children}` の部分に、各ページの内容が入ります。ページを切り替えても、ヘッダーやフッターは再レンダリングされません。これがレイアウトの大きな特徴です。
+重要なのは `src/app/` ディレクトリです。App Router では、このディレクトリの**フォルダ構造がそのまま URL になります**。これがファイルベースルーティングです。
 
-> **アクセシビリティ**: `<nav>` に `aria-label` を付けると、スクリーンリーダーが「メインナビゲーション」とそのナビゲーションの目的を読み上げます。ページに複数のナビゲーションがある場合に特に重要です。
+## ファイルベースルーティング
 
-### ネストレイアウト
+従来の Web 開発では、URL とページの対応付けをコードで書く必要がありました（「`/about` にアクセスされたら About コンポーネントを表示する」といった設定）。Next.js ではフォルダを作るだけで URL が決まります。
 
-フォルダごとに `layout.tsx` を置くと、レイアウトがネスト（入れ子）になります。
+### フォルダ = URL パス
 
 ```
 src/app/
-├── layout.tsx          ← ルートレイアウト（全ページ共通）
-├── page.tsx            ← /
-└── blog/
-    ├── layout.tsx      ← ブログ用レイアウト（/blog 以下で共通）
-    ├── page.tsx        ← /blog
-    └── [slug]/
-        └── page.tsx    ← /blog/hello-world など
+├── page.tsx              → /
+├── about/
+│   └── page.tsx          → /about
+├── blog/
+│   ├── page.tsx          → /blog
+│   └── first-post/
+│       └── page.tsx      → /blog/first-post
+└── contact/
+    └── page.tsx          → /contact
 ```
+
+ルールはシンプルです。
+
+- **フォルダ名**が URL のパス（path）になる
+- **`page.tsx`** がそのパスで表示されるページになる
+- `page.tsx` がないフォルダは URL としてアクセスできない
+
+たとえば `src/app/about/page.tsx` は以下のようなコンポーネントになります。
 
 ```tsx
-// src/app/blog/layout.tsx
-import Link from "next/link";
-
-export default function BlogLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ display: "flex", gap: "2rem" }}>
-      <aside>
-        <nav aria-label="ブログカテゴリ">
-          <h2>カテゴリ</h2>
-          <ul>
-            <li><Link href="/blog?category=tech">Tech</Link></li>
-            <li><Link href="/blog?category=life">Life</Link></li>
-          </ul>
-        </nav>
-      </aside>
-      <section>{children}</section>
-    </div>
-  );
-}
-```
-
-`/blog/hello-world` にアクセスすると、以下のようにレイアウトが組み合わされます。
-
-```
-RootLayout（ヘッダー、フッター）
-  └── BlogLayout（サイドバー）
-       └── BlogPost ページ
-```
-
-レイアウトが入れ子になるだけで、ブログセクションにサイドバーを追加できました。他のページ（`/about` など）にはサイドバーは表示されません。
-
-### レイアウトの重要な性質
-
-レイアウトは**ページ遷移をまたいで状態が保持されます**。つまり、`/blog/post-1` から `/blog/post-2` に移動しても、`BlogLayout` は再レンダリングされず、state があればそれも維持されます。
-
-## page.tsx — ページの本体
-
-`page.tsx` はルートの UI を定義するファイルです。Day 32 で見たように、`page.tsx` がないフォルダは URL としてアクセスできません。
-
-```tsx
-// src/app/about/page.tsx
 export default function AboutPage() {
   return (
-    <article>
-      <h1>About</h1>
-      <p>このアプリについての説明です。</p>
-    </article>
-  );
-}
-```
-
-`page.tsx` は必ず**デフォルトエクスポート**でコンポーネントを返す必要があります。
-
-## loading.tsx — ローディング UI
-
-`loading.tsx` を置くと、ページの読み込み中に自動でローディング UI が表示されます。
-
-```tsx
-// src/app/blog/loading.tsx
-export default function Loading() {
-  return (
-    <div role="status" aria-label="読み込み中">
-      <p>読み込み中...</p>
-    </div>
-  );
-}
-```
-
-これは React の **Suspense**（サスペンス）という仕組みを利用しています。Next.js は `page.tsx` を自動的に `<Suspense>` で包み、`loading.tsx` をフォールバック（代替 UI）として使います。
-
-内部的にはこうなっています。
-
-```tsx
-// Next.js が内部でやっていること（イメージ）
-<Suspense fallback={<Loading />}>
-  <Page />
-</Suspense>
-```
-
-> **アクセシビリティ**: ローディング UI には `role="status"` を付けるのが望ましいです。スクリーンリーダーが状態の変化を自動的に読み上げてくれます。
-
-## error.tsx — エラー UI
-
-`error.tsx` は、そのルートセグメントでエラーが発生したときに表示される UI です。
-
-```tsx
-// src/app/blog/error.tsx
-"use client"; // error.tsx は必ず Client Component
-
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  return (
-    <div role="alert">
-      <h2>エラーが発生しました</h2>
-      <p>{error.message}</p>
-      <button onClick={() => reset()} type="button">
-        もう一度試す
-      </button>
-    </div>
-  );
-}
-```
-
-注目ポイントがあります。
-
-- **`"use client"` が必須** — エラーバウンダリはクライアントで動作する必要がある
-- **`reset` 関数** — 呼び出すとエラーからの回復を試みる（コンポーネントを再レンダリング）
-- **`role="alert"`** — スクリーンリーダーにエラーを即座に通知する
-
-`error.tsx` は React の **Error Boundary**（エラーバウンダリ）を利用しています。エラーが発生してもアプリ全体がクラッシュせず、エラーが起きたセクションだけを置き換えてくれます。
-
-## not-found.tsx — 404 ページ
-
-存在しないページにアクセスされたときの UI です。
-
-```tsx
-// src/app/not-found.tsx
-import Link from "next/link";
-
-export default function NotFound() {
-  return (
     <main>
-      <h1>404 - ページが見つかりません</h1>
-      <p>お探しのページは存在しないか、移動した可能性があります。</p>
-      <Link href="/">ホームに戻る</Link>
+      <h1>About</h1>
+      <p>このサイトについてのページです。</p>
     </main>
   );
 }
 ```
 
-## template.tsx — レイアウトとの違い
+このファイルを置くだけで `/about` という URL が使えるようになります。ルーティングの設定コードは一切書いていません。
 
-`template.tsx` は `layout.tsx` と似ていますが、重要な違いがあります。
+### 特別な意味を持つファイル名
 
-- **`layout.tsx`**: ページ遷移をまたいで**状態が保持される**（再レンダリングされない）
-- **`template.tsx`**: ページ遷移のたびに**新しいインスタンスが作られる**（状態がリセットされる）
+App Router では、いくつかのファイル名が特別な役割を持っています。
+
+| ファイル名 | 役割 |
+|-----------|------|
+| `page.tsx` | そのルートの UI（ページ本体） |
+| `layout.tsx` | 共通レイアウト（ナビゲーションなど） |
+| `loading.tsx` | ローディング UI |
+| `error.tsx` | エラー UI |
+| `not-found.tsx` | 404 ページ |
+| `route.ts` | API エンドポイント（Day 38 で学習） |
+
+これらは Next.js が自動的に認識して、適切なタイミングで使用します。たとえば `loading.tsx` を置くだけで、ページの読み込み中にローディング表示が自動で出ます。詳しくは Day 36 で学びます。
+
+## page.tsx の中身を見る
+
+`src/app/page.tsx` がトップページのコンポーネントです。
 
 ```tsx
-// src/app/blog/template.tsx
-export default function BlogTemplate({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Home() {
   return (
-    <div>
-      <p>このテンプレートはページ遷移のたびに再マウントされます</p>
-      {children}
-    </div>
+    <main>
+      <h1>Welcome to Next.js</h1>
+    </main>
   );
 }
 ```
 
-`template.tsx` が有効な場面としては次のようなケースがあります。
+注目してほしい点があります。
 
-- ページ遷移時にアニメーションを再実行したい
-- ページ遷移時に `useEffect` を再実行したい
-- ページごとにフォームの state をリセットしたい
+- **`"use client"` と書かれていない** — これは Server Component です（Day 35 で詳しく学びます）
+- **`export default`** が必要 — Next.js はデフォルトエクスポートされたコンポーネントをページとして使う
+- **普通の React コンポーネント** — Day 23〜30 で学んだ JSX がそのまま使える
 
-ほとんどの場合は `layout.tsx` で十分です。「遷移のたびにリセットしたい」という明確な理由があるときだけ `template.tsx` を使います。
+## ページ間のリンク
 
-## ファイルの組み合わせ方
-
-これらのファイルがどう組み合わされるか、全体像は次のようになります。
-
-```
-src/app/blog/
-├── layout.tsx     ← 共通レイアウト
-├── template.tsx   ← テンプレート（任意）
-├── loading.tsx    ← ローディング UI
-├── error.tsx      ← エラー UI
-├── not-found.tsx  ← 404 UI
-└── page.tsx       ← ページ本体
-```
-
-Next.js はこれらを以下のように組み立てます（概念的なイメージ）。
+HTML では `<a>` タグでリンクを作りますが、Next.js では `<Link>` コンポーネントを使います。
 
 ```tsx
-<Layout>
-  <Template>
-    <ErrorBoundary fallback={<Error />}>
-      <Suspense fallback={<Loading />}>
-        <Page />
-      </Suspense>
-    </ErrorBoundary>
-  </Template>
-</Layout>
+import Link from "next/link";
+
+export default function Home() {
+  return (
+    <main>
+      <h1>ホーム</h1>
+      <nav>
+        <ul>
+          <li>
+            <Link href="/about">About</Link>
+          </li>
+          <li>
+            <Link href="/blog">Blog</Link>
+          </li>
+        </ul>
+      </nav>
+    </main>
+  );
+}
 ```
 
-外側から順にレイアウト → テンプレート → エラーバウンダリ → サスペンス → ページという構造です。この順序を覚えておくと、どのファイルがどの範囲をカバーするかがわかります。
+`<Link>` は HTML の `<a>` タグをレンダリングしますが、裏側でクライアントサイドナビゲーション（JavaScript によるページ遷移）を行います。Day 33 で学んだ SPA の特徴がここで関係してきます。通常の `<a>` タグではページ全体が再読み込みされますが、`<Link>` ではページの差分だけが更新されるため、高速でスムーズなページ遷移が実現します。
+
+> **ポイント**: 外部サイトへのリンク（`https://example.com` など）には通常の `<a>` タグを使います。`<Link>` はアプリ内のページ遷移に使うものです。
+
+## なぜファイルベースルーティングなのか
+
+ファイルベースルーティングの利点を整理すると、次のようになります。
+
+1. **URL 構造が一目でわかる** — フォルダ構造を見ればサイトマップがわかる
+2. **設定コードが不要** — ルーティング設定ファイルを書かなくていい
+3. **コロケーション** — ページに関連するファイル（テスト、スタイルなど）を同じフォルダにまとめられる
+
+「コロケーション（colocation）」とは、関連するものを近くに置くという考え方です。`about/` フォルダの中にページ、テスト、スタイルをまとめると、何がどこにあるか迷わなくなります。
 
 ## まとめ
 
-- `layout.tsx` は共通 UI を定義し、ページ遷移をまたいで状態が保持される
-- ネストレイアウトにより、セクションごとに異なるレイアウトを適用できる
-- `loading.tsx` は Suspense、`error.tsx` は Error Boundary を利用して自動的に表示される
-- `template.tsx` はレイアウトと似ているが、遷移のたびに再マウントされる
-- これらのファイルを組み合わせることで、ローディングやエラー処理を宣言的に実現できる
+- Next.js は React ベースのフルスタックフレームワークで、SSR・ルーティング・最適化などを組み込みで提供する
+- App Router では `src/app/` 配下のフォルダ構造がそのまま URL になる（ファイルベースルーティング）
+- `page.tsx` がページの本体、`layout.tsx` が共通レイアウトなど、ファイル名に特別な意味がある
+- ページ間のリンクには `next/link` の `<Link>` コンポーネントを使う
 
-**次のレッスン**: [Day 35: データ取得（Server Components）](/lessons/day35/)
+**次のレッスン**: [Day 35: Server Components と Client Components](/lessons/day35/)

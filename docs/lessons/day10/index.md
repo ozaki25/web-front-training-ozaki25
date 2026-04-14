@@ -1,259 +1,374 @@
-# Day 10: 関数とスコープ
+# Day 10: レスポンシブデザインと CSS の課題
 
 ## 今日のゴール
 
-- 関数の 3 つの書き方（関数宣言・関数式・アロー関数）を知る
-- スコープ（変数の有効範囲）の仕組みを知る
-- クロージャの基本的な概念を知る
+- レスポンシブデザインの考え方と必要性を知る
+- メディアクエリの書き方を知る
+- モバイルファーストの設計手法を知る
+- コンテナクエリで「コンポーネント単位のレスポンシブ」を知る
+- CSS のグローバルスコープ問題を知り、後の学習（CSS Modules や Tailwind CSS）への橋渡しとする
 
-## 関数とは
+## レスポンシブデザインとは
 
-**関数**は、一連の処理をまとめて名前を付けたものです。同じ処理を何度も書く代わりに、関数として定義しておけば呼び出すだけで実行できます。
+スマートフォン、タブレット、PC — 画面サイズはさまざまです。**レスポンシブデザイン**は、1 つの HTML で画面サイズに応じてレイアウトを変える設計手法です。
 
-## 関数宣言
+デバイスごとに別の HTML を作るのではなく、CSS で表示を切り替えます。
 
-最も基本的な関数の定義方法です。
+## ビューポートの設定
 
-```javascript
-function greet(name) {
-  return `こんにちは、${name}さん！`;
+Day 1 で書いた以下の meta タグを覚えていますか？
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+```
+
+**ビューポート**は「ブラウザの表示領域」のことです。この meta タグがないと、スマートフォンのブラウザは PC 向けの幅（通常 980px）を想定してページを表示し、全体を縮小して見せようとします。結果、文字が極端に小さくなります。
+
+`width=device-width` は「ビューポートの幅をデバイスの画面幅に合わせる」という意味です。レスポンシブデザインには必須の設定です。
+
+## メディアクエリ
+
+画面幅に応じて CSS を切り替える仕組みが**メディアクエリ**です。
+
+```css
+/* 基本のスタイル（すべての画面サイズに適用） */
+.container {
+  padding: 16px;
 }
 
-const message = greet("山田");
-console.log(message);  // "こんにちは、山田さん！"
-```
-
-- `function` キーワードで関数を定義
-- `name` は**引数（ひきすう）** — 関数に渡すデータ
-- `return` は**戻り値（もどりち）** — 関数が返すデータ
-
-引数は複数取れます。
-
-```javascript
-function add(a, b) {
-  return a + b;
+/* 画面幅が 768px 以上のとき */
+@media (min-width: 768px) {
+  .container {
+    padding: 24px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
 }
 
-console.log(add(3, 5));  // 8
+/* 画面幅が 1024px 以上のとき */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 960px;
+  }
+}
 ```
 
-### 引数のデフォルト値
+`@media (min-width: 768px)` は「画面幅が 768px 以上の場合に、中の CSS を適用する」という意味です。この境界値を**ブレークポイント**と呼びます。
 
-```javascript
-function greet(name = "ゲスト") {
-  return `こんにちは、${name}さん！`;
+## モバイルファースト
+
+上の例では小さい画面のスタイルを基本にし、`min-width` で大きい画面のスタイルを追加しています。この設計手法を**モバイルファースト**と呼びます。
+
+```css
+/* ❌ デスクトップファースト（max-width で小さい画面を対応） */
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+@media (max-width: 767px) {
+  .nav-links {
+    flex-direction: column;
+    gap: 8px;
+  }
 }
 
-console.log(greet("山田"));  // "こんにちは、山田さん！"
-console.log(greet());        // "こんにちは、ゲストさん！"
+/* ✅ モバイルファースト（min-width で大きい画面を対応） */
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (min-width: 768px) {
+  .nav-links {
+    flex-direction: row;
+    gap: 24px;
+  }
+}
 ```
 
-引数が渡されなかった場合にデフォルト値が使われます。
+モバイルファーストが推奨される理由:
 
-## 関数式
+1. **スマートフォンのユーザーが多い**: 多くの Web サイトでモバイルからのアクセスが半数以上
+2. **小さい画面から設計する方が楽**: 小さい画面のシンプルなレイアウトを基本にして、大きい画面で余白を活用する方が自然
+3. **パフォーマンス**: 小さい画面のデバイスは処理能力も低いことが多い。基本スタイルをシンプルにしておくことで、読み込みが軽くなる
 
-関数を変数に代入する書き方です。
+## 完成形のコード
 
-```javascript
-const greet = function (name) {
-  return `こんにちは、${name}さん！`;
-};
+Day 9 で学んだ Grid と組み合わせた、レスポンシブなページの例です。
 
-console.log(greet("佐藤"));  // "こんにちは、佐藤さん！"
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>レスポンシブデザイン</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        line-height: 1.8;
+        color: #333;
+      }
+
+      .header {
+        background-color: #1a1a2e;
+        color: white;
+        padding: 16px;
+      }
+
+      .header-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .nav-links {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0;
+      }
+
+      .nav-links a { color: #ccc; text-decoration: none; }
+
+      .main-content {
+        padding: 16px;
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .card {
+        padding: 24px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+
+      .card h2 { margin-top: 0; }
+
+      /* タブレット以上 */
+      @media (min-width: 768px) {
+        .nav-links {
+          flex-direction: row;
+          gap: 24px;
+          margin: 0;
+        }
+
+        .main-content {
+          max-width: 960px;
+          margin: 0 auto;
+          padding: 24px;
+        }
+
+        .card-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      /* デスクトップ */
+      @media (min-width: 1024px) {
+        .card-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-inner">
+        <strong>MySite</strong>
+        <nav aria-label="メインナビゲーション">
+          <ul class="nav-links">
+            <li><a href="/">ホーム</a></li>
+            <li><a href="/about">概要</a></li>
+            <li><a href="/contact">お問い合わせ</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <h1>サービス一覧</h1>
+
+      <!-- <article> は独立したコンテンツのまとまりを表すセマンティックタグです。
+           ブログ記事やニュースなど、それ単体で意味をなすコンテンツに使います。 -->
+      <div class="card-grid">
+        <article class="card">
+          <h2>Web 開発</h2>
+          <p>モダンな技術スタックで Web アプリケーションを開発します。</p>
+        </article>
+        <article class="card">
+          <h2>UI デザイン</h2>
+          <p>ユーザーにとって使いやすいインターフェースを設計します。</p>
+        </article>
+        <article class="card">
+          <h2>コンサルティング</h2>
+          <p>技術選定やアーキテクチャの相談に対応します。</p>
+        </article>
+      </div>
+    </main>
+  </body>
+</html>
 ```
 
-関数宣言との大きな違いは**巻き上げ（hoisting）**の挙動です。関数宣言は定義より前で呼び出せますが、関数式はできません。
+ブラウザの幅を変えると、以下のように表示が切り替わります。
 
-```javascript
-// 関数宣言 — 定義より前でも呼べる（巻き上げ）
-console.log(hello());  // "Hello!"
-function hello() {
-  return "Hello!";
+- **狭い画面**: ナビリンクが縦並び、カードが 1 列
+- **768px 以上**: ナビリンクが横並び、カードが 2 列
+- **1024px 以上**: カードが 3 列
+
+DevTools で画面幅を変えるには、DevTools を開いた状態で左上のデバイスアイコン（Toggle device toolbar）をクリックします。
+
+## ユーザー設定に応じたスタイル
+
+メディアクエリは画面幅だけでなく、**ユーザーの環境設定**も検知できます。
+
+```css
+/* ダークモードが有効なユーザー向け */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+  }
 }
 
-// 関数式 — 定義より前では呼べない
-console.log(hi());  // ❌ エラー
-const hi = function () {
-  return "Hi!";
-};
+/* アニメーションを減らしたいユーザー向け */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 ```
 
-## アロー関数
+`prefers-color-scheme` は OS やブラウザのダークモード設定を、`prefers-reduced-motion` は「視差効果を減らす」設定を検知します。特に `prefers-reduced-motion` はアクセシビリティの観点で重要です。前庭障害のある方にとって、画面上の動きは体調不良の原因になることがあります。
 
-ES2015（ES6）で追加された簡潔な書き方です。実務ではアロー関数が最も多く使われます。
+## コンテナクエリ — コンポーネントに合わせたレスポンシブ
 
-```javascript
-const greet = (name) => {
-  return `こんにちは、${name}さん！`;
-};
+メディアクエリは**ビューポート**（画面全体）の幅で切り替えます。しかし、同じカードコンポーネントがサイドバーにもメインエリアにも使われる場合、画面幅だけでは適切なスタイルを選べません。
+
+```
+画面幅 1200px のとき:
+┌──────────────────────────────────┐
+│ メインエリア（広い）  │サイドバー │
+│ → カード横並びが良い  │（狭い）  │
+│                      │→ カード  │
+│                      │ 縦並びが │
+│                      │ 良い    │
+└──────────────────────────────────┘
+
+メディアクエリだと画面幅 1200px で一律に判断 → サイドバーのカードまで横並びに…
 ```
 
-### 省略記法
+**コンテナクエリ**は、画面幅ではなく**親要素の幅**に応じてスタイルを切り替えます。
 
-**引数が 1 つなら `()` を省略できる:**
-
-```javascript
-const double = n => {
-  return n * 2;
-};
-```
-
-**処理が 1 行なら `{}` と `return` を省略できる:**
-
-```javascript
-const double = n => n * 2;
-
-console.log(double(5));  // 10
-```
-
-**複数行の場合は `{}` と `return` が必要:**
-
-```javascript
-const describe = (name, age) => {
-  const label = age >= 18 ? "成人" : "未成年";
-  return `${name}さんは${label}です`;
-};
-```
-
-### 3 つの書き方の比較
-
-```javascript
-// 関数宣言
-function add1(a, b) {
-  return a + b;
+```css
+/* ① 親要素をコンテナとして宣言する */
+.card-wrapper {
+  container-type: inline-size;
 }
 
-// 関数式
-const add2 = function (a, b) {
-  return a + b;
-};
-
-// アロー関数
-const add3 = (a, b) => a + b;
-```
-
-どれも `add(3, 5)` で `8` が返ります。実務では**アロー関数が最もよく使われます**。特に、関数を引数として渡す場面（コールバック関数）で簡潔に書けるのが大きなメリットです。
-
-## コールバック関数
-
-関数を別の関数の引数として渡すことができます。これを**コールバック関数**と呼びます。
-
-```javascript
-const numbers = [1, 2, 3, 4, 5];
-
-// forEach に関数を渡す
-numbers.forEach((num) => {
-  console.log(num * 2);
-});
-// 2, 4, 6, 8, 10
-```
-
-`forEach` は配列の各要素に対して渡された関数を実行します。ここでのアロー関数 `(num) => { ... }` がコールバック関数です。
-
-Day 11 で学ぶ `map`、`filter` などの配列メソッドでも、コールバック関数を多用します。React でもイベント処理やデータ変換でコールバック関数は頻出なので、この考え方に慣れておきましょう。
-
-## スコープ — 変数の有効範囲
-
-**スコープ**とは、変数がアクセスできる範囲のことです。
-
-### ブロックスコープ
-
-`const` と `let` で宣言した変数は、`{}` の中でだけ有効です。
-
-```javascript
-if (true) {
-  const message = "ブロックの中";
-  console.log(message);  // ✅ "ブロックの中"
+/* ② コンテナの幅が 400px 以上なら横並びにする */
+@container (min-width: 400px) {
+  .card {
+    display: flex;
+    gap: 16px;
+  }
 }
-
-console.log(message);  // ❌ エラー: message is not defined
 ```
 
-### 関数スコープ
+`container-type: inline-size` は「この要素の横幅をコンテナクエリの基準にする」という宣言です。`@container` は `@media` と同じ構文ですが、参照するのが**ビューポート**ではなく**直近のコンテナ祖先**です。
 
-関数の中で宣言した変数は、その関数の中でだけ有効です。
+これにより、同じカードコンポーネントでも:
 
-```javascript
-function greet() {
-  const name = "山田";
-  console.log(name);  // ✅ "山田"
+- メインエリア（幅 800px）に置けば → 横並び
+- サイドバー（幅 300px）に置けば → 縦並び
+
+と、**置かれた場所に応じて自動的にレイアウトが変わります**。
+
+> **メディアクエリ vs コンテナクエリの使い分け**
+> - ページ全体のレイアウト（ナビの折り返し、カラム数）→ メディアクエリ
+> - 個々のコンポーネントの見た目 → コンテナクエリ
+>
+> 後のレッスンで学ぶ React のコンポーネントは再利用が前提なので、コンテナクエリとの相性が特に良いです。
+
+## CSS のグローバルスコープ問題
+
+ここまで CSS を書いてきて「便利だ」と感じた一方で、ある問題に気づいたかもしれません。**CSS はすべてがグローバル**です。
+
+### 問題の例
+
+以下のような 2 つのコンポーネントがあるとします。
+
+```html
+<link rel="stylesheet" href="header.css" />
+<link rel="stylesheet" href="card.css" />
+
+<header>
+  <h2 class="title">サイトヘッダー</h2>
+</header>
+<main>
+  <div class="card">
+    <h2 class="title">カードのタイトル</h2>
+    <p>カードの内容です。</p>
+  </div>
+</main>
+```
+
+**header.css:**
+```css
+.title {
+  color: white;
+  font-size: 24px;
 }
-
-greet();
-console.log(name);  // ❌ エラー: name is not defined
 ```
 
-### グローバルスコープ
-
-関数やブロックの外で宣言した変数は、どこからでもアクセスできます。
-
-```javascript
-const appName = "MyApp";  // グローバルスコープ
-
-function showAppName() {
-  console.log(appName);  // ✅ アクセスできる
+**card.css:**
+```css
+.title {
+  color: #333;
+  font-size: 18px;
 }
-
-showAppName();
 ```
 
-> グローバル変数は便利ですが、どこからでも変更できてしまうため、大規模なプログラムではバグの原因になります。Day 8 で学んだ CSS のグローバルスコープ問題と同じ構図です。変数はできるだけ狭いスコープで宣言しましょう。
+両方とも `.title` というクラス名を使っています。CSS はファイルを分けても最終的にはすべてが 1 つのグローバルな空間で評価されるため、**後から読み込まれた方が勝ちます**。意図せずスタイルが上書きされてしまうのです。
 
-## スコープチェーン
+### 小さなプロジェクトでは問題にならないが…
 
-内側のスコープから外側のスコープの変数にアクセスできます。
+数ページのサイトなら、命名に気をつければ何とかなります。しかし、チームで開発する大規模なプロジェクトでは:
 
-```javascript
-const outer = "外側の変数";
+- 他の人が作ったコンポーネントと同じクラス名を使ってしまう
+- ある場所のスタイル修正が、思いもよらない別の場所に影響する
+- クラス名の衝突を避けるために名前がどんどん長くなる
 
-function myFunction() {
-  const inner = "内側の変数";
-  console.log(outer);  // ✅ 外側の変数にアクセスできる
-  console.log(inner);  // ✅ 自分のスコープの変数
-}
+こうした問題を解決するために、さまざまな仕組みが生まれました。
 
-myFunction();
-console.log(inner);  // ❌ 内側の変数には外からアクセスできない
-```
+- **BEM 記法**: `.header__title` のように命名規則で衝突を防ぐ（人間の努力に依存）
+- **CSS Modules**: ファイルごとにスコープを作り、クラス名を自動的にユニークにする
+- **Tailwind CSS**: クラス名でスタイルを直接指定し、カスタムクラスの命名自体を避ける
 
-JavaScript は変数を探すとき、まず自分のスコープを見て、なければ 1 つ外のスコープ、その外……と**外側に向かって順に探していきます**。この仕組みをスコープチェーンと呼びます。
-
-## クロージャ
-
-スコープチェーンを利用した強力なパターンが**クロージャ**です。
-
-```javascript
-function createCounter() {
-  let count = 0;  // この変数は createCounter の中に閉じ込められている
-
-  return () => {
-    count++;
-    return count;
-  };
-}
-
-const counter = createCounter();
-console.log(counter());  // 1
-console.log(counter());  // 2
-console.log(counter());  // 3
-```
-
-`createCounter()` は関数を返します。返された関数は、`createCounter` の中の `count` 変数を「覚えて」います。
-
-- `count` は `createCounter` の中でしかアクセスできない（外から直接変更できない）
-- 返された関数だけが `count` を操作できる
-
-これがクロージャです。**関数が、自分が定義されたスコープの変数を保持し続ける**仕組みです。
-
-React の `useState` フック（後の Day で学びます）も、内部的にはクロージャの仕組みを使っています。今は「関数が外側の変数を覚えている」というイメージだけ掴んでおけば大丈夫です。
+これらは後のレッスン（React や Next.js を学ぶとき）で詳しく扱います。今日覚えておいてほしいのは、****「CSS はグローバルスコープで、これは大規模開発で問題になる」ということです。この問題意識があるからこそ、CSS Modules や Tailwind CSS のような仕組みの価値がわかります。
 
 ## まとめ
 
-- 関数の書き方は 3 種類: 関数宣言、関数式、アロー関数。**実務ではアロー関数が主流**
-- アロー関数は引数 1 つで `()` 省略可、1 行の処理で `{}` と `return` 省略可
-- コールバック関数 = 関数を別の関数の引数として渡すパターン。React で頻出
-- スコープは変数の有効範囲。`const` / `let` はブロックスコープ
-- スコープチェーン: 内側から外側に向かって変数を探す
-- クロージャ: 関数が定義時のスコープの変数を保持し続ける仕組み
+- レスポンシブデザインは、1 つの HTML で画面サイズに応じて見た目を変える手法
+- `<meta name="viewport">` はレスポンシブデザインの必須設定
+- `@media (min-width: ...)` でブレークポイントごとにスタイルを切り替える
+- モバイルファーストで設計する: 小さい画面を基本に、大きい画面のスタイルを `min-width` で追加
+- `@container` でコンポーネントが置かれた場所に応じてスタイルを切り替えられる
+- CSS はすべてがグローバルスコープ。大規模開発ではクラス名の衝突が深刻な問題になる
+- この問題を解決するために CSS Modules や Tailwind CSS が存在する（後のレッスンで学ぶ）
 
-**次のレッスン**: [Day 11: オブジェクトと配列](/lessons/day11/)
+**次のレッスン**: [Day 11: JavaScript の基本文法](/lessons/day11/)

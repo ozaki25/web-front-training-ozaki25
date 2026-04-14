@@ -1,281 +1,249 @@
-# Day 38: 動的ルーティングとミドルウェア
+# Day 38: Route Handlers
 
 ## 今日のゴール
 
-- 動的セグメント（`[slug]`）と catch-all セグメントの使い方を知る
-- `proxy.ts` による認証チェックやリダイレクトの方法を知る
-- 動的ルーティングの実際の使いどころを知る
+- Route Handlers（`route.ts`）で API エンドポイントを作る方法を知る
+- リクエストとレスポンスの処理方法を知る
+- Route Handlers をいつ使うべきかの判断基準を知る
 
-## 動的ルーティング
+## Route Handlers とは
 
-Day 32 でファイルベースルーティングを学びました。`about/page.tsx` が `/about` に対応するという静的なルーティングでした。しかし実際のアプリでは、ブログ記事の URL（`/blog/my-first-post`）やユーザーページ（`/users/123`）のように、URL の一部が動的に変わるケースが大半です。
+Day 34 で、`page.tsx` はページを表示するファイルだと学びました。一方、`route.ts`（`.tsx` ではなく `.ts`）は **API エンドポイント**を作るためのファイルです。
 
-### 動的セグメント `[param]`
+API エンドポイントとは、ブラウザの画面ではなく、JSON などのデータを返す URL のことです。外部サービスとの連携や、Client Component からのデータ送信に使います。
 
-フォルダ名を角括弧 `[]` で囲むと、その部分が動的なパラメータになります。
+## 基本的な Route Handler
 
-```
-src/app/
-└── blog/
-    └── [slug]/
-        └── page.tsx    → /blog/hello-world, /blog/nextjs-intro, ...
-```
-
-```tsx
-// src/app/blog/[slug]/page.tsx
-export default async function BlogPostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-
-  return (
-    <article>
-      <h1>ブログ記事: {slug}</h1>
-      <p>このページの URL は /blog/{slug} です</p>
-    </article>
-  );
-}
-```
-
-`/blog/hello-world` にアクセスすると `slug` に `"hello-world"` が入ります。`/blog/nextjs-intro` なら `"nextjs-intro"` です。
-
-> **注意**: 最新の Next.js では `params` は `Promise` です。使用する前に `await` で解決する必要があります。
-
-### 実際のデータ取得と組み合わせる
-
-```tsx
-// src/app/blog/[slug]/page.tsx
-import { notFound } from "next/navigation";
-
-export default async function BlogPostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const res = await fetch(`https://api.example.com/posts/${slug}`);
-
-  if (!res.ok) {
-    notFound(); // 記事が見つからなければ 404 ページを表示
-  }
-
-  const post = await res.json();
-
-  return (
-    <article>
-      <h1>{post.title}</h1>
-      <time dateTime={post.publishedAt}>{post.publishedAt}</time>
-      <div>{post.body}</div>
-    </article>
-  );
-}
-```
-
-`notFound()` を呼ぶと、最も近い `not-found.tsx`（Day 34 で学習）が表示されます。
-
-### 複数の動的セグメント
-
-動的セグメントは複数持てます。
-
-```
-src/app/
-└── shop/
-    └── [category]/
-        └── [productId]/
-            └── page.tsx    → /shop/electronics/42
-```
-
-```tsx
-export default async function ProductPage({
-  params,
-}: {
-  params: Promise<{ category: string; productId: string }>;
-}) {
-  const { category, productId } = await params;
-
-  return (
-    <main>
-      <p>カテゴリ: {category}</p>
-      <p>商品ID: {productId}</p>
-    </main>
-  );
-}
-```
-
-## Catch-all セグメント `[...param]`
-
-`[...param]` と書くと、そのセグメント以降のすべてのパスをまとめて受け取れます。
-
-```
-src/app/
-└── docs/
-    └── [...slug]/
-        └── page.tsx
-```
-
-| URL | `slug` の値 |
-|-----|------------|
-| `/docs/getting-started` | `["getting-started"]` |
-| `/docs/guides/routing` | `["guides", "routing"]` |
-| `/docs/api/auth/login` | `["api", "auth", "login"]` |
-
-```tsx
-// src/app/docs/[...slug]/page.tsx
-export default async function DocsPage({
-  params,
-}: {
-  params: Promise<{ slug: string[] }>;
-}) {
-  const { slug } = await params;
-
-  return (
-    <main>
-      <h1>ドキュメント</h1>
-      <p>パス: {slug.join(" / ")}</p>
-    </main>
-  );
-}
-```
-
-ドキュメントサイトや CMS のように、階層構造が不定のコンテンツを扱うときに便利です。
-
-### Optional Catch-all `[[...param]]`
-
-二重角括弧 `[[...param]]` にすると、パラメータなしの URL（`/docs`）にもマッチします。
-
-```
-src/app/
-└── docs/
-    └── [[...slug]]/
-        └── page.tsx    → /docs, /docs/intro, /docs/guides/routing
-```
-
-`/docs` にアクセスした場合、`slug` は `undefined` になります。
-
-## proxy.ts — リクエストの中継と制御
-
-Next.js の最新バージョンでは、`proxy.ts` がリクエストの中継・制御を担当します（以前は `middleware.ts` がこの役割でした）。`proxy.ts` はプロジェクトのルート（`src/` 配下の場合は `src/proxy.ts`）に配置します。
-
-`proxy.ts` は、**すべてのリクエストがページや API に到達する前に実行されます**。これを利用して、認証チェックやリダイレクトを行えます。
-
-### 基本構造
+`src/app/api/hello/route.ts` を作成する例です。
 
 ```ts
-// src/proxy.ts
-import { NextRequest, NextResponse } from "next/server";
+// src/app/api/hello/route.ts
+import { NextResponse } from "next/server";
 
-export function proxy(request: NextRequest) {
-  // すべてのリクエストに対して実行される
-  console.log("リクエスト:", request.nextUrl.pathname);
-
-  // 次の処理に進む
-  return NextResponse.next();
+export async function GET() {
+  return NextResponse.json({ message: "こんにちは！" });
 }
-
-// どのパスで実行するか指定
-export const config = {
-  matcher: ["/dashboard/:path*", "/settings/:path*"],
-};
 ```
 
-`config.matcher` で、proxy が実行されるパスを指定します。上の例では `/dashboard` と `/settings` 配下のリクエストだけが対象です。
+ブラウザで `http://localhost:3000/api/hello` にアクセスすると、JSON が返されます。
 
-### 認証チェックの例
+```json
+{ "message": "こんにちは！" }
+```
 
-ログインしていないユーザーをログインページにリダイレクトする典型的なパターンです。
+### HTTP メソッドと関数名
+
+Route Handler では、HTTP メソッドに対応する関数名をエクスポートします。
 
 ```ts
-// src/proxy.ts
+// src/app/api/posts/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-export function proxy(request: NextRequest) {
-  const token = request.cookies.get("auth-token");
-
-  // 認証トークンがなければログインページにリダイレクト
-  if (!token) {
-    const loginUrl = new URL("/login", request.url);
-    // ログイン後に元のページに戻れるように、リダイレクト先を保存
-    loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  return NextResponse.next();
+// GET /api/posts — データの取得
+export async function GET() {
+  const posts = [
+    { id: 1, title: "最初の投稿" },
+    { id: 2, title: "2番目の投稿" },
+  ];
+  return NextResponse.json(posts);
 }
 
-export const config = {
-  matcher: ["/dashboard/:path*", "/settings/:path*"],
-};
+// POST /api/posts — データの作成
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  // 本来はデータベースに保存する
+  const newPost = { id: 3, title: body.title };
+  return NextResponse.json(newPost, { status: 201 });
+}
 ```
 
-### リダイレクトの例
+| 関数名 | HTTP メソッド | 用途 |
+|--------|-------------|------|
+| `GET` | GET | データの取得 |
+| `POST` | POST | データの作成 |
+| `PUT` | PUT | データの更新（全体） |
+| `PATCH` | PATCH | データの更新（一部） |
+| `DELETE` | DELETE | データの削除 |
 
-URL の変更やリニューアル時に、古い URL から新しい URL へリダイレクトするケースです。
+> **HTTP メソッド**とは、リクエストの「目的」を表すものです。Day 10 で学んだ HTML フォームでは `GET` と `POST` を使いましたが、API ではより細かく使い分けます。
+
+## リクエストの処理
+
+### URL パラメータの取得
+
+URL のクエリパラメータ（`?key=value` の部分）を取得する方法です。
 
 ```ts
-// src/proxy.ts
+// src/app/api/search/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+// GET /api/search?q=nextjs
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const query = searchParams.get("q");
 
-  // 古い URL から新しい URL へリダイレクト
-  if (pathname === "/old-blog") {
-    return NextResponse.redirect(new URL("/blog", request.url));
+  if (!query) {
+    return NextResponse.json(
+      { error: "検索クエリが必要です" },
+      { status: 400 }
+    );
   }
 
-  // レスポンスヘッダーの追加
-  const response = NextResponse.next();
-  response.headers.set("x-custom-header", "my-value");
-  return response;
-}
-
-export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
-};
-```
-
-### proxy.ts の注意点
-
-- **Node.js ランタイムで実行される** — サーバー側の Node.js API を利用できる
-- **軽い処理だけ行う** — すべてのリクエストで実行されるため、重い処理を入れるとパフォーマンスに影響する
-- **データベースアクセスは避ける** — 認証チェックは Cookie やトークンの検証だけにし、データベースへの問い合わせはページ側で行う
-
-## generateStaticParams — 静的生成
-
-動的ルーティングのページを事前にビルドしておきたい場合、`generateStaticParams` を使います。
-
-```tsx
-// src/app/blog/[slug]/page.tsx
-
-export async function generateStaticParams() {
-  const res = await fetch("https://api.example.com/posts");
-  const posts = await res.json();
-
-  return posts.map((post: { slug: string }) => ({
-    slug: post.slug,
-  }));
-}
-
-export default async function BlogPostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  // ...
+  // 本来はデータベースを検索する
+  const results = [{ id: 1, title: `「${query}」の検索結果` }];
+  return NextResponse.json(results);
 }
 ```
 
-ビルド時に `generateStaticParams` が返したすべての `slug` に対して HTML が生成されます。これにより、リクエスト時にサーバーで処理する必要がなく、非常に高速にページが表示されます。
+### リクエストボディの取得
+
+POST や PUT で送られてくるデータを取得します。
+
+```ts
+// src/app/api/contact/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+
+  // バリデーション（入力チェック）
+  if (!body.name || !body.email || !body.message) {
+    return NextResponse.json(
+      { error: "名前、メール、メッセージは必須です" },
+      { status: 400 }
+    );
+  }
+
+  // 本来はメール送信やデータベース保存を行う
+  console.log("お問い合わせ:", body);
+
+  return NextResponse.json(
+    { success: true, message: "お問い合わせを受け付けました" },
+    { status: 200 }
+  );
+}
+```
+
+### リクエストヘッダーの取得
+
+```ts
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
+
+  if (!authHeader) {
+    return NextResponse.json(
+      { error: "認証が必要です" },
+      { status: 401 }
+    );
+  }
+
+  return NextResponse.json({ data: "認証済みデータ" });
+}
+```
+
+## レスポンスの返し方
+
+### JSON レスポンス
+
+最も一般的なパターンです。
+
+```ts
+return NextResponse.json(
+  { data: "値" },       // レスポンスボディ
+  { status: 200 }       // ステータスコード（省略すると 200）
+);
+```
+
+### リダイレクト
+
+```ts
+import { redirect } from "next/navigation";
+
+export async function GET() {
+  redirect("/login");
+}
+```
+
+### ストリーミングレスポンス
+
+大量のデータを少しずつ返したい場合に使います。
+
+```ts
+export async function GET() {
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode("Hello "));
+      controller.enqueue(new TextEncoder().encode("World"));
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: { "Content-Type": "text/plain" },
+  });
+}
+```
+
+## 動的ルートの Route Handler
+
+Day 40 で詳しく学ぶ動的ルーティングは、Route Handler でも使えます。
+
+```ts
+// src/app/api/posts/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  // 本来はデータベースから取得
+  const post = { id, title: `記事 ${id}` };
+  return NextResponse.json(post);
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  // 本来はデータベースから削除
+  return NextResponse.json({ message: `記事 ${id} を削除しました` });
+}
+```
+
+`GET /api/posts/42` にアクセスすると `{ id: "42", title: "記事 42" }` が返されます。
+
+## Route Handlers をいつ使うか
+
+Server Components や Server Actions（Day 39 で学習）がある今、Route Handlers の出番はどこでしょうか。
+
+### Route Handlers が適しているケース
+
+| ケース | 理由 |
+|-------|------|
+| 外部サービスへの Webhook 受信 | 外部サービスが POST する先として URL が必要 |
+| OAuth のコールバック | 認証プロバイダからのリダイレクト先 |
+| 外部に公開する API | 他のサービスやモバイルアプリから呼ばれる |
+| ストリーミングレスポンス | Server Components では難しい応答パターン |
+
+### Server Components / Server Actions で十分なケース
+
+- ページ表示のためのデータ取得 → Server Components で直接 fetch（Day 37）
+- フォーム送信やデータ変更 → Server Actions（Day 39）
+
+**基本方針: まず Server Components と Server Actions で実現できないか考える。外部とのインターフェースが必要な場合に Route Handlers を使う。**
 
 ## まとめ
 
-- `[param]` で動的セグメント、`[...param]` で catch-all、`[[...param]]` で optional catch-all を実現する
-- `params` は `Promise` なので `await` で解決してから使う
-- `proxy.ts` はリクエストがページに到達する前に実行され、認証チェックやリダイレクトに使う
-- `proxy.ts` は軽い処理だけ行い、重い処理はページ側で行う
-- `generateStaticParams` で動的ルートを事前にビルドできる
+- `route.ts` で API エンドポイントを作成でき、HTTP メソッドに対応する関数をエクスポートする
+- `NextRequest` でリクエスト情報を取得し、`NextResponse` でレスポンスを返す
+- リクエストボディ、URL パラメータ、ヘッダーなどを処理できる
+- 外部サービスとの連携や公開 API には Route Handlers が適している
+- ページのデータ取得やフォーム送信は Server Components / Server Actions が基本
 
-**次のレッスン**: [Day 39: メタデータと SEO](/lessons/day39/)
+**次のレッスン**: [Day 39: Server Actions](/lessons/day39/)

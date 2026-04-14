@@ -1,184 +1,178 @@
-# Day 32: Next.js の概要とプロジェクト構成
+# Day 32: React のレンダリング最適化
 
 ## 今日のゴール
 
-- Next.js が何を解決するフレームワークかを知る
-- App Router のディレクトリ構成を知る
-- ファイルベースルーティングの仕組みを知る
+- React のレンダリングの仕組みをもう一度整理する
+- React Compiler による自動最適化を知る
+- `memo`, `useMemo`, `useCallback` が不要になりつつある背景を知る
+- React Profiler でレンダリングを計測できることを知る
 
-## React だけでは足りないもの
+## レンダリングの復習
 
-Day 21〜30 で React の基礎を学びました。React は UI を宣言的に構築する優れたライブラリですが、実際のプロダクトを作ろうとすると、React 単体では解決できない課題が出てきます。
+Day 25 で学んだ再レンダリングの仕組みを整理します。
 
-| 課題 | React 単体 | Next.js |
-|------|-----------|---------|
-| ルーティング（ページ遷移） | 別ライブラリが必要 | ファイルベースで自動 |
-| サーバーサイドレンダリング | 自分で構築 | 組み込み |
-| データ取得とキャッシュ | 自分で設計 | フレームワークが提供 |
-| 画像・フォント最適化 | 自分で対応 | 組み込みコンポーネント |
-| バンドル・ビルド設定 | Vite 等を自分で設定 | ゼロコンフィグ |
+React のレンダリングは3つのステップで行われます。
 
-Next.js は React をベースにした**フルスタックフレームワーク**です。「フルスタック」とは、ブラウザ側（フロントエンド）だけでなく、サーバー側の処理も 1 つのプロジェクト内で扱えるという意味です。
+1. **トリガー**: state の更新、props の変更などでレンダリングが発生
+2. **レンダー**: コンポーネント関数を呼び出し、仮想 DOM を作成。前の仮想 DOM と比較して差分を計算する
+3. **コミット**: 計算された差分を実際の DOM に反映
 
-Day 31 で学んだように、React 単体で作ると CSR（Client-Side Rendering）になり、初期表示の遅さや SEO の弱さが課題になります。Next.js は SSR（Server-Side Rendering）を標準でサポートし、これらの問題を解決します。
+重要なのは、**レンダー**（コンポーネント関数の呼び出し）と **DOM の更新**は別のステップだということです。レンダーされても、差分がなければ DOM は更新されません。
 
-## Next.js プロジェクトの作成ツール
+### 再レンダリングが起きる条件
 
-Next.js には `create-next-app` という公式のプロジェクト作成ツールがあります。これを実行すると、必要なファイル構成や設定が整った状態のプロジェクトが自動生成されます。
+- そのコンポーネントの state が更新された
+- 親コンポーネントが再レンダリングされた
 
-作成時にいくつかのオプションを選択できます。配属先のプロジェクトで使われる構成は以下の通りです。
-
-| オプション | 選択 | 意味 |
-|-----------|------|------|
-| TypeScript | Yes | 型付きの JavaScript で開発する |
-| ESLint | Yes | コードの問題を自動検出するツールを導入する |
-| Tailwind CSS | Yes | ユーティリティファーストの CSS フレームワークを導入する |
-| `src/` ディレクトリ | Yes | ソースコードを `src/` 配下にまとめる |
-| App Router | Yes | Next.js の最新ルーティング方式を使う |
-| Turbopack | Yes | 高速な開発サーバーを使う |
-
-これらのオプションにより、TypeScript + App Router + Tailwind CSS という現在の主流な構成が整います。
-
-## ディレクトリ構成を理解する
-
-作成されたプロジェクトの構成は以下のようになっています。
-
-```
-my-app/
-├── src/
-│   └── app/            ← App Router のルートディレクトリ
-│       ├── layout.tsx   ← ルートレイアウト（全ページ共通の枠）
-│       ├── page.tsx     ← トップページ（"/"）
-│       ├── globals.css  ← グローバルスタイル
-│       └── favicon.ico
-├── public/              ← 静的ファイル（画像など）
-├── next.config.ts       ← Next.js の設定ファイル
-├── tsconfig.json        ← TypeScript 設定
-└── package.json
-```
-
-重要なのは `src/app/` ディレクトリです。App Router では、このディレクトリの**フォルダ構造がそのまま URL になります**。これがファイルベースルーティングです。
-
-## ファイルベースルーティング
-
-従来の Web 開発では、URL とページの対応付けをコードで書く必要がありました（「`/about` にアクセスされたら About コンポーネントを表示する」といった設定）。Next.js ではフォルダを作るだけで URL が決まります。
-
-### フォルダ = URL パス
-
-```
-src/app/
-├── page.tsx              → /
-├── about/
-│   └── page.tsx          → /about
-├── blog/
-│   ├── page.tsx          → /blog
-│   └── first-post/
-│       └── page.tsx      → /blog/first-post
-└── contact/
-    └── page.tsx          → /contact
-```
-
-ルールはシンプルです。
-
-- **フォルダ名**が URL のパス（path）になる
-- **`page.tsx`** がそのパスで表示されるページになる
-- `page.tsx` がないフォルダは URL としてアクセスできない
-
-たとえば `src/app/about/page.tsx` は以下のようなコンポーネントになります。
+特に2つ目が重要です。親が再レンダリングされると、子コンポーネントはすべて再レンダリングされます。
 
 ```tsx
-export default function AboutPage() {
+function Parent() {
+  const [count, setCount] = useState(0);
+
   return (
-    <main>
-      <h1>About</h1>
-      <p>このサイトについてのページです。</p>
-    </main>
+    <div>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      <p>カウント: {count}</p>
+      <Child /> {/* count と無関係だが再レンダリングされる */}
+    </div>
+  );
+}
+
+function Child() {
+  console.log("Child がレンダリングされました");
+  return <p>子コンポーネント</p>;
+}
+```
+
+`Child` は `count` を使っていないのに、`Parent` が再レンダリングされるたびに一緒にレンダリングされます。
+
+## 従来の最適化手法
+
+React 18 まで、この問題は手動で最適化する必要がありました。
+
+### React.memo
+
+`memo` でラップされたコンポーネントは、props が変化していなければ再レンダリングをスキップします。
+
+```tsx
+import { memo } from "react";
+
+const Child = memo(function Child() {
+  console.log("Child がレンダリングされました");
+  return <p>子コンポーネント</p>;
+});
+```
+
+### useMemo と useCallback
+
+props にオブジェクトや関数を渡す場合、レンダリングのたびに新しい参照が作られるため、`memo` が効かなくなります。そこで `useMemo`（値のメモ化 = 前に計算した結果を覚えておいて再利用すること）と `useCallback`（関数のメモ化）が使われていました。
+
+```tsx
+// useMemo: 依存する値が変わらない限り同じ参照を返す
+const filteredItems = useMemo(
+  () => allItems.filter((item) => item.includes(query)),
+  [query]
+);
+
+// useCallback: 依存する値が変わらない限り同じ関数参照を返す
+const handleItemClick = useCallback((item: string) => {
+  console.log(`${item} がクリックされました`);
+}, []);
+```
+
+### 従来の手法の問題
+
+この最適化はうまく機能しますが、大きな問題がありました。
+
+- **開発者が判断する必要がある**: どこに `memo` を使い、どこに `useMemo`/`useCallback` を使うか、開発者が常に考える必要がある
+- **すべての場所に書かなければ意味がない**: `memo` でラップしても、1つの props に `useMemo`/`useCallback` を付け忘れると効果がない
+- **コードが複雑になる**: 本来のロジックに加えて、最適化のためのコードが増える
+
+## React Compiler
+
+React 19 の登場に合わせて開発が進められ、**React Compiler** の安定版が公開されました。レンダリングの最適化をコンパイラが自動で行う仕組みです。
+
+### React Compiler がすること
+
+React Compiler は、ビルド時にコンポーネントのコードを解析し、必要な場所に自動的にメモ化を挿入します。開発者は最適化を意識せずに、シンプルなコードを書くだけでよくなります。
+
+```tsx
+// 最適化を気にしなくてよい
+function App() {
+  const [count, setCount] = useState(0);
+  const [query, setQuery] = useState("");
+
+  // memo も useMemo も useCallback も不要
+  const filteredItems = allItems.filter((item) => item.includes(query));
+
+  function handleItemClick(item: string) {
+    console.log(`${item} がクリックされました`);
+  }
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>カウント: {count}</button>
+      <input value={query} onChange={(e) => setQuery(e.target.value)} />
+      <ExpensiveList items={filteredItems} onItemClick={handleItemClick} />
+    </div>
   );
 }
 ```
 
-このファイルを置くだけで `/about` という URL が使えるようになります。ルーティングの設定コードは一切書いていません。
+このコードには `memo`, `useMemo`, `useCallback` が一切ありませんが、React Compiler が自動的に最適化します。
 
-### 特別な意味を持つファイル名
+Next.js では `next.config.ts` に `reactCompiler: true` を追加するだけで有効になります。
 
-App Router では、いくつかのファイル名が特別な役割を持っています。
+### React Compiler が機能する条件
 
-| ファイル名 | 役割 |
-|-----------|------|
-| `page.tsx` | そのルートの UI（ページ本体） |
-| `layout.tsx` | 共通レイアウト（ナビゲーションなど） |
-| `loading.tsx` | ローディング UI |
-| `error.tsx` | エラー UI |
-| `not-found.tsx` | 404 ページ |
-| `route.ts` | API エンドポイント（Day 36 で学習） |
+React Compiler は、コンポーネントが **React のルール** に従っていることを前提としています。
 
-これらは Next.js が自動的に認識して、適切なタイミングで使用します。たとえば `loading.tsx` を置くだけで、ページの読み込み中にローディング表示が自動で出ます。詳しくは Day 34 で学びます。
+- **state の不変性を守る**（Day 25 で学んだ）
+- **副作用をレンダリング中に実行しない**
+- **props を変更しない**
 
-## page.tsx の中身を見る
+これらのルールは Day 25〜25 ですでに学んだことです。正しく React を書いていれば、React Compiler の恩恵を自動的に受けられます。
 
-`src/app/page.tsx` がトップページのコンポーネントです。
+## パフォーマンスの計測
 
-```tsx
-export default function Home() {
-  return (
-    <main>
-      <h1>Welcome to Next.js</h1>
-    </main>
-  );
-}
-```
+パフォーマンスの問題は推測ではなく計測で判断します。
 
-注目してほしい点があります。
+### React Profiler
 
-- **`"use client"` と書かれていない** — これは Server Component です（Day 33 で詳しく学びます）
-- **`export default`** が必要 — Next.js はデフォルトエクスポートされたコンポーネントをページとして使う
-- **普通の React コンポーネント** — Day 21〜30 で学んだ JSX がそのまま使える
+React DevTools のブラウザ拡張には **Profiler** タブがあります。Profiler を使うと、各コンポーネントのレンダリング時間と回数を可視化できます。
 
-## ページ間のリンク
+Profiler が提供する情報:
 
-HTML では `<a>` タグでリンクを作りますが、Next.js では `<Link>` コンポーネントを使います。
+- **Flamegraph**（炎のような形のグラフ）: 各コンポーネントのレンダリング時間を視覚的に表示
+- **Ranked**: レンダリング時間が長い順にソート
+- **Timeline**: 時系列でのレンダリング推移
 
-```tsx
-import Link from "next/link";
+確認すべきポイント:
 
-export default function Home() {
-  return (
-    <main>
-      <h1>ホーム</h1>
-      <nav>
-        <ul>
-          <li>
-            <Link href="/about">About</Link>
-          </li>
-          <li>
-            <Link href="/blog">Blog</Link>
-          </li>
-        </ul>
-      </nav>
-    </main>
-  );
-}
-```
+- **レンダリング時間が長いコンポーネント**: 1回に 16ms 以上かかると 60fps を下回る可能性がある
+- **不要な再レンダリング**: 灰色（スキップ）のコンポーネントが少なすぎないか
+- **頻繁なレンダリング**: 入力のたびにアプリ全体がレンダリングされていないか
 
-`<Link>` は HTML の `<a>` タグをレンダリングしますが、裏側でクライアントサイドナビゲーション（JavaScript によるページ遷移）を行います。Day 31 で学んだ SPA の特徴がここで関係してきます。通常の `<a>` タグではページ全体が再読み込みされますが、`<Link>` ではページの差分だけが更新されるため、高速でスムーズなページ遷移が実現します。
+## パフォーマンス最適化の原則
 
-> **ポイント**: 外部サイトへのリンク（`https://example.com` など）には通常の `<a>` タグを使います。`<Link>` はアプリ内のページ遷移に使うものです。
+1. **まず正しく書く**: React のルールに従い、読みやすいコードを書く
+2. **計測する**: 体感で遅いと感じたら Profiler で計測する
+3. **ボトルネックを特定する**: 全体ではなく、遅い部分を特定する
+4. **対処する**: state の配置を見直す、コンポーネントを分割する、必要なら `memo` を使う
 
-## なぜファイルベースルーティングなのか
+やってはいけないこと:
 
-ファイルベースルーティングの利点を整理すると、次のようになります。
-
-1. **URL 構造が一目でわかる** — フォルダ構造を見ればサイトマップがわかる
-2. **設定コードが不要** — ルーティング設定ファイルを書かなくていい
-3. **コロケーション** — ページに関連するファイル（テスト、スタイルなど）を同じフォルダにまとめられる
-
-「コロケーション（colocation）」とは、関連するものを近くに置くという考え方です。`about/` フォルダの中にページ、テスト、スタイルをまとめると、何がどこにあるか迷わなくなります。
+- 計測せずに「なんとなく」最適化する
+- すべてのコンポーネントに `memo` を付ける
+- レンダリング回数だけを気にする（レンダリングは高速なので、回数よりも時間が重要）
 
 ## まとめ
 
-- Next.js は React ベースのフルスタックフレームワークで、SSR・ルーティング・最適化などを組み込みで提供する
-- App Router では `src/app/` 配下のフォルダ構造がそのまま URL になる（ファイルベースルーティング）
-- `page.tsx` がページの本体、`layout.tsx` が共通レイアウトなど、ファイル名に特別な意味がある
-- ページ間のリンクには `next/link` の `<Link>` コンポーネントを使う
+- 親が再レンダリングされると子もすべて再レンダリングされる
+- 従来は `memo`/`useMemo`/`useCallback` で手動最適化が必要だった
+- React Compiler がビルド時に自動でメモ化を挿入するため、手動の最適化はほぼ不要になった
+- React Compiler は React のルール（不変性、副作用の分離）に従ったコードを前提とする
+- パフォーマンスの問題は推測ではなく、React Profiler で計測して判断する
 
-**次のレッスン**: [Day 33: Server Components と Client Components](/lessons/day33/)
+**次のレッスン**: [Day 33: SPA・CSR・SSR — レンダリング戦略を理解する](/lessons/day33/)

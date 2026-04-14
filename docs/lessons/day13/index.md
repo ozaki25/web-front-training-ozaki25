@@ -1,307 +1,300 @@
-# Day 13: 非同期処理
+# Day 13: オブジェクトと配列
 
 ## 今日のゴール
 
-- 同期処理と非同期処理の違いを知る
-- コールバック、Promise、async/await の 3 つの書き方を知る
-- `fetch` API でデータを取得する方法を知る
-- なぜ非同期処理が Web 開発で重要なのかを知る
+- オブジェクトと配列の基本を知る
+- 配列メソッド（`map` / `filter` / `find` / `reduce`）の使い方を知る
+- スプレッド構文と分割代入の仕組みを知る
 
-## 同期処理と非同期処理
+## オブジェクト — 関連するデータをまとめる
 
-### 同期処理 — 順番に 1 つずつ
-
-Day 9〜11 で書いてきた JavaScript のコードは、上から順に 1 行ずつ実行されていました。これが**同期処理**です。
+**オブジェクト**は、複数の値を「名前（キー）」と「値（バリュー）」のペアでまとめるデータ構造です。
 
 ```javascript
-console.log("1番目");
-console.log("2番目");
-console.log("3番目");
-// 必ず 1 → 2 → 3 の順に表示される
+const user = {
+  name: "山田太郎",
+  age: 25,
+  isStudent: false,
+};
+
+console.log(user.name);     // "山田太郎"（ドット記法）
+console.log(user["age"]);   // 25（ブラケット記法）
 ```
 
-### 非同期処理 — 待っている間に次へ進む
-
-Web 開発では「時間がかかる処理」がたくさんあります。
-
-- サーバーからデータを取得する（ネットワーク通信）
-- ファイルを読み込む
-- タイマーで一定時間待つ
-
-これらの処理で「完了するまで何もできない」のでは、画面が固まってしまいます。**非同期処理**は、時間がかかる処理の完了を待たずに次の処理に進み、完了したら結果を受け取る仕組みです。
+### プロパティの追加・更新
 
 ```javascript
-console.log("1番目");
+const user = {
+  name: "山田太郎",
+  age: 25,
+};
 
-setTimeout(() => {
-  console.log("2番目（1秒後）");
-}, 1000);
+user.email = "yamada@example.com";  // 追加
+user.age = 26;                       // 更新
 
-console.log("3番目");
-
-// 表示順: "1番目" → "3番目" → "2番目（1秒後）"
+console.log(user);
+// { name: "山田太郎", age: 26, email: "yamada@example.com" }
 ```
 
-`setTimeout` は指定したミリ秒後に関数を実行する非同期処理です。1 秒待つ間に「3番目」が先に実行されています。
+> `const` で宣言していても、オブジェクトのプロパティは変更できます。`const` が禁止するのは変数への「再代入」であって、オブジェクトの中身の変更ではありません。
 
-## コールバック — 昔のやり方
+### メソッド — オブジェクトの中の関数
 
-初期の JavaScript では、非同期処理の結果を「コールバック関数」で受け取っていました。
+オブジェクトのプロパティとして関数を持たせることもできます。
 
 ```javascript
-function fetchData(callback) {
-  setTimeout(() => {
-    callback("データを取得しました");
-  }, 1000);
-}
+const calculator = {
+  add: (a, b) => a + b,
+  subtract: (a, b) => a - b,
+};
 
-fetchData((result) => {
-  console.log(result);  // 1秒後に "データを取得しました"
-});
+console.log(calculator.add(5, 3));       // 8
+console.log(calculator.subtract(10, 4)); // 6
 ```
 
-### コールバック地獄
+## 配列 — 順序のあるデータの集合
 
-非同期処理を連続して行うと、コールバックが入れ子になって読みにくくなります。
+**配列**は、複数の値を順序付きで格納するデータ構造です。
 
 ```javascript
-fetchUser(userId, (user) => {
-  fetchPosts(user.id, (posts) => {
-    fetchComments(posts[0].id, (comments) => {
-      console.log(comments);
-      // さらにネストが深くなる...
-    });
-  });
-});
+const fruits = ["りんご", "みかん", "バナナ"];
+
+console.log(fruits[0]);      // "りんご"（インデックスは 0 から始まる）
+console.log(fruits[1]);      // "みかん"
+console.log(fruits.length);  // 3（要素の数）
 ```
 
-これを**コールバック地獄（callback hell）** と呼びます。この問題を解決するために Promise が生まれました。
-
-## Promise — 非同期処理を扱うオブジェクト
-
-**Promise**（プロミス = 約束）は、「まだ結果が出ていないが、いずれ成功か失敗で結果が返る」ことを表すオブジェクトです。
+### 基本的な操作
 
 ```javascript
-const promise = new Promise((resolve, reject) => {
-  setTimeout(() => {
-    const success = true;
-    if (success) {
-      resolve("成功しました！");   // 成功時
-    } else {
-      reject("エラーが発生しました");  // 失敗時
-    }
-  }, 1000);
-});
+const fruits = ["りんご", "みかん"];
+
+fruits.push("バナナ");        // 末尾に追加
+console.log(fruits);          // ["りんご", "みかん", "バナナ"]
+
+fruits.pop();                 // 末尾を削除
+console.log(fruits);          // ["りんご", "みかん"]
+
+console.log(fruits.includes("りんご"));  // true（含まれているか）
+console.log(fruits.indexOf("みかん"));   // 1（何番目にあるか）
 ```
 
-### then / catch で結果を受け取る
+## 配列メソッド — データを変換・抽出する
+
+ここからが重要です。React では配列のデータを画面に表示する場面が非常に多く、以下のメソッドは毎日のように使います。
+
+### map — 各要素を変換して新しい配列を作る
 
 ```javascript
-promise
-  .then((result) => {
-    console.log(result);  // "成功しました！"
-  })
-  .catch((error) => {
-    console.log(error);   // エラー時
-  });
+const numbers = [1, 2, 3, 4, 5];
+
+const doubled = numbers.map((num) => num * 2);
+console.log(doubled);  // [2, 4, 6, 8, 10]
+
+// 元の配列は変わらない
+console.log(numbers);  // [1, 2, 3, 4, 5]
 ```
 
-### Promise チェーン
+`map` は各要素に対してコールバック関数を実行し、その戻り値を集めた**新しい配列**を返します。元の配列を変更しません。
 
-Promise は `.then()` を連結できるので、コールバック地獄を解消できます。
+実用例: ユーザーの名前だけを取り出す
 
 ```javascript
-fetchUser(userId)
-  .then((user) => fetchPosts(user.id))
-  .then((posts) => fetchComments(posts[0].id))
-  .then((comments) => {
-    console.log(comments);
-  })
-  .catch((error) => {
-    console.log("エラー:", error);
-  });
+const users = [
+  { name: "山田", age: 25 },
+  { name: "佐藤", age: 30 },
+  { name: "鈴木", age: 22 },
+];
+
+const names = users.map((user) => user.name);
+console.log(names);  // ["山田", "佐藤", "鈴木"]
 ```
 
-ネストが深くならず、上から下に読めるようになりました。
-
-## async / await — Promise をさらに読みやすく
-
-**async/await** は Promise をまるで同期処理のように書ける構文です。ES2017 で追加されました。
+### filter — 条件に合う要素だけを抽出する
 
 ```javascript
-async function loadData() {
-  try {
-    const user = await fetchUser(userId);
-    const posts = await fetchPosts(user.id);
-    const comments = await fetchComments(posts[0].id);
-    console.log(comments);
-  } catch (error) {
-    console.log("エラー:", error);
-  }
-}
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
 
-loadData();
+const even = numbers.filter((num) => num % 2 === 0);
+console.log(even);  // [2, 4, 6, 8]
 ```
 
-- `async` を関数の前に付けると、その関数は非同期関数になる
-- `await` を Promise の前に付けると、その Promise が完了するまで待ってから次に進む
-- `await` は `async` 関数の中でだけ使える
-- エラーハンドリングは `try/catch` を使う（Day 16 で詳しく学びます）
+コールバック関数が `true` を返した要素だけを集めた新しい配列を返します。
 
-**コールバック → Promise → async/await と、書き方は進化してきましたが、やっていることは同じ「非同期処理」です。** 現在の実務では async/await が主流です。
-
-## fetch API — サーバーからデータを取得する
-
-**`fetch`** はブラウザに組み込まれた、HTTP リクエスト（サーバーとの通信）を行うための API です。Promise を返します。
-
-### 基本的な使い方
+実用例: 成人のユーザーだけを抽出する
 
 ```javascript
-async function loadUsers() {
-  const response = await fetch("https://jsonplaceholder.typicode.com/users");
-  const users = await response.json();
-  console.log(users);
-}
+const users = [
+  { name: "山田", age: 25 },
+  { name: "佐藤", age: 16 },
+  { name: "鈴木", age: 30 },
+];
 
-loadUsers();
+const adults = users.filter((user) => user.age >= 18);
+console.log(adults);
+// [{ name: "山田", age: 25 }, { name: "鈴木", age: 30 }]
 ```
+
+### find — 条件に合う最初の 1 つを取得する
+
+```javascript
+const users = [
+  { id: 1, name: "山田" },
+  { id: 2, name: "佐藤" },
+  { id: 3, name: "鈴木" },
+];
+
+const user = users.find((u) => u.id === 2);
+console.log(user);  // { id: 2, name: "佐藤" }
+```
+
+`filter` が条件に合う「すべて」を配列で返すのに対し、`find` は条件に合う「最初の 1 つ」をそのまま返します。見つからなければ `undefined` が返ります。
+
+### reduce — 配列を 1 つの値にまとめる
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+const sum = numbers.reduce((accumulator, current) => {
+  return accumulator + current;
+}, 0);
+
+console.log(sum);  // 15
+```
+
+- `accumulator` — 累積された値（前回の戻り値）
+- `current` — 現在処理している要素
+- `0` — accumulator の初期値
 
 処理の流れ:
 
-1. `fetch(URL)` — サーバーにリクエストを送り、レスポンスの Promise を返す
-2. `await response.json()` — レスポンスの本文を JSON として解析する（これも非同期）
-
-### 完成形のコード
-
-```html
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>fetch API の練習</title>
-    <style>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-      body {
-        font-family: sans-serif;
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-      .user-card {
-        padding: 16px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin-bottom: 12px;
-      }
-      .user-card h2 {
-        margin: 0 0 8px;
-        font-size: 18px;
-      }
-      .user-card p {
-        margin: 4px 0;
-        color: #666;
-      }
-      .loading {
-        color: #888;
-      }
-      .error {
-        color: #d32f2f;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>ユーザー一覧</h1>
-    <div id="user-list" aria-live="polite">
-      <p class="loading">読み込み中...</p>
-    </div>
-
-    <script>
-      async function loadUsers() {
-        const container = document.querySelector("#user-list");
-
-        try {
-          const response = await fetch(
-            "https://jsonplaceholder.typicode.com/users"
-          );
-
-          if (!response.ok) {
-            throw new Error(`HTTP エラー: ${response.status}`);
-          }
-
-          const users = await response.json();
-
-          // コンテナの中身をクリア
-          container.innerHTML = "";
-
-          users.forEach((user) => {
-            const card = document.createElement("article");
-            card.className = "user-card";
-            card.innerHTML = `
-              <h2>${user.name}</h2>
-              <p>${user.email}</p>
-              <p>${user.company.name}</p>
-            `;
-            container.appendChild(card);
-          });
-        } catch (error) {
-          container.innerHTML = `<p class="error">データの取得に失敗しました: ${error.message}</p>`;
-        }
-      }
-
-      loadUsers();
-    </script>
-  </body>
-</html>
+```
+初期値: 0
+1回目: 0 + 1 = 1
+2回目: 1 + 2 = 3
+3回目: 3 + 3 = 6
+4回目: 6 + 4 = 10
+5回目: 10 + 5 = 15
 ```
 
-このコードにはいくつかのポイントがあります。
+`reduce` は強力ですが複雑なので、合計や集計など「配列を 1 つの値にまとめる」場面で使います。
 
-- **`response.ok`** のチェック — `fetch` はネットワークエラー以外ではエラーを投げません。404 や 500 のレスポンスもエラーにならないため、`response.ok` で成功かどうかを確認する必要があります
-- **`aria-live="polite"`** — この属性を付けた要素の内容が変わると、スクリーンリーダーがその変更を読み上げます。「読み込み中」から「ユーザー一覧」に変わったことが伝わります
-- **エラーハンドリング** — ネットワーク通信は失敗する可能性があるので、必ず `try/catch` でエラーを処理します
+### メソッドチェーン
 
-### POST リクエスト（データの送信）
-
-データを取得するだけでなく、サーバーにデータを送ることもできます。
+これらのメソッドは連結（チェーン）できます。
 
 ```javascript
-async function createUser(userData) {
-  const response = await fetch("https://jsonplaceholder.typicode.com/users", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  });
+const users = [
+  { name: "山田", age: 25 },
+  { name: "佐藤", age: 16 },
+  { name: "鈴木", age: 30 },
+  { name: "田中", age: 14 },
+];
 
-  const newUser = await response.json();
-  console.log("作成されたユーザー:", newUser);
-}
+// 成人だけを抽出し、名前だけの配列に変換する
+const adultNames = users
+  .filter((user) => user.age >= 18)
+  .map((user) => user.name);
 
-createUser({
-  name: "山田太郎",
-  email: "yamada@example.com",
-});
+console.log(adultNames);  // ["山田", "鈴木"]
 ```
 
-- `method: "POST"` — GET（取得）の代わりに POST（作成）を指定
-- `headers` — リクエストの付加情報。`Content-Type` で送信データの形式を伝える
-- `body` — 送信するデータ。`JSON.stringify` でオブジェクトを JSON 文字列に変換する
+## スプレッド構文 — 配列やオブジェクトを展開する
 
-HTTP メソッドやヘッダーについては Day 14 で詳しく学びます。
+`...`（ドット 3 つ）で配列やオブジェクトの中身を展開できます。
+
+### 配列のスプレッド
+
+```javascript
+const fruits = ["りんご", "みかん"];
+const moreFruits = [...fruits, "バナナ", "ぶどう"];
+console.log(moreFruits);  // ["りんご", "みかん", "バナナ", "ぶどう"]
+
+// 配列のコピー
+const copy = [...fruits];
+```
+
+### オブジェクトのスプレッド
+
+```javascript
+const user = { name: "山田", age: 25 };
+
+// プロパティを追加した新しいオブジェクトを作る
+const updatedUser = { ...user, email: "yamada@example.com" };
+console.log(updatedUser);
+// { name: "山田", age: 25, email: "yamada@example.com" }
+
+// プロパティを上書きした新しいオブジェクトを作る
+const olderUser = { ...user, age: 26 };
+console.log(olderUser);  // { name: "山田", age: 26 }
+
+// 元のオブジェクトは変わらない
+console.log(user);  // { name: "山田", age: 25 }
+```
+
+スプレッド構文が重要な理由は、**元のデータを変更せずに新しいデータを作る**からです。React では「状態（state）を直接変更せず、新しい値を作って更新する」というルールがあり、スプレッド構文はその中心的なツールになります。
+
+## 分割代入 — 値を個別の変数に取り出す
+
+### オブジェクトの分割代入
+
+```javascript
+const user = { name: "山田", age: 25, email: "yamada@example.com" };
+
+// 通常のアクセス
+const name = user.name;
+const age = user.age;
+
+// 分割代入（同じことを簡潔に書ける）
+const { name, age, email } = user;
+console.log(name);   // "山田"
+console.log(age);    // 25
+console.log(email);  // "yamada@example.com"
+```
+
+### 配列の分割代入
+
+```javascript
+const colors = ["赤", "青", "緑"];
+
+const [first, second, third] = colors;
+console.log(first);   // "赤"
+console.log(second);  // "青"
+```
+
+### 関数の引数での分割代入
+
+分割代入なし:
+
+```javascript
+const greet = (user) => {
+  return `${user.name}さん（${user.age}歳）`;
+};
+
+const user = { name: "山田", age: 25 };
+console.log(greet(user));  // "山田さん（25歳）"
+```
+
+分割代入あり（引数で直接プロパティを取り出す）:
+
+```javascript
+const greetUser = ({ name, age }) => {
+  return `${name}さん（${age}歳）`;
+};
+
+const user = { name: "山田", age: 25 };
+console.log(greetUser(user));  // "山田さん（25歳）"
+```
+
+React のコンポーネントでは、props（コンポーネントに渡されるデータ）を分割代入で受け取るのが標準的な書き方です。
 
 ## まとめ
 
-- 非同期処理は「時間がかかる処理の完了を待たずに次へ進む」仕組み
-- コールバック → Promise → async/await と進化した。**現在は async/await が主流**
-- `fetch` でサーバーと通信する。`fetch` は Promise を返す
-- `response.ok` でレスポンスの成否を確認する。`fetch` は HTTP エラーを自動で throw しない
-- ネットワーク通信は失敗する可能性があるので、必ずエラーハンドリングする
-- `aria-live` を使うと、動的に変わるコンテンツの変更をスクリーンリーダーに伝えられる
+- オブジェクトはキーと値のペア。関連するデータをまとめる
+- 配列は順序付きのデータの集合。インデックスは 0 から始まる
+- `map` — 変換、`filter` — 抽出、`find` — 検索、`reduce` — 集約。React で毎日使う
+- これらのメソッドは元の配列を変更せず、新しい配列を返す
+- スプレッド構文（`...`）で配列やオブジェクトを展開し、元を変更せずに新しい値を作る
+- 分割代入でオブジェクトや配列の値を個別の変数に簡潔に取り出せる
 
-**次のレッスン**: [Day 14: HTTP とネットワーク基礎](/lessons/day14/)
+**次のレッスン**: [Day 14: DOM 操作](/lessons/day14/)

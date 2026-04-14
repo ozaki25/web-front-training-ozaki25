@@ -1,279 +1,230 @@
-# Day 27: useOptimistic と Transition
+# Day 27: useEffect とライフサイクル
 
 ## 今日のゴール
 
-- 楽観的 UI 更新という考え方を知る
-- `useOptimistic` の使い方を知る
-- `useTransition` で優先度の低い更新を遅延させる方法を知る
+- 副作用（side effect）とは何かを知る
+- `useEffect` の基本的な使い方を知る
+- 依存配列とクリーンアップの仕組みを知る
+- `useEffect` の適切な使い方と避けるべきパターンを知る
 
-## 楽観的 UI 更新とは
+## 副作用とは
 
-Day 26 でフォーム送信を学びました。API にデータを送信して結果を待つ間、ユーザーは「送信中...」と表示されて待つことになります。
+Day 25 で学んだように、React のコンポーネントは「state と props を受け取って JSX を返す関数」です。この「JSX を返す」以外の処理を**副作用**（side effect）と呼びます。
 
-しかし、SNS の「いいね」ボタンを思い浮かべてみます。ボタンを押した瞬間にいいね数が増え、裏で API 通信が行われます。失敗した場合だけ元に戻します。
+代表的な副作用:
 
-このように、サーバーの応答を待たずに UI を先に更新するパターンを**楽観的 UI 更新**（optimistic update）と呼びます。「たいてい成功するだろう」と楽観的に先に結果を見せることから、この名前が付いています。
+- 外部 API からデータを取得する
+- ドキュメントのタイトルを変更する
+- タイマーを設定する
+- イベントリスナーを登録する
+- ローカルストレージにデータを保存する
 
-## useOptimistic
+これらの処理は「画面を描画する」こととは別の仕事なので、レンダリングとは別のタイミングで実行する必要があります。
 
-React 19 の `useOptimistic` は、楽観的 UI 更新を簡単に実装する Hook です。
+## useEffect の基本
+
+`useEffect` は副作用をレンダリングとは別に実行するための Hook です。
 
 ```tsx
-import { useState, useOptimistic } from "react";
+import { useState, useEffect } from "react";
 
-interface Message {
-  id: number;
-  text: string;
-  sending?: boolean;
-}
+function PageTitle() {
+  const [count, setCount] = useState(0);
 
-function Chat() {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "こんにちは" },
-    { id: 2, text: "元気ですか？" },
-  ]);
-
-  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
-    messages,
-    (currentMessages, newMessage: string) => [
-      ...currentMessages,
-      { id: Date.now(), text: newMessage, sending: true },
-    ]
-  );
-
-  async function sendAction(formData: FormData) {
-    const text = formData.get("message") as string;
-
-    // 楽観的に UI を更新（即座に表示される）
-    addOptimisticMessage(text);
-
-    // サーバーに送信（時間がかかる）
-    const response = await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-    const newMessage = await response.json();
-
-    // サーバーの応答で正式な state を更新
-    setMessages((prev) => [...prev, newMessage]);
-  }
+  useEffect(() => {
+    // レンダリング後に実行される
+    document.title = `${count}回クリックしました`;
+  });
 
   return (
-    <div>
-      <ul>
-        {optimisticMessages.map((msg) => (
-          <li key={msg.id}>
-            {msg.text}
-            {msg.sending && <span aria-label="送信中"> (送信中...)</span>}
-          </li>
-        ))}
-      </ul>
-      <form action={sendAction}>
-        <label htmlFor="chat-message">メッセージ</label>
-        <input id="chat-message" name="message" type="text" />
-        <button type="submit">送信</button>
-      </form>
-    </div>
+    <button onClick={() => setCount(count + 1)}>
+      クリック: {count}
+    </button>
   );
 }
 ```
 
-`useOptimistic` は2つの値を返します。
+`useEffect` に渡した関数は、コンポーネントのレンダリングが完了した**後**に実行されます。
 
-| 値 | 説明 |
-|---|------|
-| `optimisticMessages` | 楽観的な値を含む現在の状態 |
-| `addOptimisticMessage` | 楽観的な値を追加する関数 |
+## 依存配列
 
-引数は以下の通りです。
+上の例では、`useEffect` は毎回のレンダリング後に実行されます。しかし、「特定の値が変わったときだけ実行したい」場合が大半です。第2引数に**依存配列**を渡すことで制御できます。
 
-- 第1引数: 実際の state（`messages`）
-- 第2引数: 楽観的な値を作る関数
-
-仕組みを整理すると:
-
-1. ユーザーが送信 → `addOptimisticMessage` で即座に UI に表示
-2. サーバーに送信中の間、楽観的な値が表示される
-3. サーバーから応答が来たら `setMessages` で正式な state を更新
-4. 正式な state が更新されると、楽観的な値は自動的に消え、正式なデータに置き換わる
-
-## いいねボタンの例
-
-よりシンプルな例です。
+### 特定の値が変わったときだけ実行
 
 ```tsx
-import { useOptimistic } from "react";
+useEffect(() => {
+  document.title = `${count}回クリックしました`;
+}, [count]); // count が変わったときだけ実行
+```
 
-interface LikeButtonProps {
-  initialCount: number;
-  liked: boolean;
-  onToggle: () => Promise<void>;
-}
+依存配列に `[count]` を指定すると、`count` が変化したレンダリングの後だけ関数が実行されます。
 
-function LikeButton({ initialCount, liked, onToggle }: LikeButtonProps) {
-  const [optimisticLiked, setOptimisticLiked] = useOptimistic(liked);
+### マウント時のみ実行
 
-  async function toggleAction() {
-    setOptimisticLiked(!optimisticLiked);
-    await onToggle();
+空の配列 `[]` を渡すと、コンポーネントが画面に追加されたとき（マウント時）に1回だけ実行されます。
+
+```tsx
+function UserProfile() {
+  const [user, setUser] = useState<{ name: string } | null>(null);
+
+  useEffect(() => {
+    // コンポーネントの初回表示時に API からデータを取得
+    fetch("https://api.example.com/user/1")
+      .then((response) => response.json())
+      .then((data) => setUser(data));
+  }, []); // 空の依存配列 → マウント時に1回だけ
+
+  if (!user) {
+    return <p>読み込み中...</p>;
   }
 
-  return (
-    <form action={toggleAction}>
-      <button type="submit">
-        {optimisticLiked ? "❤️" : "🤍"}{" "}
-        {initialCount + (optimisticLiked && !liked ? 1 : 0)}
-      </button>
-    </form>
-  );
+  return <p>ようこそ、{user.name}さん！</p>;
 }
 ```
 
-ボタンを押した瞬間にハートの色が変わり、API 通信の結果を待ちません。
+### 依存配列なし
 
-> **第2引数の省略について**: Chat の例では `useOptimistic(messages, updateFn)` と第2引数に更新関数を渡しましたが、LikeButton の例では `useOptimistic(liked)` と省略しています。第2引数（更新関数）を省略すると、`setOptimisticLiked` に渡した値がそのまま楽観的な状態になります。単純な値の上書きで済む場合は省略形が簡潔です。
-
-## useTransition
-
-画面の更新の中には、緊急度の異なるものがあります。
-
-- テキスト入力への反映 → 即座に反映しないと不自然
-- 検索結果の絞り込み → 少し遅れても許容できる
-
-`useTransition` は、「緊急度の低い更新」をマークして、緊急度の高い更新を優先させる Hook です。
+依存配列を省略すると、毎回のレンダリング後に実行されます。これが必要な場面はほとんどありません。
 
 ```tsx
-import { useState, useTransition } from "react";
-
-function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<string[]>([]);
-  const [isPending, startTransition] = useTransition();
-
-  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const value = event.target.value;
-
-    // 入力欄の更新は即座に（緊急）
-    setQuery(value);
-
-    // 検索結果の更新は遅延可能（非緊急）
-    startTransition(() => {
-      const filtered = allItems.filter((item) =>
-        item.toLowerCase().includes(value.toLowerCase())
-      );
-      setResults(filtered);
-    });
-  }
-
-  return (
-    <div>
-      <label htmlFor="search">検索</label>
-      <input id="search" value={query} onChange={handleChange} />
-      {isPending && <p>検索中...</p>}
-      <ul>
-        {results.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-const allItems = Array.from({ length: 10000 }, (_, i) => `アイテム ${i + 1}`);
+// 毎回実行される（通常は避ける）
+useEffect(() => {
+  console.log("レンダリングされました");
+});
 ```
 
-`useTransition` は2つの値を返します。
+## クリーンアップ
 
-| 値 | 説明 |
-|---|------|
-| `isPending` | トランジションが実行中かどうか |
-| `startTransition` | 非緊急な更新をラップする関数 |
+副作用の中には、コンポーネントが画面から消える（アンマウントされる）ときに後片付けが必要なものがあります。例えば、イベントリスナーやタイマーです。
 
-### 何が起きているか
-
-1. ユーザーが入力 → `setQuery` が即座に実行され、入力欄が更新される
-2. 同時に `startTransition` 内の `setResults` もスケジュールされる
-3. React は `setQuery` の更新を優先し、画面を更新する
-4. 余裕ができたら `setResults` の更新を処理する
-5. 処理中に新しい入力があれば、古いトランジションは中断され、新しいもので上書きされる
-
-これにより、1万件のリストをフィルタリングしていても入力欄がカクつきません。
-
-## useTransition と useOptimistic の違い
-
-| Hook | 目的 | 主な用途 |
-|------|------|---------|
-| `useOptimistic` | サーバー応答前に UI を先に更新する | いいね、メッセージ送信 |
-| `useTransition` | 非緊急な更新を遅延させる | 検索フィルタ、タブ切り替え |
-
-`useOptimistic` は「結果を先に見せる」、`useTransition` は「重い処理を後回しにする」という違いがあります。
-
-## タブ切り替えの例
-
-`useTransition` の典型的な使用例をもう1つ紹介します。
+`useEffect` の関数から**クリーンアップ関数**を返すことで、後片付けができます。
 
 ```tsx
-import { useState, useTransition } from "react";
+function WindowSize() {
+  const [width, setWidth] = useState(window.innerWidth);
 
-function TabContainer() {
-  const [tab, setTab] = useState<"about" | "posts" | "contact">("about");
-  const [isPending, startTransition] = useTransition();
+  useEffect(() => {
+    function handleResize() {
+      setWidth(window.innerWidth);
+    }
 
-  function handleTabChange(nextTab: "about" | "posts" | "contact") {
-    startTransition(() => {
-      setTab(nextTab);
-    });
-  }
+    // イベントリスナーを登録
+    window.addEventListener("resize", handleResize);
 
-  return (
-    <div>
-      <nav role="tablist" aria-label="プロフィール">
-        <button
-          role="tab"
-          aria-selected={tab === "about"}
-          onClick={() => handleTabChange("about")}
-        >
-          概要
-        </button>
-        <button
-          role="tab"
-          aria-selected={tab === "posts"}
-          onClick={() => handleTabChange("posts")}
-        >
-          投稿
-        </button>
-        <button
-          role="tab"
-          aria-selected={tab === "contact"}
-          onClick={() => handleTabChange("contact")}
-        >
-          連絡先
-        </button>
-      </nav>
+    // クリーンアップ: コンポーネントが消えるときにリスナーを解除
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []); // マウント時に登録、アンマウント時に解除
 
-      <div
-        role="tabpanel"
-        style={{ opacity: isPending ? 0.7 : 1 }}
-      >
-        {tab === "about" && <AboutTab />}
-        {tab === "posts" && <PostsTab />}
-        {tab === "contact" && <ContactTab />}
-      </div>
-    </div>
-  );
+  return <p>ウィンドウ幅: {width}px</p>;
 }
 ```
 
-タブ切り替え時に重い描画があっても、`startTransition` でラップすることで、ユーザーのクリック操作が遅延なく処理されます。`isPending` を使って切り替え中のタブパネルを半透明にし、ユーザーに「切り替え中」であることを視覚的に伝えています。
+クリーンアップが必要な理由は、コンポーネントが消えた後もイベントリスナーが残り続けると、存在しないコンポーネントの state を更新しようとしてメモリリークや意図しない動作を引き起こすためです。
 
-`role="tablist"`, `role="tab"`, `role="tabpanel"`, `aria-selected` を使って、タブ UI がスクリーンリーダーでも正しく読み上げられるようにしています。
+### タイマーのクリーンアップ
+
+```tsx
+function Timer() {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSeconds((prev) => prev + 1);
+    }, 1000);
+
+    // クリーンアップ: タイマーを停止
+    return () => clearInterval(id);
+  }, []);
+
+  return <p>経過時間: {seconds}秒</p>;
+}
+```
+
+`setSeconds((prev) => prev + 1)` のように関数を渡す形式を使っています。これは**更新関数**と呼ばれ、最新の state 値を確実に参照できます。`setSeconds(seconds + 1)` と書くと、クロージャに閉じ込められた `seconds`（常に `0`）を参照してしまいます。
+
+## useEffect の実行タイミング
+
+依存配列の値が変わったとき、クリーンアップ関数は新しい Effect が実行される**前**に呼ばれます。
+
+```tsx
+function ChatRoom({ roomId }: { roomId: string }) {
+  useEffect(() => {
+    console.log(`${roomId} に接続`);
+
+    return () => {
+      console.log(`${roomId} から切断`);
+    };
+  }, [roomId]);
+
+  return <p>チャットルーム: {roomId}</p>;
+}
+```
+
+`roomId` が `"general"` から `"random"` に変わると:
+
+1. `"general から切断"` （古い Effect のクリーンアップ）
+2. `"random に接続"` （新しい Effect の実行）
+
+## useEffect を使うべきでない場面
+
+`useEffect` は強力ですが、使いすぎると問題になります。以下は `useEffect` を使わなくてよいパターンです。
+
+### レンダリング中に計算できるもの
+
+```tsx
+// NG: useEffect で計算している
+function FilteredList({ items, query }: { items: string[]; query: string }) {
+  const [filtered, setFiltered] = useState(items);
+
+  useEffect(() => {
+    setFiltered(items.filter((item) => item.includes(query)));
+  }, [items, query]);
+
+  return <ul>{filtered.map((item) => <li key={item}>{item}</li>)}</ul>;
+}
+
+// OK: レンダリング中に直接計算する
+function FilteredList({ items, query }: { items: string[]; query: string }) {
+  const filtered = items.filter((item) => item.includes(query));
+
+  return <ul>{filtered.map((item) => <li key={item}>{item}</li>)}</ul>;
+}
+```
+
+props や state から計算できる値は、`useEffect` を使わずにレンダリング中に直接計算しましょう。無駄な state と再レンダリングを避けられます。
+
+### イベントに応じた処理
+
+```tsx
+// NG: query が変わるたびに useEffect で検索 API を呼んでいる
+useEffect(() => {
+  if (query) {
+    fetch(`/api/search?q=${query}`)
+      .then((res) => res.json())
+      .then((data) => setResults(data));
+  }
+}, [query]); // 入力のたびに API 呼び出しが走ってしまう
+
+// OK: フォーム送信時にイベントハンドラーで処理する
+function handleSubmit(event: React.FormEvent) {
+  event.preventDefault();
+  fetch(`/api/search?q=${query}`)
+    .then((res) => res.json())
+    .then((data) => setResults(data));
+}
+```
+
+「ユーザーのアクションに応じた処理」はイベントハンドラーに書くべきです。`useEffect` は「表示されたときに何かする」場面で使います。
 
 ## まとめ
 
-- 楽観的 UI 更新は、サーバー応答を待たずに UI を先に更新するパターン
-- `useOptimistic` は楽観的な値を一時的に表示し、正式な state が更新されたら自動で置き換わる
-- `useTransition` は緊急度の低い更新をマークし、緊急な更新（入力反映など）を優先させる
-- `isPending` でトランジション中の状態をユーザーに伝えられる
+- `useEffect` はレンダリング後に副作用を実行する Hook
+- 依存配列で実行タイミングを制御する: `[value]` で値の変化時、`[]` でマウント時のみ
+- クリーンアップ関数でイベントリスナーやタイマーの後片付けをする
+- props や state から計算できる値には `useEffect` を使わない
+- ユーザーアクションへの応答はイベントハンドラーに書く
 
-**次のレッスン**: [Day 28: カスタム Hooks とコンポーネント設計](/lessons/day28/)
+**次のレッスン**: [Day 28: フォームと Actions](/lessons/day28/)

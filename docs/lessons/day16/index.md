@@ -1,260 +1,256 @@
-# Day 16: エラーハンドリングとデバッグ
+# Day 16: HTTP とネットワーク基礎
 
 ## 今日のゴール
 
-- JavaScript のエラーの種類と原因を知る
-- `try/catch` でエラーを処理する方法を知る
-- ブラウザの DevTools を使ったデバッグ手法を知る
-- `console` メソッドの使い分けを知る
+- HTTP の基本的な仕組み（リクエストとレスポンス）を知る
+- HTTP メソッド（GET / POST / PUT / DELETE）の使い分けを知る
+- ステータスコードの意味を知る
+- REST の基本概念を知る
 
-## エラーの種類
+## HTTP とは
 
-JavaScript のエラーにはいくつかの種類があります。エラーメッセージを読めるようになることが、デバッグの第一歩です。
+Day 15 で `fetch` を使ってサーバーからデータを取得しました。このとき、ブラウザとサーバーの間で使われていた通信の取り決め（プロトコル）が **HTTP（HyperText Transfer Protocol）** です。
 
-### SyntaxError — 書き方の間違い
+HTTP は**「**リクエスト（要求）とレスポンス（応答）」のやり取りで成り立っています。
 
-コードの文法が間違っているときに発生します。プログラムの実行前に検出されます。
-
-```javascript
-// ❌ 括弧の閉じ忘れ
-console.log("hello"
-
-// ❌ カンマの位置が不正
-const obj = { name: "山田", age: };
+```mermaid
+sequenceDiagram
+    participant Browser as ブラウザ（クライアント）
+    participant Server as サーバー
+    Browser->>Server: HTTPリクエスト「このデータをください」
+    Server->>Browser: HTTPレスポンス「はい、どうぞ」
 ```
 
-### ReferenceError — 存在しない変数
+Web ページを表示するとき、ブラウザは裏側で多数の HTTP リクエストを送っています。HTML ファイル、CSS ファイル、画像、JavaScript ファイル — それぞれが個別の HTTP リクエストで取得されます。
 
-定義されていない変数にアクセスしようとしたときに発生します。
+## HTTP リクエストの構造
 
-```javascript
-console.log(userName);  // ❌ ReferenceError: userName is not defined
+HTTP リクエストは主に以下の部分で構成されます。
+
+```
+GET /users HTTP/1.1
+Host: api.example.com
+Accept: application/json
+Authorization: Bearer xxxxx
 ```
 
-よくある原因: 変数名のタイプミス、スコープ外からのアクセス、`import` の書き忘れ。
+| 部分 | 説明 |
+|------|------|
+| メソッド | 何をしたいか（GET, POST, PUT, DELETE など） |
+| パス | どのリソースに対してか（`/users`） |
+| ヘッダー | 付加情報（認証情報、受け入れるデータ形式など） |
+| ボディ | 送信するデータ（POST/PUT で使う） |
 
-### TypeError — 型の不一致
+## HTTP メソッド
 
-値の型に対して不正な操作をしたときに発生します。
+HTTP メソッドは「このリクエストで何をしたいか」を表します。
+
+| メソッド | 用途 | 例 |
+|---------|------|-----|
+| **GET** | データの取得 | ユーザー一覧を取得する |
+| **POST** | データの作成 | 新しいユーザーを登録する |
+| **PUT** | データの全体更新 | ユーザー情報を丸ごと更新する |
+| **PATCH** | データの部分更新 | ユーザーのメールアドレスだけ更新する |
+| **DELETE** | データの削除 | ユーザーを削除する |
+
+### fetch での使い分け
 
 ```javascript
-const name = "山田";
-name.push("太郎");   // ❌ TypeError: name.push is not a function
-// push は配列のメソッド。文字列には使えない
+// GET（デフォルト）
+const response = await fetch("https://api.example.com/users");
 
-const user = null;
-user.name;           // ❌ TypeError: Cannot read properties of null
-// null にプロパティアクセスはできない
+// POST
+const response = await fetch("https://api.example.com/users", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ name: "山田太郎", email: "yamada@example.com" }),
+});
+
+// PUT
+const response = await fetch("https://api.example.com/users/1", {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ name: "山田太郎", email: "new@example.com" }),
+});
+
+// DELETE
+const response = await fetch("https://api.example.com/users/1", {
+  method: "DELETE",
+});
 ```
 
-`Cannot read properties of null (or undefined)` は実務で最も頻繁に遭遇するエラーです。「この変数は値を持っているはず」という前提が間違っているときに起こります。
+## HTTP レスポンスの構造
 
-## try / catch — エラーを捕まえる
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 256
 
-`try/catch` を使うと、エラーが発生してもプログラムを止めずに処理を続行できます。
-
-```javascript
-try {
-  // エラーが起きる可能性のある処理
-  const data = JSON.parse("不正なJSON");
-} catch (error) {
-  // エラーが起きたときの処理
-  console.error("JSONの解析に失敗しました:", error.message);
-}
-
-// try/catch の後の処理は実行される
-console.log("プログラムは続行しています");
+{"id": 1, "name": "山田太郎", "email": "yamada@example.com"}
 ```
 
-### error オブジェクト
+| 部分 | 説明 |
+|------|------|
+| ステータスコード | 処理結果を数字で表す（200, 404, 500 など） |
+| ヘッダー | 付加情報（データ形式、サイズなど） |
+| ボディ | レスポンスデータ（JSON、HTML など） |
 
-`catch` で受け取る `error` オブジェクトには以下のプロパティがあります。
+## ステータスコード
 
-```javascript
-try {
-  undefined.property;
-} catch (error) {
-  console.log(error.name);     // "TypeError"
-  console.log(error.message);  // "Cannot read properties of undefined"
-  console.log(error.stack);    // エラーのスタックトレース（発生場所の詳細）
-}
-```
+ステータスコードは 3 桁の数字で、最初の 1 桁でカテゴリが決まります。
 
-`error.stack` はエラーが発生した場所をファイル名と行番号で教えてくれます。デバッグの強力な手がかりです。
+### 2xx — 成功
 
-### finally — 必ず実行する処理
+| コード | 意味 |
+|--------|------|
+| **200** OK | リクエスト成功 |
+| **201** Created | リソースの作成に成功（POST の成功時によく使う） |
+| **204** No Content | 成功したがレスポンスボディなし（DELETE の成功時によく使う） |
 
-```javascript
-async function fetchData() {
-  try {
-    const response = await fetch("https://api.example.com/data");
-    const data = await response.json();
-    console.log(data);
-  } catch (error) {
-    console.error("データ取得に失敗:", error.message);
-  } finally {
-    // 成功でも失敗でも必ず実行される
-    console.log("処理完了");
-  }
-}
-```
+### 3xx — リダイレクト
 
-`finally` は「ローディング表示を必ず消す」など、成否に関わらず行いたい後処理に使います。
+| コード | 意味 |
+|--------|------|
+| **301** Moved Permanently | URL が恒久的に変更された |
+| **302** Found | URL が一時的に変更された |
+| **304** Not Modified | キャッシュがそのまま使える |
 
-## エラーを投げる
+### 4xx — クライアントエラー（リクエスト側の問題）
 
-自分でエラーを投げることもできます。
+| コード | 意味 |
+|--------|------|
+| **400** Bad Request | リクエストの形式が不正 |
+| **401** Unauthorized | 認証が必要（ログインしていない） |
+| **403** Forbidden | アクセス権限がない |
+| **404** Not Found | リソースが見つからない |
+| **422** Unprocessable Entity | リクエストの形式は正しいがデータに問題がある |
 
-```javascript
-function divide(a, b) {
-  if (b === 0) {
-    throw new Error("0で割ることはできません");
-  }
-  return a / b;
-}
+### 5xx — サーバーエラー（サーバー側の問題）
 
-try {
-  const result = divide(10, 0);
-} catch (error) {
-  console.error(error.message);  // "0で割ることはできません"
-}
-```
+| コード | 意味 |
+|--------|------|
+| **500** Internal Server Error | サーバー内部エラー |
+| **502** Bad Gateway | 中間サーバーが不正なレスポンスを受け取った |
+| **503** Service Unavailable | サーバーが一時的に利用不可（メンテナンス中など） |
 
-`throw` は関数の中で「この入力は受け付けられない」という状況を表現するのに使います。
-
-## 非同期処理のエラーハンドリング
-
-Day 13 で学んだ `fetch` のような非同期処理でも `try/catch` が使えます。
+### fetch でステータスコードを扱う
 
 ```javascript
-async function loadUserData(userId) {
-  try {
-    const response = await fetch(`https://api.example.com/users/${userId}`);
+async function fetchUser(id) {
+  const response = await fetch(`https://api.example.com/users/${id}`);
 
-    if (!response.ok) {
-      throw new Error(`ユーザーの取得に失敗しました（${response.status}）`);
-    }
-
-    const user = await response.json();
-    return user;
-  } catch (error) {
-    if (error instanceof TypeError) {
-      // ネットワークエラー（fetch 自体が失敗）
-      console.error("ネットワーク接続を確認してください");
-    } else {
-      console.error(error.message);
-    }
+  if (response.status === 404) {
+    console.log("ユーザーが見つかりません");
     return null;
   }
+
+  if (!response.ok) {
+    throw new Error(`HTTP エラー: ${response.status}`);
+  }
+
+  return await response.json();
 }
 ```
 
-`instanceof` で Error の種類を判別して、エラーに応じた処理を分けています。
+## リクエストヘッダーとレスポンスヘッダー
 
-## DevTools — ブラウザのデバッグツール
+ヘッダーはリクエストやレスポンスの「付加情報」です。
 
-ブラウザの DevTools はフロントエンド開発者の最重要ツールです。F12 キーまたは右クリック →「検証」で開きます。
+### よく使うリクエストヘッダー
 
-### Console タブ
+| ヘッダー | 用途 | 例 |
+|---------|------|-----|
+| `Content-Type` | 送信するデータの形式 | `application/json` |
+| `Accept` | 受け取りたいデータの形式 | `application/json` |
+| `Authorization` | 認証情報 | `Bearer eyJhbGci...` |
 
-JavaScript のログやエラーが表示されます。直接 JavaScript を実行することもできます。
+### よく使うレスポンスヘッダー
 
-### Elements タブ
+| ヘッダー | 用途 | 例 |
+|---------|------|-----|
+| `Content-Type` | レスポンスデータの形式 | `application/json; charset=utf-8` |
+| `Cache-Control` | キャッシュの制御 | `max-age=3600` |
+| `Set-Cookie` | Cookie の設定 | `session=abc123` |
 
-DOM の構造をリアルタイムで確認・編集できます。要素を右クリックして「検証」を選ぶと、その要素の位置に直接ジャンプします。Styles パネルでは適用されている CSS ルールと優先順位（取り消し線で上書きされたルールがわかる）を確認できます。
+### DevTools で確認する
 
-### Network タブ
+ブラウザの DevTools の「Network」タブで、実際の HTTP リクエストとレスポンスを確認できます。
 
-Day 14 で触れた HTTP リクエストとレスポンスの詳細を確認できます。リクエストが時系列で一覧表示され、各リクエストのヘッダー、レスポンスボディ、タイミングが確認できます。ステータスコードでの絞り込みや、ページ遷移後もログを保持する「Preserve log」機能もあります。
+1. DevTools を開く（F12）
+2. 「Network」タブを選択
+3. ページを更新する
+4. 一覧に表示されるリクエストをクリックすると、ヘッダーやレスポンスの詳細が見られる
 
-### Sources タブ — ブレークポイント
+Day 15 のユーザー一覧ページを開いた状態で確認すると、`jsonplaceholder.typicode.com/users` へのリクエストが見つかります。
 
-コードの実行を途中で止めて、変数の値を確認できます。
+## JSON
 
-Sources タブを開くと、左側にファイル一覧が表示されます。デバッグしたいファイルを選び、行番号をクリックすると**ブレークポイント**（停止点）が設定されます。ブレークポイントが設定された状態でページを更新すると、その行でコードの実行が一時停止します。
+**JSON（JavaScript Object Notation）** は、データのやり取りに使われる最も一般的なフォーマットです。
 
-一時停止中は、右側のパネルでその時点の変数の値を確認できます。「Step Over」で次の行へ進む、「Step Into」で関数の中に入る、といった操作で 1 行ずつコードを追いかけられます。
-
-`console.log` をたくさん入れるより、ブレークポイントの方が効率的にデバッグできる場面が多いです。
-
-## console メソッドの使い分け
-
-`console.log` 以外にも便利なメソッドがあります。
-
-```javascript
-// 基本的なログ
-console.log("情報の表示");
-
-// 警告（黄色い背景で表示される）
-console.warn("注意: この機能は非推奨です");
-
-// エラー（赤い背景で表示される）
-console.error("エラーが発生しました");
-
-// オブジェクトを表形式で表示
-const users = [
-  { name: "山田", age: 25 },
-  { name: "佐藤", age: 30 },
-];
-console.table(users);
-
-// グループ化
-console.group("ユーザー情報");
-console.log("名前: 山田");
-console.log("年齢: 25");
-console.groupEnd();
-
-// 処理時間の計測
-console.time("データ取得");
-// ...なんらかの処理...
-console.timeEnd("データ取得");  // "データ取得: 123.45ms"
-```
-
-### 実用的な使い方
-
-```javascript
-async function loadData() {
-  console.group("データ読み込み");
-  console.time("fetch");
-
-  try {
-    const response = await fetch("https://jsonplaceholder.typicode.com/users");
-    console.log("ステータス:", response.status);
-
-    const data = await response.json();
-    console.log("取得件数:", data.length);
-    console.table(data.map((u) => ({ name: u.name, email: u.email })));
-
-    return data;
-  } catch (error) {
-    console.error("データ取得失敗:", error);
-    return [];
-  } finally {
-    console.timeEnd("fetch");
-    console.groupEnd();
+```json
+{
+  "name": "山田太郎",
+  "age": 25,
+  "isStudent": false,
+  "hobbies": ["読書", "ランニング"],
+  "address": {
+    "city": "東京",
+    "zip": "100-0001"
   }
 }
-
-loadData();
 ```
 
-## デバッグのコツ
+JavaScript のオブジェクトとほぼ同じ見た目ですが、JSON には制約があります。
 
-1. **エラーメッセージを読む**: エラーの種類、メッセージ、発生場所（ファイル名と行番号）を確認する
-2. **再現手順を特定する**: どの操作でエラーが起きるのかを明確にする
-3. **原因を絞り込む**: `console.log` やブレークポイントで、どの時点で値がおかしくなっているかを特定する
-4. **仮説を立てて検証する**: 「この変数が null なのではないか」→ 確認 → 対処、のサイクルを回す
+- キーは必ずダブルクォート（`"`）で囲む
+- 末尾のカンマ（trailing comma）は不可
+- コメントは書けない
+- 値に関数は使えない
 
-> **本番コードに `console.log` を残さない**: デバッグ用の `console.log` は開発中だけ使い、本番環境にデプロイするコードには残さないのが基本です。ESLint などのツール（後の Day で学びます）を使うと、`console.log` の消し忘れを自動で検出できます。
+### JavaScript と JSON の変換
+
+```javascript
+// JavaScript オブジェクト → JSON 文字列
+const user = { name: "山田", age: 25 };
+const json = JSON.stringify(user);
+console.log(json);  // '{"name":"山田","age":25}'
+
+// JSON 文字列 → JavaScript オブジェクト
+const parsed = JSON.parse(json);
+console.log(parsed.name);  // "山田"
+```
+
+## REST の基本概念
+
+**REST（Representational State Transfer）** は、Web API の設計スタイルです。「こう設計すると分かりやすい API になる」という考え方の集まりです。
+
+### REST の基本ルール
+
+1. **リソースを URL で表す**: `/users`（ユーザー一覧）、`/users/1`（ID が 1 のユーザー）
+2. **HTTP メソッドで操作を表す**: GET（取得）、POST（作成）、PUT（更新）、DELETE（削除）
+3. **ステートレス**: サーバーはリクエスト間の状態を保持しない。必要な情報は毎回リクエストに含める
+
+### RESTful な API の例
+
+| 操作 | メソッド | URL | 説明 |
+|------|---------|-----|------|
+| ユーザー一覧 | GET | `/users` | 全ユーザーを取得 |
+| ユーザー詳細 | GET | `/users/1` | ID=1 のユーザーを取得 |
+| ユーザー作成 | POST | `/users` | 新しいユーザーを作成 |
+| ユーザー更新 | PUT | `/users/1` | ID=1 のユーザーを更新 |
+| ユーザー削除 | DELETE | `/users/1` | ID=1 のユーザーを削除 |
+
+URL が「何を」、メソッドが「どうするか」を表しています。この一貫した設計により、API の使い方が予測しやすくなります。
+
+Next.js の Route Handlers（API エンドポイント）も、この REST の考え方に基づいて設計することが多いです。
 
 ## まとめ
 
-- JavaScript のエラーには SyntaxError、ReferenceError、TypeError などの種類がある
-- `Cannot read properties of null/undefined` は最も頻繁に遭遇するエラー
-- `try/catch` でエラーを捕まえ、プログラムを止めずに適切に処理する
-- `finally` は成否に関わらず必ず実行される。後処理に使う
-- DevTools の Console、Elements、Network、Sources タブを使いこなすことがデバッグの基本
-- ブレークポイントは `console.log` より効率的なデバッグ手法
-- `console.table`、`console.group`、`console.time` など、目的に応じた console メソッドを使い分ける
+- HTTP はリクエストとレスポンスのやり取り
+- HTTP メソッド: GET（取得）、POST（作成）、PUT/PATCH（更新）、DELETE（削除）
+- ステータスコード: 2xx（成功）、3xx（リダイレクト）、4xx（クライアントエラー）、5xx（サーバーエラー）
+- ヘッダーはリクエスト/レスポンスの付加情報。DevTools の Network タブで確認できる
+- JSON は Web API のデータ交換で最も使われるフォーマット
+- REST は URL でリソースを、HTTP メソッドで操作を表す API 設計スタイル
 
-**次のレッスン**: [Day 17: TypeScript の基本](/lessons/day17/)
+**次のレッスン**: [Day 17: ES Modules](/lessons/day17/)

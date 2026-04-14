@@ -1,228 +1,224 @@
-# Day 51: アーキテクチャ総まとめ
+# Day 51: Web セキュリティ
 
 ## 今日のゴール
 
-- ディレクトリ構成の戦略を知る
-- 技術選定の考え方を知る
-- 50 日間で扱った知識の全体像を知る
-- 次のステップを知る
+- XSS、CSRF、CORS の仕組みと対策を知る
+- Content Security Policy の概念を知る
+- Next.js が提供するセキュリティ機能を知る
 
-## ここまでの道のり
+## なぜ Web セキュリティを学ぶのか
 
-Day 1 から今日まで、Web フロントエンド開発の基礎を一歩ずつ学んできました。ここで全体を振り返り、知識を体系的に整理します。
+Web アプリケーションはインターネットに公開されるため、常に攻撃のリスクがあります。セキュリティを知らずにコードを書くと、ユーザーの個人情報が漏洩したり、アカウントが乗っ取られたりする可能性があります。
 
-```
-Day 1-10:   Web の基礎（HTML / CSS / JavaScript）
-Day 11-20:  JavaScript の深掘り（DOM / 非同期 / モジュール / TypeScript）
-Day 21-30:  React の基礎（JSX / コンポーネント / Hooks / 状態管理）
-Day 31-41:  Next.js の基礎（SPA/SSR / App Router / RSC / データ取得 / Tailwind）
-Day 42-51:  実践スキル（テスト / a11y / パフォーマンス / セキュリティ / 設計）
-```
+フロントエンドエンジニアも、最低限の攻撃手法と対策を知っておく必要があります。
 
-## ディレクトリ構成戦略
+## XSS（Cross-Site Scripting）
 
-実際のプロジェクトでは「どこに何を置くか」が重要です。チーム全員が迷わずファイルを見つけられる構成を目指します。
+**XSS** は、悪意のある JavaScript をページに埋め込む攻撃です。
 
-### Next.js App Router の推奨構成
+### 攻撃の仕組み
 
-```
-src/
-├── app/                     ← ルーティング（ページとレイアウト）
-│   ├── layout.tsx
-│   ├── page.tsx
-│   ├── globals.css
-│   ├── (auth)/              ← Route Group（URLに影響しない）
-│   │   ├── login/
-│   │   │   └── page.tsx
-│   │   └── register/
-│   │       └── page.tsx
-│   ├── dashboard/
-│   │   ├── layout.tsx
-│   │   ├── page.tsx
-│   │   └── settings/
-│   │       └── page.tsx
-│   └── blog/
-│       ├── page.tsx
-│       └── [slug]/
-│           └── page.tsx
-├── components/              ← 共有コンポーネント
-│   ├── ui/                  ← 汎用UIコンポーネント（Button, Input, Cardなど）
-│   │   ├── button.tsx
-│   │   ├── input.tsx
-│   │   └── card.tsx
-│   └── layout/              ← レイアウト関連（Header, Footer, Sidebarなど）
-│       ├── header.tsx
-│       └── footer.tsx
-├── lib/                     ← ユーティリティ、ヘルパー関数
-│   ├── utils.ts
-│   └── format.ts
-├── types/                   ← 型定義
-│   └── index.ts
-└── auth.ts                  ← 認証設定
+たとえば、ユーザーのコメントをそのまま HTML として表示するサイトがあるとします。
+
+```html
+<!-- ❌ ユーザー入力をそのまま HTML として表示 -->
+<div>ユーザーのコメント: <script>document.cookie を外部サーバーに送信</script></div>
 ```
 
-### Route Group `(name)`
+攻撃者がコメント欄に `<script>` タグを含むテキストを投稿すると、他のユーザーがそのページを見たときに、攻撃者の JavaScript が実行されてしまいます。これにより Cookie の窃取やページの改ざんが可能になります。
 
-丸括弧で囲んだフォルダは**URL に影響しません**。ファイルを整理するためだけのグルーピングです。
+### React/Next.js の XSS 対策
 
-```
-src/app/
-├── (marketing)/        ← URL には /marketing は含まれない
-│   ├── page.tsx        → /
-│   ├── about/
-│   │   └── page.tsx    → /about
-│   └── pricing/
-│       └── page.tsx    → /pricing
-└── (app)/              ← URL には /app は含まれない
-    ├── layout.tsx      ← ログイン後のレイアウト
-    ├── dashboard/
-    │   └── page.tsx    → /dashboard
-    └── settings/
-        └── page.tsx    → /settings
+React は JSX でテキストを表示する際、自動的に**エスケープ**（特殊文字を無害化）します。
+
+```tsx
+// ✅ React は自動でエスケープする
+const userInput = '<script>alert("XSS")</script>';
+
+export default function Comment() {
+  // <script> タグはテキストとして表示され、実行されない
+  return <p>{userInput}</p>;
+}
+// 表示結果: <script>alert("XSS")</script>（文字列として）
 ```
 
-マーケティングサイトとアプリケーションで異なるレイアウトを使いたい場合に便利です。
+ただし、`dangerouslySetInnerHTML` を使うとエスケープが無効になります。
 
-### コロケーション
-
-Day 32 で紹介した**コロケーション**（関連ファイルを近くに置く）は重要な原則です。
-
-```
-src/app/blog/[slug]/
-├── page.tsx          ← ページ
-├── loading.tsx       ← ローディングUI
-├── error.tsx         ← エラーUI
-└── like-button.tsx   ← このページでしか使わないコンポーネント
+```tsx
+// ❌ 危険: ユーザー入力を dangerouslySetInnerHTML に渡してはいけない
+<div dangerouslySetInnerHTML={{ __html: userInput }} />
 ```
 
-そのページでしか使わないコンポーネントは、`components/` に移動するのではなく、ページの近くに置きましょう。複数のページで共有するようになったら `components/` に移動すればよいのです。
+`dangerouslySetInnerHTML` は、Day 41 の構造化データのように**信頼できる HTML だけ**に使うべきです。名前に「dangerously（危険に）」と付いているのは、この理由からです。
 
-## 技術選定の考え方
+### XSS の対策まとめ
 
-プロジェクトで「なぜその技術を使うのか」を説明できることが重要です。50 日間で学んだ技術の選定理由を整理します。
+1. ユーザー入力はそのまま HTML として出力しない（React は自動対応）
+2. `dangerouslySetInnerHTML` は信頼できるデータだけに使う
+3. Cookie に `HttpOnly` 属性を付ける（JavaScript からアクセスできなくする）
+4. Content Security Policy を設定する（後述）
 
-### Next.js を使う理由
+## CSRF（Cross-Site Request Forgery）
 
-| 課題 | Next.js の解決策 |
-|------|---------------|
-| React だけではルーティングがない | ファイルベースルーティング |
-| SEO 対応が難しい | SSR / SSG によるサーバーサイドレンダリング |
-| パフォーマンス最適化が大変 | 画像・フォント最適化、コード分割が組み込み |
-| API サーバーが別途必要 | Server Components, Server Actions, Route Handlers |
+**CSRF** は、ログイン済みのユーザーに意図しない操作をさせる攻撃です。
 
-### TypeScript を使う理由
-
-- **型によるバグ防止** — 実行前にエラーを検出
-- **IDEの補完** — 開発効率が上がる
-- **ドキュメントとしての型** — コードを読むだけで引数や戻り値がわかる
-- **リファクタリングの安全性** — 型の不整合を自動で検出
-
-### Tailwind CSS を使う理由
-
-- **クラス名の命名に悩まない** — ユーティリティクラスの組み合わせで完結
-- **CSS の肥大化を防ぐ** — 使われていないスタイルが生成されない
-- **一貫性** — デザイントークン（`@theme`）で色やスペーシングを統一
-- **スタイルの衝突がない** — グローバルスコープの問題が起きない
-
-### Server Components をデフォルトにする理由
-
-- **JavaScript バンドルサイズの削減** — ブラウザに送る JS が減る
-- **データ取得の簡潔さ** — `async/await` で直接 fetch
-- **セキュリティ** — 機密情報がブラウザに漏れない
-
-### Vitest を使う理由
-
-- **高速** — Vite ベースで HMR を活用
-- **ESM ネイティブ** — モダンな JavaScript を自然に扱える
-- **TypeScript 対応** — 追加設定なし
-- **Jest 互換** — 学習コストが低い
-
-## 知識の全体像
-
-50 日間で学んだ内容がどう繋がっているかを図解します。
+### 攻撃の仕組み
 
 ```
-                           ┌─────────────┐
-                           │   ブラウザ    │
-                           └──────┬──────┘
-                                  │
-           ┌─────────────────────┼─────────────────────┐
-           │                     │                      │
-    ┌──────▼──────┐    ┌────────▼────────┐   ┌────────▼────────┐
-    │    HTML      │    │     CSS         │   │  JavaScript     │
-    │  Day 1-3     │    │  Day 4-6        │   │  Day 7-20       │
-    │  構造・意味   │    │  見た目・装飾    │   │  動作・ロジック   │
-    └──────┬──────┘    └────────┬────────┘   └────────┬────────┘
-           │                    │                      │
-           └────────────────────┼──────────────────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │       React           │
-                    │     Day 21-30         │
-                    │  宣言的UI・コンポーネント │
-                    └───────────┬───────────┘
-                                │
-                    ┌───────────▼───────────┐
-                    │       Next.js         │
-                    │     Day 31-41         │
-                    │  SSR・ルーティング・最適化 │
-                    └───────────┬───────────┘
-                                │
-          ┌─────────┬───────────┼───────────┬──────────┐
-          │         │           │           │          │
-    ┌─────▼───┐ ┌──▼───┐ ┌────▼────┐ ┌───▼────┐ ┌──▼────┐
-    │ テスト   │ │ a11y │ │ パフォ   │ │セキュリ│ │ 設計  │
-    │Day42-43 │ │Day44 │ │ ーマンス │ │ ティ   │ │Day 50 │
-    │         │ │  -45 │ │Day46-47 │ │Day48-49│ │       │
-    └─────────┘ └──────┘ └─────────┘ └────────┘ └───────┘
+1. ユーザーが銀行サイトにログイン中
+2. 攻撃者が用意した別のサイトにアクセス
+3. そのサイトに仕込まれたフォームが、銀行サイトに送金リクエストを自動送信
+4. ブラウザが銀行サイトの Cookie を自動的に付けるため、リクエストが成功してしまう
 ```
 
-各レイヤーの知識は独立しているのではなく、下のレイヤーが上のレイヤーの基盤になっています。
+ユーザーは悪意のあるサイトを開いただけで、銀行サイトへの送金が実行されてしまいます。
 
-- **HTML/CSS/JavaScript** を知らなければ → React が何を解決しているかわからない
-- **React** を知らなければ → Next.js の Server Components や Hooks が理解できない
-- **Next.js** を知らなければ → テストやパフォーマンス最適化の具体的な手法がわからない
+### CSRF の対策
 
-だからこそ、Day 1 の HTML から始めたのです。
+```tsx
+// ✅ Next.js の Server Actions は CSRF トークンが自動で付与される
+async function transferMoney(formData: FormData) {
+  "use server";
+  // Server Actions は同一オリジンからのリクエストのみ受け付ける
+}
+```
 
-## 次のステップ
+Next.js の Server Actions は、自動的に CSRF 対策が組み込まれています。
 
-この 50 日間で学んだのは「基礎」です。ここからは実際のプロジェクトで経験を積みながら、さらに深い知識を身につけていきましょう。
+追加の対策としては以下があります。
 
-### すぐに取り組めること
+- Cookie に `SameSite=Strict` または `SameSite=Lax` を設定する（Day 50 で学習）
+- 重要な操作では CSRF トークンを使用する
+- `Origin` / `Referer` ヘッダーを検証する
 
-1. **実際のアプリを作る** — ブログ、Todo アプリ、ポートフォリオサイトなど、小さなアプリを Next.js で作ってみる
-2. **公式ドキュメントを読む** — [Next.js](https://nextjs.org/docs)、[React](https://react.dev/)、[MDN Web Docs](https://developer.mozilla.org/ja/) の公式ドキュメントは最良の学習リソース
-3. **コードレビューに参加する** — チームメンバーのコードを読み、設計判断の理由を考える
+## CORS（Cross-Origin Resource Sharing）
 
-### さらに学ぶべきトピック
+**CORS** は攻撃ではなく、ブラウザの**セキュリティ機構**です。
 
-| トピック | 概要 |
-|---------|------|
-| 状態管理ライブラリ | Zustand、Jotai など。グローバル状態が複雑になったとき |
-| フォームライブラリ | React Hook Form + Zod。バリデーションを含む複雑なフォーム |
-| E2E テスト | Playwright。ブラウザを自動操作する統合テスト |
-| CI/CD | GitHub Actions。テスト・ビルド・デプロイの自動化 |
-| モニタリング | Sentry、Datadog。本番環境のエラーやパフォーマンスの監視 |
-| デザインシステム | 一貫した UI を提供するコンポーネントライブラリの構築 |
-| マイクロフロントエンド | 大規模アプリケーションの分割戦略 |
+### 同一オリジンポリシー
 
-### 学び続けるために
+ブラウザは、あるオリジン（`プロトコル + ドメイン + ポート`）のページから、別のオリジンへのリクエストを制限します。これを**同一オリジンポリシー**と呼びます。
 
-Web フロントエンドの技術は常に進化しています。Next.js も React も頻繁にアップデートされます。
+```
+https://myapp.com から https://api.example.com へのリクエスト
+→ オリジンが異なるので、デフォルトではブロックされる
 
-- **公式ブログ・リリースノートを読む** — 新機能と変更点を追う
-- **RFCを読む** — 新機能が「なぜ」導入されるかの背景を知る
-- **コミュニティに参加する** — GitHub Issues、Discord、技術ブログで情報交換
+https://myapp.com から https://myapp.com/api へのリクエスト
+→ 同じオリジンなので OK
+```
 
-ここまでの学習で「なぜその技術を使うのか」の背景を理解する力が身についているはずです。新しい技術が出てきても、「これは何を解決するのか」「既存の技術と何が違うのか」を考える視点があれば、迷わず学んでいけるでしょう。
+### CORS ヘッダー
+
+API サーバー側が「このオリジンからのリクエストを許可する」とレスポンスヘッダーで宣言することで、クロスオリジンのリクエストが許可されます。
+
+```ts
+// src/app/api/data/route.ts
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  const response = NextResponse.json({ data: "値" });
+
+  // 特定のオリジンからのアクセスを許可
+  response.headers.set("Access-Control-Allow-Origin", "https://frontend.example.com");
+  response.headers.set("Access-Control-Allow-Methods", "GET, POST");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+
+  return response;
+}
+```
+
+> **`Access-Control-Allow-Origin: *`（すべてのオリジンを許可）は慎重に扱う必要があります**。公開 API 以外では、許可するオリジンを明示的に指定するべきです。
+
+### Next.js での CORS
+
+Next.js の Server Components から外部 API を呼ぶ場合、CORS は関係ありません。CORS はブラウザのセキュリティ機構なので、サーバーからのリクエストには適用されません。これは Server Components の利点の 1 つです。
+
+```tsx
+// Server Component からの fetch — CORS の制限を受けない
+export default async function Page() {
+  const res = await fetch("https://external-api.example.com/data");
+  const data = await res.json();
+  return <div>{data.value}</div>;
+}
+```
+
+## Content Security Policy（CSP）
+
+**CSP** は、ページ内でどのリソース（スクリプト、スタイル、画像など）の読み込みを許可するかを制御するセキュリティ機構です。XSS 攻撃の被害を大幅に軽減できます。
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  headers: async () => [
+    {
+      source: "/(.*)",
+      headers: [
+        {
+          key: "Content-Security-Policy",
+          value: [
+            "default-src 'self'",           // デフォルトは同一オリジンのみ
+            "script-src 'self'",             // スクリプトは同一オリジンのみ
+            "style-src 'self' 'unsafe-inline'", // スタイルは同一オリジンとインライン
+            "img-src 'self' https:",         // 画像は同一オリジンとHTTPS
+            "font-src 'self'",               // フォントは同一オリジンのみ
+          ].join("; "),
+        },
+      ],
+    },
+  ],
+};
+
+export default nextConfig;
+```
+
+CSP が設定されていると、たとえ XSS でスクリプトが注入されても、許可されていないオリジンからのスクリプトは実行されません。
+
+## Next.js が提供するセキュリティ機能
+
+Next.js はフレームワークレベルでいくつかのセキュリティ対策を提供しています。
+
+| 機能 | 対策 |
+|------|------|
+| React の自動エスケープ | XSS 防止 |
+| Server Actions の CSRF トークン | CSRF 防止 |
+| Server Components | 機密データがブラウザに漏れない |
+| `next.config.ts` の `headers` | CSP や各種セキュリティヘッダー |
+| 環境変数（`NEXT_PUBLIC_` なし） | サーバー側のみで使える秘密の値 |
+
+### 環境変数のルール
+
+```
+# .env.local
+
+# サーバーでのみ使える（ブラウザに送られない）
+DATABASE_URL=postgresql://...
+AUTH_SECRET=your-secret-key
+
+# ブラウザでも使える（NEXT_PUBLIC_ プレフィックス）
+NEXT_PUBLIC_SITE_URL=https://myapp.example.com
+```
+
+`NEXT_PUBLIC_` プレフィックスがない環境変数は、Server Components、Server Actions、Route Handlers でしかアクセスできません。データベースの接続情報や API キーなどの機密情報には `NEXT_PUBLIC_` を付けてはいけません。
+
+## セキュリティチェックリスト
+
+Web アプリケーションを作る際に確認すべき最低限の項目です。
+
+- [ ] ユーザー入力を `dangerouslySetInnerHTML` に渡していないか
+- [ ] 機密情報（API キー、DB 接続情報）がブラウザに漏れていないか
+- [ ] Cookie に `HttpOnly`、`Secure`、`SameSite` を設定しているか
+- [ ] Server Actions やフォームで CSRF 対策がされているか
+- [ ] 認証チェックをサーバー側で行っているか（クライアントだけで判断しない）
+- [ ] セキュリティヘッダー（CSP など）を設定しているか
 
 ## まとめ
 
-- ディレクトリ構成はチームが迷わない一貫したルールが重要。コロケーションを意識する
-- 技術選定は「なぜ使うのか」を説明できることが大事
-- HTML/CSS/JavaScript → React → Next.js → 実践スキルと、各レイヤーは積み重なっている
-- 基礎を理解していれば、新しい技術が出ても「何を解決するのか」の視点で学べる
-- ここからは実際にコードを書き、チームで議論し、経験を積んでいく段階
+- XSS はページにスクリプトを注入する攻撃。React の自動エスケープが基本対策
+- CSRF はログイン済みユーザーに意図しない操作をさせる攻撃。Server Actions は自動で対策済み
+- CORS はブラウザのセキュリティ機構。Server Components からの fetch には影響しない
+- CSP で読み込み可能なリソースを制限し、XSS の被害を軽減する
+- 環境変数は `NEXT_PUBLIC_` プレフィックスの有無でサーバー専用かブラウザ共有かが決まる
 
-**50 日間、おつかれさまでした。**
+**次のレッスン**: [Day 52: コンポーネント設計パターン](/lessons/day52/)

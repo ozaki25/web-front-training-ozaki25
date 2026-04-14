@@ -1,199 +1,207 @@
-# Day 48: 認証の基礎
+# Day 48: Web パフォーマンス基礎
 
 ## 今日のゴール
 
-- 認証と認可の違いを知る
-- Cookie / Session / JWT の仕組みを知る
-- OAuth の概念を知る
-- Next.js での認証フロー（Auth.js）の全体像を知る
+- Core Web Vitals（LCP / CLS / INP）の意味と改善方法を知る
+- Lighthouse を使ったパフォーマンス測定の方法を知る
+- パフォーマンス改善の基本的なサイクルという考え方を知る
 
-## 認証と認可
+## なぜパフォーマンスが重要か
 
-まず、よく混同される 2 つの概念を明確にします。
+Web ページの表示速度は、ユーザー体験とビジネス成果に直結します。
 
-- **認証（Authentication）** — 「あなたは誰ですか？」を確認すること。ログイン処理
-- **認可（Authorization）** — 「あなたにはその操作の権限がありますか？」を確認すること。アクセス制御
+- ページ表示が **1 秒遅れる**と、コンバージョン率（購入や申し込みの割合）が **7% 低下**するという調査がある
+- Google は検索ランキングにページ速度を考慮している
+- モバイル環境では通信速度やデバイス性能が限られるため、パフォーマンスの影響がさらに大きい
 
-```
-例: 会社のオフィスビル
-- 認証 = 社員証で入館ゲートを通る（本人確認）
-- 認可 = 社員証のランクで入れるフロアが決まる（権限確認）
-```
+「速いサイト」は良い UX の基本です。
 
-Web アプリケーションでは、まず認証（ログイン）でユーザーを識別し、次に認可でそのユーザーの権限に基づいてアクセスを制御します。
+## Core Web Vitals
 
-## HTTP はステートレス
+**Core Web Vitals** は Google が定めた 3 つのパフォーマンス指標です。「ユーザーにとって良い体験か」を数値で表します。
 
-Web の通信プロトコルである HTTP は**ステートレス**（stateless）です。つまり、サーバーは 1 つのリクエストが終わると、次のリクエストが同じユーザーかどうかわかりません。
+### LCP（Largest Contentful Paint）
 
-```
-リクエスト1: GET /dashboard → サーバー:「誰？」
-リクエスト2: GET /settings  → サーバー:「誰？」（同じ人かわからない）
-```
+**最も大きなコンテンツが表示されるまでの時間**です。ユーザーが「ページが表示された」と感じるタイミングに近い指標です。
 
-これでは、ページを移動するたびにログインが必要になってしまいます。この問題を解決するのが Cookie と Session です。
-
-## Cookie
-
-**Cookie** は、ブラウザに保存される小さなデータです。サーバーがレスポンスで「この情報を保存しておいて」とブラウザに指示し、ブラウザは次のリクエストからその情報を自動的に送ります。
-
-```mermaid
-sequenceDiagram
-    participant B as ブラウザ
-    participant S as サーバー
-
-    Note over B,S: 1. ログインリクエスト
-    B->>S: メール: user@example.com、パスワード: ****
-
-    Note over B,S: 2. サーバーが Cookie を設定
-    S-->>B: ログイン成功（Set-Cookie: session_id=abc123）
-
-    Note over B,S: 3. 以降のリクエスト
-    B->>S: GET /dashboard（Cookie: session_id=abc123 が自動で付く）
-    Note over S: abc123 は太郎さんだな
-    S-->>B: 太郎さんのダッシュボード
-```
-
-### Cookie のセキュリティ属性
-
-```
-Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400
-```
-
-`Set-Cookie` はサーバーがレスポンスに含める HTTP ヘッダーで、ブラウザに Cookie の保存を指示します。
-
-| 属性 | 意味 |
+| 評価 | 時間 |
 |------|------|
-| `HttpOnly` | JavaScript からアクセスできない（XSS（悪意あるスクリプト注入）対策） |
-| `Secure` | HTTPS（HTTP の暗号化版）でのみ送信される |
-| `SameSite=Strict` | 同一サイトからのリクエストでのみ送信される（CSRF（別サイトからの偽リクエスト）対策） |
-| `Path=/` | Cookie が有効なパス |
-| `Max-Age=86400` | 有効期限（秒）。86400 = 24 時間 |
+| 良い | 2.5 秒以下 |
+| 改善が必要 | 2.5〜4.0 秒 |
+| 悪い | 4.0 秒超 |
 
-## Session（セッション）
+LCP の対象になるのは、画像、`<video>` のポスター画像、背景画像、テキストブロックなどです。
 
-**Session** は、サーバー側でユーザーの状態を管理する仕組みです。
-
-```
-サーバーのセッションストア:
-{
-  "abc123": { userId: 1, name: "太郎", role: "admin" },
-  "def456": { userId: 2, name: "花子", role: "user" }
-}
-```
-
-ブラウザから送られる Cookie のセッション ID（`abc123`）をキーにして、サーバーがユーザー情報を参照します。ユーザー情報はサーバー側にあるため、ブラウザからは改ざんできません。
-
-## JWT（JSON Web Token）
-
-**JWT** はもう 1 つのアプローチで、ユーザー情報をトークン（署名された文字列）自体に含めます。
-
-```
-eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsIm5hbWUiOiLlpKrpg44iLCJyb2xlIjoiYWRtaW4ifQ.xxxxx
-```
-
-この文字列は 3 つのパートから成り、ドット（`.`）で区切られています。
-
-```
-ヘッダー.ペイロード.署名
-
-ヘッダー: 使用しているアルゴリズム
-ペイロード: ユーザー情報（userId, name, role など）
-署名: 改ざん検知用（サーバーの秘密鍵で生成）
-```
-
-> **重要**: JWT のペイロードは Base64Url エンコード（バイナリデータを URL で安全に使える文字列に変換する方式）されているだけで、誰でもデコードして内容を読めます。JWT は改ざんを検知するための「署名」であり、内容を隠すための「暗号化」ではありません。パスワードなどの機密情報は JWT に含めないでください。
-
-### Session vs JWT
-
-| 特徴 | Session | JWT |
-|------|---------|-----|
-| ユーザー情報の保存場所 | サーバー | トークン自体 |
-| スケーラビリティ | サーバー間で共有が必要 | サーバー間共有不要 |
-| 無効化 | 即座にログアウト可能 | 有効期限まで無効化が難しい |
-| サイズ | Cookie は小さい（ID のみ） | トークンが大きくなりがち |
-
-どちらが優れているかは状況次第です。Auth.js は Session ベースをデフォルトとしています。
-
-## OAuth
-
-**OAuth**（Open Authorization）は、外部サービス（Google、GitHub など）のアカウントでログインする仕組みです。「Google でログイン」ボタンが OAuth の典型的な例です。
-
-### OAuth のフロー（簡略版）
-
-```mermaid
-sequenceDiagram
-    participant U as ユーザー
-    participant A as アプリ
-    participant G as Google
-
-    U->>A: 「Google でログイン」をクリック
-    A->>G: Google のログインページにリダイレクト
-    U->>G: ログイン & アプリへの権限を許可
-    G->>A: アプリにリダイレクト（認証コード付き）
-    A->>G: 認証コードでアクセストークンを要求
-    G-->>A: アクセストークン
-    A->>G: アクセストークンでユーザー情報を取得
-    G-->>A: ユーザー情報
-    Note over A: セッション作成 → ログイン完了
-```
-
-OAuth の重要な点は、**ユーザーのパスワードがアプリに渡らない**ことです。パスワードは Google（認証プロバイダ）だけが知っています。
-
-## Auth.js（NextAuth v5）による認証
-
-**Auth.js**（旧 NextAuth.js、現在 v5）は、Next.js で認証を実装するためのライブラリです。OAuth プロバイダとの連携、Session 管理、JWT 処理などをまとめて扱えます。
-
-Auth.js の中心となるのは設定ファイルです。ここで「どの OAuth プロバイダを使うか」を定義し、認証に必要な関数をエクスポートします。
-
-```ts
-// src/auth.ts
-import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
-
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID!,
-      clientSecret: process.env.AUTH_GITHUB_SECRET!,
-    }),
-  ],
-});
-```
-
-この設定から得られる `handlers` を Route Handler（Day 36 参照）でエクスポートすると、ログイン・ログアウト・コールバックなどの認証エンドポイントが自動的に生成されます。
-
-認証後のセッション情報は `auth()` 関数で取得できます。Server Component でもServer Action でも使えるのが特徴です。
+#### LCP を改善する方法
 
 ```tsx
-// src/app/dashboard/page.tsx
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import Image from "next/image";
 
-export default async function DashboardPage() {
-  const session = await auth();
+// ✅ ファーストビューの画像に priority を付ける（Day 42 で学習）
+<Image src="/hero.jpg" alt="ヒーロー画像" fill priority />
 
-  if (!session) {
-    redirect("/api/auth/signin");
-  }
+// ✅ Server Components でデータ取得（Day 37 で学習）
+// → データを含んだ HTML が最初から送られるため、表示が速い
 
+// ✅ フォントの最適化（Day 42 で学習）
+// → next/font でフォントをビルド時に取得しておく
+```
+
+- サーバーのレスポンス時間を短縮する
+- レンダリングをブロックする CSS/JavaScript を減らす
+- 画像を最適化する（`next/image` が自動で対応）
+
+### CLS（Cumulative Layout Shift）
+
+**ページの読み込み中にレイアウトがどれだけずれるか**の指標です。読んでいたテキストが突然ずれて別の場所をクリックしてしまった、という経験はないでしょうか。それが CLS です。
+
+| 評価 | スコア |
+|------|-------|
+| 良い | 0.1 以下 |
+| 改善が必要 | 0.1〜0.25 |
+| 悪い | 0.25 超 |
+
+#### CLS を改善する方法
+
+```tsx
+// ✅ 画像にサイズを指定する
+<Image src="/photo.jpg" alt="写真" width={600} height={400} />
+
+// ❌ サイズなしの img はレイアウトシフトの原因
+<img src="/photo.jpg" alt="写真" />
+```
+
+- 画像や動画に `width`/`height` を指定する（スペースが事前に確保される）
+- Web フォントの読み込みでレイアウトがずれないようにする（`next/font` が自動で対応）
+- 動的にコンテンツを挿入しない（広告バナーなどは事前にスペースを確保）
+
+### INP（Interaction to Next Paint）
+
+**ユーザーの操作（クリック、タップ、キー入力）から画面が更新されるまでの時間**です。ボタンをクリックしてから画面が反応するまでの体感的な速さを測ります。
+
+| 評価 | 時間 |
+|------|------|
+| 良い | 200ms 以下 |
+| 改善が必要 | 200〜500ms |
+| 悪い | 500ms 超 |
+
+#### INP を改善する方法
+
+- メインスレッド（ブラウザが UI を処理するスレッド）を長時間ブロックする処理を避ける
+- 重い計算は Web Worker に移す
+- イベントハンドラを軽くする
+- 不要な再レンダリングを避ける（`React.memo` など）
+
+## Lighthouse の使い方
+
+**Lighthouse** は Google が提供するパフォーマンス測定ツールです。Chrome の開発者ツールに組み込まれています。
+
+### 測定手順
+
+1. Chrome で測定したいページを開く
+2. 開発者ツールを開く（`F12` または `Cmd + Option + I`）
+3. **Lighthouse** タブを選択
+4. 「Analyze page load」をクリック
+
+数秒〜数十秒で結果が表示されます。
+
+### 結果の読み方
+
+Lighthouse は以下の 5 つのカテゴリでスコアを表示します。
+
+| カテゴリ | 内容 |
+|---------|------|
+| Performance | ページの表示速度 |
+| Accessibility | アクセシビリティ（Day 46-45 で学習） |
+| Best Practices | Web 開発のベストプラクティス |
+| SEO | 検索エンジン最適化（Day 41 で学習） |
+| PWA | Progressive Web App 対応 |
+
+Performance スコアの内訳として、LCP / CLS / INP などの Core Web Vitals の値が表示されます。各指標の横に具体的な改善提案も表示されるので、それに従って改善します。
+
+### 注意点
+
+Lighthouse のスコアは測定のたびに変動します。以下の点に注意が必要です。
+
+- **シークレットモードで測定する** — ブラウザ拡張機能がスコアに影響する
+- **複数回測定する** — 1 回の結果を鵜呑みにしない
+- **本番環境で測定する** — 開発環境は最適化されていないため、スコアが低く出る
+- **モバイルで測定する** — Lighthouse はデフォルトでモバイル環境をシミュレートする
+
+## パフォーマンス改善のサイクル
+
+パフォーマンス改善は、一度やって終わりではありません。以下のサイクルを回します。
+
+```mermaid
+flowchart TD
+    A["1. 測定する\n（Lighthouse、実際のユーザーデータ）"] --> B["2. 問題を特定する\n（どの指標が悪いか）"]
+    B --> C["3. 原因を分析する\n（なぜ遅いか）"]
+    C --> D["4. 改善を実施する"]
+    D --> E["5. 効果を測定する\n（改善されたか確認）"]
+    E --> A
+```
+
+### 重要: 推測で最適化しない
+
+```
+❌ 「たぶんここが遅いだろう」→ 最適化 → 効果なし → 時間の無駄
+
+✅ 測定 → 「LCP が 4.2 秒で、ヒーロー画像の読み込みが原因」
+   → 画像を最適化 → LCP が 2.1 秒に改善
+```
+
+必ず測定してボトルネック（最も遅い箇所）を特定してから改善に取りかかることが重要です。
+
+## 実際のユーザーデータ
+
+Lighthouse はラボデータ（シミュレーション環境での測定）です。実際のユーザーの体験を測定するには **RUM（Real User Monitoring）** が必要です。
+
+Next.js では `reportWebVitals` を使って実際のユーザーの Core Web Vitals を収集できます。
+
+```tsx
+// src/app/layout.tsx
+import { WebVitals } from "./web-vitals";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <main>
-      <h1>ダッシュボード</h1>
-      <p>ようこそ、{session.user?.name} さん</p>
-    </main>
+    <html lang="ja">
+      <body>
+        <WebVitals />
+        {children}
+      </body>
+    </html>
   );
 }
 ```
 
-ログイン・ログアウトのボタンは、Server Action として `signIn("github")` / `signOut()` を呼ぶ `<form>` として実装します。Day 38 で学んだ Middleware を使えば、複数のページをまとめて保護することもできます。
+```tsx
+// src/app/web-vitals.tsx
+"use client";
+
+import { useReportWebVitals } from "next/web-vitals";
+
+export function WebVitals() {
+  useReportWebVitals((metric) => {
+    // アナリティクスサービスに送信
+    console.log(metric.name, metric.value);
+  });
+
+  return null;
+}
+```
+
+これにより LCP、CLS、INP などの実際のユーザーデータが収集できます。
 
 ## まとめ
 
-- 認証は「誰か」を確認、認可は「権限があるか」を確認する仕組み
-- Cookie と Session でステートレスな HTTP に状態を持たせる
-- JWT はトークン自体にユーザー情報を含める方式
-- OAuth は外部サービスのアカウントでログインする仕組み。パスワードがアプリに渡らない
-- Auth.js（NextAuth v5）を使うと、Next.js で OAuth やセッション管理を簡単に実装できる
+- Core Web Vitals は LCP（表示速度）、CLS（レイアウトのずれ）、INP（操作の応答性）の 3 指標
+- Lighthouse で測定できるが、結果は毎回変動するため複数回の測定が重要
+- パフォーマンス改善は「測定 → 特定 → 改善 → 再測定」のサイクルで行う
+- 推測ではなく、必ずデータに基づいて改善する
+- Next.js の `next/image`、`next/font`、Server Components は多くのパフォーマンス最適化を自動で行ってくれる
 
-**次のレッスン**: [Day 49: Web セキュリティ](/lessons/day49/)
+**次のレッスン**: [Day 49: Web パフォーマンス応用](/lessons/day49/)

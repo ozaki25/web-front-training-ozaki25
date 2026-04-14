@@ -1,256 +1,164 @@
-# Day 14: HTTP とネットワーク基礎
+# Day 14: DOM 操作
 
 ## 今日のゴール
 
-- HTTP の基本的な仕組み（リクエストとレスポンス）を知る
-- HTTP メソッド（GET / POST / PUT / DELETE）の使い分けを知る
-- ステータスコードの意味を知る
-- REST の基本概念を知る
+- DOM（Document Object Model）が何かを知る
+- JavaScript で HTML 要素を取得・変更・追加できることを知る
+- DOM 操作の煩雑さを知り、React のような宣言的 UI が求められる背景を知る
 
-## HTTP とは
+## DOM とは
 
-Day 13 で `fetch` を使ってサーバーからデータを取得しました。このとき、ブラウザとサーバーの間で使われていた通信の取り決め（プロトコル）が **HTTP（HyperText Transfer Protocol）** です。
+**DOM**（Document Object Model）は、ブラウザが HTML を読み込んだ後に作る「HTML のツリー構造のデータ」です。
 
-HTTP は「**リクエスト（要求）**とレスポンス（応答）」のやり取りで成り立っています。
-
-```mermaid
-sequenceDiagram
-    participant Browser as ブラウザ（クライアント）
-    participant Server as サーバー
-    Browser->>Server: HTTPリクエスト「このデータをください」
-    Server->>Browser: HTTPレスポンス「はい、どうぞ」
+```html
+<html>
+  <body>
+    <h1>タイトル</h1>
+    <p>本文</p>
+  </body>
+</html>
 ```
 
-Web ページを表示するとき、ブラウザは裏側で多数の HTTP リクエストを送っています。HTML ファイル、CSS ファイル、画像、JavaScript ファイル — それぞれが個別の HTTP リクエストで取得されます。
-
-## HTTP リクエストの構造
-
-HTTP リクエストは主に以下の部分で構成されます。
+ブラウザはこの HTML を読み込むと、内部に以下のようなツリー構造を作ります。
 
 ```
-GET /users HTTP/1.1
-Host: api.example.com
-Accept: application/json
-Authorization: Bearer xxxxx
+html
+└── body
+    ├── h1
+    │   └── "タイトル"
+    └── p
+        └── "本文"
 ```
 
-| 部分 | 説明 |
-|------|------|
-| メソッド | 何をしたいか（GET, POST, PUT, DELETE など） |
-| パス | どのリソースに対してか（`/users`） |
-| ヘッダー | 付加情報（認証情報、受け入れるデータ形式など） |
-| ボディ | 送信するデータ（POST/PUT で使う） |
+このツリーの各点を**ノード**（node = 節）と呼びます。JavaScript は DOM を通じて HTML の要素にアクセスし、内容を変更したり、新しい要素を追加したりできます。
 
-## HTTP メソッド
+## DOM 操作の基本
 
-HTTP メソッドは「このリクエストで何をしたいか」を表します。
+### 要素の取得
 
-| メソッド | 用途 | 例 |
-|---------|------|-----|
-| **GET** | データの取得 | ユーザー一覧を取得する |
-| **POST** | データの作成 | 新しいユーザーを登録する |
-| **PUT** | データの全体更新 | ユーザー情報を丸ごと更新する |
-| **PATCH** | データの部分更新 | ユーザーのメールアドレスだけ更新する |
-| **DELETE** | データの削除 | ユーザーを削除する |
-
-### fetch での使い分け
+JavaScript で DOM を操作するには、まず対象の要素を取得します。
 
 ```javascript
-// GET（デフォルト）
-const response = await fetch("https://api.example.com/users");
-
-// POST
-const response = await fetch("https://api.example.com/users", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ name: "山田太郎", email: "yamada@example.com" }),
-});
-
-// PUT
-const response = await fetch("https://api.example.com/users/1", {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ name: "山田太郎", email: "new@example.com" }),
-});
-
-// DELETE
-const response = await fetch("https://api.example.com/users/1", {
-  method: "DELETE",
-});
+// CSS セレクタで要素を取得する
+const title = document.querySelector("h1");       // 最初の1つ
+const items = document.querySelectorAll("li");     // 条件に合う全て
 ```
 
-## HTTP レスポンスの構造
+`querySelector` は最初に見つかった1つ、`querySelectorAll` は条件に合うすべての要素を返します。Day 6-7 で学んだ CSS セレクタの書き方がそのまま使えます。
 
-```
-HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 256
+### 要素の変更
 
-{"id": 1, "name": "山田太郎", "email": "yamada@example.com"}
-```
-
-| 部分 | 説明 |
-|------|------|
-| ステータスコード | 処理結果を数字で表す（200, 404, 500 など） |
-| ヘッダー | 付加情報（データ形式、サイズなど） |
-| ボディ | レスポンスデータ（JSON、HTML など） |
-
-## ステータスコード
-
-ステータスコードは 3 桁の数字で、最初の 1 桁でカテゴリが決まります。
-
-### 2xx — 成功
-
-| コード | 意味 |
-|--------|------|
-| **200** OK | リクエスト成功 |
-| **201** Created | リソースの作成に成功（POST の成功時によく使う） |
-| **204** No Content | 成功したがレスポンスボディなし（DELETE の成功時によく使う） |
-
-### 3xx — リダイレクト
-
-| コード | 意味 |
-|--------|------|
-| **301** Moved Permanently | URL が恒久的に変更された |
-| **302** Found | URL が一時的に変更された |
-| **304** Not Modified | キャッシュがそのまま使える |
-
-### 4xx — クライアントエラー（リクエスト側の問題）
-
-| コード | 意味 |
-|--------|------|
-| **400** Bad Request | リクエストの形式が不正 |
-| **401** Unauthorized | 認証が必要（ログインしていない） |
-| **403** Forbidden | アクセス権限がない |
-| **404** Not Found | リソースが見つからない |
-| **422** Unprocessable Entity | リクエストの形式は正しいがデータに問題がある |
-
-### 5xx — サーバーエラー（サーバー側の問題）
-
-| コード | 意味 |
-|--------|------|
-| **500** Internal Server Error | サーバー内部エラー |
-| **502** Bad Gateway | 中間サーバーが不正なレスポンスを受け取った |
-| **503** Service Unavailable | サーバーが一時的に利用不可（メンテナンス中など） |
-
-### fetch でステータスコードを扱う
+取得した要素のテキストやスタイルを変更できます。
 
 ```javascript
-async function fetchUser(id) {
-  const response = await fetch(`https://api.example.com/users/${id}`);
+const title = document.querySelector("#title");
 
-  if (response.status === 404) {
-    console.log("ユーザーが見つかりません");
-    return null;
-  }
+// テキストの変更
+title.textContent = "変更後のタイトル";
 
-  if (!response.ok) {
-    throw new Error(`HTTP エラー: ${response.status}`);
-  }
+// スタイルの変更
+title.style.color = "darkblue";
 
-  return await response.json();
+// クラスの追加・削除
+title.classList.add("highlight");
+```
+
+> **セキュリティの注意**: `innerHTML` というプロパティを使うと HTML を直接書き換えられますが、ユーザー入力を含む場合はクロスサイトスクリプティング（XSS = 悪意あるスクリプトを注入する攻撃）の危険があります。テキストの表示には `textContent` を使います。
+
+### 要素の作成と追加
+
+新しい要素を作って DOM に追加することもできます。
+
+```javascript
+const newItem = document.createElement("li");
+newItem.textContent = "新しい項目";
+
+const list = document.querySelector("ul");
+list.appendChild(newItem);
+```
+
+### イベントリスナー
+
+ユーザーの操作（クリック、キー入力など）に反応する処理を登録できます。
+
+```javascript
+const button = document.querySelector("#my-button");
+button.addEventListener("click", () => {
+  console.log("クリックされました");
+});
+```
+
+## DOM 操作はなぜ煩雑なのか
+
+ここまでの API を組み合わせると、たとえば「ボタンを押すとカウントが増える」だけのシンプルな機能でも、こうなります。
+
+```javascript
+// データ
+let count = 0;
+
+// DOM 要素の取得
+const countDisplay = document.querySelector("#count");
+const incrementButton = document.querySelector("#increment");
+
+// イベントの登録
+incrementButton.addEventListener("click", () => {
+  // データの更新
+  count += 1;
+  // 画面の更新（手動で同期）
+  countDisplay.textContent = `カウント: ${count}`;
+});
+```
+
+シンプルに見えるかもしれません。しかし、ここにはある構造的な問題が潜んでいます。
+
+**「データ」と「画面（DOM）」を自分で同期しなければならない**ということです。
+
+カウンターなら `textContent` を1箇所更新するだけですが、実際のアプリケーションでは:
+
+- ToDo リストの追加・削除・完了状態の切り替え
+- フィルターや並び替えの反映
+- フォームのバリデーション結果の表示
+- 複数の箇所に同じデータを表示
+
+これらすべてで「データが変わったら、画面のどこをどう更新するか」を手動で書く必要があります。1つの状態変更が画面の複数箇所に影響する場合、更新漏れやタイミングのバグが頻発します。
+
+## 宣言的 UI という解決策
+
+この問題を解決するのが、React のような**宣言的 UI ライブラリ**です。
+
+先ほどのカウンターを React で書くと、考え方がまったく変わります。
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>カウント: {count}</p>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+    </div>
+  );
 }
 ```
 
-## リクエストヘッダーとレスポンスヘッダー
+ここには `querySelector` も `textContent =` もありません。React では「データ（`count`）がこの値のとき、画面はこう表示される」というルールだけを書きます。データが変わったら、画面のどこを更新すべきかは React が自動的に判断します。
 
-ヘッダーはリクエストやレスポンスの「付加情報」です。
+| | 命令的 UI（DOM 操作） | 宣言的 UI（React） |
+|---|---|---|
+| 考え方 | 「この要素のテキストをこう変えろ」 | 「データがこうなら画面はこう」 |
+| DOM の更新 | 開発者が手動で行う | ライブラリが自動で行う |
+| 状態と画面の同期 | 自分で管理 | フレームワークが保証 |
+| 規模が大きくなると | 更新漏れ・バグが増える | 複雑さが増えにくい |
 
-### よく使うリクエストヘッダー
-
-| ヘッダー | 用途 | 例 |
-|---------|------|-----|
-| `Content-Type` | 送信するデータの形式 | `application/json` |
-| `Accept` | 受け取りたいデータの形式 | `application/json` |
-| `Authorization` | 認証情報 | `Bearer eyJhbGci...` |
-
-### よく使うレスポンスヘッダー
-
-| ヘッダー | 用途 | 例 |
-|---------|------|-----|
-| `Content-Type` | レスポンスデータの形式 | `application/json; charset=utf-8` |
-| `Cache-Control` | キャッシュの制御 | `max-age=3600` |
-| `Set-Cookie` | Cookie の設定 | `session=abc123` |
-
-### DevTools で確認する
-
-ブラウザの DevTools の「Network」タブで、実際の HTTP リクエストとレスポンスを確認できます。
-
-1. DevTools を開く（F12）
-2. 「Network」タブを選択
-3. ページを更新する
-4. 一覧に表示されるリクエストをクリックすると、ヘッダーやレスポンスの詳細が見られる
-
-Day 13 のユーザー一覧ページを開いた状態で確認すると、`jsonplaceholder.typicode.com/users` へのリクエストが見つかります。
-
-## JSON
-
-**JSON（JavaScript Object Notation）** は、データのやり取りに使われる最も一般的なフォーマットです。
-
-```json
-{
-  "name": "山田太郎",
-  "age": 25,
-  "isStudent": false,
-  "hobbies": ["読書", "ランニング"],
-  "address": {
-    "city": "東京",
-    "zip": "100-0001"
-  }
-}
-```
-
-JavaScript のオブジェクトとほぼ同じ見た目ですが、JSON には制約があります。
-
-- キーは必ずダブルクォート（`"`）で囲む
-- 末尾のカンマ（trailing comma）は不可
-- コメントは書けない
-- 値に関数は使えない
-
-### JavaScript と JSON の変換
-
-```javascript
-// JavaScript オブジェクト → JSON 文字列
-const user = { name: "山田", age: 25 };
-const json = JSON.stringify(user);
-console.log(json);  // '{"name":"山田","age":25}'
-
-// JSON 文字列 → JavaScript オブジェクト
-const parsed = JSON.parse(json);
-console.log(parsed.name);  // "山田"
-```
-
-## REST の基本概念
-
-**REST（Representational State Transfer）** は、Web API の設計スタイルです。「こう設計すると分かりやすい API になる」という考え方の集まりです。
-
-### REST の基本ルール
-
-1. **リソースを URL で表す**: `/users`（ユーザー一覧）、`/users/1`（ID が 1 のユーザー）
-2. **HTTP メソッドで操作を表す**: GET（取得）、POST（作成）、PUT（更新）、DELETE（削除）
-3. **ステートレス**: サーバーはリクエスト間の状態を保持しない。必要な情報は毎回リクエストに含める
-
-### RESTful な API の例
-
-| 操作 | メソッド | URL | 説明 |
-|------|---------|-----|------|
-| ユーザー一覧 | GET | `/users` | 全ユーザーを取得 |
-| ユーザー詳細 | GET | `/users/1` | ID=1 のユーザーを取得 |
-| ユーザー作成 | POST | `/users` | 新しいユーザーを作成 |
-| ユーザー更新 | PUT | `/users/1` | ID=1 のユーザーを更新 |
-| ユーザー削除 | DELETE | `/users/1` | ID=1 のユーザーを削除 |
-
-URL が「何を」、メソッドが「どうするか」を表しています。この一貫した設計により、API の使い方が予測しやすくなります。
-
-Next.js の Route Handlers（API エンドポイント）も、この REST の考え方に基づいて設計することが多いです。
+DOM 操作の存在と、その煩雑さを知っておくことが重要です。Day 23 以降で学ぶ React は、まさにこの問題を解決するために作られました。
 
 ## まとめ
 
-- HTTP はリクエストとレスポンスのやり取り
-- HTTP メソッド: GET（取得）、POST（作成）、PUT/PATCH（更新）、DELETE（削除）
-- ステータスコード: 2xx（成功）、3xx（リダイレクト）、4xx（クライアントエラー）、5xx（サーバーエラー）
-- ヘッダーはリクエスト/レスポンスの付加情報。DevTools の Network タブで確認できる
-- JSON は Web API のデータ交換で最も使われるフォーマット
-- REST は URL でリソースを、HTTP メソッドで操作を表す API 設計スタイル
+- DOM はブラウザが HTML から作るツリー構造のデータ
+- JavaScript で DOM を操作して画面を変更できる（`querySelector`、`textContent`、`createElement` など）
+- DOM 操作は「データと画面の手動同期」が必要で、規模が大きくなると煩雑になる
+- この煩雑さが React のような宣言的 UI ライブラリが生まれた理由
 
-**次のレッスン**: [Day 15: ES Modules](/lessons/day15/)
+**次のレッスン**: [Day 15: 非同期処理](/lessons/day15/)

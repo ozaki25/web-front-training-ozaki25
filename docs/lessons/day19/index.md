@@ -1,257 +1,221 @@
-# Day 19: ジェネリクスとユーティリティ型
+# Day 19: TypeScript の基本
 
 ## 今日のゴール
 
-- ジェネリクスの基本と使いどころを知る
-- 実用的なユーティリティ型（Partial, Required, Pick, Omit, Record）の使い方を知る
+- TypeScript がなぜ必要かを知る
+- 型注釈の書き方を知る
+- プリミティブ型、配列、オブジェクトの型の使い方を知る
+- 型推論の仕組みを知る
 
-## ジェネリクスとは
+## なぜ型が必要なのか
 
-Day 11 で学んだ配列メソッド `map` を振り返ります。`map` は配列の要素を変換する関数です。
+Day 11〜16 で JavaScript を学びました。JavaScript は自由度が高い言語ですが、その自由さがバグの原因になることがあります。
 
-```typescript
-const numbers = [1, 2, 3];
-const strings = numbers.map((n) => String(n)); // string[]
+```javascript
+function greet(name) {
+  return "こんにちは、" + name + "さん！";
+}
+
+// 意図しない使い方をしてもエラーにならない
+greet(42);        // "こんにちは、42さん！"
+greet(undefined); // "こんにちは、undefinedさん！"
 ```
 
-`numbers` は `number[]`、`strings` は `string[]` です。`map` は `number` の配列にも `string` の配列にも使えます。こういった「型に依存しない汎用的な処理」を実現するのがジェネリクス（generics）です。
+`greet` は名前（文字列）を受け取る関数ですが、数値や `undefined` を渡してもエラーになりません。実行して初めて「あれ、おかしい」と気づきます。
 
-## ジェネリクスの基本
-
-ジェネリクスは「型を引数として受け取る仕組み」です。`<T>` のように山括弧で型パラメータを宣言します。
+TypeScript（タイプスクリプト）は、JavaScript に**型**（type）の仕組みを追加した言語です。「この変数には文字列しか入らない」「この関数は数値を返す」といったルールをコードに書くことで、実行する前にミスを見つけられます。
 
 ```typescript
-// T は「何かの型」を表すプレースホルダー
-function first<T>(items: T[]): T | undefined {
-  return items[0];
+function greet(name: string): string {
+  return "こんにちは、" + name + "さん！";
 }
 
-// 使うときに T が具体的な型に置き換わる
-const num = first([1, 2, 3]);       // T = number → number | undefined
-const str = first(["a", "b", "c"]); // T = string → string | undefined
+greet(42); // エラー！ number は string に代入できません
 ```
 
-`first` 関数は「配列の最初の要素を返す」というロジックです。配列の要素が何型であっても同じロジックが使えるので、ジェネリクスで型を抽象化しています。
+このエラーは、コードを実行する前（エディタ上やビルド時）に表示されます。これが TypeScript の最大のメリットです。
 
-型パラメータ名は慣例として `T`（Type）、`U`、`V` や、`K`（Key）、`V`（Value）がよく使われます。
+## TypeScript の仕組み
 
-## ジェネリクスなしだとどうなるか
+TypeScript のコードはそのままブラウザでは動きません。TypeScript のコンパイラ（tsc）が `.ts` ファイルを `.js` ファイルに変換（トランスパイル）します。
 
-ジェネリクスを使わないで同じことをしようとすると、問題が起きます。
-
-```typescript
-// any を使う → 型安全でない
-function firstAny(items: any[]): any {
-  return items[0];
-}
-
-const value = firstAny([1, 2, 3]); // any 型 → 型チェックが効かない
-value.toUpperCase(); // エラーにならない！（実行時にクラッシュ）
+```
+greeting.ts → TypeScript コンパイラ → greeting.js
 ```
 
+この変換の過程で型のチェックが行われます。型に問題があればエラーを報告し、問題がなければ型の情報を取り除いた JavaScript を出力します。つまり、型は開発時の安全ネットであり、実行時には存在しません。
+
+> **ポイント**: Next.js のプロジェクトでは TypeScript のセットアップが最初から組み込まれているので、自分で設定する必要はほとんどありません。
+
+## 型注釈の基本
+
+型注釈（type annotation）は、変数名の後ろに `: 型名` と書きます。
+
 ```typescript
-// 型ごとに関数を作る → 冗長
-function firstNumber(items: number[]): number | undefined {
-  return items[0];
-}
-function firstString(items: string[]): string | undefined {
-  return items[0];
-}
+const message: string = "こんにちは";
+const count: number = 42;
+const isActive: boolean = true;
 ```
 
-ジェネリクスは「型安全かつ汎用的」を両立する仕組みです。
+## プリミティブ型
 
-## 型パラメータに制約を付ける
+JavaScript のプリミティブ値に対応する型があります。
 
-型パラメータには `extends` で制約を付けられます。
+| 型 | 説明 | 例 |
+|------|------|------|
+| `string` | 文字列 | `"hello"`, `'world'` |
+| `number` | 数値（整数・小数の区別なし） | `42`, `3.14` |
+| `boolean` | 真偽値 | `true`, `false` |
+| `null` | null | `null` |
+| `undefined` | undefined | `undefined` |
 
 ```typescript
-// T は { length: number } を持つ型に限定
-function logLength<T extends { length: number }>(item: T): void {
-  console.log(item.length);
-}
-
-logLength("hello");    // OK: string は length を持つ
-logLength([1, 2, 3]);  // OK: 配列は length を持つ
-logLength(123);        // エラー！ number は length を持たない
+const userName: string = "田中";
+const age: number = 25;
+const isStudent: boolean = false;
+const nothing: null = null;
+const notDefined: undefined = undefined;
 ```
 
-## ジェネリクスの実用例
+> **注意**: `String`（大文字）と `string`（小文字）は別物です。TypeScript では小文字の `string` を使います。`String` はラッパーオブジェクトの型で、通常は使いません。
 
-実際の開発でよく見るパターンをいくつか紹介します。
+## 配列の型
 
-### API レスポンスのラッパー
+配列の型は `型名[]` と書きます。
 
 ```typescript
-// どんなデータでも包める汎用的な型
-interface ApiResponse<T> {
-  data: T;
-  status: number;
-  message: string;
-}
-
-interface User {
-  id: number;
-  name: string;
-}
-
-interface Product {
-  id: number;
-  title: string;
-  price: number;
-}
-
-// 使うときに T を指定
-type UserResponse = ApiResponse<User>;
-type ProductListResponse = ApiResponse<Product[]>;
+const numbers: number[] = [1, 2, 3];
+const names: string[] = ["田中", "佐藤", "鈴木"];
+const flags: boolean[] = [true, false, true];
 ```
 
-### キーと値のペア
+配列に宣言と異なる型の値を入れようとするとエラーになります。
 
 ```typescript
-function toEntries<K extends string, V>(
-  obj: Record<K, V>
-): [K, V][] {
-  return Object.entries(obj) as [K, V][];
-}
+const numbers: number[] = [1, 2, 3];
+numbers.push("四"); // エラー！ string は number に代入できません
 ```
 
-> **`as` について**: `as [K, V][]` は**型アサーション**と呼ばれる構文で、「この値はこの型である」と TypeScript に明示的に伝えます。`Object.entries` の戻り値は `[string, V][]` ですが、実際にはキーが `K` 型であるとわかっているので `as` で型を指定しています。型アサーションは型チェックをすり抜けるため、本当にその型であると確信がある場合にだけ使います。Day 20 で学ぶ narrowing（型の絞り込み）で安全に型を判別できる場合は、そちらを優先します。
-
-> **ポイント**: ジェネリクスは「同じロジックを異なる型で使い回す」ときに使います。すべてをジェネリクスにする必要はありません。具体的な型で十分な場面では具体的な型を使います。
-
-## ユーティリティ型
-
-TypeScript には、既存の型を変換する便利な組み込み型が用意されています。これをユーティリティ型と呼びます。
-
-### Partial\<T\> ― すべてのプロパティを省略可能に
+Day 13 で学んだ配列メソッドも型安全に使えます。
 
 ```typescript
-interface User {
-  name: string;
-  age: number;
-  email: string;
-}
+const prices: number[] = [100, 200, 300];
 
-// すべてのプロパティが省略可能になる
-type PartialUser = Partial<User>;
-// { name?: string; age?: number; email?: string; }
+// map の結果も number[] と推論される
+const doubled = prices.map((price) => price * 2);
 
-// ユーザー情報の部分更新に便利
-function updateUser(id: number, changes: Partial<User>): void {
-  // name だけ、age だけ、など部分的な更新を受け付ける
-  console.log(`ユーザー ${id} を更新:`, changes);
-}
-
-updateUser(1, { name: "新しい名前" });       // OK
-updateUser(1, { age: 26, email: "new@ex.com" }); // OK
+// filter の結果も number[] と推論される
+const expensive = prices.filter((price) => price > 150);
 ```
 
-### Required\<T\> ― すべてのプロパティを必須に
+## オブジェクトの型
 
-`Partial` の逆で、Optional なプロパティも必須にします。
-
-```typescript
-interface Config {
-  apiUrl?: string;
-  timeout?: number;
-  retries?: number;
-}
-
-// すべてのプロパティが必須になる
-type RequiredConfig = Required<Config>;
-// { apiUrl: string; timeout: number; retries: number; }
-```
-
-### Pick\<T, K\> ― 特定のプロパティだけ抽出
+オブジェクトの型は、プロパティ名と型のペアで記述します。
 
 ```typescript
-interface User {
-  id: number;
-  name: string;
-  age: number;
-  email: string;
-}
-
-// name と email だけ抽出
-type UserContact = Pick<User, "name" | "email">;
-// { name: string; email: string; }
-```
-
-### Omit\<T, K\> ― 特定のプロパティを除外
-
-`Pick` の逆です。
-
-```typescript
-interface User {
-  id: number;
-  name: string;
-  age: number;
-  email: string;
-}
-
-// id を除外（新規作成時に id はまだない、という場面で便利）
-type NewUser = Omit<User, "id">;
-// { name: string; age: number; email: string; }
-```
-
-### Record\<K, V\> ― キーと値の型を指定したオブジェクト
-
-```typescript
-// string のキーに number の値を持つオブジェクト
-type ScoreMap = Record<string, number>;
-
-const scores: ScoreMap = {
-  math: 90,
-  english: 85,
-  science: 92,
+const user: { name: string; age: number } = {
+  name: "田中",
+  age: 25,
 };
 ```
 
-リテラル型と組み合わせると、キーを限定できます。
+定義にないプロパティにアクセスしたり、型の異なる値を代入しようとするとエラーになります。
 
 ```typescript
-type Subject = "math" | "english" | "science";
-type ScoreMap = Record<Subject, number>;
+user.email; // エラー！ プロパティ 'email' は存在しません
+user.age = "二十五"; // エラー！ string は number に代入できません
+```
 
-const scores: ScoreMap = {
-  math: 90,
-  english: 85,
-  science: 92,
-  // history: 80, // エラー！ "history" は Subject に含まれない
+## 関数の型
+
+関数では、引数と戻り値に型注釈を付けます。
+
+```typescript
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+const result = add(1, 2); // result は number 型
+```
+
+アロー関数も同じです。
+
+```typescript
+const multiply = (a: number, b: number): number => {
+  return a * b;
 };
 ```
 
-## ユーティリティ型の組み合わせ
-
-ユーティリティ型は組み合わせて使うこともできます。
+何も返さない関数の戻り値は `void` です。
 
 ```typescript
-interface User {
-  id: number;
-  name: string;
-  age: number;
-  email: string;
+function log(message: string): void {
+  console.log(message);
+  // return 文がない = 何も返さない
 }
-
-// id 以外のプロパティを部分的に更新できる型
-type UserUpdate = Partial<Omit<User, "id">>;
-// { name?: string; age?: number; email?: string; }
-
-function updateUser(id: number, changes: UserUpdate): void {
-  console.log(`ユーザー ${id} を更新:`, changes);
-}
-
-updateUser(1, { name: "佐藤" }); // OK
 ```
+
+## 型推論
+
+ここまで毎回 `: 型名` を書いてきましたが、実は TypeScript は多くの場面で型を自動的に推論してくれます。
+
+```typescript
+// 型注釈なしでも、TypeScript は右辺の値から型を推論する
+const message = "こんにちは"; // string と推論
+const count = 42;             // number と推論
+const isActive = true;        // boolean と推論
+
+// 関数の戻り値も推論される
+function add(a: number, b: number) {
+  return a + b; // 戻り値は number と推論
+}
+```
+
+型推論が働くので、すべてに型注釈を書く必要はありません。では、いつ書くべきでしょうか？
+
+**型注釈を書くべき場面:**
+
+- 関数の引数（推論できないため必須）
+- 推論結果が意図と異なる場合
+- コードの意図を明示したい場合
+
+**省略してよい場面:**
+
+- 変数の初期値から明らかな場合（`const x = 42`）
+- 関数の戻り値が明白な場合
+
+```typescript
+// 引数には型注釈が必須（推論できない）
+function greet(name: string) {
+  // 戻り値は return 文から string と推論されるので省略可能
+  return `こんにちは、${name}さん！`;
+}
+
+// 初期値から推論されるので型注釈は省略可能
+const greeting = greet("田中");
+```
+
+> **ポイント**: 型推論に頼れる場面では頼り、必要な場面だけ型注釈を書く。これが TypeScript の自然な使い方です。冗長な型注釈は読みにくさの原因になります。
+
+## any 型 ― 使わないことが大切
+
+`any` は「なんでも OK」という型です。TypeScript の型チェックを完全に無効にします。
+
+```typescript
+let value: any = "hello";
+value = 42;        // エラーなし
+value = true;      // エラーなし
+value.foo.bar.baz; // エラーなし（実行時にクラッシュする）
+```
+
+`any` を使うと TypeScript を使う意味がなくなります。「型がわからないから `any`」としたくなる場面では、後日学ぶユニオン型やジェネリクスで解決できることがほとんどです。
 
 ## まとめ
 
-- ジェネリクスは「型を引数として受け取る」仕組みで、型安全かつ汎用的なコードを書ける
-- `extends` で型パラメータに制約を付けられる
-- `Partial<T>` は全プロパティを省略可能に、`Required<T>` は全プロパティを必須にする
-- `Pick<T, K>` で特定プロパティを抽出、`Omit<T, K>` で特定プロパティを除外
-- `Record<K, V>` でキーと値の型を指定したオブジェクトを定義できる
-- ユーティリティ型は組み合わせて使える
+- TypeScript は JavaScript に型を追加した言語で、実行前にバグを見つけられる
+- プリミティブ型（`string`, `number`, `boolean`, `null`, `undefined`）が基本
+- 配列は `型名[]`、オブジェクトは `{ プロパティ名: 型 }` で型を書く
+- 関数の引数には型注釈が必須、戻り値や変数は型推論に頼ってよい
+- `any` は型チェックを無効にするので使わない
 
-**次のレッスン**: [Day 20: TypeScript 応用](/lessons/day20/)
+**次のレッスン**: [Day 20: 型の応用](/lessons/day20/)

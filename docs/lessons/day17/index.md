@@ -1,221 +1,206 @@
-# Day 17: TypeScript の基本
+# Day 17: ES Modules
 
 ## 今日のゴール
 
-- TypeScript がなぜ必要かを知る
-- 型注釈の書き方を知る
-- プリミティブ型、配列、オブジェクトの型の使い方を知る
-- 型推論の仕組みを知る
+- なぜモジュールが必要なのかを知る
+- `import` / `export` の書き方を知る
+- モジュールスコープによる名前空間の分離の仕組みを知る
+- デフォルトエクスポートと名前付きエクスポートの違いを知る
 
-## なぜ型が必要なのか
+## なぜモジュールが必要なのか
 
-Day 9〜16 で JavaScript を学びました。JavaScript は自由度が高い言語ですが、その自由さがバグの原因になることがあります。
+Day 10 で CSS のグローバルスコープ問題を学びました。JavaScript にも同様の問題があります。
+
+### モジュールがなかった時代
+
+以前の JavaScript では、複数のファイルを `<script>` タグで読み込むと、すべてが同じグローバルスコープを共有していました。
+
+```html
+<script src="utils.js"></script>
+<script src="auth.js"></script>
+<script src="app.js"></script>
+```
+
+**utils.js:**
+```javascript
+var formatDate = function (date) {
+  return date.toLocaleDateString("ja-JP");
+};
+```
+
+**auth.js:**
+```javascript
+// うっかり同じ名前の関数を定義してしまう
+var formatDate = function (date) {
+  return date.toISOString();
+};
+```
+
+`utils.js` の `formatDate` が `auth.js` で上書きされてしまいます。ファイルを分けていてもグローバルスコープは 1 つなので、名前の衝突が起きるのです。
+
+プロジェクトが大きくなるほど、この問題は深刻になります。「どの変数がどこで定義されているのか」が追えなくなり、1 つの変更が予期しない場所に影響するようになります。
+
+## ES Modules — JavaScript の公式モジュールシステム
+
+**ES Modules**（ESM）は、ES2015（ES6）で導入された JavaScript の公式なモジュールシステムです。ファイルごとに独立したスコープを持ち、明示的に `export` したものだけが外部から利用可能になります。
+
+### 基本的な使い方
+
+**math.js:**
+```javascript
+export const add = (a, b) => a + b;
+export const subtract = (a, b) => a - b;
+export const multiply = (a, b) => a * b;
+```
+
+**app.js:**
+```javascript
+import { add, subtract } from "./math.js";
+
+console.log(add(3, 5));       // 8
+console.log(subtract(10, 4)); // 6
+```
+
+- `export` — この変数/関数を外部に公開する
+- `import { ... } from "パス"` — 他のファイルから公開されたものを取り込む
+
+### HTML での使い方
+
+ES Modules を使うには、`<script>` タグに `type="module"` を指定します。
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ES Modules の練習</title>
+  </head>
+  <body>
+    <h1>ES Modules</h1>
+    <p id="result"></p>
+
+    <script type="module">
+      import { add } from "./math.js";
+
+      document.querySelector("#result").textContent = `3 + 5 = ${add(3, 5)}`;
+    </script>
+  </body>
+</html>
+```
+
+> **注意**: ES Modules はファイルプロトコル（`file://`）では動作しません。ローカルで動かす場合はサーバーが必要です。VS Code の Live Server 拡張機能や、`npx serve` コマンドで簡易サーバーを立てることで確認できます。
+
+## モジュールスコープ
+
+ES Modules の各ファイルは独立したスコープを持ちます。`export` していない変数は外部からアクセスできません。
+
+**utils.js:**
+```javascript
+// この変数はモジュール内部だけで使われる（外から見えない）
+const SECRET_KEY = "abc123";
+
+// この関数だけを公開する
+export const encrypt = (text) => {
+  // SECRET_KEY を使った処理...
+  return `encrypted: ${text}`;
+};
+```
+
+**app.js:**
+```javascript
+import { encrypt } from "./utils.js";
+
+console.log(encrypt("hello"));  // ✅ "encrypted: hello"
+console.log(SECRET_KEY);         // ❌ エラー: SECRET_KEY は定義されていない
+```
+
+これがモジュールスコープです。公開する範囲を自分で制御できるので、名前の衝突を心配する必要がなくなります。
+
+## 名前付きエクスポートとデフォルトエクスポート
+
+### 名前付きエクスポート（Named Export）
+
+1 つのファイルから複数の値をエクスポートできます。
 
 ```javascript
-function greet(name) {
-  return "こんにちは、" + name + "さん！";
-}
+// エクスポート側
+export const PI = 3.14159;
+export const add = (a, b) => a + b;
+export const subtract = (a, b) => a - b;
 
-// 意図しない使い方をしてもエラーにならない
-greet(42);        // "こんにちは、42さん！"
-greet(undefined); // "こんにちは、undefinedさん！"
+// インポート側 — 名前を指定して取り込む
+import { PI, add } from "./math.js";
 ```
 
-`greet` は名前（文字列）を受け取る関数ですが、数値や `undefined` を渡してもエラーになりません。実行して初めて「あれ、おかしい」と気づきます。
+### デフォルトエクスポート（Default Export）
 
-TypeScript（タイプスクリプト）は、JavaScript に**型（type）**の仕組みを追加した言語です。「この変数には文字列しか入らない」「この関数は数値を返す」といったルールをコードに書くことで、実行する前にミスを見つけられます。
+1 つのファイルに 1 つだけ、デフォルトのエクスポートを設定できます。
 
-```typescript
-function greet(name: string): string {
-  return "こんにちは、" + name + "さん！";
-}
-
-greet(42); // エラー！ number は string に代入できません
-```
-
-このエラーは、コードを実行する前（エディタ上やビルド時）に表示されます。これが TypeScript の最大のメリットです。
-
-## TypeScript の仕組み
-
-TypeScript のコードはそのままブラウザでは動きません。TypeScript のコンパイラ（tsc）が `.ts` ファイルを `.js` ファイルに変換（トランスパイル）します。
-
-```
-greeting.ts → TypeScript コンパイラ → greeting.js
-```
-
-この変換の過程で型のチェックが行われます。型に問題があればエラーを報告し、問題がなければ型の情報を取り除いた JavaScript を出力します。つまり、型は開発時の安全ネットであり、実行時には存在しません。
-
-> **ポイント**: Next.js のプロジェクトでは TypeScript のセットアップが最初から組み込まれているので、自分で設定する必要はほとんどありません。
-
-## 型注釈の基本
-
-型注釈（type annotation）は、変数名の後ろに `: 型名` と書きます。
-
-```typescript
-const message: string = "こんにちは";
-const count: number = 42;
-const isActive: boolean = true;
-```
-
-## プリミティブ型
-
-JavaScript のプリミティブ値に対応する型があります。
-
-| 型 | 説明 | 例 |
-|------|------|------|
-| `string` | 文字列 | `"hello"`, `'world'` |
-| `number` | 数値（整数・小数の区別なし） | `42`, `3.14` |
-| `boolean` | 真偽値 | `true`, `false` |
-| `null` | null | `null` |
-| `undefined` | undefined | `undefined` |
-
-```typescript
-const userName: string = "田中";
-const age: number = 25;
-const isStudent: boolean = false;
-const nothing: null = null;
-const notDefined: undefined = undefined;
-```
-
-> **注意**: `String`（大文字）と `string`（小文字）は別物です。TypeScript では小文字の `string` を使います。`String` はラッパーオブジェクトの型で、通常は使いません。
-
-## 配列の型
-
-配列の型は `型名[]` と書きます。
-
-```typescript
-const numbers: number[] = [1, 2, 3];
-const names: string[] = ["田中", "佐藤", "鈴木"];
-const flags: boolean[] = [true, false, true];
-```
-
-配列に宣言と異なる型の値を入れようとするとエラーになります。
-
-```typescript
-const numbers: number[] = [1, 2, 3];
-numbers.push("四"); // エラー！ string は number に代入できません
-```
-
-Day 11 で学んだ配列メソッドも型安全に使えます。
-
-```typescript
-const prices: number[] = [100, 200, 300];
-
-// map の結果も number[] と推論される
-const doubled = prices.map((price) => price * 2);
-
-// filter の結果も number[] と推論される
-const expensive = prices.filter((price) => price > 150);
-```
-
-## オブジェクトの型
-
-オブジェクトの型は、プロパティ名と型のペアで記述します。
-
-```typescript
-const user: { name: string; age: number } = {
-  name: "田中",
-  age: 25,
+```javascript
+// エクスポート側
+const Calculator = {
+  add: (a, b) => a + b,
+  subtract: (a, b) => a - b,
 };
+
+export default Calculator;
+
+// インポート側 — 任意の名前で取り込める（{} 不要）
+import Calculator from "./calculator.js";
+import Calc from "./calculator.js";  // 別の名前でもOK
 ```
 
-定義にないプロパティにアクセスしたり、型の異なる値を代入しようとするとエラーになります。
+### 使い分けの目安
 
-```typescript
-user.email; // エラー！ プロパティ 'email' は存在しません
-user.age = "二十五"; // エラー！ string は number に代入できません
+| 種類 | 使う場面 | 例 |
+|------|---------|-----|
+| 名前付きエクスポート | ユーティリティ関数、定数など、複数の値を公開したい | `export const formatDate = ...` |
+| デフォルトエクスポート | ファイルの主役となる 1 つの値 | `export default function App() { ... }` |
+
+React のコンポーネントファイルでは、コンポーネント本体をデフォルトエクスポート、型定義やユーティリティ関数を名前付きエクスポートにするパターンがよく見られます。
+
+## 名前の変更（エイリアス）
+
+インポート時に名前を変えることもできます。
+
+```javascript
+import { add as sum, subtract as minus } from "./math.js";
+
+console.log(sum(3, 5));    // 8
+console.log(minus(10, 4)); // 6
 ```
 
-## 関数の型
+異なるモジュールから同じ名前のものをインポートするとき、エイリアスで衝突を避けられます。
 
-関数では、引数と戻り値に型注釈を付けます。
+## まとめてインポート
 
-```typescript
-function add(a: number, b: number): number {
-  return a + b;
-}
+```javascript
+import * as math from "./math.js";
 
-const result = add(1, 2); // result は number 型
+console.log(math.add(3, 5));
+console.log(math.subtract(10, 4));
+console.log(math.PI);
 ```
 
-アロー関数も同じです。
+`* as 名前` ですべてのエクスポートをオブジェクトとしてまとめて受け取れます。
 
-```typescript
-const multiply = (a: number, b: number): number => {
-  return a * b;
-};
-```
+## モジュールがもたらすメリット
 
-何も返さない関数の戻り値は `void` です。
+1. **名前空間の分離**: 各ファイルが独立したスコープを持つので、名前の衝突が起きない
+2. **依存関係の明示**: `import` を見ればそのファイルが何に依存しているかがわかる
+3. **再利用性**: `export` した関数は、別のプロジェクトからもインポートできる
+4. **ツールとの連携**: バンドラー（Webpack、Vite など）がモジュールの依存関係を解析し、最適化（使われていないコードの削除など）を行える
 
-```typescript
-function log(message: string): void {
-  console.log(message);
-  // return 文がない = 何も返さない
-}
-```
-
-## 型推論
-
-ここまで毎回 `: 型名` を書いてきましたが、実は TypeScript は多くの場面で型を自動的に推論してくれます。
-
-```typescript
-// 型注釈なしでも、TypeScript は右辺の値から型を推論する
-const message = "こんにちは"; // string と推論
-const count = 42;             // number と推論
-const isActive = true;        // boolean と推論
-
-// 関数の戻り値も推論される
-function add(a: number, b: number) {
-  return a + b; // 戻り値は number と推論
-}
-```
-
-型推論が働くので、すべてに型注釈を書く必要はありません。では、いつ書くべきでしょうか？
-
-**型注釈を書くべき場面:**
-
-- 関数の引数（推論できないため必須）
-- 推論結果が意図と異なる場合
-- コードの意図を明示したい場合
-
-**省略してよい場面:**
-
-- 変数の初期値から明らかな場合（`const x = 42`）
-- 関数の戻り値が明白な場合
-
-```typescript
-// 引数には型注釈が必須（推論できない）
-function greet(name: string) {
-  // 戻り値は return 文から string と推論されるので省略可能
-  return `こんにちは、${name}さん！`;
-}
-
-// 初期値から推論されるので型注釈は省略可能
-const greeting = greet("田中");
-```
-
-> **ポイント**: 型推論に頼れる場面では頼り、必要な場面だけ型注釈を書く。これが TypeScript の自然な使い方です。冗長な型注釈は読みにくさの原因になります。
-
-## any 型 ― 使わないことが大切
-
-`any` は「なんでも OK」という型です。TypeScript の型チェックを完全に無効にします。
-
-```typescript
-let value: any = "hello";
-value = 42;        // エラーなし
-value = true;      // エラーなし
-value.foo.bar.baz; // エラーなし（実行時にクラッシュする）
-```
-
-`any` を使うと TypeScript を使う意味がなくなります。「型がわからないから `any`」としたくなる場面では、後日学ぶユニオン型やジェネリクスで解決できることがほとんどです。
+Next.js のプロジェクトでは、すべてのファイルが ES Modules として扱われます。`import` / `export` は毎日書くことになるので、この書き方を押さえておくのが大切です。
 
 ## まとめ
 
-- TypeScript は JavaScript に型を追加した言語で、実行前にバグを見つけられる
-- プリミティブ型（`string`, `number`, `boolean`, `null`, `undefined`）が基本
-- 配列は `型名[]`、オブジェクトは `{ プロパティ名: 型 }` で型を書く
-- 関数の引数には型注釈が必須、戻り値や変数は型推論に頼ってよい
-- `any` は型チェックを無効にするので使わない
+- モジュールがない時代は、すべての JavaScript がグローバルスコープを共有し、名前の衝突が問題だった
+- ES Modules はファイルごとに独立したスコープを持つ
+- `export` で公開、`import` で取り込む
+- 名前付きエクスポート（`export const ...`）は複数の値を、デフォルトエクスポート（`export default ...`）は 1 つの主要な値を公開する
+- モジュールにより、名前空間の分離・依存関係の明示・ツールによる最適化が可能になる
+- Next.js ではすべてのファイルが ES Modules。`import` / `export` は毎日使う
 
-**次のレッスン**: [Day 18: 型の応用](/lessons/day18/)
+**次のレッスン**: [Day 18: エラーハンドリングとデバッグ](/lessons/day18/)

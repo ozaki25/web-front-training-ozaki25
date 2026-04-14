@@ -1,284 +1,294 @@
-# Day 37: Server Actions
+# Day 37: データ取得（Server Components）
 
 ## 今日のゴール
 
-- Server Actions の仕組みと `"use server"` の意味を知る
-- フォーム送信でのデータ変更パターンを知る
-- revalidation（キャッシュ再検証）の仕組みを知る
-- Server Actions のセキュリティ上の注意点を知る
+- Server Components でのデータ取得の仕組みを知る
+- async コンポーネントの書き方を知る
+- `"use cache"` ディレクティブによるキャッシュ戦略を知る
 
-## Server Actions とは
+## Server Components でのデータ取得
 
-Server Actions は、**クライアント（ブラウザ）からサーバーの関数を直接呼び出す仕組み**です。フォーム送信やボタンクリックで、サーバー上の関数を実行できます。
-
-Day 36 で Route Handlers（API エンドポイント）を学びましたが、Server Actions を使うと、API エンドポイントを作らずにサーバーの処理を呼び出せます。
-
-## 基本的な Server Action
-
-`"use server"` を書くと、その関数が Server Action になります。
+Day 35 で学んだように、Server Components はサーバーで実行されます。つまり、**コンポーネントの中で直接 `fetch` を呼んでデータを取得できます**。
 
 ```tsx
-// src/app/contact/page.tsx
+// src/app/posts/page.tsx（Server Component）
+export default async function PostsPage() {
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+  const posts = await res.json();
 
-async function submitContact(formData: FormData) {
-  "use server";
-
-  const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
-  const message = formData.get("message") as string;
-
-  // サーバーで実行される（データベース保存、メール送信など）
-  console.log("お問い合わせ:", { name, email, message });
-}
-
-export default function ContactPage() {
   return (
     <main>
-      <h1>お問い合わせ</h1>
-      <form action={submitContact}>
-        <div>
-          <label htmlFor="name">お名前</label>
-          <input type="text" id="name" name="name" required />
-        </div>
-        <div>
-          <label htmlFor="email">メールアドレス</label>
-          <input type="email" id="email" name="email" required />
-        </div>
-        <div>
-          <label htmlFor="message">メッセージ</label>
-          <textarea id="message" name="message" required />
-        </div>
-        <button type="submit">送信</button>
-      </form>
+      <h1>記事一覧</h1>
+      <ul>
+        {posts.slice(0, 10).map((post: { id: number; title: string }) => (
+          <li key={post.id}>{post.title}</li>
+        ))}
+      </ul>
     </main>
   );
 }
 ```
 
-注目ポイントがいくつかあります。
+注目してほしい点があります。
 
-- **`"use server"`** — 関数の先頭に書くと、その関数はサーバーでのみ実行される
-- **`<form action={submitContact}>`** — HTML のフォームの `action` に関数を渡している
-- **`FormData`** — ブラウザ標準のフォームデータオブジェクトを引数として受け取る
+- **`async` が付いている** — コンポーネント関数が非同期（async）になっている
+- **`await fetch()`** — コンポーネント内で直接 `await` を使っている
+- **`useEffect` は使わない** — Day 30 で学んだ `useEffect` でのデータ取得とは根本的に異なる
 
-### 裏で何が起きているか
+### なぜ Server Components での fetch が優れているのか
 
-1. ユーザーがフォームを送信する
-2. ブラウザが Next.js サーバーに POST リクエストを送る
-3. サーバーが `submitContact` 関数を実行する
-4. 結果に応じてページが更新される
+Day 30 で学んだ Client Component でのデータ取得と比較すると、違いが明確になります。
 
-重要なのは、**`submitContact` の中身（コード）はブラウザに送られない**ということです。ブラウザが送るのはフォームデータだけで、サーバー側の処理内容は完全にサーバーに留まります。
+**Client Component の場合**（従来の方法）:
 
-## Server Actions を別ファイルに分ける
+1. ブラウザが空の HTML を受け取る
+2. JavaScript をダウンロード・実行
+3. コンポーネントがマウントされ `useEffect` が走る
+4. ブラウザから API に fetch リクエスト
+5. レスポンスを受けて画面を更新
 
-Server Actions は別ファイルにまとめることもできます。ファイルの先頭に `"use server"` を書くと、そのファイル内のすべてのエクスポートされた関数が Server Action になります。
+**Server Component の場合**:
 
-```ts
-// src/app/actions.ts
-"use server";
+1. サーバーで fetch してデータ取得
+2. データを含んだ HTML をブラウザに送る
+3. ブラウザに表示
 
-export async function createPost(formData: FormData) {
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
-  // データベースに保存...
-}
+Server Component では、データが含まれた状態でページが表示されます。ユーザーはローディング画面を見ることなく、すぐにコンテンツを読めます。また、サーバーから API サーバーへの通信は、ブラウザからの通信より高速なことが多いです（同じデータセンター内にある場合など）。
 
-export async function deletePost(postId: string) {
-  // データベースから削除...
-}
-```
+## データ取得のパターン
 
-こうして分離した Server Actions は、どのページからでも import して `<form action={createPost}>` のように使えます。
+### 複数のデータを並列で取得する
 
-## Client Component からの呼び出し
-
-Server Actions は Client Component からも呼び出せます。フォームの `action` だけでなく、イベントハンドラの中でも使えます。
+ページに複数のデータが必要な場合、`Promise.all` で並列に取得します。
 
 ```tsx
-// src/app/actions.ts
-"use server";
+export default async function DashboardPage() {
+  // 並列にリクエストを送る（1つずつ待たない）
+  const [postsRes, usersRes] = await Promise.all([
+    fetch("https://jsonplaceholder.typicode.com/posts"),
+    fetch("https://jsonplaceholder.typicode.com/users"),
+  ]);
 
-export async function addToCart(productId: string) {
-  // カートに追加する処理（サーバーで実行）
-  console.log("カートに追加:", productId);
-}
-```
-
-```tsx
-// src/app/products/add-to-cart-button.tsx
-"use client";
-
-import { addToCart } from "../actions";
-
-export default function AddToCartButton({ productId }: { productId: string }) {
-  async function handleClick() {
-    await addToCart(productId);
-    alert("カートに追加しました！");
-  }
+  const posts = await postsRes.json();
+  const users = await usersRes.json();
 
   return (
-    <button onClick={handleClick} type="button">
-      カートに追加
-    </button>
+    <main>
+      <h1>ダッシュボード</h1>
+      <section>
+        <h2>最新の投稿</h2>
+        <ul>
+          {posts.slice(0, 5).map((post: { id: number; title: string }) => (
+            <li key={post.id}>{post.title}</li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h2>ユーザー一覧</h2>
+        <ul>
+          {users.slice(0, 5).map((user: { id: number; name: string }) => (
+            <li key={user.id}>{user.name}</li>
+          ))}
+        </ul>
+      </section>
+    </main>
   );
 }
 ```
 
-## Revalidation — キャッシュの再検証
+`Promise.all` を使わず順番に `await` すると、1 つ目の fetch が終わるまで 2 つ目が始まりません。これを**ウォーターフォール**と呼び、パフォーマンスが悪くなります。
 
-データを変更したら、表示しているデータも最新にしたいですよね。これが **revalidation**（再検証）です。
+### データ取得をコンポーネントに分ける
 
-### revalidatePath — パスを指定して再検証
+データを必要とするコンポーネントごとに fetch を行う設計も有効です。
 
-```ts
-"use server";
+```tsx
+// src/app/dashboard/page.tsx
+import { Suspense } from "react";
+import RecentPosts from "./recent-posts";
+import UserStats from "./user-stats";
 
-import { revalidatePath } from "next/cache";
-
-export async function createPost(formData: FormData) {
-  const title = formData.get("title") as string;
-  // データベースに保存...
-
-  // /posts ページのキャッシュを無効化して再取得
-  revalidatePath("/posts");
+export default function DashboardPage() {
+  return (
+    <main>
+      <h1>ダッシュボード</h1>
+      <Suspense fallback={<p role="status">投稿を読み込み中...</p>}>
+        <RecentPosts />
+      </Suspense>
+      <Suspense fallback={<p role="status">統計を読み込み中...</p>}>
+        <UserStats />
+      </Suspense>
+    </main>
+  );
 }
 ```
 
-`revalidatePath("/posts")` を呼ぶと、`/posts` ページのキャッシュが無効になり、次のアクセス時に新しいデータで再レンダリングされます。
+```tsx
+// src/app/dashboard/recent-posts.tsx
+export default async function RecentPosts() {
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+  const posts = await res.json();
 
-### revalidateTag — タグを指定して再検証
+  return (
+    <section>
+      <h2>最新の投稿</h2>
+      <ul>
+        {posts.slice(0, 5).map((post: { id: number; title: string }) => (
+          <li key={post.id}>{post.title}</li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+```
 
-Day 35 で学んだ `fetch` にタグを付けておくと、そのタグ単位でキャッシュを無効化できます。
+各コンポーネントを `<Suspense>` で包むことで、データ取得が速く終わったコンポーネントから順に表示されます。遅いデータがあっても、ページ全体が待たされることはありません。
+
+## "use cache" ディレクティブ
+
+データ取得の結果をキャッシュ（一時的に保存して再利用）したい場合があります。最新の Next.js では、`"use cache"` ディレクティブを使ってキャッシュを制御します。
+
+`"use cache"` を使うには、`next.config.ts` で `cacheComponents: true` を設定する必要があります。
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  cacheComponents: true,
+};
+
+export default nextConfig;
+```
 
 ```tsx
-// データ取得時にタグを付ける
+// src/app/posts/page.tsx
+"use cache";
+
+export default async function PostsPage() {
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+  const posts = await res.json();
+
+  return (
+    <main>
+      <h1>記事一覧</h1>
+      <ul>
+        {posts.slice(0, 10).map((post: { id: number; title: string }) => (
+          <li key={post.id}>{post.title}</li>
+        ))}
+      </ul>
+    </main>
+  );
+}
+```
+
+`"use cache"` をファイルの先頭に書くと、そのコンポーネントの**レンダリング結果がキャッシュされます**。同じページへのリクエストが来たとき、キャッシュがあれば fetch を再実行せずにキャッシュされた結果を返します。
+
+### 関数単位のキャッシュ
+
+コンポーネント全体ではなく、データ取得関数だけをキャッシュすることもできます。
+
+```tsx
 async function getPosts() {
   "use cache";
-  const res = await fetch("https://api.example.com/posts", {
-    next: { tags: ["posts"] },
-  });
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+  return res.json();
+}
+
+export default async function PostsPage() {
+  const posts = await getPosts();
+
+  return (
+    <main>
+      <h1>記事一覧</h1>
+      <ul>
+        {posts.slice(0, 10).map((post: { id: number; title: string }) => (
+          <li key={post.id}>{post.title}</li>
+        ))}
+      </ul>
+    </main>
+  );
+}
+```
+
+関数の先頭に `"use cache"` を書くと、その関数の戻り値がキャッシュされます。同じ引数で呼ばれた場合はキャッシュが返されます。
+
+### キャッシュの有効期限
+
+`cacheLife` を使って、キャッシュの有効期限を設定できます。
+
+```tsx
+import { cacheLife } from "next/cache";
+
+async function getPosts() {
+  "use cache";
+  cacheLife("hours"); // 数時間キャッシュ
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
   return res.json();
 }
 ```
 
-```ts
-// Server Action でタグを指定して再検証
-"use server";
+`cacheLife` にはプリセット値を指定できます。
 
-import { revalidateTag } from "next/cache";
+| プリセット | 意味 |
+|-----------|------|
+| `"seconds"` | 数秒間 |
+| `"minutes"` | 数分間 |
+| `"hours"` | 数時間 |
+| `"days"` | 数日間 |
+| `"weeks"` | 数週間 |
+| `"max"` | 最大限長く |
 
-export async function createPost(formData: FormData) {
-  // データベースに保存...
+## キャッシュ戦略の考え方
 
-  // "posts" タグのキャッシュをすべて無効化
-  revalidateTag("posts");
-}
-```
+キャッシュを使うかどうかは、データの性質で判断します。
 
-## フォーム送信中の状態管理
+| データの特徴 | キャッシュ戦略 |
+|-------------|-------------|
+| ほぼ変わらない（会社概要など） | `cacheLife("max")` で長期キャッシュ |
+| 定期的に更新（ブログ記事一覧） | `cacheLife("hours")` で適度にキャッシュ |
+| リアルタイム性が必要（在庫数など） | キャッシュしない |
+| ユーザーごとに異なる（マイページ） | キャッシュしないか、ユーザー単位でキャッシュ |
 
-フォーム送信中にローディング状態を表示するには、`useActionState` を使います。
+キャッシュの基本は「変更頻度が低いデータは長くキャッシュし、変更頻度が高いデータはキャッシュしないか短くする」です。
+
+## エラーハンドリング
+
+データ取得は失敗する可能性があります。適切なエラー処理の例です。
 
 ```tsx
-"use client";
+export default async function PostsPage() {
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts");
 
-import { useActionState } from "react";
-import { createPost } from "../actions";
+  if (!res.ok) {
+    // エラーを throw すると、最も近い error.tsx が表示される
+    throw new Error("記事の取得に失敗しました");
+  }
 
-export default function NewPostForm() {
-  const [state, formAction, isPending] = useActionState(
-    async (previousState: { message: string } | null, formData: FormData) => {
-      await createPost(formData);
-      return { message: "投稿を作成しました！" };
-    },
-    null
-  );
+  const posts = await res.json();
 
   return (
-    <form action={formAction}>
-      <div>
-        <label htmlFor="title">タイトル</label>
-        <input type="text" id="title" name="title" required />
-      </div>
-      <div>
-        <label htmlFor="content">本文</label>
-        <textarea id="content" name="content" required />
-      </div>
-      <button type="submit" disabled={isPending}>
-        {isPending ? "送信中..." : "投稿する"}
-      </button>
-      {state?.message && <p role="status">{state.message}</p>}
-    </form>
+    <main>
+      <h1>記事一覧</h1>
+      <ul>
+        {posts.slice(0, 10).map((post: { id: number; title: string }) => (
+          <li key={post.id}>{post.title}</li>
+        ))}
+      </ul>
+    </main>
   );
 }
 ```
 
-`isPending` が `true` の間、ボタンを無効化したりローディング表示を出したりできます。
-
-## セキュリティの注意点
-
-Server Actions は便利ですが、セキュリティ上の重要な注意点があります。
-
-### 1. Server Actions は公開エンドポイント
-
-Server Actions は HTTP の POST エンドポイントとして公開されます。つまり、**誰でもリクエストを送れます**。ブラウザの開発者ツールやコマンドラインから直接呼び出すことも可能です。
-
-```ts
-"use server";
-
-export async function deletePost(postId: string) {
-  // ❌ 危険: 認証チェックなしで削除している
-  // await db.delete(postId);
-
-  // ✅ 安全: 認証チェックを行う
-  const user = await getCurrentUser();
-  if (!user) {
-    throw new Error("認証が必要です");
-  }
-
-  const post = await db.findPost(postId);
-  if (post.authorId !== user.id) {
-    throw new Error("権限がありません");
-  }
-
-  await db.delete(postId);
-}
-```
-
-### 2. 入力値は必ずバリデーションする
-
-ブラウザ側の `required` 属性は回避できます。そのため、サーバー側でも必ず検証する必要があります。
-
-```ts
-"use server";
-
-export async function createPost(formData: FormData) {
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
-
-  // サーバー側でもバリデーション
-  if (!title || title.length < 1 || title.length > 100) {
-    throw new Error("タイトルは1〜100文字で入力してください");
-  }
-  if (!content || content.length < 1) {
-    throw new Error("本文を入力してください");
-  }
-
-  // バリデーション通過後に保存
-}
-```
-
-### 3. 引数に機密情報を渡さない
-
-Server Actions の引数はネットワーク上を流れます。パスワードなどの機密情報を直接渡す場合は HTTPS が必須です（Next.js の本番環境では通常 HTTPS）。
+Day 36 で学んだ `error.tsx` がここで活きます。エラーを `throw` すると、Next.js が自動的に `error.tsx` を表示してくれます。
 
 ## まとめ
 
-- Server Actions は `"use server"` で宣言し、サーバーでのみ実行される関数
-- フォームの `action` 属性に渡すことで、API を作らずにサーバー処理を呼び出せる
-- `revalidatePath` / `revalidateTag` でデータ変更後にキャッシュを再検証できる
-- `useActionState` で送信中の状態を管理できる
-- Server Actions は公開エンドポイントなので、認証チェックとバリデーションは必須
+- Server Components では `async` コンポーネント内で直接 `fetch` できる
+- `useEffect` による Client 側のデータ取得と違い、データが含まれた HTML が最初から送られる
+- 複数のデータ取得は `Promise.all` で並列化し、ウォーターフォールを避ける
+- `"use cache"` ディレクティブでレンダリング結果やデータ取得結果をキャッシュできる
+- `cacheLife` でキャッシュの有効期限を制御する
+- データの変更頻度に応じてキャッシュ戦略を選択する
 
-**次のレッスン**: [Day 38: 動的ルーティングとミドルウェア](/lessons/day38/)
+**次のレッスン**: [Day 38: Route Handlers](/lessons/day38/)

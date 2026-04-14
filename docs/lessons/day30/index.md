@@ -1,178 +1,364 @@
-# Day 30: React のレンダリング最適化
+# Day 30: カスタム Hooks とコンポーネント設計
 
 ## 今日のゴール
 
-- React のレンダリングの仕組みをもう一度整理する
-- React Compiler による自動最適化を知る
-- `memo`, `useMemo`, `useCallback` が不要になりつつある背景を知る
-- React Profiler でレンダリングを計測できることを知る
+- カスタム Hook でロジックを再利用する方法を知る
+- コンポーネントを適切に分割するという考え方を知る
+- 合成（Composition）パターンを知る
 
-## レンダリングの復習
+## カスタム Hook とは
 
-Day 23 で学んだ再レンダリングの仕組みを整理します。
+Day 25〜27 で `useState`, `useEffect`, `useTransition` などの組み込み Hook を学びました。これらを組み合わせて独自の Hook を作れます。それがカスタム Hook です。
 
-React のレンダリングは3つのステップで行われます。
+カスタム Hook は `use` で始まる関数で、中で他の Hook を呼び出します。
 
-1. **トリガー**: state の更新、props の変更などでレンダリングが発生
-2. **レンダー**: コンポーネント関数を呼び出し、仮想 DOM を作成。前の仮想 DOM と比較して差分を計算する
-3. **コミット**: 計算された差分を実際の DOM に反映
+### なぜカスタム Hook が必要か
 
-重要なのは、**レンダー**（コンポーネント関数の呼び出し）と **DOM の更新**は別のステップだということです。レンダーされても、差分がなければ DOM は更新されません。
-
-### 再レンダリングが起きる条件
-
-- そのコンポーネントの state が更新された
-- 親コンポーネントが再レンダリングされた
-
-特に2つ目が重要です。親が再レンダリングされると、子コンポーネントはすべて再レンダリングされます。
+同じロジックを複数のコンポーネントで使いたい場面を考えます。
 
 ```tsx
-function Parent() {
-  const [count, setCount] = useState(0);
+// UserProfile コンポーネント
+function UserProfile() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  return (
-    <div>
-      <button onClick={() => setCount(count + 1)}>+1</button>
-      <p>カウント: {count}</p>
-      <Child /> {/* count と無関係だが再レンダリングされる */}
-    </div>
-  );
+  useEffect(() => {
+    fetch("/api/user")
+      .then((res) => res.json())
+      .then((data) => setUser(data))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // ...
 }
 
-function Child() {
-  console.log("Child がレンダリングされました");
-  return <p>子コンポーネント</p>;
+// Settings コンポーネント（同じデータ取得ロジック）
+function Settings() {
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => setSettings(data))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // ...
 }
 ```
 
-`Child` は `count` を使っていないのに、`Parent` が再レンダリングされるたびに一緒にレンダリングされます。
+データ取得のロジックが重複しています。これをカスタム Hook に抽出できます。
 
-## 従来の最適化手法
-
-React 18 まで、この問題は手動で最適化する必要がありました。
-
-### React.memo
-
-`memo` でラップされたコンポーネントは、props が変化していなければ再レンダリングをスキップします。
+## カスタム Hook の作り方
 
 ```tsx
-import { memo } from "react";
+import { useState, useEffect } from "react";
 
-const Child = memo(function Child() {
-  console.log("Child がレンダリングされました");
-  return <p>子コンポーネント</p>;
-});
+function useFetch<T>(url: string) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        if (!cancelled) setData(json);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  return { data, loading, error };
+}
 ```
 
-### useMemo と useCallback
+Day 21 で学んだジェネリクスを使い、どんな型のデータにも対応できるようにしています。`cancelled` フラグは、コンポーネントがアンマウントされた後に state を更新しないためのクリーンアップです。
 
-props にオブジェクトや関数を渡す場合、レンダリングのたびに新しい参照が作られるため、`memo` が効かなくなります。そこで `useMemo`（値のメモ化 = 前に計算した結果を覚えておいて再利用すること）と `useCallback`（関数のメモ化）が使われていました。
+使う側はこうなります。
 
 ```tsx
-// useMemo: 依存する値が変わらない限り同じ参照を返す
-const filteredItems = useMemo(
-  () => allItems.filter((item) => item.includes(query)),
-  [query]
-);
+interface User {
+  id: number;
+  name: string;
+}
 
-// useCallback: 依存する値が変わらない限り同じ関数参照を返す
-const handleItemClick = useCallback((item: string) => {
-  console.log(`${item} がクリックされました`);
-}, []);
+function UserProfile() {
+  const { data: user, loading, error } = useFetch<User>("/api/user");
+
+  if (loading) return <p>読み込み中...</p>;
+  if (error) return <p role="alert">エラー: {error}</p>;
+  if (!user) return null;
+
+  return <h1>{user.name}</h1>;
+}
+
+interface Settings {
+  theme: string;
+  language: string;
+}
+
+function SettingsPage() {
+  const { data: settings, loading, error } = useFetch<Settings>("/api/settings");
+
+  if (loading) return <p>読み込み中...</p>;
+  if (error) return <p role="alert">エラー: {error}</p>;
+  if (!settings) return null;
+
+  return <p>テーマ: {settings.theme}</p>;
+}
 ```
 
-### 従来の手法の問題
+ロジックは `useFetch` に集約され、各コンポーネントは表示に集中できます。
 
-この最適化はうまく機能しますが、大きな問題がありました。
+### もう1つの例: useLocalStorage
 
-- **開発者が判断する必要がある**: どこに `memo` を使い、どこに `useMemo`/`useCallback` を使うか、開発者が常に考える必要がある
-- **すべての場所に書かなければ意味がない**: `memo` でラップしても、1つの props に `useMemo`/`useCallback` を付け忘れると効果がない
-- **コードが複雑になる**: 本来のロジックに加えて、最適化のためのコードが増える
-
-## React Compiler
-
-React 19 の登場に合わせて開発が進められ、**React Compiler** の安定版が公開されました。レンダリングの最適化をコンパイラが自動で行う仕組みです。
-
-### React Compiler がすること
-
-React Compiler は、ビルド時にコンポーネントのコードを解析し、必要な場所に自動的にメモ化を挿入します。開発者は最適化を意識せずに、シンプルなコードを書くだけでよくなります。
+ローカルストレージとの同期もよくカスタム Hook にします。
 
 ```tsx
-// 最適化を気にしなくてよい
-function App() {
-  const [count, setCount] = useState(0);
-  const [query, setQuery] = useState("");
+import { useState } from "react";
 
-  // memo も useMemo も useCallback も不要
-  const filteredItems = allItems.filter((item) => item.includes(query));
+function useLocalStorage<T>(key: string, initialValue: T) {
+  const [value, setValue] = useState<T>(() => {
+    if (typeof window === "undefined") return initialValue; // SSR対応
+    try {
+      const stored = window.localStorage.getItem(key);
+      return stored ? (JSON.parse(stored) as T) : initialValue;
+    } catch {
+      return initialValue;
+    }
+  });
 
-  function handleItemClick(item: string) {
-    console.log(`${item} がクリックされました`);
+  function updateValue(newValue: T) {
+    setValue(newValue);
+    localStorage.setItem(key, JSON.stringify(newValue));
   }
 
+  return [value, updateValue] as const;
+}
+```
+
+`useState` の初期値に関数を渡しています。これは**遅延初期化**と呼ばれ、`localStorage` の読み取りのような重い処理を初回レンダリング時だけ実行するための書き方です。
+
+> **Next.js での注意**: Server Components や SSR 時には `window` オブジェクトが存在しないため、`typeof window === "undefined"` のチェックが必要です。
+
+```tsx
+function ThemeSwitcher() {
+  const [theme, setTheme] = useLocalStorage("theme", "light");
+
   return (
-    <div>
-      <button onClick={() => setCount(count + 1)}>カウント: {count}</button>
-      <input value={query} onChange={(e) => setQuery(e.target.value)} />
-      <ExpensiveList items={filteredItems} onItemClick={handleItemClick} />
-    </div>
+    <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
+      現在のテーマ: {theme}
+    </button>
   );
 }
 ```
 
-このコードには `memo`, `useMemo`, `useCallback` が一切ありませんが、React Compiler が自動的に最適化します。
+## カスタム Hook のルール
 
-Next.js では `next.config.ts` に `reactCompiler: true` を追加するだけで有効になります。
+1. **名前は `use` で始める**: React が Hook として認識するために必要
+2. **トップレベルで呼び出す**: `if` やループの中では使えない（組み込み Hook と同じルール）
+3. **Hook の中で Hook を使える**: カスタム Hook の中で `useState` や別のカスタム Hook を呼べる
 
-### React Compiler が機能する条件
+## コンポーネント分割の考え方
 
-React Compiler は、コンポーネントが **React のルール** に従っていることを前提としています。
+カスタム Hook がロジックの再利用なら、コンポーネント分割は UI の構造化です。
 
-- **state の不変性を守る**（Day 23 で学んだ）
-- **副作用をレンダリング中に実行しない**
-- **props を変更しない**
+### いつ分割するか
 
-これらのルールは Day 23〜25 ですでに学んだことです。正しく React を書いていれば、React Compiler の恩恵を自動的に受けられます。
+- **繰り返し使う UI**: ボタン、カード、入力フィールドなど
+- **独立した責務**: ヘッダー、サイドバー、フォームなど
+- **state が局所的**: 特定の state がコンポーネントの一部でしか使われないとき
+- **見通しが悪くなったとき**: 1つのコンポーネントが長くなりすぎたら分割のサイン
 
-## パフォーマンスの計測
+### 分割の例
 
-パフォーマンスの問題は推測ではなく計測で判断します。
+```tsx
+// 分割前: 1つのコンポーネントにすべてが入っている
+function App() {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
 
-### React Profiler
+  // 100行以上のコード...
 
-React DevTools のブラウザ拡張には **Profiler** タブがあります。Profiler を使うと、各コンポーネントのレンダリング時間と回数を可視化できます。
+  return (
+    <main>
+      {/* ヘッダー、フォーム、フィルター、リスト、フッター... */}
+    </main>
+  );
+}
+```
 
-Profiler が提供する情報:
+```tsx
+// 分割後: 責務ごとにコンポーネントを分ける
+function App() {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
 
-- **Flamegraph**（炎のような形のグラフ）: 各コンポーネントのレンダリング時間を視覚的に表示
-- **Ranked**: レンダリング時間が長い順にソート
-- **Timeline**: 時系列でのレンダリング推移
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "active") return !todo.completed;
+    if (filter === "completed") return todo.completed;
+    return true;
+  });
 
-確認すべきポイント:
+  return (
+    <main>
+      <h1>やることリスト</h1>
+      <TodoForm onAdd={(title) => setTodos([...todos, { id: Date.now(), title, completed: false }])} />
+      <TodoFilter current={filter} onChange={setFilter} />
+      <TodoList todos={filteredTodos} />
+    </main>
+  );
+}
+```
 
-- **レンダリング時間が長いコンポーネント**: 1回に 16ms 以上かかると 60fps を下回る可能性がある
-- **不要な再レンダリング**: 灰色（スキップ）のコンポーネントが少なすぎないか
-- **頻繁なレンダリング**: 入力のたびにアプリ全体がレンダリングされていないか
+各コンポーネントは自分の役割だけに集中し、全体の見通しがよくなります。
 
-## パフォーマンス最適化の原則
+## 合成（Composition）パターン
 
-1. **まず正しく書く**: React のルールに従い、読みやすいコードを書く
-2. **計測する**: 体感で遅いと感じたら Profiler で計測する
-3. **ボトルネックを特定する**: 全体ではなく、遅い部分を特定する
-4. **対処する**: state の配置を見直す、コンポーネントを分割する、必要なら `memo` を使う
+React のコンポーネント設計で最も重要なパターンが**合成**です。Day 24 で学んだ `children` を使い、コンポーネントを「入れ物」として設計します。
 
-やってはいけないこと:
+### レイアウトコンポーネント
 
-- 計測せずに「なんとなく」最適化する
-- すべてのコンポーネントに `memo` を付ける
-- レンダリング回数だけを気にする（レンダリングは高速なので、回数よりも時間が重要）
+```tsx
+interface PageLayoutProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function PageLayout({ title, children }: PageLayoutProps) {
+  return (
+    <div className="page">
+      <header>
+        <h1>{title}</h1>
+      </header>
+      <main>{children}</main>
+      <footer>
+        <p>&copy; 2026 My App</p>
+      </footer>
+    </div>
+  );
+}
+
+// 使う側が中身を決める
+function AboutPage() {
+  return (
+    <PageLayout title="About">
+      <p>このアプリについて...</p>
+    </PageLayout>
+  );
+}
+
+function ContactPage() {
+  return (
+    <PageLayout title="Contact">
+      <ContactForm />
+    </PageLayout>
+  );
+}
+```
+
+### 特殊化（Specialization）
+
+汎用的なコンポーネントを作り、特定の用途に特殊化するパターンです。
+
+```tsx
+interface ButtonProps {
+  variant: "primary" | "danger" | "ghost";
+  children: React.ReactNode;
+  onClick?: () => void;
+  type?: "button" | "submit";
+}
+
+function Button({ variant, children, onClick, type = "button" }: ButtonProps) {
+  return (
+    <button type={type} className={`btn btn-${variant}`} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+// 特殊化: 削除ボタン
+function DeleteButton({ onDelete }: { onDelete: () => void }) {
+  return (
+    <Button variant="danger" onClick={onDelete}>
+      削除
+    </Button>
+  );
+}
+
+// 特殊化: 送信ボタン
+function SubmitButton() {
+  return (
+    <Button variant="primary" type="submit">
+      送信
+    </Button>
+  );
+}
+```
+
+### slots パターン
+
+`children` 以外にも、複数の「差し込み口」を持つコンポーネントを作れます。
+
+```tsx
+interface DialogProps {
+  title: React.ReactNode;
+  children: React.ReactNode;
+  footer: React.ReactNode;
+}
+
+function Dialog({ title, children, footer }: DialogProps) {
+  return (
+    <div role="dialog" aria-labelledby="dialog-title" className="dialog">
+      <h2 id="dialog-title" className="dialog-title">{title}</h2>
+      <div className="dialog-body">{children}</div>
+      <div className="dialog-footer">{footer}</div>
+    </div>
+  );
+}
+
+// 使う側
+<Dialog
+  title="確認"
+  footer={
+    <>
+      <Button variant="ghost" onClick={onCancel}>キャンセル</Button>
+      <Button variant="danger" onClick={onDelete}>削除する</Button>
+    </>
+  }
+>
+  <p>本当に削除しますか？この操作は取り消せません。</p>
+</Dialog>
+```
+
+`role="dialog"` と `aria-labelledby` で、ダイアログがスクリーンリーダーに正しく認識されるようにしています。
 
 ## まとめ
 
-- 親が再レンダリングされると子もすべて再レンダリングされる
-- 従来は `memo`/`useMemo`/`useCallback` で手動最適化が必要だった
-- React Compiler がビルド時に自動でメモ化を挿入するため、手動の最適化はほぼ不要になった
-- React Compiler は React のルール（不変性、副作用の分離）に従ったコードを前提とする
-- パフォーマンスの問題は推測ではなく、React Profiler で計測して判断する
+- カスタム Hook は `use` で始まる関数で、ロジックを再利用できる仕組み
+- データ取得、ローカルストレージ連携など、共通のロジックをカスタム Hook に抽出する
+- コンポーネントは責務ごとに分割し、見通しをよくする
+- 合成パターン（children、slots）でコンポーネントを柔軟に組み合わせる
+- 汎用コンポーネントを特殊化して再利用する
 
-**次のレッスン**: [Day 31: SPA・CSR・SSR — レンダリング戦略を理解する](/lessons/day31/)
+**次のレッスン**: [Day 31: Context と状態管理パターン](/lessons/day31/)

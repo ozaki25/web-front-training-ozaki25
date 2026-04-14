@@ -1,287 +1,272 @@
-# Day 24: 条件分岐とリストレンダリング
+# Day 24: コンポーネントと props
 
 ## 今日のゴール
 
-- JSX の中で条件に応じて表示を切り替える方法を知る
-- `map` で配列をリスト表示する方法を知る
-- `key` の役割と仕組みを知る
+- props を使ってコンポーネントにデータを渡す方法を知る
+- children の使い方を知る
+- TypeScript で props の型を定義する方法を知る
 
-## 条件付きレンダリング
+## props とは
 
-アプリケーションでは「ログインしていたら名前を表示」「エラーがあればエラーメッセージを表示」のように、条件に応じて表示を変えたい場面が頻繁にあります。
-
-### if 文で分岐
-
-最もシンプルな方法は、`return` の前に `if` 文を使うことです。
+Day 23 でコンポーネントの基本を学びました。しかし、あのままでは毎回同じ内容しか表示できません。
 
 ```tsx
-interface StatusProps {
-  isLoggedIn: boolean;
-}
-
-function Status({ isLoggedIn }: StatusProps) {
-  if (isLoggedIn) {
-    return <p>ようこそ！</p>;
-  }
-  return <p>ログインしてください。</p>;
+function Greeting() {
+  return <h1>こんにちは、田中さん！</h1>;
 }
 ```
 
-### 三項演算子
-
-JSX の `{}` の中で三項演算子を使えば、インラインで分岐できます。
+これでは「田中さん」にしか挨拶できません。コンポーネントに外からデータを渡す仕組みが **props**（プロパティの略）です。
 
 ```tsx
-function Status({ isLoggedIn }: StatusProps) {
-  return (
-    <p>{isLoggedIn ? "ようこそ！" : "ログインしてください。"}</p>
-  );
+function Greeting(props: { name: string }) {
+  return <h1>こんにちは、{props.name}さん！</h1>;
 }
+
+// 使う側
+<Greeting name="田中" />
+<Greeting name="佐藤" />
+<Greeting name="鈴木" />
 ```
 
-要素ごと切り替えることもできます。
+HTML の属性のような形でデータを渡し、コンポーネント内で `props.プロパティ名` として受け取ります。
+
+## props の型定義
+
+Day 19〜20 で学んだ TypeScript の `interface` や `type` を使って、props の型を定義します。
 
 ```tsx
-function AuthButton({ isLoggedIn }: StatusProps) {
-  return (
-    <div>
-      {isLoggedIn ? (
-        <button>ログアウト</button>
-      ) : (
-        <button>ログイン</button>
-      )}
-    </div>
-  );
-}
-```
-
-### && 演算子（短絡評価）
-
-「条件を満たすときだけ表示、満たさないときは何も表示しない」場合は `&&` が便利です。
-
-```tsx
-interface NotificationProps {
-  count: number;
-}
-
-function Notification({ count }: NotificationProps) {
-  return (
-    <div>
-      {count > 0 && (
-        <span className="badge">
-          {count}件の通知があります
-        </span>
-      )}
-    </div>
-  );
-}
-```
-
-`count > 0` が `true` のときだけ `<span>` が描画されます。`false` のときは何も描画されません。
-
-> **注意**: `&&` の左側に数値を直接書くと意図しない表示になることがあります。`{0 && <span>...</span>}` は `0` が画面に表示されてしまいます。数値の場合は `{count > 0 && ...}` のように必ず比較式にする必要があります。
-
-### 何も表示しないとき
-
-条件によって何も表示したくない場合は `null` を返します。
-
-```tsx
-interface ErrorMessageProps {
-  error: string | null;
-}
-
-function ErrorMessage({ error }: ErrorMessageProps) {
-  if (!error) {
-    return null; // 何も描画しない
-  }
-  return <p role="alert">{error}</p>;
-}
-```
-
-`role="alert"` はスクリーンリーダーに「これは重要なメッセージです」と伝えるための属性です。エラーメッセージが動的に表示されたとき、支援技術がユーザーに通知できます。
-
-## リストレンダリング
-
-配列のデータをリスト表示するには、Day 11 で学んだ `map` メソッドを使います。
-
-```tsx
-function FruitList() {
-  const fruits = ["りんご", "みかん", "バナナ"];
-
-  return (
-    <ul>
-      {fruits.map((fruit) => (
-        <li key={fruit}>{fruit}</li>
-      ))}
-    </ul>
-  );
-}
-```
-
-`map` で配列の各要素を JSX に変換しています。Day 11 で `map` を学んだときは値を変換していましたが、ここでは値を JSX 要素に変換しているのがポイントです。
-
-### オブジェクトの配列
-
-実際のアプリでは、オブジェクトの配列を表示することがほとんどです。
-
-```tsx
-interface User {
-  id: number;
+interface GreetingProps {
   name: string;
-  department: string;
 }
 
-function UserList() {
-  const users: User[] = [
-    { id: 1, name: "田中太郎", department: "開発部" },
-    { id: 2, name: "佐藤花子", department: "デザイン部" },
-    { id: 3, name: "鈴木一郎", department: "開発部" },
-  ];
+function Greeting(props: GreetingProps) {
+  return <h1>こんにちは、{props.name}さん！</h1>;
+}
+```
 
+プロパティが多い場合も同様です。
+
+```tsx
+interface UserCardProps {
+  name: string;
+  age: number;
+  role: "admin" | "editor" | "viewer";
+  email?: string; // 省略可能
+}
+
+function UserCard(props: UserCardProps) {
   return (
-    <table>
-      <thead>
-        <tr>
-          <th scope="col">名前</th>
-          <th scope="col">部署</th>
-        </tr>
-      </thead>
-      <tbody>
-        {users.map((user) => (
-          <tr key={user.id}>
-            <td>{user.name}</td>
-            <td>{user.department}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <article>
+      <h2>{props.name}</h2>
+      <p>年齢: {props.age}歳</p>
+      <p>権限: {props.role}</p>
+      {props.email && <p>メール: {props.email}</p>}
+    </article>
   );
 }
 ```
 
-Day 3 で学んだテーブルのセマンティクスを活かし、`<thead>`, `<tbody>`, `scope` 属性をきちんと使っています。
+Day 20 で学んだ Optional（`?`）やリテラル型のユニオンがここで活きています。
 
-## key の役割
+## 分割代入で props を受け取る
 
-リストの各要素に `key` を付けているのに気づいたでしょうか。これは React の仕組み上、必須です。
-
-### key がないとどうなるか
+Day 13 で学んだ分割代入（destructuring）を使うと、`props.` を毎回書かなくて済みます。
 
 ```tsx
-// key がないと警告が出る
-{fruits.map((fruit) => (
-  <li>{fruit}</li>  // Warning: Each child in a list should have a unique "key" prop.
-))}
+interface GreetingProps {
+  name: string;
+  greeting?: string;
+}
+
+// 分割代入 + デフォルト値
+function Greeting({ name, greeting = "こんにちは" }: GreetingProps) {
+  return (
+    <h1>
+      {greeting}、{name}さん！
+    </h1>
+  );
+}
+
+<Greeting name="田中" />                    // "こんにちは、田中さん！"
+<Greeting name="佐藤" greeting="おはよう" /> // "おはよう、佐藤さん！"
 ```
 
-### key が必要な理由
+この書き方が React のコードで最も一般的です。
 
-React は仮想 DOM の差分を計算するとき、リストの要素を「どの要素が追加/削除/移動されたか」判断する必要があります。`key` はそのための目印です。
+## さまざまな型の props
 
-例えば、リストの先頭に要素を追加する場合を考えます。
-
-```
-変更前: [B, C]
-変更後: [A, B, C]
-```
-
-**key がない場合**: React はインデックスで比較します。
-- 0番目: B → A に変更（更新）
-- 1番目: C → B に変更（更新）
-- 2番目: なし → C を追加
-
-3つの操作が必要です。
-
-**key がある場合**: React は key で要素を追跡します。
-- key="B": そのまま
-- key="C": そのまま
-- key="A": 新しく追加
-
-1つの操作で済みます。さらに、B と C の内部の state も保持されます。
-
-### key のルール
-
-1. **兄弟要素の間で一意であること**（全体で一意である必要はない）
-2. **安定した値であること**（レンダリングのたびに変わらない）
+props には文字列以外にも、さまざまな型の値を渡せます。
 
 ```tsx
-// 良い例: id を key にする
-{users.map((user) => (
-  <UserCard key={user.id} user={user} />
-))}
+interface ProductProps {
+  name: string;       // 文字列
+  price: number;      // 数値
+  inStock: boolean;   // 真偽値
+  tags: string[];     // 配列
+  onBuy: () => void;  // 関数
+}
 
-// 悪い例: インデックスを key にする
-{users.map((user, index) => (
-  <UserCard key={index} user={user} />  // 並び替えや削除で問題が起きる
-))}
-
-// 悪い例: ランダムな値を key にする
-{users.map((user) => (
-  <UserCard key={Math.random()} user={user} />  // 毎回再作成される
-))}
+function Product({ name, price, inStock, tags, onBuy }: ProductProps) {
+  return (
+    <article>
+      <h2>{name}</h2>
+      <p>{price.toLocaleString()}円</p>
+      <ul>
+        {tags.map((tag) => (
+          <li key={tag}>{tag}</li>
+        ))}
+      </ul>
+      <button onClick={onBuy} disabled={!inStock}>
+        {inStock ? "購入する" : "在庫切れ"}
+      </button>
+    </article>
+  );
+}
 ```
 
-> **ポイント**: データに `id` がある場合は `id` を使うのが基本です。`id` がなく、リストが固定で並び替えや削除がない場合に限り、インデックスを key にしても問題ありません。
-
-## 条件分岐とリストの組み合わせ
-
-実際のアプリでは、条件分岐とリストを組み合わせることが多いです。
+文字列以外の値を渡すときは `{}` で囲みます。
 
 ```tsx
-interface Task {
+<Product
+  name="TypeScript 入門書"
+  price={2800}
+  inStock={true}
+  tags={["技術書", "TypeScript"]}
+  onBuy={() => console.log("購入しました")}
+/>
+```
+
+> **ポイント**: `inStock={true}` は `inStock` と省略できます。属性名だけ書くと `true` が渡されます。ただし `false` は省略できないので `inStock={false}` と書く必要があります。
+
+## children
+
+コンポーネントの開始タグと終了タグの間に書いた内容は、特別な props である `children` として渡されます。
+
+```tsx
+interface ButtonProps {
+  variant: "primary" | "secondary";
+  children: React.ReactNode;
+}
+
+function Button({ variant, children }: ButtonProps) {
+  const className = variant === "primary" ? "btn-primary" : "btn-secondary";
+  return <button className={className}>{children}</button>;
+}
+
+// 使う側
+<Button variant="primary">送信する</Button>
+<Button variant="secondary">
+  <span>アイコン</span> キャンセル
+</Button>
+```
+
+`children` にはテキスト、JSX 要素、それらの組み合わせなど何でも渡せます。`React.ReactNode` は「React が描画できるもの」を表す型です。
+
+`children` を使うことで、「外見のレイアウトはコンポーネントが決め、中身は使う側が決める」という柔軟な設計ができます。
+
+```tsx
+interface CardProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+function Card({ title, children }: CardProps) {
+  return (
+    <section className="card">
+      <h2 className="card-title">{title}</h2>
+      <div className="card-body">{children}</div>
+    </section>
+  );
+}
+
+// 中身は使う側が自由に決められる
+<Card title="お知らせ">
+  <p>明日はメンテナンスのためサービスを停止します。</p>
+</Card>
+
+<Card title="プロフィール">
+  <img src="/avatar.jpg" alt="田中太郎のアバター" />
+  <p>田中太郎</p>
+</Card>
+```
+
+## props は読み取り専用
+
+React の重要なルールとして、**props は変更してはいけません**。
+
+```tsx
+function Greeting({ name }: { name: string }) {
+  name = "無視して上書き"; // やってはいけない！
+  return <h1>{name}</h1>;
+}
+```
+
+これは React の**単方向データフロー**（one-way data flow）の原則です。データは親から子へ流れ、子は受け取ったデータを変更しません。これにより、データがどこからどう流れているかが追いやすくなります。
+
+## コンポーネントの組み合わせ
+
+複数のコンポーネントを組み合わせて画面を構築する例を見てみます。
+
+```tsx
+interface Todo {
   id: number;
   title: string;
   completed: boolean;
 }
 
-interface TaskListProps {
-  tasks: Task[];
-  filter: "all" | "active" | "completed";
+interface TodoItemProps {
+  todo: Todo;
 }
 
-function TaskList({ tasks, filter }: TaskListProps) {
-  const filteredTasks = tasks.filter((task) => {
-    switch (filter) {
-      case "active":
-        return !task.completed;
-      case "completed":
-        return task.completed;
-      default:
-        return true;
-    }
-  });
+function TodoItem({ todo }: TodoItemProps) {
+  return (
+    <li>
+      <span style={{ textDecoration: todo.completed ? "line-through" : "none" }}>
+        {todo.title}
+      </span>
+    </li>
+  );
+}
 
-  if (filteredTasks.length === 0) {
-    return <p>タスクがありません。</p>;
-  }
+interface TodoListProps {
+  todos: Todo[];
+}
 
+function TodoList({ todos }: TodoListProps) {
   return (
     <ul>
-      {filteredTasks.map((task) => (
-        <li key={task.id}>
-          <span
-            style={{
-              textDecoration: task.completed ? "line-through" : "none",
-            }}
-          >
-            {task.title}
-          </span>
-          {task.completed && <span aria-label="完了済み"> ✓</span>}
-        </li>
+      {todos.map((todo) => (
+        <TodoItem key={todo.id} todo={todo} />
       ))}
     </ul>
   );
 }
+
+function App() {
+  const todos: Todo[] = [
+    { id: 1, title: "React を学ぶ", completed: true },
+    { id: 2, title: "TypeScript を学ぶ", completed: true },
+    { id: 3, title: "Next.js を学ぶ", completed: false },
+  ];
+
+  return (
+    <main>
+      <h1>やることリスト</h1>
+      <TodoList todos={todos} />
+    </main>
+  );
+}
 ```
 
-Day 11 で学んだ `filter` メソッドで配列を絞り込み、Day 20 の `switch` で条件を分岐しています。これまで学んだ知識がつながっていることを感じてもらえるでしょうか。
+`App` → `TodoList` → `TodoItem` とデータが親から子へ流れています。各コンポーネントは自分の役割だけに集中し、小さく保たれています。
 
 ## まとめ
 
-- 条件付きレンダリングには `if` 文、三項演算子、`&&` を使い分ける
-- `&&` で数値を直接使うと `0` が表示されるので比較式にする
-- `map` で配列を JSX に変換してリスト表示する
-- `key` は React がリストの差分を効率的に計算するために必要
-- `key` にはデータの `id` を使い、インデックスやランダム値は避ける
+- props はコンポーネントに外からデータを渡す仕組み
+- TypeScript の `interface` で props の型を定義し、安全にデータを受け渡す
+- 分割代入とデフォルト値を使うのが一般的な書き方
+- `children` でコンポーネントの中身を柔軟に差し替えられる
+- props は読み取り専用。データは親から子への単方向に流れる
 
-**次のレッスン**: [Day 25: useEffect とライフサイクル](/lessons/day25/)
+**次のレッスン**: [Day 25: state とイベント処理](/lessons/day25/)

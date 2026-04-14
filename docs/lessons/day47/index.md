@@ -1,184 +1,164 @@
-# Day 47: Web パフォーマンス応用
+# Day 47: アクセシビリティとテスト
 
 ## 今日のゴール
 
-- コード分割と dynamic import の仕組みを知る
-- バンドルサイズの分析ツールがあることを知る
-- tree shaking の仕組みを知る
-- SSR/SSG のパフォーマンス特性の違いを知る
+- axe を使ったアクセシビリティの自動テストの仕組みを知る
+- ESLint プラグインでコーディング中にもアクセシビリティ問題を検出できることを知る
+- 自動チェックでカバーできる範囲とできない範囲を知る
 
-## コード分割（Code Splitting）
+## 自動テストでアクセシビリティを守る
 
-ブラウザが Web ページを表示するとき、JavaScript ファイルをダウンロードして実行します。アプリが大きくなると JavaScript のファイルサイズも大きくなり、ダウンロードと実行に時間がかかります。
+Day 46 でアクセシビリティの基本を学びました。しかし、すべてのルールを常に覚えて手動で確認するのは現実的ではありません。そこで活躍するのが自動テストと静的解析です。
 
-**コード分割**は、JavaScript を複数のファイル（チャンク）に分け、必要なものだけをダウンロードする仕組みです。
+アクセシビリティの自動チェックには主に 2 つのアプローチがあります。
 
-Next.js は自動的にページ単位でコード分割を行います。`/about` にアクセスしたとき、`/blog` のコードはダウンロードされません。しかし、1 つのページ内でも分割が必要な場合があります。
+- **axe**（アクス）: レンダリング済みの HTML をスキャンして WCAG（Web Content Accessibility Guidelines、アクセシビリティの国際ガイドライン）違反を検出するテストエンジン
+- **eslint-plugin-jsx-a11y**: JSX を書いている段階でアクセシビリティ問題を指摘する ESLint プラグイン
 
-## next/dynamic による遅延読み込み
+axe はテスト実行時に問題を発見し、eslint-plugin-jsx-a11y はコーディング中にリアルタイムで問題を発見します。どちらも `vitest-axe` や `eslint-plugin-jsx-a11y` パッケージとして導入でき、ESLint は Flat Config で `jsxA11y.flatConfigs.recommended` を追加するだけで使い始められます。
 
-`next/dynamic` を使うと、コンポーネントを必要なタイミングで読み込めます。
+## axe によるテストのパターン
+
+axe のテストは非常にシンプルです。コンポーネントをレンダリングして、`axe()` に渡すだけです。
 
 ```tsx
-// src/app/dashboard/page.tsx
-import dynamic from "next/dynamic";
+// src/components/article-card.test.tsx
+import { describe, it, expect } from "vitest";
+import { render } from "@testing-library/react";
+import { axe } from "vitest-axe";
 
-// 通常のインポート（ページ読み込み時にダウンロードされる）
-// import HeavyChart from "./heavy-chart";
-
-// dynamic import（必要になったときにダウンロードされる）
-const HeavyChart = dynamic(() => import("./heavy-chart"), {
-  loading: () => <p role="status">グラフを読み込み中...</p>,
-});
-
-export default function DashboardPage() {
+function ArticleCard() {
   return (
-    <main>
-      <h1>ダッシュボード</h1>
-      <p>概要テキスト</p>
-      {/* この部分は後からダウンロードされる */}
-      <HeavyChart />
-    </main>
+    <article>
+      <h2>記事タイトル</h2>
+      <p>記事の説明文がここに入ります。</p>
+      <a href="/blog/article-1">続きを読む</a>
+    </article>
   );
 }
-```
 
-`dynamic` は内部的に React の `lazy`（コンポーネントの遅延読み込み機能）と `Suspense`（読み込み中の表示を制御する機能）を使っています。コンポーネントが必要になるまで JavaScript のダウンロードが遅延されます。
+describe("ArticleCard", () => {
+  it("アクセシビリティ違反がない", async () => {
+    const { container } = render(<ArticleCard />);
+    const results = await axe(container);
 
-ブラウザの API（`window`、`document` など）に依存するライブラリは、サーバーでは動きません。`ssr: false` を指定すると、クライアントでのみレンダリングされます。
-
-```tsx
-// src/components/map.tsx を使う側
-const MapComponent = dynamic(() => import("./map"), {
-  ssr: false,
-  loading: () => <p role="status">地図を読み込み中...</p>,
+    expect(results).toHaveNoViolations();
+  });
 });
 ```
 
-### dynamic import が効果的なケース
+`toHaveNoViolations()` は、axe が検出した違反が 0 件であることを確認します。違反があると、どの要素がどのルールに違反しているか（例: `image-alt: Images must have alternate text`）と影響度（critical / serious など）が報告されます。
 
-| ケース | 理由 |
-|-------|------|
-| 重いライブラリ（グラフ、エディタ、地図） | 初期表示に不要なコードを遅延読み込み |
-| モーダルやダイアログ | ユーザーが開くまで不要 |
-| 条件付きで表示するコンポーネント | 管理者だけが見るUIなど |
-| 画面下部のコンポーネント | ファーストビューに影響しない |
+既存プロジェクトに導入する場合、すべてのルールを一度に適用するのが難しければ、`rules` オプションで対象を絞ることもできます。
 
-## lazy loading
+## eslint-plugin-jsx-a11y が検出する問題
 
-**lazy loading**（遅延読み込み）は、コンテンツを必要になるまで読み込まないテクニックです。
-
-### 画像の lazy loading
-
-Day 40 で学んだ `next/image` はデフォルトで lazy loading が有効です。
+eslint-plugin-jsx-a11y はテスト実行を待たず、コードを書いている段階で問題を指摘してくれます。
 
 ```tsx
-// src/components/photo-gallery.tsx
-import Image from "next/image";
+// ❌ eslint-plugin-jsx-a11y が警告する例
 
-// デフォルトで lazy loading（画面内に入るまで読み込まない）
-<Image src="/photo.jpg" alt="写真" width={600} height={400} />
+// alt 属性がない画像
+<img src="/photo.jpg" />
+// → jsx-a11y/alt-text: img elements must have an alt prop
 
-// ファーストビューの画像は priority で即座に読み込む
-<Image src="/hero.jpg" alt="ヒーロー" fill priority />
+// onClick があるのに role がない div
+<div onClick={handleClick}>クリック</div>
+// → jsx-a11y/click-events-have-key-events
+// → jsx-a11y/no-static-element-interactions
+
+// 空のリンク
+<a href="#">リンク</a>
+// → jsx-a11y/anchor-is-valid
 ```
-
-### Intersection Observer
-
-画像以外のコンテンツ（コンポーネントやセクション全体）を画面内に入ったタイミングで読み込みたい場合は、ブラウザの **Intersection Observer API** が使えます。これは「ある要素が画面の表示領域（ビューポート）に入ったかどうか」を監視する API です。
-
-React では `useRef` と `useEffect` を使ったカスタムフックとして実装し、要素が画面内に入ったら `isVisible` を `true` に切り替えてコンテンツを表示する、というパターンが一般的です。`next/image` が内部で行っている lazy loading も、この Intersection Observer の仕組みを利用しています。
-
-## バンドルサイズの分析
-
-JavaScript のバンドルサイズが大きいと、ダウンロードと解析に時間がかかります。「何がサイズを大きくしているか」を可視化するツールとして **`@next/bundle-analyzer`** があります。
-
-構成イメージとしては、`next.config.ts` に `withBundleAnalyzer` をラップし、環境変数 `ANALYZE=true` を付けてビルドすると、ブラウザにバンドルの内訳がビジュアルで表示されます。各ライブラリがどれだけのサイズを占めているか一目でわかるため、「どのライブラリが重いのか」「不要なコードが含まれていないか」を判断する根拠になります。
-
-## tree shaking
-
-**Tree shaking** とは、使われていないコードをビルド時に自動で除去する仕組みです。木を揺さぶって枯れ葉（不要なコード）を落とすイメージです。
 
 ```tsx
-// ❌ ライブラリ全体をインポート
-import _ from "lodash";
-const result = _.groupBy(data, "category");
+// ✅ 修正後
 
-// ✅ 必要な関数だけインポート（tree shaking が効く）
-import groupBy from "lodash/groupBy";
-const result = groupBy(data, "category");
+<img src="/photo.jpg" alt="森の風景写真" />
+
+<button onClick={handleClick} type="button">クリック</button>
+
+<a href="/about">About</a>
 ```
 
-ライブラリの書き方によっては tree shaking が効かないことがあります。個別インポートを使うのが確実です。
+## Testing Library と アクセシビリティ
 
-### 大きなライブラリに注意
-
-よく知られた大きなライブラリには、より軽量な代替手段があります。
-
-| ライブラリ | 問題点 | 代替手段 |
-|-----------|-------|---------|
-| moment.js | サイズが大きい | day.js（サイズ約 1/20） |
-| lodash | デフォルトでは tree shaking が効かない | lodash-es（tree shaking 対応版）または自前実装 |
-| chart.js | 全機能をインポートしがち | 必要な要素だけ個別インポート |
-
-## SSR / SSG のパフォーマンス特性
-
-Next.js のレンダリング戦略によって、パフォーマンス特性が異なります。
-
-### SSG（Static Site Generation）
-
-ビルド時に HTML を生成します。リクエストのたびに生成する必要がないため、最も高速です。
+Day 45 で学んだ Testing Library の `getByRole` は、実はアクセシビリティのテストにもなっています。
 
 ```tsx
-// src/app/about/page.tsx
-// 特に設定しなければ、データ取得のないページは自動で SSG になる
-export default function AboutPage() {
-  return <h1>About</h1>;
-}
+// この検索が成功すること自体が、
+// アクセシビリティが正しいことの証明
+
+// ボタンにアクセシブルな名前がある
+screen.getByRole("button", { name: "送信" });
+
+// 見出しが正しく使われている
+screen.getByRole("heading", { name: "記事タイトル" });
+
+// フォームにラベルがある
+screen.getByLabelText("メールアドレス");
+
+// ナビゲーションにラベルがある
+screen.getByRole("navigation", { name: "メインナビゲーション" });
 ```
 
-`generateStaticParams` を定義すると、動的ルートでもビルド時に HTML を生成できます。
+`getByRole` で要素が見つからないということは、スクリーンリーダーもその要素を適切に認識できないということです。
 
-**特性**:
-- TTFB（Time to First Byte）が最も速い（CDN（世界中のサーバーからコンテンツを配信する仕組み）から配信可能）
-- データの更新にはビルドし直す必要がある
-- ブログや企業サイトなど、頻繁に変わらないコンテンツに最適
+## 自動チェックの限界
 
-### SSR（Server-Side Rendering）
+ここが今日最も重要なポイントです。**自動チェックでカバーできるのは、アクセシビリティの問題全体の約 30〜40% と言われています**。
 
-リクエストのたびにサーバーで HTML を生成します。
+### 自動でカバーできるもの
 
-```tsx
-// src/app/dashboard/page.tsx
-// Server Component でデータを取得すると SSR になる
-export default async function DashboardPage() {
-  const data = await fetch("https://api.example.com/stats");
-  const stats = await data.json();
+| チェック項目 | ツール |
+|------------|-------|
+| 画像に alt がある | axe, ESLint |
+| フォームに label がある | axe, ESLint |
+| 色のコントラスト比が十分 | axe |
+| 見出しレベルが連続している | axe |
+| ARIA 属性が正しい構文 | axe, ESLint |
+| フォーカス可能な要素がある | axe |
+| lang 属性が設定されている | axe |
 
-  return <div>{stats.visitors} visitors</div>;
-}
+### 自動ではカバーできないもの
+
+| チェック項目 | なぜ自動で検出できないか |
+|------------|---------------------|
+| alt テキストが適切な内容か | 「画像」と書かれていても、機械には妥当性が判断できない |
+| Tab 順序が論理的か | 正しい順序は文脈に依存する |
+| モーダルのフォーカストラップ | 操作シナリオのテストが必要 |
+| 読み上げ内容が理解可能か | 人間が聞いて判断する必要がある |
+| キーボード操作が直感的か | ユーザーの期待と合っているかは主観的 |
+| 動画に字幕があるか | コンテンツの中身は機械では判断困難 |
+
+### だから両方が必要
+
+```mermaid
+flowchart LR
+    A["自動テスト\n（axe, ESLint）"] --> B["明確なルール違反を検出"]
+    C["手動テスト\n（スクリーンリーダー、キーボード操作）"] --> D["体験の質を検証"]
 ```
 
-**特性**:
-- 常に最新のデータを表示できる
-- TTFB は SSG より遅い（サーバー処理の時間がかかる）
-- ユーザーごとに異なるコンテンツ（ダッシュボードなど）に適している
+自動テストは「最低限の品質」を保証するセーフティネットです。その上で、定期的にスクリーンリーダーやキーボードだけでの操作テストを行うことが理想です。
 
-### 使い分け
+## テスト戦略の全体像
 
-| コンテンツの性質 | 推奨戦略 |
-|---------------|---------|
-| 変更頻度が低い（ブログ、ドキュメント） | SSG |
-| 定期的に更新（商品一覧など） | SSR + キャッシュ（`"use cache"`） |
-| リアルタイムデータ（ダッシュボード） | SSR |
-| ユーザー固有のデータ（マイページ） | SSR |
+```mermaid
+flowchart TD
+    A["1. eslint-plugin-jsx-a11y\n（コーディング時にリアルタイム検出）"] --> B["2. 主要コンポーネントに axe テスト\n（CI で自動実行）"]
+    B --> C["3. getByRole ベースのテスト\n（コンポーネントテストと兼用）"]
+    C --> D["4. 定期的にスクリーンリーダーで手動テスト"]
+```
+
+すべてを一度に完璧にする必要はありません。まず ESLint プラグインで日常的にキャッチし、主要コンポーネントに axe テストを追加して CI で回す。それでもカバーできない残り 60〜70% は、定期的な手動テストで補います。
 
 ## まとめ
 
-- `next/dynamic` でコンポーネントを必要なタイミングに遅延読み込みできる
-- `@next/bundle-analyzer` でバンドルの内訳を可視化し、何がページを重くしているか特定できる
-- tree shaking を活かすために、ライブラリは個別インポートを使う
-- SSG は最も高速だが静的コンテンツ向き、SSR は動的コンテンツに使う
-- パフォーマンス改善は推測ではなく、測定に基づいて行う（Day 46 参照）
+- axe はレンダリングされた HTML をスキャンして WCAG 違反を検出する
+- eslint-plugin-jsx-a11y はコーディング中にアクセシビリティ問題を指摘する
+- Testing Library の `getByRole` は、暗黙的にアクセシビリティのテストにもなっている
+- 自動チェックでカバーできるのはアクセシビリティ問題の約 30〜40%
+- 自動テストは最低限の品質を保証するセーフティネット。手動テストと組み合わせて初めて十分になる
 
-**次のレッスン**: [Day 48: 認証の基礎](/lessons/day48/)
+**次のレッスン**: [Day 48: Web パフォーマンス基礎](/lessons/day48/)

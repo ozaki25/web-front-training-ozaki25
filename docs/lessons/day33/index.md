@@ -1,293 +1,204 @@
-# Day 33: Server Components と Client Components
+# Day 33: SPA・CSR・SSR — レンダリング戦略を理解する
 
 ## 今日のゴール
 
-- Server Components と Client Components の違いを知る
-- `"use client"` の意味と効果を知る
-- どちらを使うべきかの判断基準を知る
+- SPA（Single Page Application）の仕組みと特徴を知る
+- CSR（Client-Side Rendering）と SSR（Server-Side Rendering）の違いを知る
+- それぞれの方式のメリット・デメリットを知る
+- Next.js がこれらの課題をどう解決するか概要を知る
 
-## 2 種類のコンポーネント
+## React アプリの動き方を振り返る
 
-Day 32 で `page.tsx` に `"use client"` が書かれていないことに触れました。Next.js の App Router では、コンポーネントはデフォルトで **Server Component**（サーバーコンポーネント）です。
+Day 23〜30 で React の基礎を学びました。React でアプリを作ると、ブラウザで動くのは次のような仕組みです。
 
-ブラウザ側で動かしたいコンポーネントには、ファイルの先頭に `"use client"` と書きます。これが **Client Component**（クライアントコンポーネント）です。
+1. ブラウザがサーバーに HTML をリクエストする
+2. サーバーが**ほぼ空の HTML** と **JavaScript ファイル**を返す
+3. ブラウザが JavaScript をダウンロード・実行する
+4. JavaScript が DOM を組み立てて画面を表示する
 
-```tsx
-// Server Component（デフォルト）
-// "use client" を書かないとサーバーで実行される
-export default function ServerComp() {
-  return <p>サーバーで実行されます</p>;
-}
+この「JavaScript がブラウザ上で画面を組み立てる」方式を **CSR（Client-Side Rendering）** と呼びます。「Client」とはブラウザのことです。
+
+## SPA とは何か
+
+React で作ったアプリは **SPA（Single Page Application）** です。名前の通り「ページが 1 つだけ」のアプリケーションです。
+
+従来の Web サイトでは、ページごとに HTML ファイルが存在し、リンクをクリックするたびにサーバーから新しい HTML を取得していました。
+
+**従来の Web サイト（MPA: Multi Page Application）:**
+
+```mermaid
+sequenceDiagram
+    participant B as ブラウザ
+    participant S as サーバー
+    B->>S: /index.html
+    S-->>B: HTML（トップ）
+    Note over B: リンクをクリック
+    B->>S: /about.html
+    S-->>B: HTML（About）
+    Note over B: ページ全体を再読込
 ```
 
-```tsx
-"use client";
+SPA では、最初に 1 つの HTML と JavaScript を読み込み、以降のページ遷移は **JavaScript が画面を書き換えるだけ**で実現します。サーバーへの HTML リクエストは最初の 1 回だけです。
 
-// Client Component
-// ブラウザで実行される
-export default function ClientComp() {
-  return <p>ブラウザで実行されます</p>;
-}
+```
+SPA（Single Page Application）:
+
+ブラウザ            サーバー
+  │  / (最初のリクエスト)  │
+  │ ──────────────→    │
+  │  空の HTML + JS    │
+  │ ←──────────────    │
+  │                    │
+  │  JS が画面を構築    │
+  │                    │
+  │  「About」をクリック  │
+  │  → JS が画面を書換  │  ← サーバーへのリクエストなし！
+  │  （URLも変わる）    │
 ```
 
-## Server Component とは
+ページ遷移のたびにサーバーと通信する必要がないため、**画面の切り替えが非常に高速**です。ネイティブアプリのようなスムーズな操作感が得られます。
 
-Server Component は**サーバー上でのみ実行される** React コンポーネントです。サーバーで HTML に変換されてからブラウザに送られます。
+## CSR の仕組みをもう少し詳しく
 
-### Server Component のメリット
+SPA は通常 CSR で動作します。サーバーが返す HTML の中身は次のようになっています。
 
-1. **JavaScript がブラウザに送られない** — コンポーネントのコードはサーバーで実行が完了するため、そのぶんブラウザがダウンロードする JavaScript が減る
-2. **データベースや API に直接アクセスできる** — サーバーで動くので、データベースクエリやファイルシステムへのアクセスが可能
-3. **機密情報を安全に扱える** — API キーなどの秘密の値がブラウザに漏れない
-
-```tsx
-// Server Component でデータベースに直接アクセスする例
-import { db } from "@/lib/database";
-
-export default async function UserList() {
-  // この SQL はサーバーで実行される。ブラウザには結果の HTML だけ届く
-  const users = await db.query("SELECT name FROM users");
-
-  return (
-    <ul>
-      {users.map((user) => (
-        <li key={user.name}>{user.name}</li>
-      ))}
-    </ul>
-  );
-}
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My App</title>
+</head>
+<body>
+  <!-- ここはほぼ空っぽ -->
+  <div id="root"></div>
+  <script src="/bundle.js"></script>
+</body>
+</html>
 ```
 
-この例ではデータベースクエリがブラウザに送られることは絶対にありません。ブラウザが受け取るのは、クエリの結果から生成された HTML だけです。
+`<div id="root"></div>` — たったこれだけです。React の `createRoot` がこの空の `<div>` の中に UI を構築します。つまり、**JavaScript が実行されるまで画面には何も表示されません**。
 
-### Server Component の制約
+```mermaid
+sequenceDiagram
+    participant B as ブラウザ
+    participant S as サーバー
 
-サーバーで実行されるため、**ブラウザの機能は使えません**。
-
-- `useState`、`useEffect` などの React Hooks が使えない
-- `onClick`、`onChange` などのイベントハンドラが使えない
-- `window`、`document` などのブラウザ API にアクセスできない
-
-つまり、**ユーザーの操作に反応するインタラクティブな UI は作れません**。
-
-## Client Component とは
-
-ブラウザで動くコンポーネントです。従来の React コンポーネントと同じように、state やイベントハンドラを使えます。
-
-```tsx
-"use client";
-
-import { useState } from "react";
-
-export default function Counter() {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div>
-      <p>カウント: {count}</p>
-      <button onClick={() => setCount(count + 1)} type="button">
-        +1
-      </button>
-    </div>
-  );
-}
+    B->>S: リクエスト
+    S-->>B: ほぼ空の HTML
+    Note over B: 白画面のまま
+    S-->>B: JavaScript
+    Note over B: JS を実行中...
+    B->>S: データ取得（API）
+    S-->>B: データ
+    Note over B: 表示完了
 ```
 
-`"use client"` はファイルの**一番上**に書きます。これは Next.js（正確には React）への宣言で、「このファイルとここから import されるモジュールはクライアントバンドルに含めてください」という意味です。
+## CSR の弱点
 
-> **注意**: `"use client"` は「このコンポーネントはブラウザ**だけ**で動く」という意味ではありません。初回表示時にはサーバーで HTML としてプリレンダリングされることもあります。正確には「クライアントバンドルに含める（ブラウザに JavaScript を送る）」という指示です。
+CSR には大きく 2 つの弱点があります。
 
-## 使い分けの判断基準
+### 1. 初期表示が遅い
 
-どちらを使うか迷ったときの判断基準です。
+JavaScript のダウンロードと実行が終わるまで、ユーザーには**白画面**が表示されます。アプリが大きくなるほど JavaScript ファイルも大きくなり、初期表示はさらに遅くなります。
 
-| やりたいこと | Server Component | Client Component |
-|-------------|:---:|:---:|
-| データベースやファイルに直接アクセス | ✅ | ❌ |
-| 機密情報（API キーなど）を使う | ✅ | ❌ |
-| `useState` / `useEffect` を使う | ❌ | ✅ |
-| イベントハンドラ（onClick など）を使う | ❌ | ✅ |
-| ブラウザ API（localStorage など）を使う | ❌ | ✅ |
-| 静的な表示だけ（操作なし） | ✅ | △（可能だが不要） |
+特にモバイル回線や低スペックなデバイスでは、この遅延が顕著です。
 
-**基本方針: デフォルトは Server Component。インタラクティブな機能が必要な部分だけ Client Component にする。**
+### 2. SEO に弱い場合がある
 
-この方針には明確な理由があります。Server Component はブラウザに JavaScript を送らないため、ページの読み込みが速くなります。「必要なところだけ Client Component にする」ことで、パフォーマンスを最適に保てます。
+**SEO（Search Engine Optimization）** とは、Google などの検索エンジンにページの内容を正しく認識してもらうための取り組みです。
 
-## サーバーとクライアントの境界
+検索エンジンの**クローラー**（Web ページの内容を自動で読み取るプログラム）が HTML を取得すると、`<div id="root"></div>` しかありません。JavaScript を実行しなければ中身がわからないため、ページの内容を正しくインデックスできない場合があります。
 
-実際のアプリでは、Server Component と Client Component を組み合わせて使います。ここで重要なのが「境界」の考え方です。
+> **補足**: Google のクローラーは JavaScript を実行する能力がありますが、すべてのクローラーがそうとは限りません。また、JavaScript の実行にはコストがかかるため、クローリングの効率も下がります。
 
-### Server Component の中に Client Component を置ける
+## SSR — サーバーで HTML を作る
 
-```tsx
-// app/page.tsx（Server Component）
-import Counter from "./counter";
+**SSR（Server-Side Rendering）** は、CSR の弱点を解決するアプローチです。
 
-export default function Page() {
-  return (
-    <main>
-      <h1>ダッシュボード</h1>
-      <p>ようこそ。今日の統計です。</p>
-      {/* Server Component の中に Client Component を配置 */}
-      <Counter />
-    </main>
-  );
-}
+CSR がブラウザで HTML を組み立てるのに対し、SSR は**サーバー側で HTML を組み立ててからブラウザに送ります**。
+
+```mermaid
+sequenceDiagram
+    participant B as ブラウザ
+    participant S as サーバー
+
+    B->>S: リクエスト
+    Note over S: ① データ取得
+    Note over S: ② React を実行して HTML を生成
+    S-->>B: 完成した HTML
+    Note over B: すぐに画面表示！（コンテンツが見える）
+    S-->>B: JavaScript
+    Note over B: ハイドレーション（ボタンが押せるようになる）
 ```
 
-```tsx
-// app/counter.tsx（Client Component）
-"use client";
+### SSR のメリット
 
-import { useState } from "react";
+1. **初期表示が速い** — ブラウザは完成した HTML を受け取るので、すぐに画面を表示できる
+2. **SEO に強い** — クローラーが完成した HTML を読めるので、内容を正しくインデックスできる
+3. **データ取得が速い** — サーバーは DB や API に近い場所にあるため、データ取得のネットワーク遅延が小さい
 
-export default function Counter() {
-  const [count, setCount] = useState(0);
-  return (
-    <button onClick={() => setCount(count + 1)} type="button">
-      クリック数: {count}
-    </button>
-  );
-}
+### ハイドレーション
+
+SSR で送られた HTML は、最初は**静的な HTML**です。ボタンをクリックしても何も起きません。JavaScript が読み込まれた後、React がこの HTML に**イベントハンドラーを結びつけて**、インタラクティブにします。
+
+この「静的な HTML を動的にする」プロセスを**ハイドレーション**（hydration）と呼びます。「乾いた HTML に水を注いで生き返らせる」というイメージです。
+
+```mermaid
+sequenceDiagram
+    participant B as ブラウザ
+    participant S as サーバー
+
+    B->>S: リクエスト
+    S-->>B: HTML 受信
+    Note over B: 見える（静的）
+    S-->>B: JS 受信
+    Note over B: ハイドレーション中...
+    Note over B: 操作可能（インタラクティブ）
 ```
 
-ページ全体は Server Component ですが、インタラクティブな `Counter` の部分だけが Client Component です。`<h1>` や `<p>` の部分は JavaScript なしで HTML として送られます。
+CSR と比べて、「画面が見える」タイミングが大幅に早くなっている点がポイントです。
 
-### Client Component の中から Server Component を直接 import できない
+## SSG — ビルド時に HTML を生成する
 
-これはよくある間違いです。
+もう 1 つの方式として **SSG（Static Site Generation）** があります。SSR がリクエストのたびにサーバーで HTML を生成するのに対し、SSG は**ビルド時（デプロイ前）にあらかじめ HTML を生成**しておきます。
 
-```tsx
-// ❌ これはうまくいかない
-"use client";
+```
+SSG の流れ:
 
-import ServerComp from "./server-comp"; // Server Component を import
+ビルド時:
+  React コンポーネント → HTML ファイルを生成 → サーバーに配置
 
-export default function ClientComp() {
-  return (
-    <div>
-      <ServerComp />
-    </div>
-  );
-}
+リクエスト時:
+  ブラウザ → 生成済みの HTML をそのまま返すだけ（超高速）
 ```
 
-`"use client"` を書いたファイルから import したモジュールは、すべてクライアントバンドルに含まれます。つまり、`ServerComp` は Server Component として動かなくなります。
+SSG はページの内容がほとんど変わらないサイト（ブログ、ドキュメントサイトなど）に適しています。実はこの研修サイト自体も SSG で構築されています（VitePress という SSG ツールを使っています）。
 
-### children パターンで解決する
+ただし、ユーザーごとに異なる内容を表示するページ（マイページ、ダッシュボードなど）には向きません。配属先のプロジェクトでは主に SSR を使うため、SSG の詳細は省略します。
 
-Client Component の中に Server Component を配置したい場合は、`children`（または他の props）として渡します。
+## 比較まとめ
 
-```tsx
-// app/page.tsx（Server Component）
-import ClientWrapper from "./client-wrapper";
-import ServerContent from "./server-content";
+| 方式 | HTML の生成タイミング | 初期表示 | SEO | 向いているケース |
+|------|---------------------|---------|-----|----------------|
+| CSR | ブラウザで実行時 | 遅い | 弱い場合がある | 管理画面、ログイン後の画面 |
+| SSR | サーバーでリクエスト時 | 速い | 強い | ほとんどのページ |
+| SSG | ビルド時（事前生成） | 最速 | 強い | ブログ、ドキュメント |
 
-export default function Page() {
-  return (
-    <ClientWrapper>
-      <ServerContent />
-    </ClientWrapper>
-  );
-}
-```
+## Next.js はこれらをどう解決するか
 
-```tsx
-// app/client-wrapper.tsx（Client Component）
-"use client";
+React 単体では CSR（SPA）しかできません。SSR を自分で実装しようとすると、サーバーの構築、ルーティング、データ取得のタイミング制御など、非常に多くの設定が必要になります。
 
-import { useState } from "react";
+**Next.js** は、これらの複雑さを抽象化し、SSR・SSG を簡単に使えるようにしたフレームワークです。さらに、Next.js の **Server Components** は SSR の考え方をコンポーネント単位に細かく適用できるようにしたもので、Day 35 で詳しく学びます。
 
-export default function ClientWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isOpen, setIsOpen] = useState(true);
-
-  return (
-    <div>
-      <button onClick={() => setIsOpen(!isOpen)} type="button">
-        {isOpen ? "閉じる" : "開く"}
-      </button>
-      {isOpen && children}
-    </div>
-  );
-}
-```
-
-```tsx
-// app/server-content.tsx（Server Component）
-export default function ServerContent() {
-  // サーバーでのみ実行される処理が可能
-  return <p>この部分は Server Component です</p>;
-}
-```
-
-こうすると `ServerContent` は Server Component のままサーバーで実行され、その結果が `ClientWrapper` の `children` として渡されます。
-
-## 実際の設計例
-
-ブログ記事ページを例に、Server Component と Client Component の使い分けを見てみます。
-
-```tsx
-// app/blog/[slug]/page.tsx（Server Component）
-import LikeButton from "./like-button";
-
-export default async function BlogPost({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  // サーバーで記事データを取得
-  const res = await fetch(`https://api.example.com/posts/${slug}`);
-  const post = await res.json();
-
-  return (
-    <article>
-      <h1>{post.title}</h1>
-      <time dateTime={post.publishedAt}>{post.publishedAt}</time>
-      <div>{post.body}</div>
-      {/* いいねボタンだけ Client Component */}
-      <LikeButton postId={post.id} />
-    </article>
-  );
-}
-```
-
-```tsx
-// app/blog/[slug]/like-button.tsx（Client Component）
-"use client";
-
-import { useState } from "react";
-
-export default function LikeButton({ postId }: { postId: string }) {
-  const [liked, setLiked] = useState(false);
-
-  return (
-    <button
-      onClick={() => setLiked(!liked)}
-      aria-pressed={liked}
-      type="button"
-    >
-      {liked ? "♥ いいね済み" : "♡ いいね"}
-    </button>
-  );
-}
-```
-
-記事の本文（タイトル、日付、テキスト）は静的な表示なので Server Component で十分です。「いいね」ボタンはクリックに反応する必要があるので Client Component にしています。
-
-> **アクセシビリティ**: `<button>` に `aria-pressed` を付けると、スクリーンリーダーがボタンの ON/OFF 状態を読み上げてくれます。トグル（切り替え）ボタンには必ず付けるのが望ましいです。
+Day 34 では、Next.js のプロジェクト構成を見ていきます。
 
 ## まとめ
 
-- Next.js のコンポーネントはデフォルトで Server Component（サーバーで実行）
-- `"use client"` を書くと Client Component になり、ブラウザの JavaScript バンドルに含まれる
-- Server Component はデータ取得や機密情報の扱いに強い。Client Component はインタラクションに使う
-- 基本方針は「デフォルト Server Component、必要な部分だけ Client Component」
-- Client Component から Server Component を直接 import できない。`children` パターンを使う
+- **SPA** は 1 つの HTML で動くアプリ。ページ遷移が高速だが、初期表示は JavaScript に依存する
+- **CSR** はブラウザで HTML を組み立てる方式。初期表示が遅く、SEO に弱い場合がある
+- **SSR** はサーバーで HTML を組み立てる方式。初期表示が速く、SEO に強い
+- **ハイドレーション**により、SSR で送られた静的 HTML がインタラクティブになる
+- **SSG** はビルド時に HTML を生成する方式。静的サイトに最適
+- Next.js はこれらのレンダリング戦略を簡単に扱えるフレームワーク
 
-**次のレッスン**: [Day 34: レイアウトとページ](/lessons/day34/)
+**次のレッスン**: [Day 34: Next.js の概要とプロジェクト構成](/lessons/day34/)

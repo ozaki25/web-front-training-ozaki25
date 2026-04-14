@@ -1,230 +1,251 @@
-# Day 25: useEffect とライフサイクル
+# Day 25: state とイベント処理
 
 ## 今日のゴール
 
-- 副作用（side effect）とは何かを知る
-- `useEffect` の基本的な使い方を知る
-- 依存配列とクリーンアップの仕組みを知る
-- `useEffect` の適切な使い方と避けるべきパターンを知る
+- useState で状態を管理する方法を知る
+- イベントハンドラーの書き方を知る
+- 再レンダリングの仕組みを知る
+- state の不変性がなぜ重要かを知る
 
-## 副作用とは
+## state とは
 
-Day 23 で学んだように、React のコンポーネントは「state と props を受け取って JSX を返す関数」です。この「JSX を返す」以外の処理を**副作用**（side effect）と呼びます。
+Day 24 で学んだ props は、親から渡されるデータでした。では、コンポーネント自身が「今何回クリックされたか」「入力フォームに何が入力されているか」といった変化する情報を持つにはどうすればよいでしょうか。
 
-代表的な副作用:
+これを実現するのが **state**（ステート、状態）です。state はコンポーネントが自分で管理する値で、変更すると React が画面を自動的に更新します。
 
-- 外部 API からデータを取得する
-- ドキュメントのタイトルを変更する
-- タイマーを設定する
-- イベントリスナーを登録する
-- ローカルストレージにデータを保存する
+## useState
 
-これらの処理は「画面を描画する」こととは別の仕事なので、レンダリングとは別のタイミングで実行する必要があります。
-
-## useEffect の基本
-
-`useEffect` は副作用をレンダリングとは別に実行するための Hook です。
+React で state を使うには `useState` Hook（フック）を呼び出します。
 
 ```tsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-function PageTitle() {
+function Counter() {
   const [count, setCount] = useState(0);
 
-  useEffect(() => {
-    // レンダリング後に実行される
-    document.title = `${count}回クリックしました`;
-  });
-
   return (
-    <button onClick={() => setCount(count + 1)}>
-      クリック: {count}
-    </button>
+    <div>
+      <p>カウント: {count}</p>
+      <button onClick={() => setCount(count + 1)}>
+        +1
+      </button>
+    </div>
   );
 }
 ```
 
-`useEffect` に渡した関数は、コンポーネントのレンダリングが完了した**後**に実行されます。
+`useState(0)` は配列を返します。
 
-## 依存配列
+- `count` — 現在の state の値（初期値は `0`）
+- `setCount` — state を更新する関数
 
-上の例では、`useEffect` は毎回のレンダリング後に実行されます。しかし、「特定の値が変わったときだけ実行したい」場合が大半です。第2引数に**依存配列**を渡すことで制御できます。
+`setCount` を呼ぶと state が更新され、React がコンポーネントを再実行（**再レンダリング**）して画面が更新されます。
 
-### 特定の値が変わったときだけ実行
+> **Hook（フック）とは**: `use` で始まる関数を Hook と呼びます。React の機能（state、副作用など）をコンポーネントで使えるようにする仕組みです。Hook はコンポーネントのトップレベルで呼び出す必要があり、`if` の中やループの中では使えません。
 
-```tsx
-useEffect(() => {
-  document.title = `${count}回クリックしました`;
-}, [count]); // count が変わったときだけ実行
-```
+## イベントハンドラー
 
-依存配列に `[count]` を指定すると、`count` が変化したレンダリングの後だけ関数が実行されます。
-
-### マウント時のみ実行
-
-空の配列 `[]` を渡すと、コンポーネントが画面に追加されたとき（マウント時）に1回だけ実行されます。
+Day 14 で学んだ `addEventListener` の React 版がイベントハンドラーです。JSX 属性として `on` + イベント名で指定します。
 
 ```tsx
-function UserProfile() {
-  const [user, setUser] = useState<{ name: string } | null>(null);
-
-  useEffect(() => {
-    // コンポーネントの初回表示時に API からデータを取得
-    fetch("https://api.example.com/user/1")
-      .then((response) => response.json())
-      .then((data) => setUser(data));
-  }, []); // 空の依存配列 → マウント時に1回だけ
-
-  if (!user) {
-    return <p>読み込み中...</p>;
+function App() {
+  function handleClick() {
+    console.log("クリックされました");
   }
 
-  return <p>ようこそ、{user.name}さん！</p>;
+  return <button onClick={handleClick}>クリック</button>;
 }
 ```
 
-### 依存配列なし
+`onClick={handleClick}` に注目です。`handleClick()` と括弧を付けると関数がその場で実行されてしまいます。括弧なしで関数の参照を渡すのがポイントです。
 
-依存配列を省略すると、毎回のレンダリング後に実行されます。これが必要な場面はほとんどありません。
+### TypeScript でのイベント型
 
-```tsx
-// 毎回実行される（通常は避ける）
-useEffect(() => {
-  console.log("レンダリングされました");
-});
-```
-
-## クリーンアップ
-
-副作用の中には、コンポーネントが画面から消える（アンマウントされる）ときに後片付けが必要なものがあります。例えば、イベントリスナーやタイマーです。
-
-`useEffect` の関数から**クリーンアップ関数**を返すことで、後片付けができます。
+Day 22 で DOM イベントの型を学びました。React では独自のイベント型を使います。
 
 ```tsx
-function WindowSize() {
-  const [width, setWidth] = useState(window.innerWidth);
+function SearchForm() {
+  const [query, setQuery] = useState("");
 
-  useEffect(() => {
-    function handleResize() {
-      setWidth(window.innerWidth);
-    }
-
-    // イベントリスナーを登録
-    window.addEventListener("resize", handleResize);
-
-    // クリーンアップ: コンポーネントが消えるときにリスナーを解除
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []); // マウント時に登録、アンマウント時に解除
-
-  return <p>ウィンドウ幅: {width}px</p>;
-}
-```
-
-クリーンアップが必要な理由は、コンポーネントが消えた後もイベントリスナーが残り続けると、存在しないコンポーネントの state を更新しようとしてメモリリークや意図しない動作を引き起こすためです。
-
-### タイマーのクリーンアップ
-
-```tsx
-function Timer() {
-  const [seconds, setSeconds] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-    }, 1000);
-
-    // クリーンアップ: タイマーを停止
-    return () => clearInterval(id);
-  }, []);
-
-  return <p>経過時間: {seconds}秒</p>;
-}
-```
-
-`setSeconds((prev) => prev + 1)` のように関数を渡す形式を使っています。これは**更新関数**と呼ばれ、最新の state 値を確実に参照できます。`setSeconds(seconds + 1)` と書くと、クロージャに閉じ込められた `seconds`（常に `0`）を参照してしまいます。
-
-## useEffect の実行タイミング
-
-依存配列の値が変わったとき、クリーンアップ関数は新しい Effect が実行される**前**に呼ばれます。
-
-```tsx
-function ChatRoom({ roomId }: { roomId: string }) {
-  useEffect(() => {
-    console.log(`${roomId} に接続`);
-
-    return () => {
-      console.log(`${roomId} から切断`);
-    };
-  }, [roomId]);
-
-  return <p>チャットルーム: {roomId}</p>;
-}
-```
-
-`roomId` が `"general"` から `"random"` に変わると:
-
-1. `"general から切断"` （古い Effect のクリーンアップ）
-2. `"random に接続"` （新しい Effect の実行）
-
-## useEffect を使うべきでない場面
-
-`useEffect` は強力ですが、使いすぎると問題になります。以下は `useEffect` を使わなくてよいパターンです。
-
-### レンダリング中に計算できるもの
-
-```tsx
-// NG: useEffect で計算している
-function FilteredList({ items, query }: { items: string[]; query: string }) {
-  const [filtered, setFiltered] = useState(items);
-
-  useEffect(() => {
-    setFiltered(items.filter((item) => item.includes(query)));
-  }, [items, query]);
-
-  return <ul>{filtered.map((item) => <li key={item}>{item}</li>)}</ul>;
-}
-
-// OK: レンダリング中に直接計算する
-function FilteredList({ items, query }: { items: string[]; query: string }) {
-  const filtered = items.filter((item) => item.includes(query));
-
-  return <ul>{filtered.map((item) => <li key={item}>{item}</li>)}</ul>;
-}
-```
-
-props や state から計算できる値は、`useEffect` を使わずにレンダリング中に直接計算しましょう。無駄な state と再レンダリングを避けられます。
-
-### イベントに応じた処理
-
-```tsx
-// NG: query が変わるたびに useEffect で検索 API を呼んでいる
-useEffect(() => {
-  if (query) {
-    fetch(`/api/search?q=${query}`)
-      .then((res) => res.json())
-      .then((data) => setResults(data));
+  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setQuery(event.target.value);
   }
-}, [query]); // 入力のたびに API 呼び出しが走ってしまう
 
-// OK: フォーム送信時にイベントハンドラーで処理する
-function handleSubmit(event: React.FormEvent) {
-  event.preventDefault();
-  fetch(`/api/search?q=${query}`)
-    .then((res) => res.json())
-    .then((data) => setResults(data));
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    console.log(`検索: ${query}`);
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="search">検索</label>
+      <input
+        id="search"
+        type="text"
+        value={query}
+        onChange={handleChange}
+      />
+      <button type="submit">検索する</button>
+    </form>
+  );
 }
 ```
 
-「ユーザーのアクションに応じた処理」はイベントハンドラーに書くべきです。`useEffect` は「表示されたときに何かする」場面で使います。
+よく使うイベント型をまとめます。
+
+| JSX 属性 | イベント型 |
+|----------|-----------|
+| `onClick` | `React.MouseEvent<HTMLButtonElement>` |
+| `onChange` | `React.ChangeEvent<HTMLInputElement>` |
+| `onSubmit` | `React.FormEvent<HTMLFormElement>` |
+| `onKeyDown` | `React.KeyboardEvent<HTMLInputElement>` |
+| `onFocus` | `React.FocusEvent<HTMLInputElement>` |
+
+## 再レンダリングの仕組み
+
+`useState` の更新関数（`setCount` など）を呼ぶと何が起きるか、順を追って見ていきます。
+
+```tsx
+function Counter() {
+  console.log("Counter がレンダリングされました");
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <p>カウント: {count}</p>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+    </div>
+  );
+}
+```
+
+1. 初回レンダリング: `count` は `0`、画面に「カウント: 0」が表示される
+2. ボタンをクリック: `setCount(1)` が呼ばれる
+3. React が `Counter` 関数を再度呼び出す（再レンダリング）
+4. 今度は `count` が `1` になっている
+5. 新しい仮想 DOM と前の仮想 DOM を比較し、差分だけ実際の DOM に反映する
+
+コンソールを見ると、クリックするたびに「Counter がレンダリングされました」と表示されるのが確認できます。
+
+### state は「次のレンダリング」で反映される
+
+重要な注意点があります。`setCount` を呼んでも、**その時点の `count` は変わりません**。
+
+```tsx
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  function handleClick() {
+    setCount(count + 1);
+    console.log(count); // まだ 0 のまま！
+    // 次のレンダリングで count が 1 になる
+  }
+
+  return <button onClick={handleClick}>カウント: {count}</button>;
+}
+```
+
+`setCount` は「次のレンダリングで使う値」を予約するだけです。現在の関数実行中の `count` は変わりません。これを **state のスナップショット** と呼びます。
+
+## state の不変性
+
+state を更新するときは、**既存の値を直接変更せず、新しい値を作って渡す**のがルールです。
+
+### プリミティブ値の場合
+
+数値や文字列はそもそも直接変更できないので、自然に正しく書けます。
+
+```tsx
+setCount(count + 1);       // OK: 新しい数値を渡している
+setName("新しい名前");      // OK: 新しい文字列を渡している
+```
+
+### 配列の場合
+
+配列を state にしている場合、`push` や `splice` で直接変更してはいけません。
+
+```tsx
+function TodoApp() {
+  const [todos, setTodos] = useState<string[]>(["買い物", "掃除"]);
+
+  function addTodo() {
+    // NG: 既存の配列を直接変更している
+    // todos.push("新しいタスク");
+    // setTodos(todos);
+
+    // OK: スプレッド構文で新しい配列を作る
+    setTodos([...todos, "新しいタスク"]);
+  }
+
+  function removeTodo(index: number) {
+    // OK: filter で新しい配列を作る
+    setTodos(todos.filter((_, i) => i !== index));
+  }
+
+  return (
+    <div>
+      <ul>
+        {todos.map((todo, index) => (
+          <li key={index}>
+            {todo}
+            <button onClick={() => removeTodo(index)}>削除</button>
+          </li>
+        ))}
+      </ul>
+      <button onClick={addTodo}>追加</button>
+    </div>
+  );
+}
+```
+
+### オブジェクトの場合
+
+オブジェクトも同様に、スプレッド構文で新しいオブジェクトを作ります。
+
+```tsx
+const [form, setForm] = useState({ name: "", email: "" });
+
+// NG: 直接変更
+// form.name = "新しい名前";
+// setForm(form);
+
+// OK: スプレッド構文で新しいオブジェクトを作る
+setForm({ ...form, name: "新しい名前" });
+```
+
+### なぜ不変性が重要なのか
+
+React は state が更新されたかどうかを**参照の比較**（`===`）で判断します。
+
+```javascript
+const arr = [1, 2, 3];
+arr.push(4);       // 同じ配列オブジェクトを変更
+arr === arr;       // true → React は「変化なし」と判断
+
+const newArr = [...arr, 4]; // 新しい配列を作成
+arr === newArr;    // false → React は「変化あり」と判断 → 再レンダリング
+```
+
+既存のオブジェクトを直接変更しても、参照が同じなので React は変化を検知できません。新しいオブジェクトを作ることで、React が変化を正しく検知し、画面を更新できるのです。
+
+## 複数の state
+
+1つのコンポーネントで複数の `useState` を使えます。例えば、メールアドレス・パスワード・パスワード表示切り替えをそれぞれ別の state として管理できます。
+
+```tsx
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [isVisible, setIsVisible] = useState(false);
+```
+
+関連する値は1つのオブジェクトにまとめる場合と、個別の `useState` に分ける場合があります。一緒に更新されることが多い値はまとめ、独立して変化する値は分けるのが一般的です。
 
 ## まとめ
 
-- `useEffect` はレンダリング後に副作用を実行する Hook
-- 依存配列で実行タイミングを制御する: `[value]` で値の変化時、`[]` でマウント時のみ
-- クリーンアップ関数でイベントリスナーやタイマーの後片付けをする
-- props や state から計算できる値には `useEffect` を使わない
-- ユーザーアクションへの応答はイベントハンドラーに書く
+- `useState` でコンポーネント自身の状態を管理できる
+- state が更新されると React がコンポーネントを再レンダリングする
+- `setCount` は即座に値を変えるのではなく、次のレンダリングで反映される
+- state は不変性を守る（既存の値を変更せず、新しい値を作る）
+- React は参照の比較で変化を検知するので、新しいオブジェクトや配列を作ることが重要
 
-**次のレッスン**: [Day 26: フォームと Actions](/lessons/day26/)
+**次のレッスン**: [Day 26: 条件分岐とリストレンダリング](/lessons/day26/)

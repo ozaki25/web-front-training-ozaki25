@@ -1,224 +1,184 @@
-# Day 49: Web セキュリティ
+# Day 49: Web パフォーマンス応用
 
 ## 今日のゴール
 
-- XSS、CSRF、CORS の仕組みと対策を知る
-- Content Security Policy の概念を知る
-- Next.js が提供するセキュリティ機能を知る
+- コード分割と dynamic import の仕組みを知る
+- バンドルサイズの分析ツールがあることを知る
+- tree shaking の仕組みを知る
+- SSR/SSG のパフォーマンス特性の違いを知る
 
-## なぜ Web セキュリティを学ぶのか
+## コード分割（Code Splitting）
 
-Web アプリケーションはインターネットに公開されるため、常に攻撃のリスクがあります。セキュリティを知らずにコードを書くと、ユーザーの個人情報が漏洩したり、アカウントが乗っ取られたりする可能性があります。
+ブラウザが Web ページを表示するとき、JavaScript ファイルをダウンロードして実行します。アプリが大きくなると JavaScript のファイルサイズも大きくなり、ダウンロードと実行に時間がかかります。
 
-フロントエンドエンジニアも、最低限の攻撃手法と対策を知っておく必要があります。
+**コード分割**は、JavaScript を複数のファイル（チャンク）に分け、必要なものだけをダウンロードする仕組みです。
 
-## XSS（Cross-Site Scripting）
+Next.js は自動的にページ単位でコード分割を行います。`/about` にアクセスしたとき、`/blog` のコードはダウンロードされません。しかし、1 つのページ内でも分割が必要な場合があります。
 
-**XSS** は、悪意のある JavaScript をページに埋め込む攻撃です。
+## next/dynamic による遅延読み込み
 
-### 攻撃の仕組み
-
-たとえば、ユーザーのコメントをそのまま HTML として表示するサイトがあるとします。
-
-```html
-<!-- ❌ ユーザー入力をそのまま HTML として表示 -->
-<div>ユーザーのコメント: <script>document.cookie を外部サーバーに送信</script></div>
-```
-
-攻撃者がコメント欄に `<script>` タグを含むテキストを投稿すると、他のユーザーがそのページを見たときに、攻撃者の JavaScript が実行されてしまいます。これにより Cookie の窃取やページの改ざんが可能になります。
-
-### React/Next.js の XSS 対策
-
-React は JSX でテキストを表示する際、自動的に**エスケープ**（特殊文字を無害化）します。
+`next/dynamic` を使うと、コンポーネントを必要なタイミングで読み込めます。
 
 ```tsx
-// ✅ React は自動でエスケープする
-const userInput = '<script>alert("XSS")</script>';
+// src/app/dashboard/page.tsx
+import dynamic from "next/dynamic";
 
-export default function Comment() {
-  // <script> タグはテキストとして表示され、実行されない
-  return <p>{userInput}</p>;
-}
-// 表示結果: <script>alert("XSS")</script>（文字列として）
-```
+// 通常のインポート（ページ読み込み時にダウンロードされる）
+// import HeavyChart from "./heavy-chart";
 
-ただし、`dangerouslySetInnerHTML` を使うとエスケープが無効になります。
+// dynamic import（必要になったときにダウンロードされる）
+const HeavyChart = dynamic(() => import("./heavy-chart"), {
+  loading: () => <p role="status">グラフを読み込み中...</p>,
+});
 
-```tsx
-// ❌ 危険: ユーザー入力を dangerouslySetInnerHTML に渡してはいけない
-<div dangerouslySetInnerHTML={{ __html: userInput }} />
-```
-
-`dangerouslySetInnerHTML` は、Day 39 の構造化データのように**信頼できる HTML だけ**に使うべきです。名前に「dangerously（危険に）」と付いているのは、この理由からです。
-
-### XSS の対策まとめ
-
-1. ユーザー入力はそのまま HTML として出力しない（React は自動対応）
-2. `dangerouslySetInnerHTML` は信頼できるデータだけに使う
-3. Cookie に `HttpOnly` 属性を付ける（JavaScript からアクセスできなくする）
-4. Content Security Policy を設定する（後述）
-
-## CSRF（Cross-Site Request Forgery）
-
-**CSRF** は、ログイン済みのユーザーに意図しない操作をさせる攻撃です。
-
-### 攻撃の仕組み
-
-```
-1. ユーザーが銀行サイトにログイン中
-2. 攻撃者が用意した別のサイトにアクセス
-3. そのサイトに仕込まれたフォームが、銀行サイトに送金リクエストを自動送信
-4. ブラウザが銀行サイトの Cookie を自動的に付けるため、リクエストが成功してしまう
-```
-
-ユーザーは悪意のあるサイトを開いただけで、銀行サイトへの送金が実行されてしまいます。
-
-### CSRF の対策
-
-```tsx
-// ✅ Next.js の Server Actions は CSRF トークンが自動で付与される
-async function transferMoney(formData: FormData) {
-  "use server";
-  // Server Actions は同一オリジンからのリクエストのみ受け付ける
+export default function DashboardPage() {
+  return (
+    <main>
+      <h1>ダッシュボード</h1>
+      <p>概要テキスト</p>
+      {/* この部分は後からダウンロードされる */}
+      <HeavyChart />
+    </main>
+  );
 }
 ```
 
-Next.js の Server Actions は、自動的に CSRF 対策が組み込まれています。
+`dynamic` は内部的に React の `lazy`（コンポーネントの遅延読み込み機能）と `Suspense`（読み込み中の表示を制御する機能）を使っています。コンポーネントが必要になるまで JavaScript のダウンロードが遅延されます。
 
-追加の対策としては以下があります。
-
-- Cookie に `SameSite=Strict` または `SameSite=Lax` を設定する（Day 48 で学習）
-- 重要な操作では CSRF トークンを使用する
-- `Origin` / `Referer` ヘッダーを検証する
-
-## CORS（Cross-Origin Resource Sharing）
-
-**CORS** は攻撃ではなく、ブラウザの**セキュリティ機構**です。
-
-### 同一オリジンポリシー
-
-ブラウザは、あるオリジン（`プロトコル + ドメイン + ポート`）のページから、別のオリジンへのリクエストを制限します。これを**同一オリジンポリシー**と呼びます。
-
-```
-https://myapp.com から https://api.example.com へのリクエスト
-→ オリジンが異なるので、デフォルトではブロックされる
-
-https://myapp.com から https://myapp.com/api へのリクエスト
-→ 同じオリジンなので OK
-```
-
-### CORS ヘッダー
-
-API サーバー側が「このオリジンからのリクエストを許可する」とレスポンスヘッダーで宣言することで、クロスオリジンのリクエストが許可されます。
-
-```ts
-// src/app/api/data/route.ts
-import { NextResponse } from "next/server";
-
-export async function GET() {
-  const response = NextResponse.json({ data: "値" });
-
-  // 特定のオリジンからのアクセスを許可
-  response.headers.set("Access-Control-Allow-Origin", "https://frontend.example.com");
-  response.headers.set("Access-Control-Allow-Methods", "GET, POST");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
-
-  return response;
-}
-```
-
-> **`Access-Control-Allow-Origin: *`（すべてのオリジンを許可）は慎重に扱う必要があります**。公開 API 以外では、許可するオリジンを明示的に指定するべきです。
-
-### Next.js での CORS
-
-Next.js の Server Components から外部 API を呼ぶ場合、CORS は関係ありません。CORS はブラウザのセキュリティ機構なので、サーバーからのリクエストには適用されません。これは Server Components の利点の 1 つです。
+ブラウザの API（`window`、`document` など）に依存するライブラリは、サーバーでは動きません。`ssr: false` を指定すると、クライアントでのみレンダリングされます。
 
 ```tsx
-// Server Component からの fetch — CORS の制限を受けない
-export default async function Page() {
-  const res = await fetch("https://external-api.example.com/data");
-  const data = await res.json();
-  return <div>{data.value}</div>;
+// src/components/map.tsx を使う側
+const MapComponent = dynamic(() => import("./map"), {
+  ssr: false,
+  loading: () => <p role="status">地図を読み込み中...</p>,
+});
+```
+
+### dynamic import が効果的なケース
+
+| ケース | 理由 |
+|-------|------|
+| 重いライブラリ（グラフ、エディタ、地図） | 初期表示に不要なコードを遅延読み込み |
+| モーダルやダイアログ | ユーザーが開くまで不要 |
+| 条件付きで表示するコンポーネント | 管理者だけが見るUIなど |
+| 画面下部のコンポーネント | ファーストビューに影響しない |
+
+## lazy loading
+
+**lazy loading**（遅延読み込み）は、コンテンツを必要になるまで読み込まないテクニックです。
+
+### 画像の lazy loading
+
+Day 42 で学んだ `next/image` はデフォルトで lazy loading が有効です。
+
+```tsx
+// src/components/photo-gallery.tsx
+import Image from "next/image";
+
+// デフォルトで lazy loading（画面内に入るまで読み込まない）
+<Image src="/photo.jpg" alt="写真" width={600} height={400} />
+
+// ファーストビューの画像は priority で即座に読み込む
+<Image src="/hero.jpg" alt="ヒーロー" fill priority />
+```
+
+### Intersection Observer
+
+画像以外のコンテンツ（コンポーネントやセクション全体）を画面内に入ったタイミングで読み込みたい場合は、ブラウザの **Intersection Observer API** が使えます。これは「ある要素が画面の表示領域（ビューポート）に入ったかどうか」を監視する API です。
+
+React では `useRef` と `useEffect` を使ったカスタムフックとして実装し、要素が画面内に入ったら `isVisible` を `true` に切り替えてコンテンツを表示する、というパターンが一般的です。`next/image` が内部で行っている lazy loading も、この Intersection Observer の仕組みを利用しています。
+
+## バンドルサイズの分析
+
+JavaScript のバンドルサイズが大きいと、ダウンロードと解析に時間がかかります。「何がサイズを大きくしているか」を可視化するツールとして **`@next/bundle-analyzer`** があります。
+
+構成イメージとしては、`next.config.ts` に `withBundleAnalyzer` をラップし、環境変数 `ANALYZE=true` を付けてビルドすると、ブラウザにバンドルの内訳がビジュアルで表示されます。各ライブラリがどれだけのサイズを占めているか一目でわかるため、「どのライブラリが重いのか」「不要なコードが含まれていないか」を判断する根拠になります。
+
+## tree shaking
+
+**Tree shaking** とは、使われていないコードをビルド時に自動で除去する仕組みです。木を揺さぶって枯れ葉（不要なコード）を落とすイメージです。
+
+```tsx
+// ❌ ライブラリ全体をインポート
+import _ from "lodash";
+const result = _.groupBy(data, "category");
+
+// ✅ 必要な関数だけインポート（tree shaking が効く）
+import groupBy from "lodash/groupBy";
+const result = groupBy(data, "category");
+```
+
+ライブラリの書き方によっては tree shaking が効かないことがあります。個別インポートを使うのが確実です。
+
+### 大きなライブラリに注意
+
+よく知られた大きなライブラリには、より軽量な代替手段があります。
+
+| ライブラリ | 問題点 | 代替手段 |
+|-----------|-------|---------|
+| moment.js | サイズが大きい | day.js（サイズ約 1/20） |
+| lodash | デフォルトでは tree shaking が効かない | lodash-es（tree shaking 対応版）または自前実装 |
+| chart.js | 全機能をインポートしがち | 必要な要素だけ個別インポート |
+
+## SSR / SSG のパフォーマンス特性
+
+Next.js のレンダリング戦略によって、パフォーマンス特性が異なります。
+
+### SSG（Static Site Generation）
+
+ビルド時に HTML を生成します。リクエストのたびに生成する必要がないため、最も高速です。
+
+```tsx
+// src/app/about/page.tsx
+// 特に設定しなければ、データ取得のないページは自動で SSG になる
+export default function AboutPage() {
+  return <h1>About</h1>;
 }
 ```
 
-## Content Security Policy（CSP）
+`generateStaticParams` を定義すると、動的ルートでもビルド時に HTML を生成できます。
 
-**CSP** は、ページ内でどのリソース（スクリプト、スタイル、画像など）の読み込みを許可するかを制御するセキュリティ機構です。XSS 攻撃の被害を大幅に軽減できます。
+**特性**:
+- TTFB（Time to First Byte）が最も速い（CDN（世界中のサーバーからコンテンツを配信する仕組み）から配信可能）
+- データの更新にはビルドし直す必要がある
+- ブログや企業サイトなど、頻繁に変わらないコンテンツに最適
 
-```ts
-// next.config.ts
-import type { NextConfig } from "next";
+### SSR（Server-Side Rendering）
 
-const nextConfig: NextConfig = {
-  headers: async () => [
-    {
-      source: "/(.*)",
-      headers: [
-        {
-          key: "Content-Security-Policy",
-          value: [
-            "default-src 'self'",           // デフォルトは同一オリジンのみ
-            "script-src 'self'",             // スクリプトは同一オリジンのみ
-            "style-src 'self' 'unsafe-inline'", // スタイルは同一オリジンとインライン
-            "img-src 'self' https:",         // 画像は同一オリジンとHTTPS
-            "font-src 'self'",               // フォントは同一オリジンのみ
-          ].join("; "),
-        },
-      ],
-    },
-  ],
-};
+リクエストのたびにサーバーで HTML を生成します。
 
-export default nextConfig;
+```tsx
+// src/app/dashboard/page.tsx
+// Server Component でデータを取得すると SSR になる
+export default async function DashboardPage() {
+  const data = await fetch("https://api.example.com/stats");
+  const stats = await data.json();
+
+  return <div>{stats.visitors} visitors</div>;
+}
 ```
 
-CSP が設定されていると、たとえ XSS でスクリプトが注入されても、許可されていないオリジンからのスクリプトは実行されません。
+**特性**:
+- 常に最新のデータを表示できる
+- TTFB は SSG より遅い（サーバー処理の時間がかかる）
+- ユーザーごとに異なるコンテンツ（ダッシュボードなど）に適している
 
-## Next.js が提供するセキュリティ機能
+### 使い分け
 
-Next.js はフレームワークレベルでいくつかのセキュリティ対策を提供しています。
-
-| 機能 | 対策 |
-|------|------|
-| React の自動エスケープ | XSS 防止 |
-| Server Actions の CSRF トークン | CSRF 防止 |
-| Server Components | 機密データがブラウザに漏れない |
-| `next.config.ts` の `headers` | CSP や各種セキュリティヘッダー |
-| 環境変数（`NEXT_PUBLIC_` なし） | サーバー側のみで使える秘密の値 |
-
-### 環境変数のルール
-
-```
-# .env.local
-
-# サーバーでのみ使える（ブラウザに送られない）
-DATABASE_URL=postgresql://...
-AUTH_SECRET=your-secret-key
-
-# ブラウザでも使える（NEXT_PUBLIC_ プレフィックス）
-NEXT_PUBLIC_SITE_URL=https://myapp.example.com
-```
-
-`NEXT_PUBLIC_` プレフィックスがない環境変数は、Server Components、Server Actions、Route Handlers でしかアクセスできません。データベースの接続情報や API キーなどの機密情報には `NEXT_PUBLIC_` を付けてはいけません。
-
-## セキュリティチェックリスト
-
-Web アプリケーションを作る際に確認すべき最低限の項目です。
-
-- [ ] ユーザー入力を `dangerouslySetInnerHTML` に渡していないか
-- [ ] 機密情報（API キー、DB 接続情報）がブラウザに漏れていないか
-- [ ] Cookie に `HttpOnly`、`Secure`、`SameSite` を設定しているか
-- [ ] Server Actions やフォームで CSRF 対策がされているか
-- [ ] 認証チェックをサーバー側で行っているか（クライアントだけで判断しない）
-- [ ] セキュリティヘッダー（CSP など）を設定しているか
+| コンテンツの性質 | 推奨戦略 |
+|---------------|---------|
+| 変更頻度が低い（ブログ、ドキュメント） | SSG |
+| 定期的に更新（商品一覧など） | SSR + キャッシュ（`"use cache"`） |
+| リアルタイムデータ（ダッシュボード） | SSR |
+| ユーザー固有のデータ（マイページ） | SSR |
 
 ## まとめ
 
-- XSS はページにスクリプトを注入する攻撃。React の自動エスケープが基本対策
-- CSRF はログイン済みユーザーに意図しない操作をさせる攻撃。Server Actions は自動で対策済み
-- CORS はブラウザのセキュリティ機構。Server Components からの fetch には影響しない
-- CSP で読み込み可能なリソースを制限し、XSS の被害を軽減する
-- 環境変数は `NEXT_PUBLIC_` プレフィックスの有無でサーバー専用かブラウザ共有かが決まる
+- `next/dynamic` でコンポーネントを必要なタイミングに遅延読み込みできる
+- `@next/bundle-analyzer` でバンドルの内訳を可視化し、何がページを重くしているか特定できる
+- tree shaking を活かすために、ライブラリは個別インポートを使う
+- SSG は最も高速だが静的コンテンツ向き、SSR は動的コンテンツに使う
+- パフォーマンス改善は推測ではなく、測定に基づいて行う（Day 48 参照）
 
-**次のレッスン**: [Day 50: コンポーネント設計パターン](/lessons/day50/)
+**次のレッスン**: [Day 50: 認証の基礎](/lessons/day50/)

@@ -1,204 +1,343 @@
-# Day 31: SPA・CSR・SSR — レンダリング戦略を理解する
+# Day 31: Context と状態管理パターン
 
 ## 今日のゴール
 
-- SPA（Single Page Application）の仕組みと特徴を知る
-- CSR（Client-Side Rendering）と SSR（Server-Side Rendering）の違いを知る
-- それぞれの方式のメリット・デメリットを知る
-- Next.js がこれらの課題をどう解決するか概要を知る
+- props drilling の問題を知る
+- `useContext` で離れたコンポーネント間でデータを共有する方法を知る
+- Context の適切な使い方と使いすぎの弊害を知る
+- 状態をどこに置くかの設計指針を知る
 
-## React アプリの動き方を振り返る
+## props drilling 問題
 
-Day 21〜30 で React の基礎を学びました。React でアプリを作ると、ブラウザで動くのは次のような仕組みです。
+Day 24 で学んだように、React のデータは親から子へ props として流れます。しかし、深くネストしたコンポーネントにデータを渡すとき、途中のコンポーネントが「バケツリレー」のように props を受け渡す必要があります。
 
-1. ブラウザがサーバーに HTML をリクエストする
-2. サーバーが**ほぼ空の HTML** と **JavaScript ファイル**を返す
-3. ブラウザが JavaScript をダウンロード・実行する
-4. JavaScript が DOM を組み立てて画面を表示する
+```tsx
+// App → Layout → Sidebar → UserInfo と props を渡す必要がある
+function App() {
+  const user = { name: "田中", role: "admin" };
+  return <Layout user={user} />;
+}
 
-この「JavaScript がブラウザ上で画面を組み立てる」方式を **CSR（Client-Side Rendering）** と呼びます。「Client」とはブラウザのことです。
+function Layout({ user }: { user: User }) {
+  return (
+    <div>
+      <Sidebar user={user} />  {/* user を渡すだけ */}
+      <main>コンテンツ</main>
+    </div>
+  );
+}
 
-## SPA とは何か
+function Sidebar({ user }: { user: User }) {
+  return (
+    <aside>
+      <UserInfo user={user} />  {/* user を渡すだけ */}
+    </aside>
+  );
+}
 
-React で作ったアプリは **SPA（Single Page Application）** です。名前の通り「ページが 1 つだけ」のアプリケーションです。
-
-従来の Web サイトでは、ページごとに HTML ファイルが存在し、リンクをクリックするたびにサーバーから新しい HTML を取得していました。
-
-**従来の Web サイト（MPA: Multi Page Application）:**
-
-```mermaid
-sequenceDiagram
-    participant B as ブラウザ
-    participant S as サーバー
-    B->>S: /index.html
-    S-->>B: HTML（トップ）
-    Note over B: リンクをクリック
-    B->>S: /about.html
-    S-->>B: HTML（About）
-    Note over B: ページ全体を再読込
+function UserInfo({ user }: { user: User }) {
+  return <p>{user.name}さん（{user.role}）</p>;
+}
 ```
 
-SPA では、最初に 1 つの HTML と JavaScript を読み込み、以降のページ遷移は **JavaScript が画面を書き換えるだけ**で実現します。サーバーへの HTML リクエストは最初の 1 回だけです。
+`Layout` と `Sidebar` は `user` を使わないのに、子に渡すためだけに props を受け取っています。これが **props drilling**（プロップス掘削）です。
 
-```
-SPA（Single Page Application）:
+props drilling の問題点:
 
-ブラウザ            サーバー
-  │  / (最初のリクエスト)  │
-  │ ──────────────→    │
-  │  空の HTML + JS    │
-  │ ←──────────────    │
-  │                    │
-  │  JS が画面を構築    │
-  │                    │
-  │  「About」をクリック  │
-  │  → JS が画面を書換  │  ← サーバーへのリクエストなし！
-  │  （URLも変わる）    │
-```
+- 途中のコンポーネントが不要な props を持つ
+- props の追加・削除時に中間のコンポーネントもすべて変更が必要
+- コンポーネントの再利用性が下がる
 
-ページ遷移のたびにサーバーと通信する必要がないため、**画面の切り替えが非常に高速**です。ネイティブアプリのようなスムーズな操作感が得られます。
+## Context の基本
 
-## CSR の仕組みをもう少し詳しく
+Context は、コンポーネントツリーを飛び越えてデータを共有する仕組みです。
 
-SPA は通常 CSR で動作します。サーバーが返す HTML の中身は次のようになっています。
+### Step 1: Context を作成する
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>My App</title>
-</head>
-<body>
-  <!-- ここはほぼ空っぽ -->
-  <div id="root"></div>
-  <script src="/bundle.js"></script>
-</body>
-</html>
+```tsx
+import { createContext } from "react";
+
+interface User {
+  name: string;
+  role: "admin" | "editor" | "viewer";
+}
+
+const UserContext = createContext<User | null>(null);
 ```
 
-`<div id="root"></div>` — たったこれだけです。React の `createRoot` がこの空の `<div>` の中に UI を構築します。つまり、**JavaScript が実行されるまで画面には何も表示されません**。
+`createContext` の引数は初期値（Provider で囲まれていないときの値）です。
 
-```mermaid
-sequenceDiagram
-    participant B as ブラウザ
-    participant S as サーバー
+### Step 2: Provider でデータを提供する
 
-    B->>S: リクエスト
-    S-->>B: ほぼ空の HTML
-    Note over B: 白画面のまま
-    S-->>B: JavaScript
-    Note over B: JS を実行中...
-    B->>S: データ取得（API）
-    S-->>B: データ
-    Note over B: 表示完了
+```tsx
+function App() {
+  const user: User = { name: "田中", role: "admin" };
+
+  return (
+    <UserContext.Provider value={user}>
+      <Layout />
+    </UserContext.Provider>
+  );
+}
 ```
 
-## CSR の弱点
+`Provider` の `value` に渡したデータが、子孫コンポーネントから参照可能になります。
 
-CSR には大きく 2 つの弱点があります。
+### Step 3: useContext でデータを取得する
 
-### 1. 初期表示が遅い
+```tsx
+import { useContext } from "react";
 
-JavaScript のダウンロードと実行が終わるまで、ユーザーには**白画面**が表示されます。アプリが大きくなるほど JavaScript ファイルも大きくなり、初期表示はさらに遅くなります。
+function UserInfo() {
+  const user = useContext(UserContext);
 
-特にモバイル回線や低スペックなデバイスでは、この遅延が顕著です。
+  if (!user) return null;
 
-### 2. SEO に弱い場合がある
-
-**SEO（Search Engine Optimization）** とは、Google などの検索エンジンにページの内容を正しく認識してもらうための取り組みです。
-
-検索エンジンの**クローラー**（Web ページの内容を自動で読み取るプログラム）が HTML を取得すると、`<div id="root"></div>` しかありません。JavaScript を実行しなければ中身がわからないため、ページの内容を正しくインデックスできない場合があります。
-
-> **補足**: Google のクローラーは JavaScript を実行する能力がありますが、すべてのクローラーがそうとは限りません。また、JavaScript の実行にはコストがかかるため、クローリングの効率も下がります。
-
-## SSR — サーバーで HTML を作る
-
-**SSR（Server-Side Rendering）** は、CSR の弱点を解決するアプローチです。
-
-CSR がブラウザで HTML を組み立てるのに対し、SSR は**サーバー側で HTML を組み立ててからブラウザに送ります**。
-
-```mermaid
-sequenceDiagram
-    participant B as ブラウザ
-    participant S as サーバー
-
-    B->>S: リクエスト
-    Note over S: ① データ取得
-    Note over S: ② React を実行して HTML を生成
-    S-->>B: 完成した HTML
-    Note over B: すぐに画面表示！（コンテンツが見える）
-    S-->>B: JavaScript
-    Note over B: ハイドレーション（ボタンが押せるようになる）
+  return <p>{user.name}さん（{user.role}）</p>;
+}
 ```
 
-### SSR のメリット
+もう `Layout` や `Sidebar` で `user` を受け渡す必要はありません。
 
-1. **初期表示が速い** — ブラウザは完成した HTML を受け取るので、すぐに画面を表示できる
-2. **SEO に強い** — クローラーが完成した HTML を読めるので、内容を正しくインデックスできる
-3. **データ取得が速い** — サーバーは DB や API に近い場所にあるため、データ取得のネットワーク遅延が小さい
+> **React 19 の `use()` API**: React 19 では `use(ThemeContext)` のように `use()` を使って Context を読み取ることもできます。`useContext` との違いは、`use()` は `if` 文や `for` 文の中でも呼び出せる点です。将来的には `use()` が推奨される方向ですが、現時点ではどちらも使えます。
 
-### ハイドレーション
+```tsx
+function Layout() {
+  return (
+    <div>
+      <Sidebar />
+      <main>コンテンツ</main>
+    </div>
+  );
+}
 
-SSR で送られた HTML は、最初は**静的な HTML**です。ボタンをクリックしても何も起きません。JavaScript が読み込まれた後、React がこの HTML に**イベントハンドラーを結びつけて**、インタラクティブにします。
-
-この「静的な HTML を動的にする」プロセスを**ハイドレーション（hydration）**と呼びます。「乾いた HTML に水を注いで生き返らせる」というイメージです。
-
-```mermaid
-sequenceDiagram
-    participant B as ブラウザ
-    participant S as サーバー
-
-    B->>S: リクエスト
-    S-->>B: HTML 受信
-    Note over B: 見える（静的）
-    S-->>B: JS 受信
-    Note over B: ハイドレーション中...
-    Note over B: 操作可能（インタラクティブ）
+function Sidebar() {
+  return (
+    <aside>
+      <UserInfo />
+    </aside>
+  );
+}
 ```
 
-CSR と比べて、「画面が見える」タイミングが大幅に早くなっている点がポイントです。
+## カスタム Hook で Context を使いやすくする
 
-## SSG — ビルド時に HTML を生成する
+Day 30 で学んだカスタム Hook を使い、Context の利用をさらにシンプルにできます。
 
-もう 1 つの方式として **SSG（Static Site Generation）** があります。SSR がリクエストのたびにサーバーで HTML を生成するのに対し、SSG は**ビルド時（デプロイ前）にあらかじめ HTML を生成**しておきます。
+```tsx
+import { createContext, useContext } from "react";
 
+interface User {
+  name: string;
+  role: "admin" | "editor" | "viewer";
+}
+
+const UserContext = createContext<User | null>(null);
+
+// カスタム Hook: null チェックを一箇所にまとめる
+function useUser(): User {
+  const user = useContext(UserContext);
+  if (!user) {
+    throw new Error("useUser は UserProvider の中で使ってください");
+  }
+  return user;
+}
+
+// Provider コンポーネント
+function UserProvider({
+  user,
+  children,
+}: {
+  user: User;
+  children: React.ReactNode;
+}) {
+  return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
+}
 ```
-SSG の流れ:
 
-ビルド時:
-  React コンポーネント → HTML ファイルを生成 → サーバーに配置
+使う側は非常にシンプルになります。
 
-リクエスト時:
-  ブラウザ → 生成済みの HTML をそのまま返すだけ（超高速）
+```tsx
+function App() {
+  const user: User = { name: "田中", role: "admin" };
+
+  return (
+    <UserProvider user={user}>
+      <Layout />
+    </UserProvider>
+  );
+}
+
+function UserInfo() {
+  const user = useUser(); // null チェック不要！
+  return <p>{user.name}さん（{user.role}）</p>;
+}
 ```
 
-SSG はページの内容がほとんど変わらないサイト（ブログ、ドキュメントサイトなど）に適しています。実はこの研修サイト自体も SSG で構築されています（VitePress という SSG ツールを使っています）。
+## Context で状態を管理する
 
-ただし、ユーザーごとに異なる内容を表示するページ（マイページ、ダッシュボードなど）には向きません。配属先のプロジェクトでは主に SSR を使うため、SSG の詳細は省略します。
+ここまでの例は静的なデータの共有でした。`useState` と組み合わせると、状態の共有もできます。
 
-## 比較まとめ
+```tsx
+import { createContext, useContext, useState } from "react";
 
-| 方式 | HTML の生成タイミング | 初期表示 | SEO | 向いているケース |
-|------|---------------------|---------|-----|----------------|
-| CSR | ブラウザで実行時 | 遅い | 弱い場合がある | 管理画面、ログイン後の画面 |
-| SSR | サーバーでリクエスト時 | 速い | 強い | ほとんどのページ |
-| SSG | ビルド時（事前生成） | 最速 | 強い | ブログ、ドキュメント |
+interface ThemeContextType {
+  theme: "light" | "dark";
+  toggleTheme: () => void;
+}
 
-## Next.js はこれらをどう解決するか
+const ThemeContext = createContext<ThemeContextType | null>(null);
 
-React 単体では CSR（SPA）しかできません。SSR を自分で実装しようとすると、サーバーの構築、ルーティング、データ取得のタイミング制御など、非常に多くの設定が必要になります。
+function useTheme(): ThemeContextType {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useTheme は ThemeProvider の中で使ってください");
+  }
+  return context;
+}
 
-**Next.js** は、これらの複雑さを抽象化し、SSR・SSG を簡単に使えるようにしたフレームワークです。さらに、Next.js の **Server Components** は SSR の考え方をコンポーネント単位に細かく適用できるようにしたもので、Day 33 で詳しく学びます。
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
-Day 32 では、Next.js のプロジェクト構成を見ていきます。
+  function toggleTheme() {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  }
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+```
+
+```tsx
+function App() {
+  return (
+    <ThemeProvider>
+      <Header />
+      <main>
+        <Content />
+      </main>
+    </ThemeProvider>
+  );
+}
+
+function Header() {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <header>
+      <button onClick={toggleTheme}>
+        {theme === "light" ? "🌙 ダークモード" : "☀️ ライトモード"}
+      </button>
+    </header>
+  );
+}
+
+function Content() {
+  const { theme } = useTheme();
+
+  return (
+    <div style={{ background: theme === "light" ? "#fff" : "#333", color: theme === "light" ? "#333" : "#fff" }}>
+      <p>現在のテーマ: {theme}</p>
+    </div>
+  );
+}
+```
+
+## Context の使いすぎに注意
+
+Context は便利ですが、なんでも Context にするのは問題です。
+
+### Context の更新は子孫全体に影響する
+
+Provider の `value` が変わると、その Context を使っているすべてのコンポーネントが再レンダリングされます。
+
+```tsx
+// 問題: value が変わるたびに、UserContext を使うすべてのコンポーネントが再レンダリング
+function AppProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [theme, setTheme] = useState("light");
+  const [notifications, setNotifications] = useState(0);
+
+  // theme が変わるだけで user を参照するコンポーネントも再レンダリングされる
+  return (
+    <AppContext.Provider value={{ user, theme, notifications, setUser, setTheme, setNotifications }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+```
+
+### 解決策: Context を分割する
+
+```tsx
+// 関心ごとに Context を分ける
+function App() {
+  return (
+    <UserProvider>
+      <ThemeProvider>
+        <NotificationProvider>
+          <Layout />
+        </NotificationProvider>
+      </ThemeProvider>
+    </UserProvider>
+  );
+}
+```
+
+テーマが変わっても、User や Notification の Context を使うコンポーネントは影響を受けません。
+
+## Context を使う前に考えること
+
+Context が必要になる前に、まずこれらのアプローチを検討する価値があります。
+
+### 1. コンポーネント合成で解決できないか
+
+Day 30 の合成パターンを使えば、props drilling を避けられる場合があります。
+
+```tsx
+// props drilling に見えるが...
+function Page() {
+  const user = useUser();
+  return <Layout sidebar={<UserInfo user={user} />} />;
+}
+
+function Layout({ sidebar }: { sidebar: React.ReactNode }) {
+  return (
+    <div>
+      <aside>{sidebar}</aside>
+      <main>コンテンツ</main>
+    </div>
+  );
+}
+```
+
+`Layout` は `user` を知る必要がなく、`sidebar` として渡された JSX をそのまま表示するだけです。
+
+### 2. state を持ち上げるだけで済まないか
+
+2〜3階層の props 渡しなら、Context よりも明示的な props のほうがコードの追跡が容易です。
+
+## 状態の設計指針
+
+| 状態の性質 | 置く場所 |
+|-----------|---------|
+| 1つのコンポーネントだけで使う | そのコンポーネントの `useState` |
+| 親子で共有する | 親の `useState` + props |
+| 離れたコンポーネントで共有する | Context |
+| アプリ全体で共有する | Context（テーマ、認証情報など） |
+| サーバーから取得するデータ | Server Components で取得（Next.js, Day 37 で学ぶ） |
+
+> **ポイント**: state は「必要な場所に、できるだけ近くに」置くのが原則です。最初から Context を使わず、props で不便になってから Context を検討するのが定石です。
 
 ## まとめ
 
-- **SPA** は 1 つの HTML で動くアプリ。ページ遷移が高速だが、初期表示は JavaScript に依存する
-- **CSR** はブラウザで HTML を組み立てる方式。初期表示が遅く、SEO に弱い場合がある
-- **SSR** はサーバーで HTML を組み立てる方式。初期表示が速く、SEO に強い
-- **ハイドレーション**により、SSR で送られた静的 HTML がインタラクティブになる
-- **SSG** はビルド時に HTML を生成する方式。静的サイトに最適
-- Next.js はこれらのレンダリング戦略を簡単に扱えるフレームワーク
+- props drilling は途中のコンポーネントが不要な props を受け渡す問題
+- `createContext` + `useContext` で、コンポーネントツリーを飛び越えてデータを共有できる
+- カスタム Hook（`useUser` など）と Provider コンポーネントのセットで使うのが定番
+- Context は関心ごとに分割し、不要な再レンダリングを避ける
+- Context の前に、合成パターンや state の持ち上げで解決できないか考える
 
-**次のレッスン**: [Day 32: Next.js の概要とプロジェクト構成](/lessons/day32/)
+**次のレッスン**: [Day 32: React のレンダリング最適化](/lessons/day32/)

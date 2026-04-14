@@ -1,255 +1,257 @@
-# Day 21: React の概要と JSX
+# Day 21: ジェネリクスとユーティリティ型
 
 ## 今日のゴール
 
-- React が何を解決するライブラリかを知る
-- JSX の仕組みを知る
-- コンポーネントの基本的な書き方を知る
+- ジェネリクスの基本と使いどころを知る
+- 実用的なユーティリティ型（Partial, Required, Pick, Omit, Record）の使い方を知る
 
-## React が解決する問題
+## ジェネリクスとは
 
-Day 12 で DOM 操作を学んだとき、要素の作成や更新が煩雑でした。
+Day 13 で学んだ配列メソッド `map` を振り返ります。`map` は配列の要素を変換する関数です。
 
-```javascript
-// Day 12 で書いたような DOM 操作
-const list = document.querySelector("#todo-list");
-const li = document.createElement("li");
-li.textContent = "新しいタスク";
-list.appendChild(li);
+```typescript
+const numbers = [1, 2, 3];
+const strings = numbers.map((n) => String(n)); // string[]
 ```
 
-数行のコードでも、「要素を取得 → 要素を作成 → 内容を設定 → 追加」という手順を毎回書く必要がありました。アプリが大きくなると、「どの要素がどの状態に対応しているのか」を追いかけるのが困難になります。
+`numbers` は `number[]`、`strings` は `string[]` です。`map` は `number` の配列にも `string` の配列にも使えます。こういった「型に依存しない汎用的な処理」を実現するのがジェネリクス（generics）です。
 
-React は、この問題を**宣言的 UI**（declarative UI）というアプローチで解決します。
+## ジェネリクスの基本
 
-### 命令的 UI vs 宣言的 UI
+ジェネリクスは「型を引数として受け取る仕組み」です。`<T>` のように山括弧で型パラメータを宣言します。
 
-**命令的（Imperative）**: 「まずこの要素を取得して、次にこの要素を作って、これを追加して...」と手順を書く。
+```typescript
+// T は「何かの型」を表すプレースホルダー
+function first<T>(items: T[]): T | undefined {
+  return items[0];
+}
 
-```javascript
-// 命令的: 手順を1つずつ指示する
-const counter = document.querySelector("#counter");
-const button = document.querySelector("#increment");
-let count = 0;
-button.addEventListener("click", () => {
-  count++;
-  counter.textContent = `カウント: ${count}`;
-});
+// 使うときに T が具体的な型に置き換わる
+const num = first([1, 2, 3]);       // T = number → number | undefined
+const str = first(["a", "b", "c"]); // T = string → string | undefined
 ```
 
-**宣言的（Declarative）**: 「このデータのとき、UI はこう見えるべき」と結果を書く。
+`first` 関数は「配列の最初の要素を返す」というロジックです。配列の要素が何型であっても同じロジックが使えるので、ジェネリクスで型を抽象化しています。
 
-```tsx
-// 宣言的: 状態に対応する UI を記述する
-function Counter() {
-  const [count, setCount] = useState(0);
-  return (
-    <button onClick={() => setCount(count + 1)}>
-      カウント: {count}
-    </button>
-  );
+型パラメータ名は慣例として `T`（Type）、`U`、`V` や、`K`（Key）、`V`（Value）がよく使われます。
+
+## ジェネリクスなしだとどうなるか
+
+ジェネリクスを使わないで同じことをしようとすると、問題が起きます。
+
+```typescript
+// any を使う → 型安全でない
+function firstAny(items: any[]): any {
+  return items[0];
+}
+
+const value = firstAny([1, 2, 3]); // any 型 → 型チェックが効かない
+value.toUpperCase(); // エラーにならない！（実行時にクラッシュ）
+```
+
+```typescript
+// 型ごとに関数を作る → 冗長
+function firstNumber(items: number[]): number | undefined {
+  return items[0];
+}
+function firstString(items: string[]): string | undefined {
+  return items[0];
 }
 ```
 
-宣言的 UI では、状態（`count`）が変わったら React が自動的に画面を更新してくれます。開発者は「状態がこうなったら UI はこう」と書くだけで、DOM 操作を自分で行う必要がありません。
+ジェネリクスは「型安全かつ汎用的」を両立する仕組みです。
 
-## React の仕組み ― 仮想 DOM
+## 型パラメータに制約を付ける
 
-React はなぜ DOM 操作を自動化できるのでしょうか。その仕組みが**仮想 DOM**（Virtual DOM）です。
+型パラメータには `extends` で制約を付けられます。
 
-1. コンポーネントの状態が変わる
-2. React がコンポーネントを再実行し、新しい仮想 DOM（JavaScript オブジェクトのツリー）を作る
-3. 前の仮想 DOM と比較し、差分（変わった部分だけ）を特定する
-4. 実際の DOM に最小限の変更を適用する
+```typescript
+// T は { length: number } を持つ型に限定
+function logLength<T extends { length: number }>(item: T): void {
+  console.log(item.length);
+}
 
-開発者が「状態に対応する UI の形」を記述するだけで、React が裏で差分計算と DOM 更新を効率的に行ってくれます。
-
-## JSX とは
-
-React のコードに出てくる HTML のような記法が **JSX**（JavaScript XML）です。
-
-```tsx
-const element = <h1>こんにちは、世界！</h1>;
+logLength("hello");    // OK: string は length を持つ
+logLength([1, 2, 3]);  // OK: 配列は length を持つ
+logLength(123);        // エラー！ number は length を持たない
 ```
 
-これは HTML ではありません。JavaScript の中に書かれた JSX です。ビルド時に通常の JavaScript の関数呼び出しに変換されます。
+## ジェネリクスの実用例
 
-```javascript
-// JSX がビルド時に変換された結果（イメージ）
-const element = React.createElement("h1", null, "こんにちは、世界！");
+実際の開発でよく見るパターンをいくつか紹介します。
+
+### API レスポンスのラッパー
+
+```typescript
+// どんなデータでも包める汎用的な型
+interface ApiResponse<T> {
+  data: T;
+  status: number;
+  message: string;
+}
+
+interface User {
+  id: number;
+  name: string;
+}
+
+interface Product {
+  id: number;
+  title: string;
+  price: number;
+}
+
+// 使うときに T を指定
+type UserResponse = ApiResponse<User>;
+type ProductListResponse = ApiResponse<Product[]>;
 ```
 
-`React.createElement` は JavaScript のオブジェクト（仮想 DOM のノード）を返します。このオブジェクトを元に React が実際の DOM を構築します。
+### キーと値のペア
 
-### JSX のルール
-
-JSX にはいくつかのルールがあります。
-
-**1. 必ず1つのルート要素で囲む**
-
-```tsx
-// エラー！ 複数のルート要素は書けない
-return (
-  <h1>タイトル</h1>
-  <p>本文</p>
-);
-
-// OK: div で囲む
-return (
-  <div>
-    <h1>タイトル</h1>
-    <p>本文</p>
-  </div>
-);
-
-// OK: Fragment（余分な DOM 要素を作らない）
-return (
-  <>
-    <h1>タイトル</h1>
-    <p>本文</p>
-  </>
-);
-```
-
-`<>...</>` は **Fragment** と呼ばれ、余計な `<div>` を追加せずに複数の要素をまとめられます。
-
-**2. JavaScript の式を `{}` で埋め込める**
-
-```tsx
-const name = "田中";
-const element = <h1>こんにちは、{name}さん！</h1>;
-```
-
-`{}` の中には JavaScript の式（値を返すもの）を書けます。
-
-```tsx
-const price = 1000;
-const element = (
-  <p>
-    税込価格: {(price * 1.1).toLocaleString()}円
-  </p>
-);
-```
-
-**3. HTML と異なる属性名がある**
-
-JSX は JavaScript なので、JavaScript の予約語と衝突する属性名が変更されています。
-
-| HTML | JSX |
-|------|-----|
-| `class` | `className` |
-| `for` | `htmlFor` |
-
-```tsx
-<label htmlFor="email" className="form-label">
-  メールアドレス
-</label>
-<input id="email" type="email" />
-```
-
-**4. すべてのタグを閉じる**
-
-HTML では `<img>` や `<input>` を閉じなくても動きますが、JSX ではすべてのタグを閉じる必要があります。
-
-```tsx
-// OK
-<img src="photo.jpg" alt="写真" />
-<input type="text" />
-<br />
-```
-
-## コンポーネントの基本
-
-React のコンポーネントは、JSX を返す JavaScript の関数です。
-
-```tsx
-function Greeting() {
-  return <h1>こんにちは！</h1>;
+```typescript
+function toEntries<K extends string, V>(
+  obj: Record<K, V>
+): [K, V][] {
+  return Object.entries(obj) as [K, V][];
 }
 ```
 
-コンポーネント名は**必ず大文字で始めます**。小文字だと HTML タグと見分けがつきません。
+> **`as` について**: `as [K, V][]` は**型アサーション**と呼ばれる構文で、「この値はこの型である」と TypeScript に明示的に伝えます。`Object.entries` の戻り値は `[string, V][]` ですが、実際にはキーが `K` 型であるとわかっているので `as` で型を指定しています。型アサーションは型チェックをすり抜けるため、本当にその型であると確信がある場合にだけ使います。Day 22 で学ぶ narrowing（型の絞り込み）で安全に型を判別できる場合は、そちらを優先します。
 
-```tsx
-// コンポーネントとして認識される
-<Greeting />
+> **ポイント**: ジェネリクスは「同じロジックを異なる型で使い回す」ときに使います。すべてをジェネリクスにする必要はありません。具体的な型で十分な場面では具体的な型を使います。
 
-// HTML の greeting タグ（存在しない）として解釈される
-<greeting />
-```
+## ユーティリティ型
 
-コンポーネントは他のコンポーネントの中で使えます。
+TypeScript には、既存の型を変換する便利な組み込み型が用意されています。これをユーティリティ型と呼びます。
 
-```tsx
-function Greeting() {
-  return <h1>こんにちは！</h1>;
+### Partial\<T\> ― すべてのプロパティを省略可能に
+
+```typescript
+interface User {
+  name: string;
+  age: number;
+  email: string;
 }
 
-function App() {
-  return (
-    <main>
-      <Greeting />
-      <p>React の学習を始めましょう。</p>
-    </main>
-  );
+// すべてのプロパティが省略可能になる
+type PartialUser = Partial<User>;
+// { name?: string; age?: number; email?: string; }
+
+// ユーザー情報の部分更新に便利
+function updateUser(id: number, changes: Partial<User>): void {
+  // name だけ、age だけ、など部分的な更新を受け付ける
+  console.log(`ユーザー ${id} を更新:`, changes);
 }
+
+updateUser(1, { name: "新しい名前" });       // OK
+updateUser(1, { age: 26, email: "new@ex.com" }); // OK
 ```
 
-`App` コンポーネントの中で `Greeting` コンポーネントを使っています。こうやってコンポーネントを組み合わせて画面を構築するのが React の基本的な考え方です。
+### Required\<T\> ― すべてのプロパティを必須に
 
-## TypeScript でのコンポーネント
+`Partial` の逆で、Optional なプロパティも必須にします。
 
-Day 17〜20 で学んだ TypeScript を使って、コンポーネントを型安全に書けます。ファイルの拡張子は `.tsx`（TypeScript + JSX）を使います。
-
-```tsx
-// App.tsx
-function App(): React.JSX.Element {
-  const title: string = "React 入門";
-
-  return (
-    <main>
-      <h1>{title}</h1>
-      <p>React 19 で学ぶモダン UI 開発</p>
-    </main>
-  );
+```typescript
+interface Config {
+  apiUrl?: string;
+  timeout?: number;
+  retries?: number;
 }
+
+// すべてのプロパティが必須になる
+type RequiredConfig = Required<Config>;
+// { apiUrl: string; timeout: number; retries: number; }
 ```
 
-戻り値の型 `React.JSX.Element` は省略しても推論されるので、通常は書きません。
+### Pick\<T, K\> ― 特定のプロパティだけ抽出
 
-```tsx
-// 実際にはこう書くことが多い
-function App() {
-  return (
-    <main>
-      <h1>React 入門</h1>
-    </main>
-  );
+```typescript
+interface User {
+  id: number;
+  name: string;
+  age: number;
+  email: string;
 }
+
+// name と email だけ抽出
+type UserContact = Pick<User, "name" | "email">;
+// { name: string; email: string; }
 ```
 
-## React が画面に表示するまでの裏側
+### Omit\<T, K\> ― 特定のプロパティを除外
 
-React アプリケーションの内部では、画面表示までに次のような処理が行われています。エントリーポイントのコードで見てみましょう。
+`Pick` の逆です。
 
-```tsx
-import { createRoot } from "react-dom/client";
-import App from "./App";
+```typescript
+interface User {
+  id: number;
+  name: string;
+  age: number;
+  email: string;
+}
 
-const root = createRoot(document.getElementById("root")!);
-root.render(<App />);
+// id を除外（新規作成時に id はまだない、という場面で便利）
+type NewUser = Omit<User, "id">;
+// { name: string; age: number; email: string; }
 ```
 
-HTML には `<div id="root"></div>` という空の要素だけがあり、`createRoot` がこの要素を React の管理下に置きます。`render` が呼ばれると、React は `App` コンポーネントを実行し、返された JSX から仮想 DOM を作り、実際の DOM に反映します。つまり、最初は空っぽの HTML が、JavaScript の実行によって画面に変わるという仕組みです。
+### Record\<K, V\> ― キーと値の型を指定したオブジェクト
 
-> **ポイント**: Next.js ではこのセットアップは自動で行われるので、自分で書く必要はありません。ただし、裏でこの仕組みが動いていることを知っておくと、React の動作を理解する助けになります。
+```typescript
+// string のキーに number の値を持つオブジェクト
+type ScoreMap = Record<string, number>;
+
+const scores: ScoreMap = {
+  math: 90,
+  english: 85,
+  science: 92,
+};
+```
+
+リテラル型と組み合わせると、キーを限定できます。
+
+```typescript
+type Subject = "math" | "english" | "science";
+type ScoreMap = Record<Subject, number>;
+
+const scores: ScoreMap = {
+  math: 90,
+  english: 85,
+  science: 92,
+  // history: 80, // エラー！ "history" は Subject に含まれない
+};
+```
+
+## ユーティリティ型の組み合わせ
+
+ユーティリティ型は組み合わせて使うこともできます。
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  age: number;
+  email: string;
+}
+
+// id 以外のプロパティを部分的に更新できる型
+type UserUpdate = Partial<Omit<User, "id">>;
+// { name?: string; age?: number; email?: string; }
+
+function updateUser(id: number, changes: UserUpdate): void {
+  console.log(`ユーザー ${id} を更新:`, changes);
+}
+
+updateUser(1, { name: "佐藤" }); // OK
+```
 
 ## まとめ
 
-- React は宣言的 UI で DOM 操作の煩雑さを解決する。「状態 → UI」の対応を書くだけ
-- 仮想 DOM で差分を検出し、最小限の DOM 更新を行う
-- JSX は JavaScript の中に書く HTML 風の記法で、ビルド時に JavaScript に変換される
-- コンポーネントは JSX を返す関数。名前は大文字で始める
-- コンポーネントを組み合わせて画面を構築するのが React の基本パターン
+- ジェネリクスは「型を引数として受け取る」仕組みで、型安全かつ汎用的なコードを書ける
+- `extends` で型パラメータに制約を付けられる
+- `Partial<T>` は全プロパティを省略可能に、`Required<T>` は全プロパティを必須にする
+- `Pick<T, K>` で特定プロパティを抽出、`Omit<T, K>` で特定プロパティを除外
+- `Record<K, V>` でキーと値の型を指定したオブジェクトを定義できる
+- ユーティリティ型は組み合わせて使える
 
-**次のレッスン**: [Day 22: コンポーネントと props](/lessons/day22/)
+**次のレッスン**: [Day 22: TypeScript 応用](/lessons/day22/)

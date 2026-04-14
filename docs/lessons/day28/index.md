@@ -1,364 +1,272 @@
-# Day 28: カスタム Hooks とコンポーネント設計
+# Day 28: フォームと Actions
 
 ## 今日のゴール
 
-- カスタム Hook でロジックを再利用する方法を知る
-- コンポーネントを適切に分割するという考え方を知る
-- 合成（Composition）パターンを知る
+- React 19 の form actions を知る
+- `useActionState` でフォームの状態を管理する方法を知る
+- `useFormStatus` で送信中の状態を表示する方法を知る
+- 従来の制御コンポーネントとの違いを知る
 
-## カスタム Hook とは
+## 従来のフォーム処理
 
-Day 23〜27 で `useState`, `useEffect`, `useTransition` などの組み込み Hook を学びました。これらを組み合わせて独自の Hook を作れます。それがカスタム Hook です。
-
-カスタム Hook は `use` で始まる関数で、中で他の Hook を呼び出します。
-
-### なぜカスタム Hook が必要か
-
-同じロジックを複数のコンポーネントで使いたい場面を考えます。
-
-```tsx
-// UserProfile コンポーネント
-function UserProfile() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/user")
-      .then((res) => res.json())
-      .then((data) => setUser(data))
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  // ...
-}
-
-// Settings コンポーネント（同じデータ取得ロジック）
-function Settings() {
-  const [settings, setSettings] = useState<Settings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then((data) => setSettings(data))
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  // ...
-}
-```
-
-データ取得のロジックが重複しています。これをカスタム Hook に抽出できます。
-
-## カスタム Hook の作り方
-
-```tsx
-import { useState, useEffect } from "react";
-
-function useFetch<T>(url: string) {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    setLoading(true);
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((json) => {
-        if (!cancelled) setData(json);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e.message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [url]);
-
-  return { data, loading, error };
-}
-```
-
-Day 19 で学んだジェネリクスを使い、どんな型のデータにも対応できるようにしています。`cancelled` フラグは、コンポーネントがアンマウントされた後に state を更新しないためのクリーンアップです。
-
-使う側はこうなります。
-
-```tsx
-interface User {
-  id: number;
-  name: string;
-}
-
-function UserProfile() {
-  const { data: user, loading, error } = useFetch<User>("/api/user");
-
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p role="alert">エラー: {error}</p>;
-  if (!user) return null;
-
-  return <h1>{user.name}</h1>;
-}
-
-interface Settings {
-  theme: string;
-  language: string;
-}
-
-function SettingsPage() {
-  const { data: settings, loading, error } = useFetch<Settings>("/api/settings");
-
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p role="alert">エラー: {error}</p>;
-  if (!settings) return null;
-
-  return <p>テーマ: {settings.theme}</p>;
-}
-```
-
-ロジックは `useFetch` に集約され、各コンポーネントは表示に集中できます。
-
-### もう1つの例: useLocalStorage
-
-ローカルストレージとの同期もよくカスタム Hook にします。
+Day 25 で学んだ `useState` を使ったフォーム処理を振り返ります。
 
 ```tsx
 import { useState } from "react";
 
-function useLocalStorage<T>(key: string, initialValue: T) {
-  const [value, setValue] = useState<T>(() => {
-    if (typeof window === "undefined") return initialValue; // SSR対応
+function ContactForm() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      const stored = window.localStorage.getItem(key);
-      return stored ? (JSON.parse(stored) as T) : initialValue;
-    } catch {
-      return initialValue;
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email }),
+      });
+      if (!response.ok) throw new Error("送信に失敗しました");
+      // 成功処理
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "エラーが発生しました");
+    } finally {
+      setIsSubmitting(false);
     }
-  });
-
-  function updateValue(newValue: T) {
-    setValue(newValue);
-    localStorage.setItem(key, JSON.stringify(newValue));
   }
 
-  return [value, updateValue] as const;
-}
-```
-
-`useState` の初期値に関数を渡しています。これは**遅延初期化**と呼ばれ、`localStorage` の読み取りのような重い処理を初回レンダリング時だけ実行するための書き方です。
-
-> **Next.js での注意**: Server Components や SSR 時には `window` オブジェクトが存在しないため、`typeof window === "undefined"` のチェックが必要です。
-
-```tsx
-function ThemeSwitcher() {
-  const [theme, setTheme] = useLocalStorage("theme", "light");
-
   return (
-    <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-      現在のテーマ: {theme}
-    </button>
+    <form onSubmit={handleSubmit}>
+      {error && <p role="alert">{error}</p>}
+      <div>
+        <label htmlFor="name">名前</label>
+        <input
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={isSubmitting}
+        />
+      </div>
+      <div>
+        <label htmlFor="email">メール</label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={isSubmitting}
+        />
+      </div>
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "送信中..." : "送信"}
+      </button>
+    </form>
   );
 }
 ```
 
-## カスタム Hook のルール
+動きますが、`useState` が4つもあり、`event.preventDefault()`、ローディング管理、エラー管理など、定型的なコードが多いです。React 19 ではこれをもっとシンプルに書けます。
 
-1. **名前は `use` で始める**: React が Hook として認識するために必要
-2. **トップレベルで呼び出す**: `if` やループの中では使えない（組み込み Hook と同じルール）
-3. **Hook の中で Hook を使える**: カスタム Hook の中で `useState` や別のカスタム Hook を呼べる
+## form actions
 
-## コンポーネント分割の考え方
-
-カスタム Hook がロジックの再利用なら、コンポーネント分割は UI の構造化です。
-
-### いつ分割するか
-
-- **繰り返し使う UI**: ボタン、カード、入力フィールドなど
-- **独立した責務**: ヘッダー、サイドバー、フォームなど
-- **state が局所的**: 特定の state がコンポーネントの一部でしか使われないとき
-- **見通しが悪くなったとき**: 1つのコンポーネントが長くなりすぎたら分割のサイン
-
-### 分割の例
+React 19 では `<form>` の `action` 属性に関数を渡せるようになりました。
 
 ```tsx
-// 分割前: 1つのコンポーネントにすべてが入っている
-function App() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
-
-  // 100行以上のコード...
+function SimpleForm() {
+  async function submitAction(formData: FormData) {
+    const name = formData.get("name") as string;
+    console.log(`名前: ${name}`);
+  }
 
   return (
-    <main>
-      {/* ヘッダー、フォーム、フィルター、リスト、フッター... */}
-    </main>
+    <form action={submitAction}>
+      <label htmlFor="name">名前</label>
+      <input id="name" name="name" type="text" />
+      <button type="submit">送信</button>
+    </form>
   );
 }
 ```
 
-```tsx
-// 分割後: 責務ごとにコンポーネントを分ける
-function App() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+HTML の `<form>` はもともと `action` 属性に URL を指定してデータを送信する仕組みでした（Day 3 で扱った内容です）。React 19 ではこれを拡張し、URL の代わりに関数を渡せるようにしたのです。
 
-  const filteredTodos = todos.filter((todo) => {
-    if (filter === "active") return !todo.completed;
-    if (filter === "completed") return todo.completed;
-    return true;
+`action` に渡した関数は、フォーム送信時に `FormData` オブジェクトを引数として受け取ります。`FormData` は `<input>` の `name` 属性を元にデータを収集します。`event.preventDefault()` も不要です。
+
+## useActionState
+
+`useActionState` は、form action の状態（結果やエラー）を管理する Hook です。
+
+```tsx
+import { useActionState } from "react";
+
+interface FormState {
+  message: string;
+  errors?: {
+    name?: string;
+    email?: string;
+  };
+}
+
+function ContactForm() {
+  async function submitAction(
+    prevState: FormState,
+    formData: FormData
+  ): Promise<FormState> {
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+
+    // バリデーション
+    if (!name.trim()) {
+      return { message: "", errors: { name: "名前を入力してください" } };
+    }
+    if (!email.includes("@")) {
+      return { message: "", errors: { email: "有効なメールアドレスを入力してください" } };
+    }
+
+    // API 呼び出し
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email }),
+    });
+
+    if (!response.ok) {
+      return { message: "送信に失敗しました" };
+    }
+
+    return { message: "送信しました！" };
+  }
+
+  const [state, formAction, isPending] = useActionState(submitAction, {
+    message: "",
   });
 
   return (
-    <main>
-      <h1>やることリスト</h1>
-      <TodoForm onAdd={(title) => setTodos([...todos, { id: Date.now(), title, completed: false }])} />
-      <TodoFilter current={filter} onChange={setFilter} />
-      <TodoList todos={filteredTodos} />
-    </main>
+    <form action={formAction}>
+      {state.message && <p role="status">{state.message}</p>}
+
+      <div>
+        <label htmlFor="contact-name">名前</label>
+        <input id="contact-name" name="name" type="text" disabled={isPending} />
+        {state.errors?.name && (
+          <p role="alert">{state.errors.name}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="contact-email">メール</label>
+        <input id="contact-email" name="email" type="email" disabled={isPending} />
+        {state.errors?.email && (
+          <p role="alert">{state.errors.email}</p>
+        )}
+      </div>
+
+      <button type="submit" disabled={isPending}>
+        {isPending ? "送信中..." : "送信"}
+      </button>
+    </form>
   );
 }
 ```
 
-各コンポーネントは自分の役割だけに集中し、全体の見通しがよくなります。
+`useActionState` は3つの値を返します。
 
-## 合成（Composition）パターン
+| 値 | 説明 |
+|---|------|
+| `state` | アクションが返した最新の状態 |
+| `formAction` | `<form>` の `action` に渡す関数 |
+| `isPending` | アクションが実行中かどうか |
 
-React のコンポーネント設計で最も重要なパターンが**合成**です。Day 22 で学んだ `children` を使い、コンポーネントを「入れ物」として設計します。
+アクション関数は2つの引数を受け取ります。
 
-### レイアウトコンポーネント
+- `prevState` — 前回の状態（初回は `useActionState` の第2引数）
+- `formData` — フォームのデータ
 
-```tsx
-interface PageLayoutProps {
-  title: string;
-  children: React.ReactNode;
-}
+従来の方法と比べて `useState` が不要になり、ローディングやエラーの管理が `useActionState` に集約されました。
 
-function PageLayout({ title, children }: PageLayoutProps) {
-  return (
-    <div className="page">
-      <header>
-        <h1>{title}</h1>
-      </header>
-      <main>{children}</main>
-      <footer>
-        <p>&copy; 2026 My App</p>
-      </footer>
-    </div>
-  );
-}
+## useFormStatus
 
-// 使う側が中身を決める
-function AboutPage() {
-  return (
-    <PageLayout title="About">
-      <p>このアプリについて...</p>
-    </PageLayout>
-  );
-}
-
-function ContactPage() {
-  return (
-    <PageLayout title="Contact">
-      <ContactForm />
-    </PageLayout>
-  );
-}
-```
-
-### 特殊化（Specialization）
-
-汎用的なコンポーネントを作り、特定の用途に特殊化するパターンです。
+`useFormStatus` は、**フォーム内の子コンポーネント**から送信中の状態を取得する Hook です。
 
 ```tsx
-interface ButtonProps {
-  variant: "primary" | "danger" | "ghost";
-  children: React.ReactNode;
-  onClick?: () => void;
-  type?: "button" | "submit";
-}
+import { useFormStatus } from "react-dom";
 
-function Button({ variant, children, onClick, type = "button" }: ButtonProps) {
-  return (
-    <button type={type} className={`btn btn-${variant}`} onClick={onClick}>
-      {children}
-    </button>
-  );
-}
-
-// 特殊化: 削除ボタン
-function DeleteButton({ onDelete }: { onDelete: () => void }) {
-  return (
-    <Button variant="danger" onClick={onDelete}>
-      削除
-    </Button>
-  );
-}
-
-// 特殊化: 送信ボタン
 function SubmitButton() {
+  const { pending } = useFormStatus();
+
   return (
-    <Button variant="primary" type="submit">
-      送信
-    </Button>
+    <button type="submit" disabled={pending}>
+      {pending ? "送信中..." : "送信"}
+    </button>
   );
 }
 ```
 
-### slots パターン
-
-`children` 以外にも、複数の「差し込み口」を持つコンポーネントを作れます。
+`useFormStatus` は必ず `<form>` の子コンポーネントの中で使う必要があります。フォーム自身のコンポーネントでは使えません。
 
 ```tsx
-interface DialogProps {
-  title: React.ReactNode;
-  children: React.ReactNode;
-  footer: React.ReactNode;
-}
+function ContactForm() {
+  async function submitAction(
+    prevState: { message: string },
+    formData: FormData
+  ) {
+    // 送信処理...
+    await fetch("/api/contact", {
+      method: "POST",
+      body: formData,
+    });
+    return { message: "送信しました！" };
+  }
 
-function Dialog({ title, children, footer }: DialogProps) {
+  const [state, formAction] = useActionState(submitAction, { message: "" });
+
   return (
-    <div role="dialog" aria-labelledby="dialog-title" className="dialog">
-      <h2 id="dialog-title" className="dialog-title">{title}</h2>
-      <div className="dialog-body">{children}</div>
-      <div className="dialog-footer">{footer}</div>
-    </div>
+    <form action={formAction}>
+      {state.message && <p role="status">{state.message}</p>}
+
+      <div>
+        <label htmlFor="msg-name">名前</label>
+        <input id="msg-name" name="name" type="text" />
+      </div>
+
+      <div>
+        <label htmlFor="msg-email">メール</label>
+        <input id="msg-email" name="email" type="email" />
+      </div>
+
+      {/* SubmitButton は form の子コンポーネント */}
+      <SubmitButton />
+    </form>
   );
 }
-
-// 使う側
-<Dialog
-  title="確認"
-  footer={
-    <>
-      <Button variant="ghost" onClick={onCancel}>キャンセル</Button>
-      <Button variant="danger" onClick={onDelete}>削除する</Button>
-    </>
-  }
->
-  <p>本当に削除しますか？この操作は取り消せません。</p>
-</Dialog>
 ```
 
-`role="dialog"` と `aria-labelledby` で、ダイアログがスクリーンリーダーに正しく認識されるようにしています。
+`useFormStatus` を使うメリットは、送信ボタンが独立したコンポーネントになり、再利用できることです。どのフォームに入れても、そのフォームの送信状態を自動的に取得します。
+
+## 従来の方法と Actions の使い分け
+
+| 観点 | 従来（useState + onSubmit） | Actions（useActionState） |
+|------|---------------------------|--------------------------|
+| 状態管理 | 複数の useState が必要 | useActionState に集約 |
+| ローディング | 自分で管理 | isPending が自動 |
+| プログレッシブエンハンスメント | JavaScript 必須 | JS なしでも動く可能性 |
+| 入力中のバリデーション | 得意（onChange で即座に） | 送信時のバリデーション向き |
+
+入力中にリアルタイムでバリデーションしたい場合は、従来の `useState` + `onChange` が適しています。送信時にまとめてバリデーションする場合は、Actions が簡潔に書けます。
+
+実際のプロジェクトでは両方を組み合わせることもあります。
 
 ## まとめ
 
-- カスタム Hook は `use` で始まる関数で、ロジックを再利用できる仕組み
-- データ取得、ローカルストレージ連携など、共通のロジックをカスタム Hook に抽出する
-- コンポーネントは責務ごとに分割し、見通しをよくする
-- 合成パターン（children、slots）でコンポーネントを柔軟に組み合わせる
-- 汎用コンポーネントを特殊化して再利用する
+- React 19 の form actions で `<form action={関数}>` とすることで、フォーム送信をシンプルに処理できる
+- `useActionState` で送信結果（成功/エラー）とローディング状態を一括管理できる
+- `useFormStatus` は子コンポーネントから送信状態を取得する Hook
+- 入力中のリアルタイムバリデーションには従来の `useState` + `onChange` が適する
+- 送信時のバリデーションには Actions が簡潔
 
-**次のレッスン**: [Day 29: Context と状態管理パターン](/lessons/day29/)
+**次のレッスン**: [Day 29: useOptimistic と Transition](/lessons/day29/)
