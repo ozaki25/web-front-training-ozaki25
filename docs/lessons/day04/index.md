@@ -17,8 +17,20 @@
 
 ここで問題になるのが、**見た目をカスタマイズしようとするとアクセシビリティが壊れやすい**ということです。今日はこの問題と、その解決策を見ていきます。
 
-たとえば、チェックボックスとラジオボタンをカスタマイズするとこうなります:
+たとえば、チェックボックスとラジオボタンをカスタマイズするとこうなります。両方クリックして比べてみてください:
 
+<style>
+.demo-compare-sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
+.demo-compare-cb { display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:0.95em }
+.demo-compare-cb-visual { display:inline-block;width:20px;height:20px;border:2px solid #94a3b8;border-radius:4px;background:white;transition:background-color 0.15s,border-color 0.15s;position:relative;flex-shrink:0 }
+.demo-compare-sr-only:checked + .demo-compare-cb-visual { background-color:#2563eb;border-color:#2563eb }
+.demo-compare-sr-only:checked + .demo-compare-cb-visual::after { content:'';position:absolute;top:2px;left:6px;width:5px;height:10px;border:solid white;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) }
+.demo-compare-radio { display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:0.95em }
+.demo-compare-radio-visual { display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:2px solid #94a3b8;border-radius:50%;background:white;transition:border-color 0.15s;flex-shrink:0 }
+.demo-compare-radio-visual::after { content:'';width:10px;height:10px;border-radius:50%;background:transparent;transition:background-color 0.15s }
+.demo-compare-sr-only:checked + .demo-compare-radio-visual { border-color:#2563eb }
+.demo-compare-sr-only:checked + .demo-compare-radio-visual::after { background-color:#2563eb }
+</style>
 <div style="display:flex;gap:48px;padding:24px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap;margin:16px 0;color:#1e293b">
 <div>
 <div style="font-weight:700;margin-bottom:12px;color:#64748b;font-size:0.85em;text-transform:uppercase;letter-spacing:0.05em">ブラウザ標準</div>
@@ -27,24 +39,24 @@
 <label style="display:flex;align-items:center;gap:6px;font-size:0.95em"><input type="checkbox"> メルマガを受け取る</label>
 </div>
 <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
-<label style="display:flex;align-items:center;gap:6px;font-size:0.95em"><input type="radio" name="demo-plan-native" checked> ベーシック</label>
-<label style="display:flex;align-items:center;gap:6px;font-size:0.95em"><input type="radio" name="demo-plan-native"> プレミアム</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:0.95em"><input type="radio" name="demo-native-r" checked> ベーシック</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:0.95em"><input type="radio" name="demo-native-r"> プレミアム</label>
 </div>
 </div>
 <div>
 <div style="font-weight:700;margin-bottom:12px;color:#64748b;font-size:0.85em;text-transform:uppercase;letter-spacing:0.05em">カスタマイズ後</div>
 <div style="display:flex;flex-direction:column;gap:8px">
-<label style="display:flex;align-items:center;gap:8px;font-size:0.95em;cursor:pointer"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#2563eb;border-radius:4px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l3 3 7-7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span> 利用規約に同意する</label>
-<label style="display:flex;align-items:center;gap:8px;font-size:0.95em;cursor:pointer"><span style="display:inline-block;width:20px;height:20px;border:2px solid #cbd5e1;border-radius:4px;background:white"></span> メルマガを受け取る</label>
+<label class="demo-compare-cb"><input type="checkbox" class="demo-compare-sr-only" checked><span class="demo-compare-cb-visual"></span> 利用規約に同意する</label>
+<label class="demo-compare-cb"><input type="checkbox" class="demo-compare-sr-only"><span class="demo-compare-cb-visual"></span> メルマガを受け取る</label>
 </div>
 <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
-<label style="display:flex;align-items:center;gap:8px;font-size:0.95em;cursor:pointer"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:2px solid #2563eb;border-radius:50%;background:white"><span style="width:10px;height:10px;border-radius:50%;background:#2563eb"></span></span> ベーシック</label>
-<label style="display:flex;align-items:center;gap:8px;font-size:0.95em;cursor:pointer"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:2px solid #cbd5e1;border-radius:50%;background:white"></span> プレミアム</label>
+<label class="demo-compare-radio"><input type="radio" name="demo-custom-r" class="demo-compare-sr-only" checked><span class="demo-compare-radio-visual"></span> ベーシック</label>
+<label class="demo-compare-radio"><input type="radio" name="demo-custom-r" class="demo-compare-sr-only"><span class="demo-compare-radio-visual"></span> プレミアム</label>
 </div>
 </div>
 </div>
 
-左はブラウザが OS に合わせて描画したデフォルトの見た目で、右がデザインに合わせてカスタマイズしたものです。機能は同じでも、見た目の印象がまったく違います。
+左はブラウザが OS に合わせて描画したデフォルトの見た目で、右がデザインに合わせてカスタマイズしたものです。どちらもクリックで切り替わりますが、見た目の印象がまったく違います。
 
 ## 基本方針: ネイティブの input を捨てない
 
