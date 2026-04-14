@@ -17,6 +17,35 @@
 
 ここで問題になるのが、**見た目をカスタマイズしようとするとアクセシビリティが壊れやすい**ということです。今日はこの問題と、その解決策を見ていきます。
 
+たとえば、チェックボックスとラジオボタンをカスタマイズするとこうなります:
+
+<div style="display:flex;gap:48px;padding:24px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap;margin:16px 0">
+<div>
+<div style="font-weight:700;margin-bottom:12px;color:#64748b;font-size:0.85em;text-transform:uppercase;letter-spacing:0.05em">ブラウザ標準</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<label style="display:flex;align-items:center;gap:6px;font-size:0.95em"><input type="checkbox" checked> 利用規約に同意する</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:0.95em"><input type="checkbox"> メルマガを受け取る</label>
+</div>
+<div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+<label style="display:flex;align-items:center;gap:6px;font-size:0.95em"><input type="radio" name="demo-plan-native" checked> ベーシック</label>
+<label style="display:flex;align-items:center;gap:6px;font-size:0.95em"><input type="radio" name="demo-plan-native"> プレミアム</label>
+</div>
+</div>
+<div>
+<div style="font-weight:700;margin-bottom:12px;color:#64748b;font-size:0.85em;text-transform:uppercase;letter-spacing:0.05em">カスタマイズ後</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<label style="display:flex;align-items:center;gap:8px;font-size:0.95em;cursor:pointer"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#2563eb;border-radius:4px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l3 3 7-7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span> 利用規約に同意する</label>
+<label style="display:flex;align-items:center;gap:8px;font-size:0.95em;cursor:pointer"><span style="display:inline-block;width:20px;height:20px;border:2px solid #cbd5e1;border-radius:4px;background:white"></span> メルマガを受け取る</label>
+</div>
+<div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+<label style="display:flex;align-items:center;gap:8px;font-size:0.95em;cursor:pointer"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:2px solid #2563eb;border-radius:50%;background:white"><span style="width:10px;height:10px;border-radius:50%;background:#2563eb"></span></span> ベーシック</label>
+<label style="display:flex;align-items:center;gap:8px;font-size:0.95em;cursor:pointer"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:2px solid #cbd5e1;border-radius:50%;background:white"></span> プレミアム</label>
+</div>
+</div>
+</div>
+
+左はブラウザが OS に合わせて描画したデフォルトの見た目で、右がデザインに合わせてカスタマイズしたものです。機能は同じでも、見た目の印象がまったく違います。
+
 ## 基本方針: ネイティブの input を捨てない
 
 カスタマイズの王道は、**ネイティブの input 要素は残したまま、見た目だけを差し替える**というアプローチです。
@@ -84,6 +113,22 @@
   outline-offset: 2px;
 }
 ```
+
+実際に動くデモです。クリックして切り替えてみてください:
+
+<style>
+.demo-sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
+.demo-cb-label { display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:0.95em;user-select:none }
+.demo-cb-visual { display:inline-block;width:20px;height:20px;border:2px solid #94a3b8;border-radius:4px;background:white;transition:background-color 0.15s,border-color 0.15s;position:relative }
+.demo-sr-only:checked + .demo-cb-visual { background-color:#2563eb;border-color:#2563eb }
+.demo-sr-only:checked + .demo-cb-visual::after { content:'';position:absolute;top:2px;left:6px;width:5px;height:10px;border:solid white;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) }
+.demo-sr-only:focus-visible + .demo-cb-visual { outline:2px solid #2563eb;outline-offset:2px }
+</style>
+<div style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;display:flex;flex-direction:column;gap:10px">
+<label class="demo-cb-label"><input type="checkbox" class="demo-sr-only" checked><span class="demo-cb-visual"></span> 利用規約に同意する</label>
+<label class="demo-cb-label"><input type="checkbox" class="demo-sr-only"><span class="demo-cb-visual"></span> メルマガを受け取る</label>
+<label class="demo-cb-label"><input type="checkbox" class="demo-sr-only"><span class="demo-cb-visual"></span> お知らせを受け取る</label>
+</div>
 
 ポイントは以下の 3 つです:
 
@@ -222,6 +267,24 @@ option {
 
 仕組みは先ほどのチェックボックスと同じです。`<input type="radio">` を視覚的に隠し、`<label>` で囲んだカード全体をクリック可能にしています。`<fieldset>` と `<legend>` でグループ名（「プランを選択してください」）をスクリーンリーダーに伝えています。
 
+実際に動くデモです。カードをクリックして切り替えてみてください:
+
+<style>
+.demo-card-radio input { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
+.demo-card-radio label { display:block;padding:16px 20px;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;background:white }
+.demo-card-radio label:hover { border-color:#93c5fd }
+.demo-card-radio input:checked + label { border-color:#2563eb;box-shadow:0 0 0 1px #2563eb }
+.demo-card-radio input:focus-visible + label { outline:2px solid #2563eb;outline-offset:2px }
+</style>
+<fieldset class="demo-card-radio" style="border:none;padding:0;margin:16px 0">
+<legend style="font-weight:700;margin-bottom:12px;font-size:0.95em">プランを選択してください</legend>
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+<div style="flex:1;min-width:140px"><input type="radio" name="demo-plan-card" id="demo-plan-basic" value="basic" checked><label for="demo-plan-basic"><strong>ベーシック</strong><br><span style="color:#64748b;font-size:0.9em">月額 980 円</span></label></div>
+<div style="flex:1;min-width:140px"><input type="radio" name="demo-plan-card" id="demo-plan-premium" value="premium"><label for="demo-plan-premium"><strong>プレミアム</strong><br><span style="color:#64748b;font-size:0.9em">月額 1,980 円</span></label></div>
+<div style="flex:1;min-width:140px"><input type="radio" name="demo-plan-card" id="demo-plan-enterprise" value="enterprise"><label for="demo-plan-enterprise"><strong>エンタープライズ</strong><br><span style="color:#64748b;font-size:0.9em">月額 4,980 円</span></label></div>
+</div>
+</fieldset>
+
 ### ファイル選択のカスタムUI
 
 `<input type="file">` も見た目のカスタマイズが難しい要素です。よく使われる方法は:
@@ -297,4 +360,3 @@ function PlanSelect() {
 - `<select>` やコンボボックスは CSS だけではカスタマイズできず、自作の難易度が非常に高い
 - カスタマイザブル `<select>`（`appearance: base-select`）という標準化の動きがあり、将来的にはネイティブの `<select>` を自由にスタイリングできるようになる。ただし 2026 年 4 月時点では Chrome 系のみ対応で、本番投入には早い
 - 現時点での現実解は、Headless UI / Radix UI / React Aria のようなヘッドレス UI ライブラリに頼ること。アクセシビリティのロジックを提供し、見た目だけ自分で作ればよい状態にしてくれる
-
