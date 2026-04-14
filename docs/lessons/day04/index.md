@@ -21,15 +21,17 @@
 
 <style>
 .demo-compare-sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
-.demo-compare-cb { display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:0.95em }
-.demo-compare-cb-visual { display:inline-block;width:20px;height:20px;border:2px solid #94a3b8;border-radius:4px;background:white;transition:background-color 0.15s,border-color 0.15s;position:relative;flex-shrink:0 }
-.demo-compare-sr-only:checked + .demo-compare-cb-visual { background-color:#2563eb;border-color:#2563eb }
-.demo-compare-sr-only:checked + .demo-compare-cb-visual::after { content:'';position:absolute;top:2px;left:6px;width:5px;height:10px;border:solid white;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) }
-.demo-compare-radio { display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:0.95em }
-.demo-compare-radio-visual { display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border:2px solid #94a3b8;border-radius:50%;background:white;transition:border-color 0.15s;flex-shrink:0 }
-.demo-compare-radio-visual::after { content:'';width:10px;height:10px;border-radius:50%;background:transparent;transition:background-color 0.15s }
-.demo-compare-sr-only:checked + .demo-compare-radio-visual { border-color:#2563eb }
-.demo-compare-sr-only:checked + .demo-compare-radio-visual::after { background-color:#2563eb }
+.demo-compare-cb { display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:0.95em;padding:4px 8px;border-radius:6px;transition:background-color 0.15s }
+.demo-compare-cb:hover { background-color:#f1f5f9 }
+.demo-compare-cb-visual { display:inline-block;width:24px;height:24px;border:2px solid #cbd5e1;border-radius:6px;background:white;transition:all 0.2s;position:relative;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,0.05) }
+.demo-compare-sr-only:checked + .demo-compare-cb-visual { background:linear-gradient(135deg,#3b82f6,#2563eb);border-color:#2563eb;box-shadow:0 1px 3px rgba(37,99,235,0.3) }
+.demo-compare-sr-only:checked + .demo-compare-cb-visual::after { content:'';position:absolute;top:3px;left:7px;width:6px;height:11px;border:solid white;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) }
+.demo-compare-radio { display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:0.95em;padding:4px 8px;border-radius:6px;transition:background-color 0.15s }
+.demo-compare-radio:hover { background-color:#f1f5f9 }
+.demo-compare-radio-visual { display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border:2px solid #cbd5e1;border-radius:50%;background:white;transition:all 0.2s;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,0.05) }
+.demo-compare-radio-visual::after { content:'';width:12px;height:12px;border-radius:50%;background:transparent;transition:all 0.2s;transform:scale(0) }
+.demo-compare-sr-only:checked + .demo-compare-radio-visual { border-color:#2563eb;box-shadow:0 1px 3px rgba(37,99,235,0.3) }
+.demo-compare-sr-only:checked + .demo-compare-radio-visual::after { background:linear-gradient(135deg,#3b82f6,#2563eb);transform:scale(1) }
 </style>
 <div style="display:flex;gap:48px;padding:24px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap;margin:16px 0;color:#1e293b">
 <div>
