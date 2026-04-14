@@ -64,71 +64,9 @@
 
 カスタマイズの王道は、**ネイティブの input 要素は残したまま、見た目だけを差し替える**というアプローチです。
 
-仕組みはこうです:
+仕組みはシンプルです。本物の `<input>` は残すけど目には見えないように隠して、代わりに隣に置いた別の要素を好きな見た目にします。ユーザーがクリックやキー操作をすると、裏にいる本物の `<input>` が反応して、CSS だけで見た目が切り替わります。
 
-1. 本物の `<input>` を**視覚的に隠す**（`display: none` ではなく、スクリーンリーダーからはアクセスできる方法で隠す）
-2. 隣に置いた別の要素（`<span>` や `<label>` など）で見た目を作る
-3. CSS の `:checked` 擬似クラスを使い、チェック状態に応じて見た目を切り替える
-
-こうすれば、ブラウザから見れば普通の `<input>` なので、キーボード操作もフォーム送信もスクリーンリーダーもすべてそのまま動きます。
-
-### ラジオボタン・チェックボックスのカスタマイズ例
-
-以下はチェックボックスの見た目をカスタマイズする例です。
-
-```html
-<label class="custom-checkbox">
-  <input type="checkbox" class="sr-only" name="agree" />
-  <span class="checkbox-visual" aria-hidden="true"></span>
-  利用規約に同意する
-</label>
-```
-
-```css
-/* スクリーンリーダー向けに視覚的に隠す（display: none とは違い、支援技術からは読める） */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.custom-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-/* カスタムの見た目 */
-.checkbox-visual {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #6b7280;
-  border-radius: 4px;
-  background: white;
-  transition: background-color 0.15s, border-color 0.15s;
-}
-
-/* input がチェックされたら隣の .checkbox-visual の見た目を変える */
-.sr-only:checked + .checkbox-visual {
-  background-color: #2563eb;
-  border-color: #2563eb;
-}
-
-/* フォーカスが当たったときのスタイル（キーボード操作の視覚的フィードバック） */
-.sr-only:focus-visible + .checkbox-visual {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
-}
-```
-
-実際に動くデモです。クリックして切り替えてみてください:
+本物の `<input>` が裏にいるので、キーボード操作もフォーム送信もスクリーンリーダーもすべて普通に動きます。デモで試してみてください:
 
 <style>
 .demo-sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
@@ -144,13 +82,9 @@
 <label class="demo-cb-label"><input type="checkbox" class="demo-sr-only"><span class="demo-cb-visual"></span> お知らせを受け取る</label>
 </div>
 
-ポイントは以下の 3 つです:
+ここで重要なのは、`<input>` の隠し方です。`display: none` や `visibility: hidden` で隠すと、スクリーンリーダー（画面を音声で読み上げるソフト）からも見えなくなってしまいます。代わりに `sr-only` という手法で「目には見えないが、スクリーンリーダーからはアクセスできる」状態にします。Tailwind CSS にも同名のクラスがあり、フォームのカスタマイズでよく使われるパターンです。
 
-- **`<input>` は消さず、`sr-only` で視覚的に隠している** — `display: none` や `visibility: hidden` で隠すとスクリーンリーダーからも消えてしまいます。`sr-only`（Tailwind CSS にも同名のクラスがあります）は「目には見えないがスクリーンリーダーからはアクセスできる」隠し方です
-- **`:checked` 擬似クラスで状態を反映** — ユーザーがクリックやキー操作でチェックすると、CSS だけで見た目が切り替わります
-- **`:focus-visible` でフォーカスリングを表示** — キーボード操作で Tab キーを使って移動したとき、どの要素にフォーカスがあるか目に見えるようにしています
-
-ラジオボタンも同じ考え方で、`border-radius: 50%` にして丸くするだけです。
+ラジオボタンも同じ考え方でカスタマイズできます。
 
 ## div で作り直すのはアンチパターン
 
