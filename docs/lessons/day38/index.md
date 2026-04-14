@@ -245,5 +245,3 @@ Server Components や Server Actions（Day 39 で学習）がある今、Route H
 - リクエストボディ、URL パラメータ、ヘッダーなどを処理できる
 - 外部サービスとの連携や公開 API には Route Handlers が適している
 - ページのデータ取得やフォーム送信は Server Components / Server Actions が基本
-
-**次のレッスン**: [Day 39: Server Actions](/lessons/day39/)

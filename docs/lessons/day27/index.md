@@ -226,5 +226,3 @@ function handleSubmit(event: React.FormEvent) {
 - クリーンアップ関数でイベントリスナーやタイマーの後片付けをする
 - props や state から計算できる値には `useEffect` を使わない
 - ユーザーアクションへの応答はイベントハンドラーに書く
-
-**次のレッスン**: [Day 28: フォームと Actions](/lessons/day28/)

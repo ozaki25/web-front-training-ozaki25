@@ -267,5 +267,3 @@ for (const fruit of fruits) {
 - 比較は必ず `===`（厳密等価）を使う
 - 条件分岐は `if` / `else if` / `else`。三項演算子は React で頻出
 - ループは `for` と `for...of` を使い分ける
-
-**次のレッスン**: [Day 12: 関数とスコープ](/lessons/day12/)

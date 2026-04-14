@@ -180,5 +180,3 @@ export default async function DashboardPage() {
 - tree shaking を活かすために、ライブラリは個別インポートを使う
 - SSG は最も高速だが静的コンテンツ向き、SSR は動的コンテンツに使う
 - パフォーマンス改善は推測ではなく、測定に基づいて行う（Day 48 参照）
-
-**次のレッスン**: [Day 50: 認証の基礎](/lessons/day50/)

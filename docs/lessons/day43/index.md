@@ -291,5 +291,3 @@ export default function ArticleCard({ title, excerpt, image, href }: Props) {
 - レスポンシブデザインは `md:`、`lg:` などのプレフィックスで、モバイルファーストに実装する
 - ダークモードは `dark:` プレフィックスで対応する
 - `hover:`、`focus:` などの状態プレフィックスで、インタラクション時のスタイルを指定する
-
-**次のレッスン**: [Day 44: テスト基礎（Vitest）](/lessons/day44/)

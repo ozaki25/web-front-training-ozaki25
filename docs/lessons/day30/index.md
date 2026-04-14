@@ -360,5 +360,3 @@ function Dialog({ title, children, footer }: DialogProps) {
 - コンポーネントは責務ごとに分割し、見通しをよくする
 - 合成パターン（children、slots）でコンポーネントを柔軟に組み合わせる
 - 汎用コンポーネントを特殊化して再利用する
-
-**次のレッスン**: [Day 31: Context と状態管理パターン](/lessons/day31/)

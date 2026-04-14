@@ -247,5 +247,3 @@ const [isVisible, setIsVisible] = useState(false);
 - `setCount` は即座に値を変えるのではなく、次のレンダリングで反映される
 - state は不変性を守る（既存の値を変更せず、新しい値を作る）
 - React は参照の比較で変化を検知するので、新しいオブジェクトや配列を作ることが重要
-
-**次のレッスン**: [Day 26: 条件分岐とリストレンダリング](/lessons/day26/)

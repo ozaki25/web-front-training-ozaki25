@@ -243,5 +243,3 @@ export default async function BlogPostPage({ params }: Props) {
 - OGP を設定すると SNS シェア時の表示をコントロールできる
 - 構造化データ（JSON-LD）で検索エンジンにリッチな情報を伝える
 - `robots.ts` と `sitemap.ts` で検索エンジンのクロールを最適化する
-
-**次のレッスン**: [Day 42: 画像・フォント最適化](/lessons/day42/)

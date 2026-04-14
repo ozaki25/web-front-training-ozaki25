@@ -195,5 +195,3 @@ export default async function DashboardPage() {
 - JWT はトークン自体にユーザー情報を含める方式
 - OAuth は外部サービスのアカウントでログインする仕組み。パスワードがアプリに渡らない
 - Auth.js（NextAuth v5）を使うと、Next.js で OAuth やセッション管理を簡単に実装できる
-
-**次のレッスン**: [Day 51: Web セキュリティ](/lessons/day51/)

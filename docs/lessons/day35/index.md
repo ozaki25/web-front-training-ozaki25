@@ -289,5 +289,3 @@ export default function LikeButton({ postId }: { postId: string }) {
 - Server Component はデータ取得や機密情報の扱いに強い。Client Component はインタラクションに使う
 - 基本方針は「デフォルト Server Component、必要な部分だけ Client Component」
 - Client Component から Server Component を直接 import できない。`children` パターンを使う
-
-**次のレッスン**: [Day 36: レイアウトとページ](/lessons/day36/)

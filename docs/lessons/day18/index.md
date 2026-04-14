@@ -256,5 +256,3 @@ loadData();
 - DevTools の Console、Elements、Network、Sources タブを使いこなすことがデバッグの基本
 - ブレークポイントは `console.log` より効率的なデバッグ手法
 - `console.table`、`console.group`、`console.time` など、目的に応じた console メソッドを使い分ける
-
-**次のレッスン**: [Day 19: TypeScript の基本](/lessons/day19/)
