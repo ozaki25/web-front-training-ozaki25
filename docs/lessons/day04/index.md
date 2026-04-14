@@ -5,7 +5,7 @@
 - デザイン上の要求でフォーム部品をカスタマイズする場面があることを知る
 - ネイティブの input を捨てずに見た目だけ変えるアプローチを知る
 - select やコンボボックスなど、自作が難しい部品があることを知る
-- Headless UI や Radix UI のようなライブラリの役割を知る
+- React Aria のようなヘッドレス UI ライブラリの役割を知る
 
 ## なぜカスタマイズが必要になるのか
 
@@ -249,48 +249,45 @@ option {
 | **Radix UI** | 豊富なコンポーネント群。React 向け。スタイルなしの Primitives と、スタイル付きの Themes がある |
 | **React Aria** | Adobe が開発。React のフック（hooks）として提供され、最も柔軟にカスタマイズ可能 |
 
-たとえば Headless UI の `<Listbox>` コンポーネントを使うと、こんな感じになります（雰囲気だけ掴んでください）:
+たとえば React Aria の `useSelect` フックを使うと、こんな感じになります（雰囲気だけ掴んでください）:
 
 ```tsx
-import { Listbox } from "@headlessui/react";
-import { useState } from "react";
+import { Button, Label, ListBox, ListBoxItem, Popover, Select, SelectValue } from "react-aria-components";
 
 const plans = [
-  { id: 1, name: "ベーシック" },
-  { id: 2, name: "プレミアム" },
-  { id: 3, name: "エンタープライズ" },
+  { id: "basic", name: "ベーシック" },
+  { id: "premium", name: "プレミアム" },
+  { id: "enterprise", name: "エンタープライズ" },
 ];
 
 function PlanSelect() {
-  const [selected, setSelected] = useState(plans[0]);
-
   return (
-    <Listbox value={selected} onChange={setSelected}>
-      <Listbox.Label className="text-sm font-medium text-gray-700">
-        プラン
-      </Listbox.Label>
-      <Listbox.Button className="w-full rounded border p-2 text-left">
-        {selected.name}
-      </Listbox.Button>
-      <Listbox.Options className="mt-1 rounded border bg-white shadow">
-        {plans.map((plan) => (
-          <Listbox.Option
-            key={plan.id}
-            value={plan}
-            className="cursor-pointer p-2 hover:bg-blue-50"
-          >
-            {plan.name}
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
-    </Listbox>
+    <Select defaultSelectedKey="basic">
+      <Label className="text-sm font-medium text-gray-700">プラン</Label>
+      <Button className="w-full rounded border p-2 text-left">
+        <SelectValue />
+      </Button>
+      <Popover className="mt-1 rounded border bg-white shadow">
+        <ListBox>
+          {plans.map((plan) => (
+            <ListBoxItem
+              key={plan.id}
+              id={plan.id}
+              className="cursor-pointer p-2 hover:bg-blue-50"
+            >
+              {plan.name}
+            </ListBoxItem>
+          ))}
+        </ListBox>
+      </Popover>
+    </Select>
   );
 }
 ```
 
 開発者が書いているのは見た目（className）だけです。キーボード操作（上下キーで移動、Enter で選択、Escape で閉じる）、ARIA 属性の管理、フォーカス制御 — こうしたアクセシビリティに関わる複雑な処理は、すべてライブラリが裏側で面倒を見てくれます。
 
-配属先のプロジェクトでは Tailwind CSS を使うので、**Headless UI** や **Radix UI** はとくに出会う可能性が高いです。「見た目は Tailwind で自由に作り、振る舞いとアクセシビリティはライブラリに任せる」という分担を覚えておきましょう。
+配属先のプロジェクトでは React Aria を使います。「見た目は CSS（Tailwind CSS）で自由に作り、振る舞いとアクセシビリティはライブラリに任せる」という分担を覚えておきましょう。
 
 ## まとめ
 
