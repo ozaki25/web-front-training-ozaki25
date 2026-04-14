@@ -26,7 +26,7 @@ if [[ "$COMMAND" =~ git\ checkout\ -b\ ([^ ]+) ]] || [[ "$COMMAND" =~ git\ switc
 fi
 
 # --- 許可外ブランチへの push 禁止 ---
-if [[ "$COMMAND" =~ git\ push ]] && [[ ! "$COMMAND" =~ --delete ]] && [[ "$COMMAND" =~ origin\ ([^ ]+) ]]; then
+if [[ "$COMMAND" =~ ^git\ push ]] && [[ ! "$COMMAND" =~ --delete ]] && [[ "$COMMAND" =~ origin\ ([^ ]+) ]]; then
   PUSHBRANCH="${BASH_REMATCH[1]}"
   if [[ ! "$PUSHBRANCH" =~ ^(main|draft|publish/day[0-9]{2})$ ]]; then
     block "ブランチ運用違反: 許可されたブランチは main, draft, publish/dayXX のみです。'$PUSHBRANCH' にはプッシュできません"
