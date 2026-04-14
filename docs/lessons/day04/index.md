@@ -19,7 +19,7 @@
 
 たとえば、チェックボックスとラジオボタンをカスタマイズするとこうなります:
 
-<div style="display:flex;gap:48px;padding:24px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap;margin:16px 0">
+<div style="display:flex;gap:48px;padding:24px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;flex-wrap:wrap;margin:16px 0;color:#1e293b">
 <div>
 <div style="font-weight:700;margin-bottom:12px;color:#64748b;font-size:0.85em;text-transform:uppercase;letter-spacing:0.05em">ブラウザ標準</div>
 <div style="display:flex;flex-direction:column;gap:8px">
@@ -124,7 +124,7 @@
 .demo-sr-only:checked + .demo-cb-visual::after { content:'';position:absolute;top:2px;left:6px;width:5px;height:10px;border:solid white;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) }
 .demo-sr-only:focus-visible + .demo-cb-visual { outline:2px solid #2563eb;outline-offset:2px }
 </style>
-<div style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;display:flex;flex-direction:column;gap:10px">
+<div style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;display:flex;flex-direction:column;gap:10px;color:#1e293b">
 <label class="demo-cb-label"><input type="checkbox" class="demo-sr-only" checked><span class="demo-cb-visual"></span> 利用規約に同意する</label>
 <label class="demo-cb-label"><input type="checkbox" class="demo-sr-only"><span class="demo-cb-visual"></span> メルマガを受け取る</label>
 <label class="demo-cb-label"><input type="checkbox" class="demo-sr-only"><span class="demo-cb-visual"></span> お知らせを受け取る</label>
@@ -271,13 +271,13 @@ option {
 
 <style>
 .demo-card-radio input { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
-.demo-card-radio label { display:block;padding:16px 20px;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;background:white }
+.demo-card-radio label { display:block;padding:16px 20px;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;background:white;color:#1e293b }
 .demo-card-radio label:hover { border-color:#93c5fd }
 .demo-card-radio input:checked + label { border-color:#2563eb;box-shadow:0 0 0 1px #2563eb }
 .demo-card-radio input:focus-visible + label { outline:2px solid #2563eb;outline-offset:2px }
 </style>
 <fieldset class="demo-card-radio" style="border:none;padding:0;margin:16px 0">
-<legend style="font-weight:700;margin-bottom:12px;font-size:0.95em">プランを選択してください</legend>
+<legend style="font-weight:700;margin-bottom:12px;font-size:0.95em;color:var(--vp-c-text-1)">プランを選択してください</legend>
 <div style="display:flex;gap:12px;flex-wrap:wrap">
 <div style="flex:1;min-width:140px"><input type="radio" name="demo-plan-card" id="demo-plan-basic" value="basic" checked><label for="demo-plan-basic"><strong>ベーシック</strong><br><span style="color:#64748b;font-size:0.9em">月額 980 円</span></label></div>
 <div style="flex:1;min-width:140px"><input type="radio" name="demo-plan-card" id="demo-plan-premium" value="premium"><label for="demo-plan-premium"><strong>プレミアム</strong><br><span style="color:#64748b;font-size:0.9em">月額 1,980 円</span></label></div>
