@@ -197,16 +197,16 @@ Chrome 系ブラウザならデモで確認できます（Safari / Firefox で�
 
 <style>
 .demo-base-select select,
-.demo-base-select ::picker(select) { appearance:base-select }
-.demo-base-select select { color-scheme:light;border:1px solid #e0e0e0;border-radius:10px;font-size:1.1em;min-width:280px;background:white;color:#999;cursor:pointer }
-.demo-base-select select:hover { border-color:#ccc }
-.demo-base-select select button { padding:16px 20px;border:none;background:transparent;color:inherit;font:inherit;cursor:pointer }
-.demo-base-select select::picker-icon { color:#888;font-size:1.3em }
-.demo-base-select select::picker(select) { color-scheme:light;border:none;border-radius:18px;padding:16px 0;box-shadow:0 4px 24px rgba(0,0,0,0.1);background:white;color:#333 }
-.demo-base-select option { padding:28px 28px;font-size:1.15em;background:white;color:#333 }
-.demo-base-select option:hover { background:#f8f8f8 }
-.demo-base-select option:checked { font-weight:500;color:#333;background:white }
-.demo-base-select option::checkmark { display:none }
+.demo-base-select ::picker(select) { appearance:base-select !important }
+.demo-base-select select { color-scheme:light !important;border:1px solid #e0e0e0 !important;border-radius:10px !important;font-size:1.1em !important;min-width:280px !important;background:white !important;color:#999 !important;cursor:pointer !important;padding:0 !important }
+.demo-base-select select:hover { border-color:#ccc !important }
+.demo-base-select select button { padding:16px 20px !important;border:none !important;background:transparent !important;color:inherit !important;font:inherit !important;cursor:pointer !important }
+.demo-base-select select::picker-icon { color:#888 !important;font-size:1.3em !important }
+.demo-base-select select::picker(select) { color-scheme:light !important;border:none !important;border-radius:18px !important;padding:16px 0 !important;box-shadow:0 4px 24px rgba(0,0,0,0.1) !important;background:white !important;color:#333 !important }
+.demo-base-select option { padding:28px 28px !important;font-size:1.15em !important;background:white !important;color:#333 !important;border-radius:0 !important }
+.demo-base-select option:hover { background:#f8f8f8 !important }
+.demo-base-select option:checked { font-weight:500 !important;color:#333 !important;background:white !important }
+.demo-base-select option::checkmark { display:none !important }
 </style>
 <div class="demo-base-select" style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
 <label for="demo-custom-select" style="display:block;font-size:0.9em;font-weight:600;margin-bottom:6px">プランを選択</label>
