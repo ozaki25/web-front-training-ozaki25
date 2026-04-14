@@ -301,3 +301,4 @@ function PlanSelect() {
 - カスタマイザブル `<select>`（`appearance: base-select`）という標準化の動きがあり、将来的にはネイティブの `<select>` を自由にスタイリングできるようになる。ただし 2026 年 4 月時点では Chrome 系のみ対応で、本番投入には早い
 - 現時点での現実解は、Headless UI / Radix UI / React Aria のようなヘッドレス UI ライブラリに頼ること。アクセシビリティのロジックを提供し、見た目だけ自分で作ればよい状態にしてくれる
 
+**次のレッスン**: [Day 5: HTML だけで作れる UI — dialog, popover, details](/lessons/day05/)
