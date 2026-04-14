@@ -196,17 +196,20 @@ select をカスタマイズしたいとき、現在は 2 つの選択肢があ�
 Chrome 系ブラウザならデモで確認できます（Safari / Firefox では通常の `<select>` として表示されます）:
 
 <style>
-.demo-base-select select { appearance:base-select;color-scheme:light;padding:14px 20px;border:1px solid #d1d5db;border-radius:12px;font-size:1em;min-width:260px;background:white;color:#6b7280;cursor:pointer;font-weight:400;box-shadow:0 1px 3px rgba(0,0,0,0.06);transition:all 0.15s }
+.demo-base-select select { appearance:base-select;color-scheme:light;padding:0;border:1px solid #d1d5db;border-radius:12px;font-size:1em;min-width:260px;background:white;color:#374151;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.06) }
 .demo-base-select select:hover { border-color:#9ca3af;box-shadow:0 2px 6px rgba(0,0,0,0.1) }
-.demo-base-select select::picker(select) { color-scheme:light;border:1px solid #e5e7eb;border-radius:14px;padding:8px 0;box-shadow:0 8px 24px rgba(0,0,0,0.12);background:white;color:#1e293b }
+.demo-base-select button { padding:14px 20px;border:none;background:transparent;color:inherit;font:inherit;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100% }
+.demo-base-select button::after { content:'▼';font-size:0.7em;color:#9ca3af }
+.demo-base-select select::picker(select) { color-scheme:light;border:1px solid #e5e7eb;border-radius:14px;padding:8px 0;box-shadow:0 8px 24px rgba(0,0,0,0.12);background:white;color:#374151 }
 .demo-base-select option { padding:16px 20px;font-size:1em;background:white;color:#374151;border-bottom:1px solid #f3f4f6 }
 .demo-base-select option:last-child { border-bottom:none }
-.demo-base-select option:hover { background:#f9fafb;color:#111827 }
-.demo-base-select option:checked { font-weight:600;color:#111827;background:white }
+.demo-base-select option:hover { background:#f0fdf4;color:#111827 }
+.demo-base-select option:checked { font-weight:600;color:#111827;background:#f0fdf4 }
 </style>
 <div class="demo-base-select" style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
 <label for="demo-custom-select" style="display:block;font-size:0.9em;font-weight:600;margin-bottom:6px">プランを選択</label>
 <select id="demo-custom-select">
+<button><selectedcontent></selectedcontent></button>
 <option value="basic">🟢 ベーシック — 月額 980 円</option>
 <option value="premium">🔵 プレミアム — 月額 1,980 円</option>
 <option value="enterprise">🟣 エンタープライズ — 月額 4,980 円</option>
