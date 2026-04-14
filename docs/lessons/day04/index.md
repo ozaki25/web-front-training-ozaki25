@@ -197,6 +197,18 @@
 
 これを自力で正しく実装するのは、経験豊富なエンジニアでも大変です。select やコンボボックスは「素朴なカスタマイズ」が通用しない、難易度の高い部品だと覚えておきましょう。
 
+標準の `<select>` がどんな見た目か確認してみてください。CSS でスタイリングしても、ドロップダウン部分はブラウザ任せです:
+
+<div style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
+<label for="demo-native-select" style="display:block;font-size:0.9em;font-weight:600;margin-bottom:6px">プランを選択</label>
+<select id="demo-native-select" style="padding:8px 12px;border:2px solid #cbd5e1;border-radius:6px;font-size:0.95em;min-width:200px;background:white;color:#1e293b">
+<option value="basic">ベーシック</option>
+<option value="premium">プレミアム</option>
+<option value="enterprise">エンタープライズ</option>
+</select>
+<div style="margin-top:8px;font-size:0.8em;color:#64748b">↑ ボタン部分はある程度スタイリングできるが、ドロップダウン（選択肢リスト）はブラウザ任せ</div>
+</div>
+
 ## カスタマイザブル `<select>` — これからの解決策
 
 > **Baseline: Limited availability** — 2026 年 4 月時点では Chrome 系ブラウザのみ対応。本番投入には早い
@@ -237,6 +249,25 @@ option {
 - **`<selectedcontent>`** で選択中の値の見た目をカスタマイズできる
 - **`<option>` にアイコンや画像を入れられる**: 従来の `<select>` では不可能だったリッチな選択肢が作れる
 - **ドロップダウンを開いた状態も CSS で制御できる**: 背景色、影、アニメーションなどが自由
+
+Chrome 系ブラウザで見ている方は、以下のデモで実際に動作を確認できます（Safari / Firefox では通常の `<select>` として表示されます）:
+
+<style>
+.demo-base-select select { appearance:base-select;padding:8px 12px;border:2px solid #cbd5e1;border-radius:6px;font-size:0.95em;min-width:220px;background:white;color:#1e293b;cursor:pointer }
+.demo-base-select select::picker(select) { border:1px solid #e2e8f0;border-radius:8px;padding:4px;box-shadow:0 4px 12px rgba(0,0,0,0.1) }
+.demo-base-select option { padding:8px 12px;border-radius:4px }
+.demo-base-select option:hover { background-color:#eff6ff }
+.demo-base-select option:checked { font-weight:600;background-color:#dbeafe }
+</style>
+<div class="demo-base-select" style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
+<label for="demo-custom-select" style="display:block;font-size:0.9em;font-weight:600;margin-bottom:6px">プランを選択</label>
+<select id="demo-custom-select">
+<option value="basic">🟢 ベーシック — 月額 980 円</option>
+<option value="premium">🔵 プレミアム — 月額 1,980 円</option>
+<option value="enterprise">🟣 エンタープライズ — 月額 4,980 円</option>
+</select>
+<div style="margin-top:8px;font-size:0.8em;color:#64748b">↑ Chrome 系ブラウザでは、ドロップダウンもスタイリングされて表示される</div>
+</div>
 
 ただし、2026 年 4 月時点では Chrome 系ブラウザのみの対応で、Safari / Firefox はまだ実装中です。Baseline は Limited availability の段階なので、**現時点では本番で使うには早い**というのが正直なところです。
 
@@ -311,6 +342,22 @@ option {
 ```
 
 ネイティブのファイル選択ダイアログはそのまま使いつつ、トリガーとなるボタンの見た目だけを変えるアプローチです。
+
+<style>
+.demo-file-sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0 }
+.demo-file-button { display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600;transition:opacity 0.15s;box-shadow:0 1px 3px rgba(37,99,235,0.3) }
+.demo-file-button:hover { opacity:0.9 }
+</style>
+<div style="display:flex;gap:32px;align-items:start;flex-wrap:wrap;padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
+<div>
+<div style="font-size:0.8em;color:#64748b;margin-bottom:6px">ブラウザ標準</div>
+<input type="file" accept="image/*">
+</div>
+<div>
+<div style="font-size:0.8em;color:#64748b;margin-bottom:6px">カスタマイズ後</div>
+<label class="demo-file-button"><input type="file" class="demo-file-sr-only" accept="image/*"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 画像をアップロード</label>
+</div>
+</div>
 
 ## ヘッドレス UI ライブラリ
 
