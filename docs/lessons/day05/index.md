@@ -27,10 +27,10 @@ HTML には今も新しい要素や属性が追加されています。ただし
 | ステータス | 意味 |
 |-----------|------|
 | **Limited availability** | 一部のブラウザでしか使えない。本番投入には慎重に |
-| **Newly available** | 主要ブラウザすべてで対応して 30 ヶ月未満。基本的に本番で使える |
-| **Widely available** | 主要ブラウザすべてで対応して 30 ヶ月以上。安心して使える |
+| **Newly available** | 主要ブラウザの最新版すべてで対応して 30 ヶ月未満。ただしブラウザを更新していないユーザーには動かない。たとえば Safari は OS ごとの更新が必要なため、リリースから数ヶ月経っても約 4 人に 1 人が旧バージョンを使っているというデータがある |
+| **Widely available** | 主要ブラウザすべてで対応して 30 ヶ月以上。ほとんどのユーザーが更新済みと期待できる |
 
-MDN の各ページや [web.dev/baseline](https://web.dev/baseline) で確認できます。今日紹介する 3 つの機能はすべて主要ブラウザで使えます。
+本番で使う機能は **Widely available** を目安にするのが安全です。Newly available の機能を使う場合は、未対応ブラウザ向けのフォールバック（代替表示）を用意しましょう。MDN の各ページや [web.dev/baseline](https://web.dev/baseline) で確認できます。今日紹介する 3 つの機能はすべて Widely available です。
 
 ## dialog — モーダルダイアログ
 
@@ -215,7 +215,7 @@ JavaScript は一切不要です。ブラウザがキーボード操作やスク
 
 ### popover の位置決め — CSS Anchor Positioning
 
-popover だけだと、表示される場所を指定できません。ボタンの近くに出したいときは **CSS Anchor Positioning**（Baseline: Limited availability、2026 年 4 月時点では Chrome・Firefox が対応、Safari は未対応）を組み合わせます。対応ブラウザでは上のデモでボタンの真下にツールチップが表示され、画面の端でスペースが足りないときは自動的に反対側に表示されます。
+popover だけだと、表示される場所を指定できません。ボタンの近くに出したいときは **CSS Anchor Positioning**（Baseline: Limited availability、Chrome・Firefox が対応済み。Safari も 2026 年中に対応予定）を組み合わせます。対応ブラウザでは上のデモでボタンの真下にツールチップが表示され、画面の端でスペースが足りないときは自動的に反対側に表示されます。
 
 ```css
 /* ボタンをアンカーとして登録 */
