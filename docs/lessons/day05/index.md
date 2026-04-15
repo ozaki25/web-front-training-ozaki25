@@ -183,9 +183,13 @@ JavaScript は一切不要です。ブラウザがキーボード操作やスク
 ボタンを押してみてください:
 
 <style>
-.demo-tooltip-btn { anchor-name:--demo-tooltip-anchor;padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600 }
-.demo-tooltip-pop { position-anchor:--demo-tooltip-anchor;inset:unset;top:anchor(bottom);left:anchor(center);translate:-50% 8px;padding:12px 16px;border-radius:8px;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.12);color:#1e293b;background:white;font-size:0.85em;max-width:240px;line-height:1.6;margin:0;overflow:visible }
-.demo-tooltip-pop::before { content:'';position:absolute;top:-6px;left:50%;translate:-50% 0;width:12px;height:12px;background:white;rotate:45deg;border-left:1px solid #e2e8f0;border-top:1px solid #e2e8f0 }
+.demo-tooltip-btn { padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600 }
+.demo-tooltip-pop { padding:12px 16px;border-radius:8px;color:#1e293b;background:white;font-size:0.85em;max-width:240px;line-height:1.6;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.12) }
+@supports (anchor-name: --a) {
+.demo-tooltip-btn { anchor-name:--demo-tooltip-anchor }
+.demo-tooltip-pop { position-anchor:--demo-tooltip-anchor;inset:unset;position-area:block-end;margin:8px 0 0 0;position-try-fallbacks:flip-block;overflow:visible;clip-path:inset(0 round 8px) margin-box }
+.demo-tooltip-pop::before { content:'';position:absolute;z-index:-1;inset:-8px calc(50% - 8px);background:white;clip-path:polygon(0 8px,50% 0,100% 8px,100% calc(100% - 8px),50% 100%,0 calc(100% - 8px));filter:drop-shadow(0 0 0.5px #cbd5e1) drop-shadow(0 0 0.5px #cbd5e1) }
+}
 </style>
 <div style="padding:40px 20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b;text-align:center">
 <button popovertarget="demo-popover" type="button" class="demo-tooltip-btn">💡 ヒント</button>
@@ -211,7 +215,7 @@ JavaScript は一切不要です。ブラウザがキーボード操作やスク
 
 ### popover の位置決め — CSS Anchor Positioning
 
-popover だけだと、表示される場所を指定できません。ボタンの近くに出したいときは **CSS Anchor Positioning**（Baseline: Newly available）を組み合わせます。上のデモはこの仕組みで、ボタンの真下にツールチップが表示されるようになっています。
+popover だけだと、表示される場所を指定できません。ボタンの近くに出したいときは **CSS Anchor Positioning**（Baseline: Limited availability、2026 年 4 月時点では Chrome・Firefox が対応、Safari は未対応）を組み合わせます。対応ブラウザでは上のデモでボタンの真下にツールチップが表示され、画面の端でスペースが足りないときは自動的に反対側に表示されます。
 
 ```css
 /* ボタンをアンカーとして登録 */
@@ -219,13 +223,15 @@ popover だけだと、表示される場所を指定できません。ボタン
   anchor-name: --my-anchor;
 }
 
-/* popover をアンカーの下に配置 */
+/* popover をアンカーの下に配置（スペースがなければ自動で上に） */
 .tooltip {
   position-anchor: --my-anchor;
   inset: unset;
   top: anchor(bottom);
   left: anchor(center);
-  translate: -50% 8px;
+  translate: -50% 0;
+  margin-top: 8px;
+  position-try-fallbacks: flip-block;
 }
 ```
 
