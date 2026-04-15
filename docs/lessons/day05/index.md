@@ -183,14 +183,13 @@ JavaScript は一切不要です。ブラウザがキーボード操作やスク
 ボタンを押してみてください:
 
 <style>
-.demo-tooltip-wrap { position:relative;display:inline-block }
-.demo-tooltip { padding:12px 16px;border-radius:8px;border:none;box-shadow:0 4px 12px rgba(0,0,0,0.12);color:#1e293b;background:white;font-size:0.85em;max-width:240px;line-height:1.6;position:absolute;left:50%;translate:-50% 0;top:calc(100% + 12px);margin:0 }
-.demo-tooltip::before { content:'';position:absolute;top:-6px;left:50%;translate:-50% 0;width:12px;height:12px;background:white;rotate:45deg;box-shadow:-2px -2px 4px rgba(0,0,0,0.04) }
+.demo-popover-content { padding:20px;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12);color:#1e293b;background:white;font-size:0.9em;max-width:280px;margin:auto }
 </style>
-<div style="padding:40px 20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b;text-align:center">
-<div class="demo-tooltip-wrap">
+<div style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
 <button popovertarget="demo-popover" type="button" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600">💡 ヒント</button>
-<div id="demo-popover" popover class="demo-tooltip">ここにヒントの内容が表示されます。外側をクリックするか Escape キーで閉じます。</div>
+<div id="demo-popover" popover class="demo-popover-content">
+<p style="margin:0 0 8px;font-weight:600">ヒント</p>
+<p style="margin:0;color:#475569">ここにヒントの内容が表示されます。外側をクリックするか Escape キーで閉じます。</p>
 </div>
 </div>
 
