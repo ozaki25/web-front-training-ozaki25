@@ -60,7 +60,7 @@ graph LR
 
 これらのタグをすべて `<div>` に置き換えても、見た目は CSS で同じにできます。しかしその場合、機械から見るとページの「地図」が存在しないことになります。
 
-自分のページにどんなランドマークがあるかは、ブラウザ拡張の **Landmark Navigation via Keyboard or Pop-up** で確認できます。ランドマークの一覧がポップアップで表示され、ページのどこに何があるかが一目でわかります。
+自分のページにどんなランドマークがあるかは、ブラウザ拡張の **Landmark Navigation via Keyboard or Pop-up**（[Chrome](https://chromewebstore.google.com/detail/landmark-navigation-via-k/ddpokpbjopmeeiiolheejjpkonlkklgp) / [Firefox](https://addons.mozilla.org/en-US/firefox/addon/landmarks/)）で確認できます。ランドマークの一覧がポップアップで表示され、ページのどこに何があるかが一目でわかります。
 
 <!-- TODO: Landmark 拡張のスクリーンショットをここに挿入 -->
 
