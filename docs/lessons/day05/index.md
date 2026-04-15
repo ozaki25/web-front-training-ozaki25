@@ -1,4 +1,4 @@
-# Day 5: HTML だけで作れる UI — dialog, popover, details
+# Day 5: 専用の HTML 要素で作れる UI — dialog, popover, details
 
 ## 今日のゴール
 
@@ -81,8 +81,8 @@ MDN の各ページや [web.dev/baseline](https://web.dev/baseline) で確認で
   <h2>確認</h2>
   <p>この操作を実行しますか？</p>
   <div>
-    <button type="button" onclick="this.closest('dialog').close()">キャンセル</button>
-    <button type="button" onclick="this.closest('dialog').close()">実行する</button>
+    <button type="button" onclick="document.getElementById('my-dialog').close()">キャンセル</button>
+    <button type="button" onclick="document.getElementById('my-dialog').close()">実行する</button>
   </div>
 </dialog>
 
@@ -183,15 +183,16 @@ JavaScript は一切不要です。ブラウザがキーボード操作やスク
 ボタンを押してみてください:
 
 <style>
-.demo-popover-content { padding:20px;border-radius:12px;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12);color:#1e293b;background:white;font-size:0.9em;max-width:280px;margin:auto }
+.demo-tooltip-btn { anchor-name:--demo-tooltip-anchor;padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600 }
+.demo-tooltip-pop { position-anchor:--demo-tooltip-anchor;inset:unset;top:anchor(bottom);left:anchor(center);translate:-50% 8px;position-try-fallbacks:flip-block;padding:12px 16px;border-radius:8px;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.12);color:#1e293b;background:white;font-size:0.85em;max-width:240px;line-height:1.6;margin:0 }
+.demo-tooltip-pop::before { content:'';position:absolute;top:-6px;left:50%;translate:-50% 0;width:12px;height:12px;background:white;rotate:45deg;border-left:1px solid #e2e8f0;border-top:1px solid #e2e8f0 }
 </style>
-<div style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
-<button popovertarget="demo-popover" type="button" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600">💡 ヒント</button>
-<div id="demo-popover" popover class="demo-popover-content">
-<p style="margin:0 0 8px;font-weight:600">ヒント</p>
-<p style="margin:0;color:#475569">ここにヒントの内容が表示されます。外側をクリックするか Escape キーで閉じます。</p>
+<div style="padding:40px 20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b;text-align:center">
+<button popovertarget="demo-popover" type="button" class="demo-tooltip-btn">💡 ヒント</button>
+<div id="demo-popover" popover class="demo-tooltip-pop">ここにヒントの内容が表示されます。外側をクリックするか Escape キーで閉じます。</div>
 </div>
-</div>
+
+`popover` 属性を付けた要素は最初は非表示で、`popovertarget` で紐付けたボタンをクリックすると表示されます。
 
 ```html
 <button popovertarget="help-popup" type="button">ヘルプ</button>
@@ -201,14 +202,35 @@ JavaScript は一切不要です。ブラウザがキーボード操作やスク
 </div>
 ```
 
-`popover` 属性を付けた要素は最初は非表示で、`popovertarget` で紐付けたボタンをクリックすると表示されます。
-
 | 機能 | 説明 |
 |------|------|
 | **light dismiss** | 外側をクリックすると自動的に閉じる |
 | **Escape キー** | Escape キーでも閉じる |
 | **トップレイヤー** | `z-index` を気にせず常に最前面に表示される |
 | **トグル動作** | ボタンを再度クリックすると閉じる |
+
+### popover の位置決め — CSS Anchor Positioning
+
+popover だけだと、表示される場所を指定できません。ボタンの近くに出したいときは **CSS Anchor Positioning**（Baseline: Newly available）を組み合わせます。上のデモはこの仕組みで、ボタンの真下にツールチップが表示されるようになっています。画面の端にボタンがあるときは、自動的に表示位置が切り替わります。
+
+```css
+/* ボタンをアンカーとして登録 */
+.trigger {
+  anchor-name: --my-anchor;
+}
+
+/* popover をアンカーの下に配置（下に空間がなければ自動で上に） */
+.tooltip {
+  position-anchor: --my-anchor;
+  inset: unset;
+  top: anchor(bottom);
+  left: anchor(center);
+  translate: -50% 8px;
+  position-try-fallbacks: flip-block;
+}
+```
+
+`popover` で表示/非表示を、CSS Anchor Positioning で「どこに出すか」を、それぞれ指定する組み合わせです。
 
 ### dialog と popover の使い分け
 
