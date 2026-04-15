@@ -58,10 +58,10 @@ MDN の各ページや [web.dev/baseline](https://web.dev/baseline) で確認で
 <dialog id="demo-modal" class="demo-dialog">
 <h3>プランを変更しますか？</h3>
 <p>現在のプラン「ベーシック」から「プレミアム」に変更します。次回の請求から新しい料金が適用されます。</p>
-<form method="dialog" class="demo-dialog-actions">
-<button type="submit" value="cancel" class="demo-dialog-cancel">キャンセル</button>
-<button type="submit" value="confirm" class="demo-dialog-confirm">変更する</button>
-</form>
+<div class="demo-dialog-actions">
+<button type="button" onclick="document.getElementById('demo-modal').close()" class="demo-dialog-cancel">キャンセル</button>
+<button type="button" onclick="document.getElementById('demo-modal').close()" class="demo-dialog-confirm">変更する</button>
+</div>
 </dialog>
 
 モーダルを JavaScript でゼロから作ろうとすると、考慮すべきことが多くなります:
@@ -80,10 +80,10 @@ MDN の各ページや [web.dev/baseline](https://web.dev/baseline) で確認で
 <dialog id="my-dialog">
   <h2>確認</h2>
   <p>この操作を実行しますか？</p>
-  <form method="dialog">
-    <button type="submit" value="cancel">キャンセル</button>
-    <button type="submit" value="confirm">実行する</button>
-  </form>
+  <div>
+    <button type="button" onclick="this.closest('dialog').close()">キャンセル</button>
+    <button type="button" onclick="this.closest('dialog').close()">実行する</button>
+  </div>
 </dialog>
 
 <script>
@@ -93,7 +93,7 @@ MDN の各ページや [web.dev/baseline](https://web.dev/baseline) で確認で
 </script>
 ```
 
-`showModal()` を呼ぶだけで、以下がすべて自動的に提供されます。
+`showModal()` で開き、`close()` で閉じます。これだけで以下がすべて自動的に提供されます。
 
 | 機能 | 動作 |
 |------|------|
@@ -102,8 +102,6 @@ MDN の各ページや [web.dev/baseline](https://web.dev/baseline) で確認で
 | Escape キーで閉じる | デフォルトで対応 |
 | スクリーンリーダー | `role="dialog"` が自動付与される |
 | 背後のスクロール防止 | モーダルが開いている間、背後はスクロールできない |
-
-`<form method="dialog">` 内のボタンを押すと、ダイアログが自動的に閉じます。
 
 ## details / summary — 折りたたみ
 
@@ -185,13 +183,14 @@ JavaScript は一切不要です。ブラウザがキーボード操作やスク
 ボタンを押してみてください:
 
 <style>
-.demo-popover-content { padding:16px;border-radius:8px;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.1);color:#1e293b;background:white;font-size:0.9em;max-width:280px }
+.demo-tooltip-wrap { position:relative;display:inline-block }
+.demo-tooltip { padding:12px 16px;border-radius:8px;border:none;box-shadow:0 4px 12px rgba(0,0,0,0.12);color:#1e293b;background:white;font-size:0.85em;max-width:240px;line-height:1.6;position:absolute;left:50%;translate:-50% 0;top:calc(100% + 12px);margin:0 }
+.demo-tooltip::before { content:'';position:absolute;top:-6px;left:50%;translate:-50% 0;width:12px;height:12px;background:white;rotate:45deg;box-shadow:-2px -2px 4px rgba(0,0,0,0.04) }
 </style>
-<div style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
-<button popovertarget="demo-popover" type="button" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600">ヘルプを表示</button>
-<div id="demo-popover" popover class="demo-popover-content">
-<p style="margin:0 0 8px;font-weight:600">ヘルプ</p>
-<p style="margin:0;color:#475569">ここにヘルプの内容が表示されます。外側をクリックするか Escape キーで閉じます。</p>
+<div style="padding:40px 20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b;text-align:center">
+<div class="demo-tooltip-wrap">
+<button popovertarget="demo-popover" type="button" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600">💡 ヒント</button>
+<div id="demo-popover" popover class="demo-tooltip">ここにヒントの内容が表示されます。外側をクリックするか Escape キーで閉じます。</div>
 </div>
 </div>
 
