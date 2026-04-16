@@ -5,7 +5,7 @@
 - 画像の書き方はアクセシビリティと Core Web Vitals の両方に直結すると知る
 - alt は画像の役割にあわせて書くことを知る
 - Core Web Vitals（CWV）というユーザー体験の指標があることを知る
-- `width` / `height` / `loading` / `srcset` / `picture` の役割を知る
+- `width` / `height` / `loading` の役割を知る
 
 ## 画像の書き方は 2 つの観点に直結する
 
@@ -136,41 +136,6 @@ img {
 <img src="hero.jpg" alt="..." loading="eager" width="1200" height="600" />
 ```
 
-### srcset と picture — デバイスに合った画像を配信する
-
-スマホにデスクトップ用の大きな画像を配信すると、通信量が無駄になり読み込みも遅くなります。
-
-**srcset — 複数サイズを用意する**
-
-```html
-<img
-  src="photo-800.jpg"
-  srcset="
-    photo-400.jpg 400w,
-    photo-800.jpg 800w,
-    photo-1600.jpg 1600w
-  "
-  sizes="(max-width: 600px) 100vw, 800px"
-  alt="風景写真"
-  width="800"
-  height="600"
-/>
-```
-
-ブラウザが画面サイズや解像度に合わせて最適な画像を自動で選びます。
-
-**picture — フォーマットを出し分ける**
-
-```html
-<picture>
-  <source srcset="photo.avif" type="image/avif" />
-  <source srcset="photo.webp" type="image/webp" />
-  <img src="photo.jpg" alt="風景写真" width="800" height="600" />
-</picture>
-```
-
-ブラウザが対応しているフォーマットを上から順にチェックします。AVIF → WebP → JPEG の順にフォールバックし、最新フォーマットでファイルサイズを小さくしつつ互換性も保てます。
-
 ## まとめ
 
 - 画像の書き方は**アクセシビリティ**と**Core Web Vitals**の両方に直結する
@@ -178,4 +143,3 @@ img {
 - **Core Web Vitals** は Google がユーザー体験を数値化した 3 指標（LCP / CLS / INP）
 - `width` / `height` で CLS を防ぐ
 - `loading="lazy"` で画面外の画像を遅延読み込み（ファーストビューには付けない）
-- `srcset` / `<picture>` でデバイスに合ったサイズとフォーマットを配信
