@@ -214,7 +214,7 @@ export default withMermaid(
               link: "/html-candidates/13/",
             },
             {
-              text: "14: 画像と Core Web Vitals",
+              text: "14: 画像のマークアップ — a11y と CWV",
               link: "/html-candidates/14/",
             },
           ],
