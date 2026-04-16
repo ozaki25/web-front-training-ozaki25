@@ -84,7 +84,25 @@ img {
 }
 ```
 
-**サイズ属性を書くだけで CLS を防げます。**
+**サイズ属性を書くだけで CLS を防げます。** ボタンを押して違いを体感してみてください:
+
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin:16px 0">
+<div style="flex:1;min-width:240px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;color:#1e293b">
+<div style="font-weight:700;font-size:0.85em;color:#dc2626;margin-bottom:8px">❌ サイズ未指定</div>
+<div id="demo-cls-bad">
+<p style="margin:0 0 8px;font-size:0.9em">↓ この文章が押し下げられます</p>
+</div>
+<button type="button" onclick="var c=document.getElementById('demo-cls-bad');if(!c.querySelector('img')){var img=document.createElement('img');img.src='https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=300&h=200&fit=crop';img.alt='猫の写真';img.style.borderRadius='4px';img.style.display='block';img.style.maxWidth='100%';c.insertBefore(img,c.firstChild)}" style="padding:8px 16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.85em;font-weight:600">画像を読み込む</button>
+</div>
+<div style="flex:1;min-width:240px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;color:#1e293b">
+<div style="font-weight:700;font-size:0.85em;color:#16a34a;margin-bottom:8px">✅ サイズ指定あり</div>
+<div id="demo-cls-good">
+<div style="width:100%;aspect-ratio:3/2;background:#e2e8f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.8em;color:#94a3b8" id="demo-cls-placeholder">画像の場所が確保されている</div>
+<p style="margin:8px 0 0;font-size:0.9em">↓ この文章は動きません</p>
+</div>
+<button type="button" onclick="var p=document.getElementById('demo-cls-placeholder');if(p.tagName!=='IMG'){var img=document.createElement('img');img.src='https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=300&h=200&fit=crop';img.alt='猫の写真';img.width=300;img.height=200;img.style.borderRadius='4px';img.style.display='block';img.style.maxWidth='100%';img.style.height='auto';img.id='demo-cls-placeholder';p.parentNode.replaceChild(img,p)}" style="padding:8px 16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.85em;font-weight:600">画像を読み込む</button>
+</div>
+</div>
 
 ### loading — 画面外の画像は遅延読み込み
 
