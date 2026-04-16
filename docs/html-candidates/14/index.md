@@ -98,23 +98,25 @@ img {
 }
 ```
 
-**サイズ属性を書くだけで CLS を防げます。** ボタンを押して違いを体感してみてください:
+**サイズ属性を書くだけで CLS を防げます。**
 
+Web サイトを読んでいるときに、広告や画像が遅れて読み込まれて文字がガクッとずれた経験はないでしょうか。あれが CLS です。以下のデモで再現しています。左側は画像の読み込み後にテキストが押し下げられ、右側はあらかじめ場所が確保されているのでテキストが動きません。
+
+<style>
+@keyframes demo-cls-appear { from { max-height:0;opacity:0 } to { max-height:200px;opacity:1 } }
+.demo-cls-img-bad { animation:demo-cls-appear 0.3s ease-out 2s both }
+.demo-cls-img-good { animation:demo-cls-appear 0.3s ease-out 2s both }
+</style>
 <div style="display:flex;gap:16px;flex-wrap:wrap;margin:16px 0">
 <div style="flex:1;min-width:240px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;color:#1e293b">
 <div style="font-weight:700;font-size:0.85em;color:#dc2626;margin-bottom:8px">❌ サイズ未指定</div>
-<div id="demo-cls-bad">
-<p style="margin:0 0 8px;font-size:0.9em">↓ この文章が押し下げられます</p>
-</div>
-<button type="button" onclick="var c=document.getElementById('demo-cls-bad');if(!c.querySelector('img')){var img=document.createElement('img');img.src='https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=300&h=200&fit=crop';img.alt='猫の写真';img.style.borderRadius='4px';img.style.display='block';img.style.maxWidth='100%';c.insertBefore(img,c.firstChild)}" style="padding:8px 16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.85em;font-weight:600">画像を読み込む</button>
+<img src="https://unsplash.com/photos/ocFeu3EGf-A/download?w=300" alt="猫の写真" class="demo-cls-img-bad" style="border-radius:4px;display:block;max-width:100%;overflow:hidden" />
+<p style="margin:8px 0 0;font-size:0.9em">← 2秒後にこの文章が押し下げられます</p>
 </div>
 <div style="flex:1;min-width:240px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;color:#1e293b">
 <div style="font-weight:700;font-size:0.85em;color:#16a34a;margin-bottom:8px">✅ サイズ指定あり</div>
-<div id="demo-cls-good">
-<div style="width:100%;aspect-ratio:3/2;background:#e2e8f0;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.8em;color:#94a3b8" id="demo-cls-placeholder">画像の場所が確保されている</div>
-<p style="margin:8px 0 0;font-size:0.9em">↓ この文章は動きません</p>
-</div>
-<button type="button" onclick="var p=document.getElementById('demo-cls-placeholder');if(p.tagName!=='IMG'){var img=document.createElement('img');img.src='https://images.unsplash.com/photo-1526336024174-e58f5cdd8e13?w=300&h=200&fit=crop';img.alt='猫の写真';img.width=300;img.height=200;img.style.borderRadius='4px';img.style.display='block';img.style.maxWidth='100%';img.style.height='auto';img.id='demo-cls-placeholder';p.parentNode.replaceChild(img,p)}" style="padding:8px 16px;background:#2563eb;color:white;border:none;border-radius:6px;cursor:pointer;font-size:0.85em;font-weight:600">画像を読み込む</button>
+<img src="https://unsplash.com/photos/ocFeu3EGf-A/download?w=300" alt="猫の写真" width="300" height="200" class="demo-cls-img-good" style="border-radius:4px;display:block;max-width:100%;height:auto;overflow:hidden" />
+<p style="margin:8px 0 0;font-size:0.9em">← この文章は動きません</p>
 </div>
 </div>
 
