@@ -214,7 +214,7 @@ export default withMermaid(
               link: "/html-candidates/13/",
             },
             {
-              text: "14: 画像のマークアップ — a11y と CWV",
+              text: "14: img タグの書き方 — a11y と CWV",
               link: "/html-candidates/14/",
             },
           ],
