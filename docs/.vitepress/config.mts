@@ -23,6 +23,7 @@ export default withMermaid(
             items: [
               { text: "Day 1: Web の仕組み", link: "/lessons/day01/" },
               { text: "Day 2: セマンティック HTML", link: "/lessons/day02/" },
+              { text: "Day 3: フォーム", link: "/lessons/day03/" },
             ],
           },
         ],
