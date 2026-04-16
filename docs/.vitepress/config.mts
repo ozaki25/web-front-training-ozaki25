@@ -213,6 +213,10 @@ export default withMermaid(
               text: "13: カスタムフォーム UI とアクセシビリティ",
               link: "/html-candidates/13/",
             },
+            {
+              text: "14: 画像と Core Web Vitals",
+              link: "/html-candidates/14/",
+            },
           ],
         },
       ],
