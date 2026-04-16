@@ -100,23 +100,18 @@ img {
 
 **サイズ属性を書くだけで CLS を防げます。**
 
-Web サイトを読んでいるときに、広告や画像が遅れて読み込まれて文字がガクッとずれた経験はないでしょうか。あれが CLS です。以下のデモで再現しています。左側は画像の読み込み後にテキストが押し下げられ、右側はあらかじめ場所が確保されているのでテキストが動きません。
+Web サイトを読んでいるときに、画像が遅れて読み込まれて文字がガクッとずれた経験はないでしょうか。あれが CLS です。
 
-<style>
-@keyframes demo-cls-appear { from { max-height:0;opacity:0 } to { max-height:200px;opacity:1 } }
-.demo-cls-img-bad { animation:demo-cls-appear 0.3s ease-out 2s both }
-.demo-cls-img-good { animation:demo-cls-appear 0.3s ease-out 2s both }
-</style>
 <div style="display:flex;gap:16px;flex-wrap:wrap;margin:16px 0">
 <div style="flex:1;min-width:240px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;color:#1e293b">
 <div style="font-weight:700;font-size:0.85em;color:#dc2626;margin-bottom:8px">❌ サイズ未指定</div>
-<img src="https://unsplash.com/photos/ocFeu3EGf-A/download?w=300" alt="猫の写真" class="demo-cls-img-bad" style="border-radius:4px;display:block;max-width:100%;overflow:hidden" />
-<p style="margin:8px 0 0;font-size:0.9em">← 2秒後にこの文章が押し下げられます</p>
+<img src="https://unsplash.com/photos/ocFeu3EGf-A/download?w=300" alt="ソファでくつろぐ猫" style="border-radius:4px;display:block;max-width:100%" />
+<p style="margin:8px 0 0;font-size:0.9em">この文章は画像読み込み後に押し下げられる</p>
 </div>
 <div style="flex:1;min-width:240px;padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;color:#1e293b">
 <div style="font-weight:700;font-size:0.85em;color:#16a34a;margin-bottom:8px">✅ サイズ指定あり</div>
-<img src="https://unsplash.com/photos/ocFeu3EGf-A/download?w=300" alt="猫の写真" width="300" height="200" class="demo-cls-img-good" style="border-radius:4px;display:block;max-width:100%;height:auto;overflow:hidden" />
-<p style="margin:8px 0 0;font-size:0.9em">← この文章は動きません</p>
+<img src="https://unsplash.com/photos/ocFeu3EGf-A/download?w=300" alt="ソファでくつろぐ猫" width="300" height="200" style="border-radius:4px;display:block;max-width:100%;height:auto" />
+<p style="margin:8px 0 0;font-size:0.9em">この文章は最初から正しい位置にある</p>
 </div>
 </div>
 
