@@ -140,3 +140,5 @@ document.getElementById("btn").addEventListener("click", () => {
 - ブラウザが URL にアクセスすると、サーバーが HTML / CSS / JS を返し、ブラウザが画面を組み立てる
 - HTML は構造と意味、CSS は見た目、JavaScript は動きを担当する
 - ブラウザ側の領域をフロントエンドと呼ぶ
+
+**次のレッスン**: [Day 2: セマンティック HTML](/lessons/day02/)
