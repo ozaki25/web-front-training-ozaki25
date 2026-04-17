@@ -173,12 +173,6 @@ export default withMermaid(
               text: "アーキテクチャ総まとめ",
               link: "/lessons/day53/",
             },
-          ],
-        },
-        {
-          text: "HTML LT 候補（終了）",
-          collapsed: true,
-          items: [
             { text: "01: セマンティック HTML → Day 2", link: "/html-candidates/01/" },
             { text: "02: 見出しレベルの設計（Day 2 と重複）", link: "/html-candidates/02/" },
             { text: "03: a と button（却下）", link: "/html-candidates/03/" },
