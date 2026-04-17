@@ -9,3 +9,4 @@
 - [Day 1: Web の仕組み — URL を入力してからページが表示されるまで](/lessons/day01/)
 - [Day 2: セマンティック HTML — ページの構造を伝えるタグ](/lessons/day02/)
 - [Day 3: フォーム — HTML だけで送信できる仕組み](/lessons/day03/)
+- [Day 6: img タグの書き方 — アクセシビリティと Core Web Vitals](/lessons/day06/)
