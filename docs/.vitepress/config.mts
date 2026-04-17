@@ -176,26 +176,21 @@ export default withMermaid(
           ],
         },
         {
-          text: "HTML LT 候補（未使用）",
-          items: [
-            { text: "03: a と button", link: "/html-candidates/03/" },
-            { text: "05: ネスティングルール", link: "/html-candidates/05/" },
-            { text: "08: head の中身", link: "/html-candidates/08/" },
-            { text: "09: パースと DOM ツリー", link: "/html-candidates/09/" },
-            { text: "10: テーブル", link: "/html-candidates/10/" },
-            { text: "12: AI の HTML をレビュー", link: "/html-candidates/12/" },
-          ],
-        },
-        {
-          text: "HTML LT 候補（消化済み / 重複）",
+          text: "HTML LT 候補（終了）",
           collapsed: true,
           items: [
             { text: "01: セマンティック HTML → Day 2", link: "/html-candidates/01/" },
             { text: "02: 見出しレベルの設計（Day 2 と重複）", link: "/html-candidates/02/" },
+            { text: "03: a と button（却下）", link: "/html-candidates/03/" },
             { text: "04: フォーム → Day 3", link: "/html-candidates/04/" },
+            { text: "05: ネスティングルール（却下）", link: "/html-candidates/05/" },
             { text: "06: alt 属性 → Day 6 に統合", link: "/html-candidates/06/" },
             { text: "07: HTML の基本構造（Day 1 と重複）", link: "/html-candidates/07/" },
+            { text: "08: head の中身（却下）", link: "/html-candidates/08/" },
+            { text: "09: パースと DOM ツリー（却下）", link: "/html-candidates/09/" },
+            { text: "10: テーブル（却下）", link: "/html-candidates/10/" },
             { text: "11: HTML だけで作れる UI → Day 5", link: "/html-candidates/11/" },
+            { text: "12: AI の HTML をレビュー（却下）", link: "/html-candidates/12/" },
             {
               text: "13: カスタムフォーム UI → Day 4",
               link: "/html-candidates/13/",
