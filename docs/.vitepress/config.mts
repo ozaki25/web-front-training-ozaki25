@@ -22,7 +22,7 @@ export default withMermaid(
           items: [{ text: "はじめに", link: "/introduction/" }],
         },
         {
-          text: "Phase 1: HTML/CSS の基礎",
+          text: "レッスン（公開済み / PR 確定）",
           items: [
             { text: "Day 1: HTML の基本構造", link: "/lessons/day01/" },
             { text: "Day 2: セマンティック HTML", link: "/lessons/day02/" },
@@ -35,6 +35,12 @@ export default withMermaid(
               text: "Day 5: HTML だけで作れる UI",
               link: "/lessons/day05/",
             },
+          ],
+        },
+        {
+          text: "レッスン（未確定）",
+          collapsed: true,
+          items: [
             { text: "CSS の基本と適用方法", link: "/lessons/day06/" },
             {
               text: "CSS ボックスモデルとレイアウト",
@@ -46,11 +52,6 @@ export default withMermaid(
               text: "レスポンシブデザインと CSS の課題",
               link: "/lessons/day10/",
             },
-          ],
-        },
-        {
-          text: "Phase 2: JavaScript の基礎",
-          items: [
             { text: "JavaScript の基本文法", link: "/lessons/day11/" },
             { text: "関数とスコープ", link: "/lessons/day12/" },
             { text: "オブジェクトと配列", link: "/lessons/day13/" },
@@ -65,11 +66,6 @@ export default withMermaid(
               text: "エラーハンドリングとデバッグ",
               link: "/lessons/day18/",
             },
-          ],
-        },
-        {
-          text: "Phase 3: TypeScript",
-          items: [
             { text: "TypeScript の基本", link: "/lessons/day19/" },
             { text: "型の応用", link: "/lessons/day20/" },
             {
@@ -77,11 +73,6 @@ export default withMermaid(
               link: "/lessons/day21/",
             },
             { text: "TypeScript 応用", link: "/lessons/day22/" },
-          ],
-        },
-        {
-          text: "Phase 4: React の基礎",
-          items: [
             { text: "React の概要と JSX", link: "/lessons/day23/" },
             {
               text: "コンポーネントと props",
@@ -116,11 +107,6 @@ export default withMermaid(
               text: "React のレンダリング最適化",
               link: "/lessons/day32/",
             },
-          ],
-        },
-        {
-          text: "Phase 5: Next.js の基礎",
-          items: [
             {
               text: "SPA・CSR・SSR — レンダリング戦略",
               link: "/lessons/day33/",
@@ -153,11 +139,6 @@ export default withMermaid(
               link: "/lessons/day42/",
             },
             { text: "Tailwind CSS", link: "/lessons/day43/" },
-          ],
-        },
-        {
-          text: "Phase 6: 実践的なスキル",
-          items: [
             {
               text: "テスト基礎（Vitest）",
               link: "/lessons/day44/",
