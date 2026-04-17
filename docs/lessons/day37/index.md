@@ -1,4 +1,4 @@
-# Day 37: データ取得（Server Components）
+# データ取得（Server Components）
 
 ## 今日のゴール
 

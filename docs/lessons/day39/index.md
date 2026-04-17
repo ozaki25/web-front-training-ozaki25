@@ -1,4 +1,4 @@
-# Day 39: Server Actions
+# Server Actions
 
 ## 今日のゴール
 

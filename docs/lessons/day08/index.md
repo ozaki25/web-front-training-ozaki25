@@ -1,4 +1,4 @@
-# Day 8: Flexbox
+# Flexbox
 
 ## 今日のゴール
 

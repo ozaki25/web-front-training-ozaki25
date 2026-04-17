@@ -1,4 +1,4 @@
-# Day 17: ES Modules
+# ES Modules
 
 ## 今日のゴール
 

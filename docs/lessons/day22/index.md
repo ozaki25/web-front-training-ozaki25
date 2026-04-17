@@ -1,4 +1,4 @@
-# Day 22: TypeScript 応用
+# TypeScript 応用
 
 ## 今日のゴール
 

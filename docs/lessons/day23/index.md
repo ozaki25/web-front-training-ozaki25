@@ -1,4 +1,4 @@
-# Day 23: React の概要と JSX
+# React の概要と JSX
 
 ## 今日のゴール
 

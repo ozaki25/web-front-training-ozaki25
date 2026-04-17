@@ -1,4 +1,4 @@
-# Day 43: Tailwind CSS
+# Tailwind CSS
 
 ## 今日のゴール
 

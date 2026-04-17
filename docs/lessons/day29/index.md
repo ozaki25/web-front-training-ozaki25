@@ -1,4 +1,4 @@
-# Day 29: useOptimistic と Transition
+# useOptimistic と Transition
 
 ## 今日のゴール
 

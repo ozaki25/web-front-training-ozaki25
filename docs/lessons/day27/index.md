@@ -1,4 +1,4 @@
-# Day 27: useEffect とライフサイクル
+# useEffect とライフサイクル
 
 ## 今日のゴール
 

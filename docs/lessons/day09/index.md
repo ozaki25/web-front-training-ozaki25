@@ -1,4 +1,4 @@
-# Day 9: CSS Grid
+# CSS Grid
 
 ## 今日のゴール
 

@@ -1,4 +1,4 @@
-# Day 11: JavaScript の基本文法
+# JavaScript の基本文法
 
 ## 今日のゴール
 

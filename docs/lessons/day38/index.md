@@ -1,4 +1,4 @@
-# Day 38: Route Handlers
+# Route Handlers
 
 ## 今日のゴール
 

@@ -1,4 +1,4 @@
-# Day 19: TypeScript の基本
+# TypeScript の基本
 
 ## 今日のゴール
 

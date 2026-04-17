@@ -1,4 +1,4 @@
-# Day 35: Server Components と Client Components
+# Server Components と Client Components
 
 ## 今日のゴール
 

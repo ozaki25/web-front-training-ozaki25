@@ -1,4 +1,4 @@
-# Day 28: フォームと Actions
+# フォームと Actions
 
 ## 今日のゴール
 
