@@ -1,4 +1,4 @@
-# Day 7: HTML の基本構造 — DOCTYPE から body まで
+# HTML の基本構造 — DOCTYPE から body まで
 
 ## 今日のゴール
 
