@@ -111,29 +111,43 @@ Tailwind なら `class="flex flex-wrap gap-4"` と書くだけで同じことが
 かつて「縦横中央に置きたい」ために絶対配置と `transform: translate(-50%, -50%)` を使っていた時代は終わりました。今は `display: flex; justify-content: center; align-items: center;` の3行で済みます。
 
 <div style="background:#f8fafc;color:#1e293b;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0;">
-  <strong>デモ: justify-content を切り替える</strong>
-  <label style="display:block;margin-top:8px;">
-    値:
-    <select id="jc-demo" aria-label="justify-content の値" style="background:white;color:#1e293b;border:1px solid #cbd5e1;padding:4px;">
-      <option>flex-start</option>
-      <option selected>center</option>
-      <option>flex-end</option>
-      <option>space-between</option>
-      <option>space-around</option>
-    </select>
-  </label>
-  <div id="jc-box" style="display:flex;justify-content:center;background:white;color:#1e293b;border:1px dashed #94a3b8;border-radius:6px;padding:8px;margin-top:12px;min-height:64px;">
+  <strong>デモ: 主軸と交差軸で配置を切り替える</strong>
+  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;">
+    <fieldset style="background:white;color:#1e293b;border:1px solid #cbd5e1;border-radius:6px;padding:8px 12px;margin:0;">
+      <legend style="padding:0 4px;">justify-content（主軸 →）</legend>
+      <label style="display:inline-block;margin-right:8px;"><input type="radio" name="jc" value="flex-start"> flex-start</label>
+      <label style="display:inline-block;margin-right:8px;"><input type="radio" name="jc" value="center" checked> center</label>
+      <label style="display:inline-block;margin-right:8px;"><input type="radio" name="jc" value="flex-end"> flex-end</label>
+      <label style="display:inline-block;margin-right:8px;"><input type="radio" name="jc" value="space-between"> space-between</label>
+      <label style="display:inline-block;"><input type="radio" name="jc" value="space-around"> space-around</label>
+    </fieldset>
+    <fieldset style="background:white;color:#1e293b;border:1px solid #cbd5e1;border-radius:6px;padding:8px 12px;margin:0;">
+      <legend style="padding:0 4px;">align-items（交差軸 ↓）</legend>
+      <label style="display:inline-block;margin-right:8px;"><input type="radio" name="ai" value="stretch"> stretch</label>
+      <label style="display:inline-block;margin-right:8px;"><input type="radio" name="ai" value="flex-start"> flex-start</label>
+      <label style="display:inline-block;margin-right:8px;"><input type="radio" name="ai" value="center" checked> center</label>
+      <label style="display:inline-block;"><input type="radio" name="ai" value="flex-end"> flex-end</label>
+    </fieldset>
+  </div>
+  <div id="flex-demo-box" style="display:flex;justify-content:center;align-items:center;background:white;color:#1e293b;border:1px dashed #94a3b8;border-radius:6px;padding:8px;margin-top:12px;height:140px;">
     <span style="background:#3b82f6;color:white;padding:8px 12px;border-radius:4px;">A</span>
-    <span style="background:#10b981;color:white;padding:8px 12px;border-radius:4px;">B</span>
+    <span style="background:#10b981;color:white;padding:16px 12px;border-radius:4px;">B</span>
     <span style="background:#f59e0b;color:white;padding:8px 12px;border-radius:4px;">C</span>
   </div>
-  <p style="color:#475569;font-size:0.9em;margin:8px 0 0;">ボックスが主軸上でどう動くかを観察してください。</p>
+  <p style="color:#475569;font-size:0.9em;margin:8px 0 0;">主軸（横）と交差軸（縦）で、それぞれ独立に「どこに寄せるか」を指定している感覚をつかんでください。</p>
   <script>
-    (function(){
-      var sel = document.getElementById('jc-demo');
-      var box = document.getElementById('jc-box');
-      if (sel && box) sel.addEventListener('change', function(){ box.style.justifyContent = sel.value; });
-    })();
+    if (typeof document !== 'undefined') {
+      (function(){
+        var box = document.getElementById('flex-demo-box');
+        if (!box) return;
+        document.querySelectorAll('input[name="jc"]').forEach(function(el){
+          el.addEventListener('change', function(){ box.style.justifyContent = el.value; });
+        });
+        document.querySelectorAll('input[name="ai"]').forEach(function(el){
+          el.addEventListener('change', function(){ box.style.alignItems = el.value; });
+        });
+      })();
+    }
   </script>
 </div>
 

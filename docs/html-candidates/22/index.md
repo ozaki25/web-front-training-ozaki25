@@ -12,7 +12,7 @@
 
 こういう「行と列で整える」要求、AI に「商品カードを並べて」と頼んで出てきたコードで見たことがあるはずです。Flexbox で折り返しを作って頑張っている例もあれば、`grid` が使われている例もある。どちらも動いては見えるけれど、**二次元のレイアウトは本来 Grid の仕事**です。
 
-Flexbox は「1 行（または 1 列）に並べる」ための仕組みで、主役はひとつの軸。対して Grid は「行と列という 2 つの軸」を同時に扱います。コンテナに **格子（トラック）** を定義して、子要素を格子のどこに置くかで配置する、という発想です。
+Flexbox は「1 行（または 1 列）に並べる」ための仕組みで、主役はひとつの軸。対して Grid は「行と列という 2 つの軸」を同時に扱います。コンテナに **格子（トラック）** を定義して、子要素を格子のどこに置くかで配置する、という発想です。「トラック」は Grid 用語で、列方向に走る縦の帯と行方向に走る横の帯のことを指します。方眼紙に線を引いてからマス目にモノを置くイメージです。
 
 ```mermaid
 flowchart LR
@@ -20,6 +20,15 @@ flowchart LR
   A -->|No: 行と列| G[CSS Grid]
   G --> G1[列を定義して並べる]
   G --> G2[エリア名で配置する]
+```
+
+行と列のトラックが交差してセル（マス目）ができる、というのが Grid の世界観です。
+
+```mermaid
+flowchart TB
+  subgrid1["列トラック 1"] -.- subgrid2["列トラック 2"] -.- subgrid3["列トラック 3"]
+  R1["行トラック 1"] --- C11["セル"] --- C12["セル"] --- C13["セル"]
+  R2["行トラック 2"] --- C21["セル"] --- C22["セル"] --- C23["セル"]
 ```
 
 今日は Grid の柱を 3 本だけ持ち帰ります。(1) 列を定義して並べる、(2) エリアで配置する、(3) Flex との使い分け。
@@ -159,6 +168,26 @@ Grid は便利な一方、`grid-area` や `order` で **見た目の並びを DO
 - **1 次元（1 行 or 1 列）なら Flex** — ナビゲーションの横並び、ボタンとアイコンの並び、タグ一覧の折り返し
 - **2 次元（行 × 列）なら Grid** — 商品一覧のカード、ダッシュボード、フォームのラベルと入力欄の整列
 - **迷ったら Flex** — 単純な並びは Flex のほうがコストが低い。揃え方に悩み始めたら Grid を検討
+
+<div style="border:1px solid #cbd5e1;border-radius:8px;padding:16px;background:#f8fafc;color:#1e293b;margin:16px 0;">
+  <p style="margin:0 0 12px;font-weight:bold;">デモ: Flex と Grid で同じ 5 枚のカードを並べた違い</p>
+  <p style="margin:0 0 6px;color:#475569;font-size:0.9em;">Flex（折り返し）— 最後の行のカードが余白で広がる、列の縦ラインが揃わない</p>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <div style="flex:1 1 140px;background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">A</div>
+    <div style="flex:1 1 140px;background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">B</div>
+    <div style="flex:1 1 140px;background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">C</div>
+    <div style="flex:1 1 140px;background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">D</div>
+    <div style="flex:1 1 140px;background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">E</div>
+  </div>
+  <p style="margin:0 0 6px;color:#475569;font-size:0.9em;">Grid（auto-fit）— 縦ラインがピシッと揃い、最後の行の余りは空白になる</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;">
+    <div style="background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">A</div>
+    <div style="background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">B</div>
+    <div style="background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">C</div>
+    <div style="background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">D</div>
+    <div style="background:white;color:#1e293b;padding:12px;border-radius:4px;border:1px solid #e2e8f0;">E</div>
+  </div>
+</div>
 
 配属先が使う Tailwind CSS なら、Grid はクラスとして短く書けます。
 

@@ -21,10 +21,10 @@ flowchart LR
 
 実際に動かしてみよう（どちらもホバーまたはフォーカスで発火する）。
 
-<div style="display:flex;gap:16px;flex-wrap:wrap;padding:16px;background:#f8fafc;color:#1e293b;border-radius:8px;">
+<div style="display:flex;gap:16px;flex-wrap:wrap;padding:16px;background:#f8fafc;color:#1e293b;border-radius:8px;align-items:center;">
   <button style="padding:12px 20px;border:none;border-radius:8px;background:#3b82f6;color:white;cursor:pointer;transition:background 300ms ease-in-out, transform 300ms ease-in-out;" onmouseover="this.style.background='#1d4ed8';this.style.transform='scale(1.05)'" onmouseout="this.style.background='#3b82f6';this.style.transform='scale(1)'" onfocus="this.style.background='#1d4ed8';this.style.transform='scale(1.05)'" onblur="this.style.background='#3b82f6';this.style.transform='scale(1)'">ホバー/フォーカスで変化</button>
-  <div style="width:48px;height:48px;border:4px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin 1s linear infinite;"></div>
-  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+  <div style="width:48px;height:48px;border:4px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:lesson21-intro-spin 1s linear infinite;" role="status" aria-label="読み込み中"></div>
+  <style>@keyframes lesson21-intro-spin { to { transform: rotate(360deg); } }</style>
 </div>
 
 左のボタンは `transition`、右のスピナーは `animation`。この違いから見ていく。
@@ -91,6 +91,30 @@ flowchart LR
 - **状態 A → 状態 B の一回きり** → `transition`
 - **無限ループ・複数段階・状態変化をきっかけにしない** → `animation`
 
+下のデモは、左が `transition`（ホバー/フォーカスで A→B に一回）、中央が `animation`（読み込み中ずっと回る）、右が `animation`（マウントされた瞬間に一回だけ fade-in する）。きっかけと再生のされ方に注目すると違いが掴める。
+
+<div style="display:flex;gap:16px;flex-wrap:wrap;padding:16px;background:#f8fafc;color:#1e293b;border-radius:8px;align-items:center;">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+    <button style="padding:12px 20px;border:none;border-radius:8px;background:#3b82f6;color:white;cursor:pointer;transition:background 300ms ease-in-out, transform 300ms ease-in-out;" onmouseover="this.style.background='#1d4ed8';this.style.transform='translateY(-2px) scale(1.05)'" onmouseout="this.style.background='#3b82f6';this.style.transform='translateY(0) scale(1)'" onfocus="this.style.background='#1d4ed8';this.style.transform='translateY(-2px) scale(1.05)'" onblur="this.style.background='#3b82f6';this.style.transform='translateY(0) scale(1)'">transition</button>
+    <small style="color:#475569;">ホバー/フォーカスで発火</small>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+    <div style="width:48px;height:48px;border:4px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:lesson21-spin 1s linear infinite;" role="status" aria-label="読み込み中"></div>
+    <small style="color:#475569;">animation（無限）</small>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+    <div style="width:120px;padding:12px;background:white;border:1px solid #cbd5e1;border-radius:8px;color:#1e293b;text-align:center;animation:lesson21-fadein 600ms ease-out both;">fade-in カード</div>
+    <small style="color:#475569;">animation（一回）</small>
+  </div>
+  <style>
+    @keyframes lesson21-spin { to { transform: rotate(360deg); } }
+    @keyframes lesson21-fadein {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</div>
+
 ## 柱2: 「速い動き」と「遅い動き」は何で決まるか
 
 `transition: all 300ms` とつい書きたくなるけれど、補間できるプロパティには大きく 2 種類ある。**速いプロパティ**と**遅いプロパティ**だ。これを知らないと「なんかカクつく」UI ができあがる。
@@ -124,6 +148,32 @@ flowchart LR
 
 「要素を動かす・拡大縮小する・回転する」は `transform`、「見え隠れ」は `opacity`。この 2 つに寄せるだけで、体感の滑らかさが一段階変わる。
 
+実際にドロワーを `left` で動かしたバージョンと `transform` で動かしたバージョンを並べてみる。ボタンで開閉して、動きの滑らかさ（特にリサイズ中や他の処理が走っているとき）の違いを感じてほしい。
+
+<div style="padding:16px;background:#f8fafc;color:#1e293b;border-radius:8px;">
+  <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
+    <button id="lesson21-toggle-slow" style="padding:8px 14px;border:1px solid #cbd5e1;border-radius:6px;background:white;color:#1e293b;cursor:pointer;">遅い（left）を開閉</button>
+    <button id="lesson21-toggle-fast" style="padding:8px 14px;border:1px solid #cbd5e1;border-radius:6px;background:white;color:#1e293b;cursor:pointer;">速い（transform）を開閉</button>
+  </div>
+  <div style="position:relative;height:80px;border:1px dashed #cbd5e1;border-radius:8px;overflow:hidden;background:white;">
+    <div id="lesson21-slow" style="position:absolute;top:8px;left:-180px;width:160px;padding:8px 12px;background:#fca5a5;color:#7f1d1d;border-radius:6px;transition:left 400ms ease-out;">遅い: left</div>
+    <div id="lesson21-fast" style="position:absolute;bottom:8px;left:8px;width:160px;padding:8px 12px;background:#86efac;color:#14532d;border-radius:6px;transform:translateX(-200px);transition:transform 400ms ease-out;">速い: transform</div>
+  </div>
+  <small style="color:#475569;display:block;margin-top:8px;">どちらも見た目の変化は同じだが、内部では <code>left</code> は毎フレーム Layout が走り、<code>transform</code> は GPU の Composite だけで済む。</small>
+  <script>
+    if (typeof document !== 'undefined') {
+      (function() {
+        var slow = document.getElementById('lesson21-slow');
+        var fast = document.getElementById('lesson21-fast');
+        var btnSlow = document.getElementById('lesson21-toggle-slow');
+        var btnFast = document.getElementById('lesson21-toggle-fast');
+        if (btnSlow) btnSlow.addEventListener('click', function(){ slow.style.left = (slow.style.left === '8px') ? '-180px' : '8px'; });
+        if (btnFast) btnFast.addEventListener('click', function(){ fast.style.transform = (fast.style.transform === 'translateX(0px)') ? 'translateX(-200px)' : 'translateX(0px)'; });
+      })();
+    }
+  </script>
+</div>
+
 ## 柱3: 動きをオフにできる人がいる
 
 動きの演出は多くの人にとって気持ちいいが、**前庭障害**（めまいや乗り物酔いに近い症状）を持つ人にとっては、スライドや大きな拡大縮小がそのまま体調不良の引き金になる。OS には「視差効果を減らす」「アニメーションを減らす」という設定があり、ブラウザはそれを `prefers-reduced-motion` というメディアクエリで教えてくれる。
@@ -148,6 +198,35 @@ flowchart LR
 `0` ではなく `0.01ms` にしているのは、JS 側で `transitionend` イベントを待っているコードを壊さないため（発火はするが一瞬で終わる）という実用的なテクニック。
 
 `prefers-reduced-motion` はすべての主要ブラウザで使える。「そもそも装飾のアニメを入れるかどうか」を判断に入れておくと、UI 全体が親切になる。
+
+下は自分の OS/ブラウザの現在の設定を表示するデモ。macOS なら「システム設定 → アクセシビリティ → ディスプレイ → 視差効果を減らす」、Windows なら「設定 → アクセシビリティ → 視覚効果 → アニメーション効果」でオン/オフできる。切り替えるとリアルタイムで下の四角の挙動が変わる。
+
+<div style="padding:16px;background:#f8fafc;color:#1e293b;border-radius:8px;">
+  <p style="margin:0 0 8px;">あなたのブラウザの <code>prefers-reduced-motion</code>: <strong id="lesson21-prm-status">判定中...</strong></p>
+  <div id="lesson21-prm-box" style="width:48px;height:48px;background:#3b82f6;border-radius:8px;animation:lesson21-bounce 1s ease-in-out infinite alternate;"></div>
+  <small style="color:#475569;display:block;margin-top:8px;">OS 側で「アニメーションを減らす」をオンにすると、上の四角は動かなくなる。</small>
+  <style>
+    @keyframes lesson21-bounce {
+      from { transform: translateX(0); }
+      to   { transform: translateX(120px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #lesson21-prm-box { animation: none; }
+    }
+  </style>
+  <script>
+    if (typeof document !== 'undefined') {
+      (function() {
+        var el = document.getElementById('lesson21-prm-status');
+        if (!el) return;
+        var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        var update = function() { el.textContent = mq.matches ? 'reduce（動きを抑える設定）' : 'no-preference（通常設定）'; };
+        update();
+        mq.addEventListener ? mq.addEventListener('change', update) : mq.addListener(update);
+      })();
+    }
+  </script>
+</div>
 
 ## 最近のアニメーション関連の動き
 

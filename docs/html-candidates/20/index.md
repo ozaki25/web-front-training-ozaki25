@@ -93,6 +93,8 @@ flowchart TB
 
 `fixed` は **ビューポート（画面）** が基準です。スクロールしても位置が変わりません。「画面右下のチャットボタン」などに使います。
 
+ただし fixed ヘッダーには **アクセシビリティの落とし穴** があります。ページ内リンクでジャンプしたとき、リンク先がヘッダーの裏に隠れてしまうのです。`scroll-padding-top: 64px;` を `html` に指定しておくと、フォーカスやスクロールの際にヘッダーぶんの余白を確保してくれます。
+
 ### sticky：スクロールに応じて固定化する
 
 `sticky` は普段は通常フローにいて、スクロールして指定位置（`top: 0` など）に達すると、その場で固定されます。表のヘッダーや、セクションの見出しを上に貼り付けたいときに便利です。
@@ -102,6 +104,17 @@ flowchart TB
 ```
 
 注意点：`sticky` は **スクロールコンテナの中で効く** ので、親に `overflow: hidden` などが付いていると予想通り動かないことがあります。
+
+実際にスクロールして挙動を確かめてみましょう。
+
+<div style="border:1px solid #e2e8f0;border-radius:8px;max-height:200px;overflow-y:auto;background:white;color:#1e293b;">
+  <header style="position:sticky;top:0;background:#1e293b;color:white;padding:8px 12px;font-weight:bold;">スクロールしても貼り付くヘッダー</header>
+  <div style="padding:12px;color:#1e293b;">
+    <p>上のヘッダーは position:sticky; top:0; が指定されています。</p>
+    <p>このコンテナの中をスクロールすると、ヘッダーが上に貼り付いたままになります。</p>
+    <p>行 1</p><p>行 2</p><p>行 3</p><p>行 4</p><p>行 5</p><p>行 6</p><p>行 7</p><p>行 8</p>
+  </div>
+</div>
 
 ### 自分の中心でピタッと：translate の出番
 
@@ -135,6 +148,20 @@ flowchart TB
 ```
 
 `z-index` を効かせるには、その要素に `position: relative` / `absolute` / `fixed` / `sticky` のいずれかが必要です（`flex` / `grid` の子など一部例外はあります）。
+
+下のデモで左の青いボックスには z-index:9999 だけが、右の緑のボックスには position:relative + z-index:1 が指定されています。右だけ赤いボックスの手前に出てきます。
+
+<div style="border:1px solid #e2e8f0;border-radius:8px;padding:16px;background:#f8fafc;color:#1e293b;display:flex;gap:32px;justify-content:center;">
+  <div style="position:relative;width:120px;height:80px;">
+    <div style="width:100px;height:60px;background:#ef4444;color:white;display:flex;align-items:center;justify-content:center;">赤（後）</div>
+    <div style="width:100px;height:60px;background:#3b82f6;color:white;display:flex;align-items:center;justify-content:center;margin-top:-40px;margin-left:20px;z-index:9999;">青 z:9999</div>
+  </div>
+  <div style="position:relative;width:120px;height:80px;">
+    <div style="width:100px;height:60px;background:#ef4444;color:white;display:flex;align-items:center;justify-content:center;">赤（後）</div>
+    <div style="position:relative;width:100px;height:60px;background:#22c55e;color:white;display:flex;align-items:center;justify-content:center;margin-top:-40px;margin-left:20px;z-index:1;">緑 pos+z:1</div>
+  </div>
+</div>
+<p style="font-size:13px;color:#475569;margin-top:8px;">左：position なしで z-index:9999 → 効かずに後ろ。右：position:relative + z-index:1 → 効いて前に出る。</p>
 
 ### スタッキングコンテキスト：別世界の入れ子
 
@@ -205,7 +232,24 @@ flowchart TB
 </div>
 ```
 
-`popover` を付けた要素はデフォルトで非表示になり、`popovertarget` を持つボタンで開閉できます。こちらもトップレイヤーに出るので、重なり順に悩まされません。Esc キーや外側クリックでの閉じる挙動も自動です。
+`popover` を付けた要素はデフォルトで非表示になり、`popovertarget` を持つボタンで開閉できます。こちらもトップレイヤーに出るので、重なり順に悩まされません。Esc キーや外側クリックでの閉じる挙動も自動です。`popovertarget` は `aria-details` / `aria-expanded` 相当の関連付けをブラウザが自動で補完してくれるので、スクリーンリーダーにも「このボタンがあのポップオーバーを開く」という情報が伝わります。
+
+実際に動かしてみましょう（`<dialog>` と `popover` の中身は背景が白になるよう `background:white;color:#1e293b` を明示しています）。
+
+<div style="border:1px solid #e2e8f0;border-radius:8px;padding:16px;background:#f8fafc;color:#1e293b;display:flex;gap:12px;">
+  <button type="button" onclick="this.nextElementSibling.showModal()" style="padding:6px 12px;border:1px solid #1e293b;background:white;color:#1e293b;border-radius:4px;cursor:pointer;">dialog を開く</button>
+  <dialog aria-labelledby="demo-dialog-title" style="background:white;color:#1e293b;border:1px solid #cbd5e1;border-radius:8px;padding:16px;max-width:320px;">
+    <h3 id="demo-dialog-title" style="margin:0 0 8px;">確認</h3>
+    <p style="margin:0 0 12px;">showModal() で開くとフォーカストラップと Esc 閉じが自動で効きます。</p>
+    <form method="dialog" style="text-align:right;">
+      <button value="ok" style="padding:4px 12px;background:white;color:#1e293b;border:1px solid #1e293b;border-radius:4px;">閉じる</button>
+    </form>
+  </dialog>
+  <button type="button" popovertarget="demo-popover" style="padding:6px 12px;border:1px solid #1e293b;background:white;color:#1e293b;border-radius:4px;cursor:pointer;">popover を開く</button>
+  <div id="demo-popover" popover style="background:white;color:#1e293b;border:1px solid #cbd5e1;border-radius:8px;padding:12px;max-width:260px;">
+    <p style="margin:0;">popover 属性で出しています。Esc や外側クリックで閉じます。</p>
+  </div>
+</div>
 
 ### CSS Anchor Positioning：相対位置を CSS で指定
 
@@ -224,19 +268,6 @@ flowchart TB
 ```
 
 2026 年 4 月時点では Chrome / Edge で安定、Safari と Firefox でも対応が進んでいます。まだ全環境で使えるとは言い切れないので、業務で採用するときはフォールバックを用意するか、[Floating UI](https://floating-ui.com/) などのライブラリを併用するのが安全です。
-
----
-
-## sticky ヘッダーを体感する
-
-<div style="border:1px solid #e2e8f0;border-radius:8px;max-height:200px;overflow-y:auto;background:white;color:#1e293b;">
-  <header style="position:sticky;top:0;background:#1e293b;color:white;padding:8px 12px;font-weight:bold;">スクロールしても貼り付くヘッダー</header>
-  <div style="padding:12px;color:#1e293b;">
-    <p>上のヘッダーは position:sticky; top:0; が指定されています。</p>
-    <p>このコンテナの中をスクロールすると、ヘッダーが上に貼り付いたままになります。</p>
-    <p>行 1</p><p>行 2</p><p>行 3</p><p>行 4</p><p>行 5</p><p>行 6</p><p>行 7</p><p>行 8</p>
-  </div>
-</div>
 
 ---
 

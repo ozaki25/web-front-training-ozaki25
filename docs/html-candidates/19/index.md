@@ -3,8 +3,8 @@
 ## 今日のゴール
 
 - CSS のセレクタが既定で「グローバルスコープ」であることを知り、なぜスタイルが予期せず他へ漏れるのかを説明できる
-- BEM、CSS Modules、Tailwind CSS、`@scope` という 4 つの解決アプローチが、同じ問題に対する別角度の答えだと理解する
-- Next.js App Router での選択肢と、それぞれをどう使い分ければいいか感覚を掴む
+- BEM、CSS Modules、Tailwind CSS という 3 つの解決アプローチが、同じ問題に対する別角度の答えだと理解する（加えて CSS 標準の `@scope` という新しい選択肢にも触れる）
+- 「なぜ配属先で Tailwind CSS が選ばれているのか」を自分の言葉で説明できる
 
 ## 見覚えのある「困った」から始める
 
@@ -41,7 +41,7 @@ flowchart LR
 
 JavaScript の変数にはファイルごとのスコープがある（`import` しなければ見えない）。でも CSS は違う。`<link>` で読み込めば、書き順と詳細度だけが勝敗を決める。AI が生成したコードを雰囲気で受け取ってきた初心者にとって、これが最大の躓きの石になる。
 
-今日はこの「グローバルスコープ問題」に対する 3 つの柱の解決アプローチを見ていく。
+今日はこの「グローバルスコープ問題」に対する 3 つの解決アプローチ（命名で頑張る／ビルドで頑張る／そもそもクラスを作らない）を順に見ていく。
 
 ## 柱 1: 人間が命名で頑張る — BEM と命名規約
 
@@ -106,7 +106,9 @@ flowchart LR
   B2 --> P
 ```
 
-JavaScript の `import` と同じ感覚でスタイルを閉じ込められる。**CSS-in-JS**（`styled-components`、`Emotion`、`vanilla-extract` など）も発想は同じで、「JS ファイルの中にスタイルを書いて、ビルド時に一意な名前を振る」というアプローチ。
+JavaScript の `import` と同じ感覚でスタイルを閉じ込められる。**CSS-in-JS**（`styled-components`、`Emotion`、`vanilla-extract` など）も発想は同じで、「JS ファイルの中にスタイルを書いて、一意な名前を振る」というアプローチ。
+
+ただし Next.js App Router では注意が必要。`styled-components` や `Emotion` の多くの機能は**実行時にブラウザでスタイルを組み立てる**作りなので、サーバーで HTML を返す Server Components と相性が悪い（Server Components 内で使えず、`"use client"` を付けた Client Components 側に寄せる必要がある）。一方 `vanilla-extract` や `CSS Modules` は**ビルド時に CSS ファイルを生成する**ので Server Components でもそのまま使える。App Router の主流が「Tailwind CSS + CSS Modules」に寄っている背景にはこの事情もある。
 
 ## 柱 3: そもそも自分でクラスを作らない — Tailwind CSS
 
@@ -127,7 +129,17 @@ export function Card() {
 
 `.card` も `.title` も存在しないので、そもそも衝突のしようがない。AI が Next.js のコードに Tailwind を大量に書いてくるのは、偶然ではない。**グローバルスコープ問題の最も実践的な回避策**として業界が選んだ結果だ。
 
-最新の Tailwind CSS v4（2025 年リリース）は設定が CSS ファイル側に移り、さらに軽量になった。Next.js App Router + TypeScript + Tailwind という組み合わせが配属先で標準化されているのも、この流れにある。
+最新の Tailwind CSS v4 では、従来 `tailwind.config.js` に書いていた色やフォントの設定が CSS ファイル内の `@theme` ブロックに移り、ビルドも高速化された。Next.js App Router + TypeScript + Tailwind という組み合わせが配属先で標準化されているのも、この「クラス名を作らない」アプローチがグローバルスコープ問題への実用的な答えになっているからだ。
+
+```css
+/* app/globals.css — Tailwind v4 の設定例 */
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #2563eb;
+  --font-display: "Inter", sans-serif;
+}
+```
 
 ### アクセシビリティとユーティリティの注意点
 
@@ -179,6 +191,19 @@ Tailwind の `sr-only` は「視覚的には隠すが、スクリーンリーダ
   </details>
 </div>
 
+## 4 つのアプローチを並べて比べる
+
+同じ「グローバルスコープ問題」への答えでも、得意不得意がある。
+
+| アプローチ | 衝突防止の強さ | 書きやすさ | ビルドツール | 学習コスト | 特徴 |
+|---|---|---|---|---|---|
+| **BEM（命名規約）** | 弱（人間頼み） | 普通 | 不要 | 低 | 素の HTML/CSS で動く。古い資産の保守に今も有効 |
+| **CSS Modules** | 強（自動で一意化） | 普通 | 必要 | 低 | Next.js App Router がネイティブ対応。CSS の知識がそのまま活きる |
+| **Tailwind CSS** | 最強（そもそも作らない） | 慣れれば速い | 必要 | 中（クラス名を覚える） | v4 で設定が CSS 側に。新規 Next.js の第一選択 |
+| **`@scope`（CSS 標準）** | 強（宣言範囲に限定） | 普通 | 不要 | 低 | Firefox 未対応。将来性は高い |
+
+**ポイント**: 「クラス名を作らない」という発想の転換こそが Tailwind の独自性で、これが AI 時代のコード生成とも相性がいい理由になっている（AI は意味のある命名を考えるよりも、既存のユーティリティを並べるほうが安定する）。
+
 ## Next.js App Router ではどう選ぶか
 
 配属先では以下の使い分けが現実的。
@@ -196,6 +221,6 @@ Tailwind の `sr-only` は「視覚的には隠すが、スクリーンリーダ
 
 - CSS のセレクタは既定で**グローバルスコープ**。これが「他画面のスタイルが漏れる」原因
 - 解決アプローチは 3 系統: (1) **BEM** で人間が命名規約を守る、(2) **CSS Modules / CSS-in-JS** でビルド時にユニークな名前を生成する、(3) **Tailwind CSS** でそもそもクラスを作らない
-- Tailwind が流行っているのは単なる流行ではなく、**スコープ問題への最も実践的な回答**だから
+- Tailwind が流行っているのは単なる流行ではなく、**スコープ問題への最も実践的な回答**であり、App Router の Server Components とも相性が良いから
 - CSS 標準にも `@scope` が登場しつつあるが、Firefox 未対応のため本番利用はもう少し先
-- 意味のあるタグ（`<button>`、`<nav>`）を使う姿勢は、どのアプローチでも変わらない土台
+- どのアプローチを選んでも、**意味のあるタグ（`<button>`、`<nav>`、見出しレベル）を使う**姿勢は変わらない土台

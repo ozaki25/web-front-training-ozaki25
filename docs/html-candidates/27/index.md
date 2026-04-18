@@ -8,7 +8,7 @@
 
 ## 「なんで縮まないの？」の正体
 
-サイドバーとメイン、メインの中にユーザー名と長いメッセージを横並び。Flexbox で組んだらなぜかメッセージが親をはみ出し、ページ全体に横スクロールが出る。`overflow: hidden` を試したら今度は文字の一部がブツっと切れる。`text-overflow: ellipsis` を付けたのに `...` が出ない。──Tailwind で `flex` や `truncate` を使っていると、一度は見る光景です。
+AI にチャット画面を作らせたら、ユーザー名とメッセージを Flexbox で横並びにしてくれた。動作確認するとなぜか長いユーザー名のカードだけが親カードからはみ出し、ページ全体に横スクロールが出る。焦って `overflow: hidden` を付けたら今度は文字の一部がブツっと切れた。`text-overflow: ellipsis` も足したのに `...` が出ない。──Tailwind で `flex` や `truncate` を使っていると、一度は見る光景です。
 
 この「なんで？」の多くは、**1. overflow の仕組み**、**2. Flex/Grid アイテムの最小幅**、**3. テキスト省略に必要な条件**、の 3 つに集約されます。今日はこの 3 本柱で攻略します。
 
@@ -178,27 +178,55 @@ html {
 
 「スクロールバー用の余白を常に確保する」指示です。2024 年にはすべての主要ブラウザで使えるようになったため、安心して入れられます。
 
-## デモ: はみ出しが起きる/起きないの見比べ
+## 2026 年の新顔: field-sizing: content
+
+入力量に合わせて `<textarea>` が自動で縦に伸びるフォーム、見たことがあるはず。これまで JS で `scrollHeight` を測って高さを書き換える実装が定番でしたが、2025 年以降は CSS だけでできます。
+
+```css
+textarea {
+  field-sizing: content;
+  min-height: 3lh;  /* 最低 3 行分 */
+}
+```
+
+`field-sizing: content` は「中身の分だけ広がる」指示。はみ出しが起きる前に器のほうが伸びるので、`overflow` の悩みがそもそも発生しません。Chrome/Edge/Safari で利用可能です（Firefox は執筆時点で実装中）。
+
+## デモ 1: min-width: 0 で「はみ出す vs 縮む」
 
 <div style="background:#f8fafc;color:#1e293b;border:1px solid #cbd5e1;border-radius:8px;padding:16px;">
-  <p style="margin:0 0 8px;font-weight:600;">はみ出している例 (親 280px)</p>
-  <div style="display:flex;gap:8px;width:280px;background:white;color:#1e293b;border:1px solid #cbd5e1;padding:8px;">
+  <p style="margin:0 0 8px;font-weight:600;">修正前: 親 280px からはみ出している</p>
+  <div style="display:flex;gap:8px;width:280px;background:white;color:#1e293b;border:1px solid #cbd5e1;padding:8px;overflow:auto;">
     <div style="width:32px;height:32px;border-radius:50%;background:#64748b;flex-shrink:0;" aria-hidden="true"></div>
     <div style="flex:1;">
       <p style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">tanaka_hanako_from_the_other_department_longlonglong</p>
     </div>
   </div>
+  <p style="margin:4px 0 0;font-size:12px;color:#475569;">truncate を書いたのに ... にならず、横スクロールが出る</p>
 
-  <p style="margin:16px 0 8px;font-weight:600;">min-width: 0 + truncate で修正</p>
+  <p style="margin:16px 0 8px;font-weight:600;">修正後: 子に min-width: 0 を追加</p>
   <div style="display:flex;gap:8px;width:280px;background:white;color:#1e293b;border:1px solid #cbd5e1;padding:8px;">
     <div style="width:32px;height:32px;border-radius:50%;background:#64748b;flex-shrink:0;" aria-hidden="true"></div>
     <div style="flex:1;min-width:0;">
       <p style="margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">tanaka_hanako_from_the_other_department_longlonglong</p>
     </div>
   </div>
+  <p style="margin:4px 0 0;font-size:12px;color:#475569;">ちゃんと省略され、親の幅に収まる</p>
 </div>
 
-上は名前が親からあふれ、横スクロールが出る。下は `min-width: 0` を子に足しただけで、ちゃんと `...` で省略されます。見た目の差は 1 行の CSS が生み出しています。
+見た目の差は 1 行の CSS（`min-width: 0`）が生み出しています。Tailwind なら子に `min-w-0` を足すだけです。
+
+## デモ 2: truncate と line-clamp の違い
+
+<div style="background:#f8fafc;color:#1e293b;border:1px solid #cbd5e1;border-radius:8px;padding:16px;">
+  <p style="margin:0 0 8px;font-weight:600;">truncate: 1 行で切る</p>
+  <p style="margin:0;width:260px;background:white;color:#1e293b;border:1px solid #cbd5e1;padding:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">CSS の overflow は、ボックスからはみ出た中身をどう見せるかを決める仕組みです。visible、hidden、scroll、auto、clip の 5 つがあります。</p>
+
+  <p style="margin:16px 0 8px;font-weight:600;">line-clamp: 2 行で切る</p>
+  <p style="margin:0;width:260px;background:white;color:#1e293b;border:1px solid #cbd5e1;padding:8px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;">CSS の overflow は、ボックスからはみ出た中身をどう見せるかを決める仕組みです。visible、hidden、scroll、auto、clip の 5 つがあります。</p>
+  <p style="margin:4px 0 0;font-size:12px;color:#475569;">どちらも DOM には全文が残っており、スクリーンリーダーは全文を読み上げる</p>
+</div>
+
+カード一覧のタイトルは 1 行で `truncate`、本文プレビューは 2〜3 行で `line-clamp`、と使い分けるのが定番です。
 
 ## まとめ
 

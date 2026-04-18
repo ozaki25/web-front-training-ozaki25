@@ -1,4 +1,4 @@
-# なぜスタイルが効かない？ — CSS の適用ルール（カスケード・詳細度・継承）
+# なぜスタイルが効かない？ — カスケード・詳細度・継承・@layer
 
 ## 今日のゴール
 
@@ -148,6 +148,41 @@ article p      { color: green; } /* (0,0,0,2) */
 </div>
 
 DevTools で要素を選択 → Styles タブを開くと、負けたルールに打ち消し線が引かれているのが見えます。自分の目で「ブラウザが選んだ理由」を確認するのが、一番早い学習法です。
+
+## インタラクティブデモ — `@layer` だと結果が変わる
+
+先ほどと同じ HTML 構造に、**`@layer` を使ったスタイル** を当ててみます。ID セレクタ（本来最強）と、クラス 1 つだけのセレクタ（本来弱い）を、それぞれ別のレイヤーに置いています。
+
+<div style="border:1px solid #cbd5e1;border-radius:8px;padding:16px;background:#f8fafc;color:#1e293b">
+  <style>
+    @layer base-demo, utilities-demo;
+    @layer base-demo {
+      /* ID セレクタ（詳細度 (0,1,1,0)）でも base レイヤーにいるので弱い */
+      .demo-layer #win2 .msg { color: crimson; }
+    }
+    @layer utilities-demo {
+      /* クラス 1 つ（詳細度 (0,0,1,0)）でも utilities レイヤーにいるので勝つ */
+      .demo-layer .msg { color: teal; }
+    }
+  </style>
+  <div class="demo-layer">
+    <article id="win2">
+      <p class="msg" aria-label="レイヤー優先のサンプル文">このテキストは何色に見える？</p>
+    </article>
+  </div>
+  <details style="margin-top:8px;background:white;color:#1e293b;padding:8px;border-radius:4px">
+    <summary style="cursor:pointer">答えを見る</summary>
+    <p style="margin:8px 0 0;color:#475569">
+      正解: <strong style="color:teal">teal（青緑）</strong>。
+      詳細度では <code>#win2 .msg</code> (0,1,1,0) が勝つはずなのに、
+      <code>utilities-demo</code> レイヤーが <code>base-demo</code> レイヤーより後に宣言されているため、
+      レイヤー順序のほうが先に評価されて <code>.msg</code> (0,0,1,0) が勝ちます。
+      <strong>レイヤーは詳細度の上位ルール</strong>、と覚えておくと混乱しません。
+    </p>
+  </details>
+</div>
+
+先ほどの「ID が勝つ」デモと、この「レイヤーが勝つ」デモを見比べると、カスケードの中で **レイヤーが詳細度より先に評価されている** ことが体感できます。
 
 ## まとめ
 

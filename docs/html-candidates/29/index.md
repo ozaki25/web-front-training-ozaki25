@@ -72,26 +72,11 @@ flowchart LR
 
 `.theme-danger` の内側にある `.button` や `.link` は、何もしなくても赤になる。ダークモードやエラー領域といった「部分的な見た目の切替」がこれだけで実現できる。
 
-### フォールバック
-
-参照する変数が未定義でも壊れないよう、第 2 引数でフォールバック値を書ける。
-
-```css
-.card {
-  /* --card-bg が無ければ white を使う */
-  background: var(--card-bg, white);
-}
-```
+未定義でも壊れないよう、`var(--card-bg, white)` のように第 2 引数でフォールバックも書ける。
 
 ### SASS 変数との決定的な違い
 
-SASS（`$primary: #2563eb`）のような **プリプロセッサ変数** は、ビルド時にただの文字列置換として消える。一方 CSS カスタムプロパティは **実行時に評価される**。つまり:
-
-- ブラウザの開発者ツールで値を書き換えるとその場で反映される
-- メディアクエリや `:hover` などで値を切り替えられる
-- JavaScript から読み書きできる
-
-「実行時に生きている変数」である点が、今日一番覚えてほしいことだ。
+SASS（`$primary: #2563eb`）のような **プリプロセッサ変数** は、ビルド時にただの文字列置換として消える。一方 CSS カスタムプロパティは **実行時に評価される**。つまり開発者ツールで書き換えればその場で反映され、メディアクエリや `:hover` で値を切り替えたり、JavaScript から読み書きしたりできる。「実行時に生きている変数」である点が、今日一番覚えてほしいことだ。
 
 ## 柱 2: デザイントークン設計 — primitive と semantic を分ける
 
@@ -185,35 +170,26 @@ Tailwind CSS v4（2025 年に安定）は、`@theme` ディレクティブで定
 `data-*` 属性や `class` に応じて変数を切り替えれば、要素以下のツリー全体のテーマが変わる。
 
 ```css
-:root {
-  --color-bg: white;
-  --color-text: #1e293b;
-}
-
-[data-theme="dark"] {
-  --color-bg: #0f172a;
-  --color-text: #f1f5f9;
-}
-
-body {
-  background: var(--color-bg);
-  color: var(--color-text);
-}
+.theme-scope { --color-bg: white; --color-text: #1e293b; }
+.theme-scope[data-theme="dark"] { --color-bg: #0f172a; --color-text: #f1f5f9; }
+.theme-scope { background: var(--color-bg); color: var(--color-text); }
 ```
 
 ```html
-<button
-  type="button"
-  aria-pressed="false"
-  onclick="document.documentElement.toggleAttribute('data-theme-dark')"
->
-  テーマ切替
-</button>
+<div class="theme-scope">
+  <button type="button" aria-pressed="false"
+          onclick="const s=this.closest('.theme-scope');
+                   const d=s.getAttribute('data-theme')==='dark';
+                   s.setAttribute('data-theme', d?'light':'dark');
+                   this.setAttribute('aria-pressed', String(!d));">
+    テーマ切替
+  </button>
+</div>
 ```
 
 `aria-pressed` でトグル状態を支援技術に伝え、`<button>` を使うことでキーボード操作（Enter / Space）も自動で効く。セマンティック HTML はアクセシビリティの出発点だ。
 
-なお、CSS 側で両テーマを素直に書ける `light-dark()` 関数も主要ブラウザで使える:
+ちなみに、わざわざ属性を切り替えなくても、CSS 側で両テーマを素直に書ける `light-dark()` 関数が主要ブラウザで使える。
 
 ```css
 :root {
@@ -276,7 +252,7 @@ const current = getComputedStyle(root).getPropertyValue("--color-brand");
 
 ### `@property` で型付きカスタムプロパティ
 
-通常のカスタムプロパティは「文字列」として扱われるため、色や数値としてのアニメーションができない。`@property` で型を宣言するとアニメーションできるようになる。
+通常のカスタムプロパティは「文字列」として扱われるため、色や数値のアニメーションができない。`@property` で型を宣言すれば `transition` が効くようになる。
 
 ```css
 @property --glow {
@@ -284,14 +260,8 @@ const current = getComputedStyle(root).getPropertyValue("--color-brand");
   inherits: true;
   initial-value: #2563eb;
 }
-
-.card {
-  box-shadow: 0 0 20px var(--glow);
-  transition: --glow 300ms ease;
-}
-.card:hover {
-  --glow: #e11d48;
-}
+.card { box-shadow: 0 0 20px var(--glow); transition: --glow 300ms ease; }
+.card:hover { --glow: #e11d48; }
 ```
 
 「カスタムプロパティなのにアニメーションする」という引き出しは、凝った UI を作る場面で効いてくる。
@@ -299,8 +269,7 @@ const current = getComputedStyle(root).getPropertyValue("--color-brand");
 ## まとめ
 
 - カスタムプロパティは **実行時に評価される CSS 変数**。DOM に沿って継承され、JS やメディアクエリで切り替えられる点が SASS 変数と決定的に違う
-- 値を直書きせず名前で参照することで、変更が 1 箇所で済む。`primitive → semantic` の 2 階建て設計が定番
-- 余白やフォントサイズを `rem` ベースのトークンにすると、ユーザーのフォントサイズ設定を尊重できる
-- テーマ切替、JS 連携、`color-mix()` による派生色、`@property` による型付け、そして Tailwind v4 の `@theme` まで、CSS 変数は現代フロントエンドの共通言語になっている
+- `primitive → semantic` の 2 階建てで値を名前で参照すれば、変更は 1 箇所で済む。`rem` ベースのトークンはユーザーのフォントサイズ設定も尊重する
+- テーマ切替、JS 連携、`color-mix()`、`@property`、Tailwind v4 の `@theme` まで、CSS 変数は現代フロントエンドの共通言語になっている
 
-次に Tailwind のクラス名や AI が生成したスタイルを見たとき、「これは `:root` のどの変数を指しているのだろう？」と一段深く見られるようになれば、今日はそれで十分だ。
+次に Tailwind のクラス名や AI が生成したスタイルを見たとき、「これは `:root` のどの変数を指しているのだろう？」と一段深く見られれば、今日はそれで十分だ。
