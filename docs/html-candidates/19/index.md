@@ -1,0 +1,201 @@
+# スタイルが衝突する — CSS のスコープ問題と解決アプローチ
+
+## 今日のゴール
+
+- CSS のセレクタが既定で「グローバルスコープ」であることを知り、なぜスタイルが予期せず他へ漏れるのかを説明できる
+- BEM、CSS Modules、Tailwind CSS、`@scope` という 4 つの解決アプローチが、同じ問題に対する別角度の答えだと理解する
+- Next.js App Router での選択肢と、それぞれをどう使い分ければいいか感覚を掴む
+
+## 見覚えのある「困った」から始める
+
+AI に「カードコンポーネントを作って」と頼んで、こんな CSS を書いてもらった経験はないだろうか。
+
+```css
+/* styles/card.css */
+.card {
+  padding: 16px;
+  border-radius: 8px;
+  background: white;
+  color: #1e293b;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+}
+```
+
+画面 A ではちゃんと動く。ところが後日、別の画面 B で「タイトル用の見出し」を `.title` というクラスで作ったら、画面 A のカードのタイトルにまで B のスタイルが効いてしまった。あるいは逆に、A の `.title` が B を上書きした。
+
+もう一つ。「ボタンの文字色を白に」と `button { color: white; }` と書いたら、ヘッダーの中にあるメニュー開閉ボタンまで白くなって読めなくなった。
+
+どれも同じ原因で起きている。**CSS のセレクタは、ファイルを分けても、既定ではページ全体に効く**。これを「グローバルスコープ」と呼ぶ（スコープ = スタイルが届く範囲）。
+
+```mermaid
+flowchart LR
+  A[card.css の .title] --> P[ページ全体に適用される]
+  B[header.css の .title] --> P
+  C[article.css の .title] --> P
+  P --> X[どこの .title にも<br/>全部のスタイルが合成される]
+```
+
+JavaScript の変数にはファイルごとのスコープがある（`import` しなければ見えない）。でも CSS は違う。`<link>` で読み込めば、書き順と詳細度だけが勝敗を決める。AI が生成したコードを雰囲気で受け取ってきた初心者にとって、これが最大の躓きの石になる。
+
+今日はこの「グローバルスコープ問題」に対する 3 つの柱の解決アプローチを見ていく。
+
+## 柱 1: 人間が命名で頑張る — BEM と命名規約
+
+一番素朴な解決策は「名前が被らないよう、人間が気をつける」こと。**BEM**（Block Element Modifier）は、その代表的な命名ルールだ。
+
+- **Block**: 意味のあるかたまり（例: `card`）
+- **Element**: Block の部品（例: `card__title`、`__` で繋ぐ）
+- **Modifier**: 状態やバリエーション（例: `card__title--large`、`--` で繋ぐ）
+
+```html
+<article class="card">
+  <h2 class="card__title card__title--large">今日のレッスン</h2>
+  <p class="card__body">CSS のスコープについて</p>
+</article>
+```
+
+```css
+.card { padding: 16px; border-radius: 8px; background: white; color: #1e293b; }
+.card__title { font-size: 18px; font-weight: bold; }
+.card__title--large { font-size: 24px; }
+.card__body { color: #475569; }
+```
+
+「`title` ではなく `card__title` と書けば被らない」という作戦。シンプルだがメリットは大きい。ビルドツールが要らず、素の HTML/CSS だけで動く。
+
+ただし弱点もある。**規約に違反しても怒ってくれる仕組みがない**。新しいメンバーが `.title` と書いてしまえば、それで衝突が発生する。人間の注意力に頼る方式だ。
+
+::: tip ひとこと
+BEM の `card__title--large` のような一見冗長な書き方は、「ビルドツールを前提としなくても衝突を避けたい」という時代の知恵だと捉えておくといい。
+:::
+
+## 柱 2: ビルド時に一意なクラス名を生成する — CSS Modules
+
+「人間が頑張る」から「機械に頑張ってもらう」に発想を切り替えると、**CSS Modules** になる。ファイル名が `.module.css` で終わるものを CSS Modules として扱う、というのが Next.js App Router のネイティブ対応だ。
+
+```css
+/* components/Card.module.css */
+.card { padding: 16px; border-radius: 8px; background: white; color: #1e293b; }
+.title { font-size: 20px; font-weight: bold; }
+```
+
+```tsx
+// components/Card.tsx
+import styles from "./Card.module.css";
+
+export function Card() {
+  return (
+    <article className={styles.card}>
+      <h2 className={styles.title}>今日のレッスン</h2>
+    </article>
+  );
+}
+```
+
+ビルド後、`styles.title` は `Card_title__a1b2c` のようなユニークな文字列に変換される。**ファイル A の `.title` とファイル B の `.title` は別物として扱われる**。
+
+```mermaid
+flowchart LR
+  A["Card.module.css<br/>.title"] -->|ビルド| A2["Card_title__a1b2c"]
+  B["Header.module.css<br/>.title"] -->|ビルド| B2["Header_title__x9y8z"]
+  A2 --> P[衝突しない]
+  B2 --> P
+```
+
+JavaScript の `import` と同じ感覚でスタイルを閉じ込められる。**CSS-in-JS**（`styled-components`、`Emotion`、`vanilla-extract` など）も発想は同じで、「JS ファイルの中にスタイルを書いて、ビルド時に一意な名前を振る」というアプローチ。
+
+## 柱 3: そもそも自分でクラスを作らない — Tailwind CSS
+
+もう一段違う角度の解決策がある。**クラス名を作らなければ、衝突は起きない**。
+
+Tailwind CSS は「ユーティリティファースト」という思想で、`text-lg`（文字大）、`font-bold`（太字）、`p-4`（内側余白 4）のように、**1 クラス 1 役割**の小さな部品を大量に用意している。開発者は「.title という意味のクラス」を作らず、HTML にユーティリティを並べる。
+
+```tsx
+export function Card() {
+  return (
+    <article className="rounded-lg bg-white p-4 text-slate-900">
+      <h2 className="text-xl font-bold">今日のレッスン</h2>
+      <p className="text-slate-600">CSS のスコープについて</p>
+    </article>
+  );
+}
+```
+
+`.card` も `.title` も存在しないので、そもそも衝突のしようがない。AI が Next.js のコードに Tailwind を大量に書いてくるのは、偶然ではない。**グローバルスコープ問題の最も実践的な回避策**として業界が選んだ結果だ。
+
+最新の Tailwind CSS v4（2025 年リリース）は設定が CSS ファイル側に移り、さらに軽量になった。Next.js App Router + TypeScript + Tailwind という組み合わせが配属先で標準化されているのも、この流れにある。
+
+### アクセシビリティとユーティリティの注意点
+
+ユーティリティに慣れると、なんでも `<div className="...">` で済ませたくなる。これは危険な罠だ。スクリーンリーダーやキーボード操作は HTML の **意味（セマンティクス）** を手がかりに動くので、ボタンは `<button>`、ナビゲーションは `<nav>`、見出しは `<h1>` 〜 `<h6>` を使う。ユーティリティはあくまで見た目の調整役。
+
+Tailwind の `sr-only` は「視覚的には隠すが、スクリーンリーダーには読ませる」ユーティリティで、アイコンだけのボタンに文字ラベルを添えるときに使う。
+
+```tsx
+<button
+  type="button"
+  aria-label="メニューを開く"
+  className="rounded p-2 hover:bg-slate-100"
+>
+  <span className="sr-only">メニューを開く</span>
+  <MenuIcon aria-hidden="true" />
+</button>
+```
+
+## おまけ: CSS 標準が追いついてきた — `@scope`
+
+長らくスコープ問題は「外部ツールで解決するもの」だった。しかし CSS 標準側も `@scope` というルールで答えを用意しつつある。
+
+```css
+@scope (.card) {
+  :scope { padding: 16px; border-radius: 8px; background: white; color: #1e293b; }
+  .title { font-size: 20px; font-weight: bold; }
+}
+```
+
+`.card` の配下でだけ `.title` が適用される。2026 年 4 月時点で Chrome / Safari / Edge は対応済みだが、**Firefox はまだ未対応**（フラグ付きの実験段階）。本番利用はもう少し先、という立ち位置。
+
+「CSS はグローバル」という話に対して、「将来は言語仕様レベルで解決される方向へ向かっている」という引き出しとして持っておけば十分だ。
+
+## 衝突を目で見る — 最小デモ
+
+下は「同じクラス名を 2 回定義すると、後勝ちですべてに効いてしまう」ことを体感するデモ。ページ全体のスタイルとして 2 つの `.demo-card` を定義している様子を、独立した枠に再現している。
+
+<div style="background:#f8fafc;color:#1e293b;padding:16px;border-radius:8px;border:1px solid #cbd5e1;">
+  <p style="margin:0 0 12px;font-weight:bold;">両方のカードが同じ <code>.demo-card</code> クラス。後から読み込まれたスタイルに揃えられる。</p>
+  <div style="background:white;color:#1e293b;padding:12px;border-radius:6px;border:2px solid #ef4444;margin-bottom:8px;">
+    カード A（意図: 赤枠）
+  </div>
+  <div style="background:white;color:#1e293b;padding:12px;border-radius:6px;border:2px solid #ef4444;">
+    カード B（意図: 青枠だったのに、後から書かれた赤枠の定義に上書きされた）
+  </div>
+  <details style="margin-top:12px;background:white;color:#1e293b;padding:8px;border-radius:6px;">
+    <summary style="cursor:pointer;">CSS Modules ならどうなるか</summary>
+    <p style="margin:8px 0 0;color:#475569;">A は <code>A_demoCard__hash1</code>、B は <code>B_demoCard__hash2</code> という別の名前に変換されるので、片方を書き換えても他方は影響を受けない。Tailwind ならそもそも <code>.demo-card</code> というクラスを作らないので、同じ問題は発生しない。</p>
+  </details>
+</div>
+
+## Next.js App Router ではどう選ぶか
+
+配属先では以下の使い分けが現実的。
+
+| アプローチ | 向いている場面 |
+|---|---|
+| **Tailwind CSS** | 第一選択。新規プロジェクト全般、スピード重視、デザインシステムと相性良好 |
+| **CSS Modules** | コンポーネントに閉じた複雑なスタイル、アニメーションなどユーティリティで書きにくい箇所 |
+| **`globals.css`（グローバル）** | フォント指定、CSS 変数、`body` の背景色など「本当に全ページに効かせたいもの」だけ |
+| **CSS-in-JS** | 動的にスタイルを組み立てたい特殊なケース。App Router の Server Components とは相性に注意が必要 |
+
+「Tailwind を基本に、CSS Modules を補助的に、`globals.css` は最小限」が定番の構成。
+
+## まとめ
+
+- CSS のセレクタは既定で**グローバルスコープ**。これが「他画面のスタイルが漏れる」原因
+- 解決アプローチは 3 系統: (1) **BEM** で人間が命名規約を守る、(2) **CSS Modules / CSS-in-JS** でビルド時にユニークな名前を生成する、(3) **Tailwind CSS** でそもそもクラスを作らない
+- Tailwind が流行っているのは単なる流行ではなく、**スコープ問題への最も実践的な回答**だから
+- CSS 標準にも `@scope` が登場しつつあるが、Firefox 未対応のため本番利用はもう少し先
+- 意味のあるタグ（`<button>`、`<nav>`）を使う姿勢は、どのアプローチでも変わらない土台
