@@ -82,9 +82,22 @@ GitHub にプルリクエストを作成します。
 
 ### 8. マージ後の同期
 
-PR がマージされると、GitHub Actions（`.github/workflows/sync-after-main.yml`）が自動で以下を行う。
+PR がマージされたら、以下を手動で行う。
 
-- `main → draft` のマージと push
-- open 中の `publish/*` PR を `gh pr update-branch` で更新（チェーン順に波及）
+```bash
+# main の変更を draft に同期
+git fetch origin
+git checkout draft
+git pull origin draft
+git merge origin/main
+git push origin draft
+```
 
-通常は何もしなくてよいが、コンフリクトが発生した場合はワークフローが失敗するので、Actions のログを確認して手動でマージ解決する。
+open 中の `publish/*` PR があれば、チェーンの根元から順に `gh pr update-branch` で更新する。
+
+```bash
+gh pr list --state open --search "head:publish/"
+gh pr update-branch <PR 番号>
+```
+
+コンフリクトが発生した場合は手動で解決してコミット・push する。
