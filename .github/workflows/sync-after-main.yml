@@ -1,0 +1,60 @@
+name: Sync after main push
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge main into draft
+        run: |
+          git fetch origin draft main
+          git checkout draft
+          if git merge --no-edit origin/main; then
+            git push origin draft
+          else
+            echo "::error::draft へのマージでコンフリクトが発生しました。手動で解決してください"
+            exit 1
+          fi
+
+      - name: Update open publish PRs (handles chains)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # チェーン（publish/day05 ← publish/day04 ← main）を波及させるため
+          # 更新が発生しなくなるまでループする
+          for iteration in 1 2 3 4 5; do
+            echo "=== iteration $iteration ==="
+            updated=0
+            prs=$(gh pr list --state open --json number,headRefName \
+              --jq '.[] | select(.headRefName | startswith("publish/")) | .number')
+            for pr in $prs; do
+              before=$(gh pr view "$pr" --json headRefOid --jq '.headRefOid')
+              gh pr update-branch "$pr" || true
+              after=$(gh pr view "$pr" --json headRefOid --jq '.headRefOid')
+              if [ "$before" != "$after" ]; then
+                echo "PR #$pr updated: $before -> $after"
+                updated=1
+              fi
+            done
+            if [ $updated -eq 0 ]; then
+              echo "No further updates needed"
+              break
+            fi
+          done

@@ -82,13 +82,9 @@ GitHub にプルリクエストを作成します。
 
 ### 8. マージ後の同期
 
-PR がマージされたら、main の内容を draft に取り込みます。
+PR がマージされると、GitHub Actions（`.github/workflows/sync-after-main.yml`）が自動で以下を行う。
 
-```bash
-git checkout draft
-git pull origin draft
-git merge origin/main --no-edit
-git push origin draft
-```
+- `main → draft` のマージと push
+- open 中の `publish/*` PR を `gh pr update-branch` で更新（チェーン順に波及）
 
-これにより、公開済みのレッスンが draft にも反映されます。この手順を省略すると、draft が古い状態のまま残り、以降の作業で不整合が起きます。
+通常は何もしなくてよいが、コンフリクトが発生した場合はワークフローが失敗するので、Actions のログを確認して手動でマージ解決する。
