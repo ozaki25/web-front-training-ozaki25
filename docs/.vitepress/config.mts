@@ -14,6 +14,13 @@ export default withMermaid(
         md.use(tabsMarkdownPlugin);
       },
     },
+    vue: {
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag === "selectedcontent",
+        },
+      },
+    },
     themeConfig: {
       nav: [{ text: "ホーム", link: "/" }],
       sidebar: {
