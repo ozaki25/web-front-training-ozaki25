@@ -190,5 +190,3 @@ email=user@example.com&message=こんにちは
 - `<button>` の `type` はデフォルトが `submit`。フォーム内で送信目的でない button には `type="button"` を付ける
 - `<label>` の `for` と `<input>` の `id` を紐付けないと、操作性もアクセシビリティも壊れる
 - `<fieldset>` と `<legend>` で関連する入力欄をグループ化できる
-
-**次のレッスン**: [Day 4: カスタムフォーム UI — 見た目を変えてもアクセシビリティを保つ](/lessons/day04/)
