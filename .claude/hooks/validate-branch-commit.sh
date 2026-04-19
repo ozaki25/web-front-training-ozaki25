@@ -26,7 +26,7 @@ if [[ "$COMMAND" =~ git\ checkout\ -b\ ([^ ]+) ]] || [[ "$COMMAND" =~ git\ switc
 fi
 
 # --- 許可外ブランチへの push 禁止 ---
-if [[ "$COMMAND" =~ git\ push ]] && [[ ! "$COMMAND" =~ --delete ]] && [[ "$COMMAND" =~ origin\ ([^ ]+) ]]; then
+if [[ "$COMMAND" =~ ^git\ push ]] && [[ ! "$COMMAND" =~ --delete ]] && [[ "$COMMAND" =~ origin\ ([^ ]+) ]]; then
   PUSHBRANCH="${BASH_REMATCH[1]}"
   if [[ ! "$PUSHBRANCH" =~ ^(main|draft|publish/day[0-9]{2})$ ]]; then
     block "ブランチ運用違反: 許可されたブランチは main, draft, publish/dayXX のみです。'$PUSHBRANCH' にはプッシュできません"
@@ -128,11 +128,13 @@ if [[ "$COMMAND" =~ git\ commit ]]; then
   # --- Markdown 太字の描画チェック ---
   # 全角閉じ括弧の直後の ** は VitePress (markdown-it) で太字が閉じない
   # 例: **目次（アウトライン）**を → アスタリスクがそのまま表示される
+  # 注: LC_ALL=C.UTF-8 を指定しないと grep -P がバイト単位で動作し、
+  # 日本語文字の末尾バイトが全角括弧の一部と誤マッチする
   staged_md=$(echo "$STAGED" | grep '\.md$' || true)
   if [ -n "$staged_md" ]; then
     broken_bold=""
     for f in $staged_md; do
-      issues=$(git show ":$f" 2>/dev/null | grep -Pn '[）」】〉》]\*\*[^ *]' || true)
+      issues=$(git show ":$f" 2>/dev/null | LC_ALL=C.UTF-8 grep -Pn '[）」】〉》]\*\*[^ *]' || true)
       if [ -n "$issues" ]; then
         broken_bold="${broken_bold}${f}:\n${issues}\n"
       fi

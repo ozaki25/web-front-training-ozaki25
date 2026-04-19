@@ -60,7 +60,7 @@ graph LR
 
 これらのタグをすべて `<div>` に置き換えても、見た目は CSS で同じにできます。しかしその場合、機械から見るとページの「地図」が存在しないことになります。
 
-自分のページにどんなランドマークがあるかは、ブラウザ拡張の **Landmark Navigation via Keyboard or Pop-up** で確認できます。ランドマークの一覧がポップアップで表示され、ページのどこに何があるかが一目でわかります。
+自分のページにどんなランドマークがあるかは、ブラウザ拡張の **Landmark Navigation via Keyboard or Pop-up**（[Chrome](https://chromewebstore.google.com/detail/landmark-navigation-via-k/ddpokpbjopmeeiiolheejjpkonlkklgp) / [Firefox](https://addons.mozilla.org/en-US/firefox/addon/landmarks/)）で確認できます。ランドマークの一覧がポップアップで表示され、ページのどこに何があるかが一目でわかります。
 
 <!-- TODO: Landmark 拡張のスクリーンショットをここに挿入 -->
 
@@ -113,6 +113,34 @@ graph LR
 ブラウザは h1 を大きく、h2 をやや小さく表示します。この見た目のせいで「文字を大きくしたいから h1」「小さくしたいから h4」という使い方をしてしまうことがあります。
 
 文字の大きさを変えたいだけなら CSS の `font-size` を使います。タグは「意味」を、CSS は「見た目」を担当する ── HTML と CSS の基本的な役割分担です。
+
+### デザイン上、見出しを表示できないときは
+
+逆に、デザイン上「見出しを表示したくない」場面もあります。たとえば検索フォームのセクションで、視覚的にはアイコンだけで十分だが、スクリーンリーダー利用者には「検索」という見出しがあった方が構造が伝わる、というケースです。
+
+こんなときは、見出しを**視覚的には隠しつつ、スクリーンリーダーからは読めるようにする**テクニックを使います。`sr-only` という慣例のクラス名でよく知られています（Tailwind CSS にも同名のユーティリティがあります）。
+
+```html
+<section>
+  <h2 class="sr-only">検索</h2>
+  <form>
+    <input type="search" aria-label="検索語句" />
+    <button type="submit">🔍</button>
+  </form>
+</section>
+```
+
+```css
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+```
+
+見た目の都合で見出しを省略するのではなく、「視覚的に隠す」選択肢があることを知っておくと、見出し階層を崩さずにデザイン要求に応えられます。
 
 ## 3. セクショニング — コンテンツのまとまり
 
