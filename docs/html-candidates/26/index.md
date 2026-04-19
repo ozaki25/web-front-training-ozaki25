@@ -187,38 +187,38 @@ blockquote::before {
 下のデモは JavaScript を一切使わず、純粋に CSS の疑似クラスだけで動いている。マウスでホバー、Tab キーでフォーカス、チェックボックスの切り替えで見た目がどう変わるか試してみてほしい。
 
 <style>
-.pseudo-demo { border:1px solid #e2e8f0; border-radius:8px; padding:16px; background:#f8fafc; color:#1e293b; }
-.pseudo-demo p { color:#475569; margin:0 0 12px; }
-.pseudo-demo .btn { padding:8px 16px; border:1px solid #2563eb; background:white; color:#1e293b; border-radius:6px; cursor:pointer; transition:background 0.15s; }
+.c26-pseudo-demo { border:1px solid #e2e8f0; border-radius:8px; padding:16px; background:#f8fafc; color:#1e293b; }
+.c26-pseudo-demo p { color:#475569; margin:0 0 12px; }
+.c26-pseudo-demo .c26-btn { padding:8px 16px; border:1px solid #2563eb; background:white; color:#1e293b; border-radius:6px; cursor:pointer; transition:background 0.15s; }
 @media (hover: hover) {
-  .pseudo-demo .btn:hover { background:#dbeafe; }
+  .c26-pseudo-demo .c26-btn:hover { background:#dbeafe; }
 }
-.pseudo-demo .btn:focus { outline: none; }
-.pseudo-demo .btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-.pseudo-demo .btn:disabled { background:#e2e8f0; color:#64748b; border-color:#cbd5e1; cursor:not-allowed; }
-.pseudo-demo .form { margin-top:16px; padding:12px; background:white; color:#1e293b; border:1px solid #e2e8f0; border-radius:6px; }
-.pseudo-demo .form label { display:block; margin-bottom:8px; }
-.pseudo-demo .form input[type="email"] { padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; background:white; color:#1e293b; }
-.pseudo-demo .form input[type="email"]:invalid { border-color:#dc2626; background:#fef2f2; }
-.pseudo-demo .form input[type="email"]:valid { border-color:#16a34a; }
-.pseudo-demo .form:has(input[type="checkbox"]:checked) { background:#ecfdf5; border-color:#86efac; }
-.pseudo-demo .form:has(input[type="checkbox"]:checked)::after { content: " 同意済み"; color:#15803d; font-size:0.9em; }
-.pseudo-demo .hint { margin:8px 0 0; color:#64748b; font-size:0.9em; }
+.c26-pseudo-demo .c26-btn:focus { outline: none; }
+.c26-pseudo-demo .c26-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.c26-pseudo-demo .c26-btn:disabled { background:#e2e8f0; color:#64748b; border-color:#cbd5e1; cursor:not-allowed; }
+.c26-pseudo-demo .c26-form { margin-top:16px; padding:12px; background:white; color:#1e293b; border:1px solid #e2e8f0; border-radius:6px; }
+.c26-pseudo-demo .c26-form label { display:block; margin-bottom:8px; }
+.c26-pseudo-demo .c26-form input[type="email"] { padding:4px 8px; border:1px solid #cbd5e1; border-radius:4px; background:white; color:#1e293b; }
+.c26-pseudo-demo .c26-form input[type="email"]:invalid { border-color:#dc2626; background:#fef2f2; }
+.c26-pseudo-demo .c26-form input[type="email"]:valid { border-color:#16a34a; }
+.c26-pseudo-demo .c26-form:has(input[type="checkbox"]:checked) { background:#ecfdf5; border-color:#86efac; }
+.c26-pseudo-demo .c26-form:has(input[type="checkbox"]:checked)::after { content: " 同意済み"; color:#15803d; font-size:0.9em; }
+.c26-pseudo-demo .c26-hint { margin:8px 0 0; color:#64748b; font-size:0.9em; }
 </style>
 
-<div class="pseudo-demo">
+<div class="c26-pseudo-demo">
   <p>マウスでのクリックと、キーボードの Tab キーでフォーカスしたときで枠の出方が違うことを見てほしい（Tab のときだけ青い枠が出る = <code>:focus-visible</code>）。</p>
-  <button type="button" class="btn">普通のボタン</button>
-  <button type="button" class="btn" disabled style="margin-left:8px;">disabled なボタン</button>
+  <button type="button" class="c26-btn">普通のボタン</button>
+  <button type="button" class="c26-btn" disabled style="margin-left:8px;">disabled なボタン</button>
 
-  <form class="form">
+  <form class="c26-form">
     <label>
       <input type="checkbox" /> 利用規約に同意する
     </label>
     <label>
       メール: <input type="email" required placeholder="you@example.com" aria-label="メールアドレス" />
     </label>
-    <p class="hint">チェックを入れるとフォーム全体の背景が緑に変わる（<code>form:has(input:checked)</code>）。メール欄が空 / 不正だと枠が赤（<code>:invalid</code>）、正しく入っていれば緑（<code>:valid</code>）に切り替わる。</p>
+    <p class="c26-hint">チェックを入れるとフォーム全体の背景が緑に変わる（<code>form:has(input:checked)</code>）。メール欄が空 / 不正だと枠が赤（<code>:invalid</code>）、正しく入っていれば緑（<code>:valid</code>）に切り替わる。</p>
   </form>
 </div>
 
