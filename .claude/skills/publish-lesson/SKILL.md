@@ -34,29 +34,7 @@ git checkout -b publish/dayXX origin/main
 git checkout origin/draft -- docs/lessons/dayXX/index.md
 ```
 
-### 2b. 未公開レッスンへのリンクを除外
-
-取り出したファイルの末尾にある「次のレッスン」リンクを確認します。リンク先の Day が main に公開済みでなければ、そのリンクを削除してください。
-
-```bash
-# 次の Day が main に存在するか確認
-git show origin/main:docs/lessons/dayXX+1/index.md 2>/dev/null
-# 存在しなければ「次のレッスン」リンクを削除する
-```
-
-**重要**: この変更は publish ブランチ上でのみ行います。draft のファイルは変更しないでください。
-
-※ コミット時に hook がデッドリンクを自動検知するため、この手順を忘れてもブロックされます。
-
-### 3. 前日のレッスンに「次のレッスン」リンクを追加
-
-前日のレッスンが `main` に存在する場合、前日の `index.md` の末尾に「次のレッスン」リンクを追加してください。
-
-`draft` ブランチの前日レッスンを参考に、リンクの内容を確認すること。
-
-※ 前日のレッスンがまだ `main` にない場合はスキップ。
-
-### 4. サイドバーの更新
+### 3. サイドバーの更新
 
 `docs/.vitepress/config.mts` のサイドバーに該当 Day のレッスンを追加します。
 
@@ -66,11 +44,11 @@ git show origin/main:docs/lessons/dayXX+1/index.md 2>/dev/null
 git show origin/draft:docs/.vitepress/config.mts
 ```
 
-### 5. トップページの更新
+### 4. トップページの更新
 
 `docs/index.md` のレッスン一覧に該当 Day のリンクを追加してください。
 
-### 6. ビルド確認
+### 5. ビルド確認
 
 ```bash
 npx vitepress build docs
@@ -78,7 +56,7 @@ npx vitepress build docs
 
 ビルドが通ることを確認してください。エラーがあれば修正します。
 
-### 7. コミット & プッシュ
+### 6. コミット & プッシュ
 
 変更対象のファイルのみを明示的にステージングしてください。
 
@@ -86,15 +64,13 @@ npx vitepress build docs
 git add docs/lessons/dayXX/index.md
 git add docs/.vitepress/config.mts
 git add docs/index.md
-# 前日のレッスンに「次のレッスン」リンクを追加した場合のみ
-# git add docs/lessons/dayXX-1/index.md
 git commit -m "Day XX「テーマ名」を公開"
 git push -u origin publish/dayXX
 ```
 
 コミット後、`git diff --stat main..HEAD` で意図したファイルのみが含まれていることを確認してください。
 
-### 8. プルリクエストの作成
+### 7. プルリクエストの作成
 
 GitHub にプルリクエストを作成します。
 
@@ -104,7 +80,7 @@ GitHub にプルリクエストを作成します。
 - PR にコミットを追加した場合は、本文も最新の内容に更新すること
 - 本文にはレビューに必要な情報だけを書く。作業メモや内部的な注意事項は含めない
 
-### 9. マージ後の同期
+### 8. マージ後の同期
 
 PR がマージされたら、main の内容を draft に取り込みます。
 

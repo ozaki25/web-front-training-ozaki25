@@ -1,6 +1,6 @@
 ---
 name: add-lesson
-description: Web Front-end Training に新しい Day のレッスンを追加する。draft ブランチでコンテンツの作成、サイドバー更新、前日レッスンへのリンク追加、ビルド確認、コミット・プッシュまで行う。
+description: Web Front-end Training に新しい Day のレッスンを追加する。draft ブランチでコンテンツの作成、サイドバー更新、ビルド確認、コミット・プッシュまで行う。
 argument-hint: <day番号> <テーマ> <内容の説明>
 ---
 
@@ -67,18 +67,7 @@ git checkout -b draft origin/main
 - `tech-versions.md` を読み、該当技術の最新バージョン・API 名・設定方法を確認すること。矛盾があれば `tech-versions.md` を更新する
 - 同じ技術を扱う他のレッスンと整合性が取れているか確認すること（例: Day 31 と Day 40 で Tailwind の設定方法が矛盾しないか）
 
-### 4. 前日のレッスンに「次のレッスン」リンクを追加
-
-前日（Day XX-1）の `index.md` の末尾に以下を追加してください。
-
-```markdown
-
-**次のレッスン**: [Day XX: テーマ名](/lessons/dayXX/)
-```
-
-※ Day 1 を追加する場合はスキップ。
-
-### 5. サイドバーの更新
+### 4. サイドバーの更新
 
 `docs/.vitepress/config.mts` のサイドバーに新しいレッスンを追加します。
 
@@ -90,7 +79,7 @@ git checkout -b draft origin/main
 { text: "Day XX: テーマ名", link: "/lessons/dayXX/" },
 ```
 
-### 6. トップページの更新
+### 5. トップページの更新
 
 `docs/index.md` のレッスン一覧に新しい Day のリンクを追加してください。
 
@@ -98,7 +87,7 @@ git checkout -b draft origin/main
 - [Day XX: テーマ名](/lessons/dayXX/)
 ```
 
-### 7. ビルド確認
+### 6. ビルド確認
 
 ```bash
 npx vitepress build docs
@@ -106,7 +95,7 @@ npx vitepress build docs
 
 ビルドが通ることを確認してください。エラーがあれば修正します。
 
-### 8. コミット & プッシュ
+### 7. コミット & プッシュ
 
 変更をコミットして `draft` ブランチにプッシュしてください。
 

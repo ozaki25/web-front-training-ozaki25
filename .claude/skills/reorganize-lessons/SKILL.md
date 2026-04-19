@@ -114,8 +114,6 @@ mkdir -p docs/lessons/dayNN
 ## まとめ
 
 - （まとめをここに書く）
-
-**次のレッスン**: [Day N+1: 次のタイトル](/lessons/dayNN+1/)
 ```
 
 #### Step 5: 全レッスンファイルの相互参照を更新
@@ -162,9 +160,7 @@ grep -rl "Day [0-9]" docs/lessons/day{01..NN-1}/
 
 ヒットしたファイルに対して同じ Python 1 パス置換を適用する（`SHIFT_FROM = N, SHIFT = +1`）。
 
-#### Step 7: 前日（Day N-1）の「次のレッスン」リンクを新 Day N に更新
-
-#### Step 8: 設定ファイルを更新
+#### Step 7: 設定ファイルを更新
 
 以下のファイルを更新する:
 
@@ -172,13 +168,13 @@ grep -rl "Day [0-9]" docs/lessons/day{01..NN-1}/
 2. **`docs/index.md`** — トップページのレッスン一覧を更新
 3. **`curriculum.md`** — カリキュラムの Day 番号とテーマを更新
 
-#### Step 9: ビルド確認
+#### Step 8: ビルド確認
 
 ```bash
 npm run docs:build
 ```
 
-#### Step 10: 検証
+#### Step 9: 検証
 
 ```bash
 # タイトルが正しいか
@@ -186,16 +182,9 @@ for d in $(seq 1 NEW_MAX); do
   title=$(head -1 "docs/lessons/day$(printf '%02d' $d)/index.md")
   echo "day$d: $title"
 done
-
-# 次のレッスンリンクが正しいか
-for d in $(seq 1 $((NEW_MAX - 1))); do
-  next=$((d + 1))
-  file="docs/lessons/day$(printf '%02d' $d)/index.md"
-  grep "次のレッスン" "$file" | grep -q "day$(printf '%02d' $next)" && echo "✓ day$d" || echo "✗ day$d"
-done
 ```
 
-#### Step 11: コミット & プッシュ
+#### Step 10: コミット & プッシュ
 
 ```
 Day N「タイトル」を挿入し、Day N-MAX を Day N+1-MAX+1 にリナンバリング
@@ -269,9 +258,7 @@ for old_num in range(N + 1, MAX + 1):  # 旧 Day N+1 〜 旧 Day MAX
 - Day N への参照は **削除または修正**が必要（要確認）
 - Day N+1 以降への参照は -1 にシフト
 
-#### Step 7: 前日（Day N-1）の「次のレッスン」リンクを新 Day N（旧 Day N+1）に更新
-
-#### Step 8〜11: INSERT と同じ（設定ファイル更新、ビルド、検証、コミット）
+#### Step 7〜10: INSERT と同じ（設定ファイル更新、ビルド、検証、コミット）
 
 ---
 
@@ -323,15 +310,7 @@ def replace_day_link(match):
 
 これを**全レッスンファイル**（Day 1 〜 MAX）に適用する。
 
-#### Step 6: 「次のレッスン」リンクの整合性確認
-
-- Day A-1 の次のレッスンリンクが Day A（新しい中身）を指しているか
-- Day A の次のレッスンリンクが Day A+1 を指しているか
-- Day B-1, B, B+1 も同様に確認
-
-タイトル名が入れ替わるので、リンクテキストも更新が必要。
-
-#### Step 7〜10: INSERT と同じ（設定ファイル更新、ビルド、検証、コミット）
+#### Step 6〜9: INSERT と同じ（設定ファイル更新、ビルド、検証、コミット）
 
 ---
 
@@ -350,7 +329,6 @@ def replace_day_link(match):
 コミット前に必ず以下を確認:
 
 - [ ] 全 Day のタイトルがディレクトリ番号と一致している
-- [ ] 全「次のレッスン」リンクが正しい次の Day を指している
 - [ ] サイドバーの Day 番号・リンクが正しい
 - [ ] トップページの Day 番号・リンクが正しい
 - [ ] `npm run docs:build` が成功する
