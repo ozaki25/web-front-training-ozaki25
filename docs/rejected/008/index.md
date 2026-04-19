@@ -34,7 +34,7 @@ SEO（Search Engine Optimization = 検索エンジン最適化）の観点から
 <meta name="description" content="HTML/CSS の基礎から Next.js まで、Web フロントエンドの知識を15分のレッスンで学べるサイトです。" />
 ```
 
-**description（説明文）**は、検索結果でタイトルの下に表示される短い説明文（スニペット）に使われます。
+**description**（説明文）は、検索結果でタイトルの下に表示される短い説明文（スニペット）に使われます。
 
 ```
 検索結果の表示イメージ:
@@ -50,7 +50,7 @@ SEO（Search Engine Optimization = 検索エンジン最適化）の観点から
 
 ## OGP — SNS でシェアしたときの見え方
 
-SNS で URL をシェアすると、タイトルと画像がカードとして表示されますよね。あの表示を制御しているのが **OGP（Open Graph Protocol）** です。
+SNS で URL をシェアすると、タイトルと画像がカードとして表示されますよね。あの表示を制御しているのが **OGP**（Open Graph Protocol） です。
 
 ```html
 <head>
@@ -85,7 +85,7 @@ X は OGP に加えて独自のメタタグにも対応しています。
 
 ## favicon — タブのアイコン
 
-ブラウザのタブに表示される小さなアイコンが **favicon（ファビコン = favorite icon）** です。
+ブラウザのタブに表示される小さなアイコンが **favicon**（ファビコン = favorite icon） です。
 
 ```html
 <link rel="icon" href="/favicon.ico" />
@@ -111,7 +111,7 @@ favicon がないと、ブラウザのタブにはデフォルトのアイコン
 - `https://example.com/products?sort=price`
 - `https://example.com/products?page=1`
 
-検索エンジンはこれらを別のページとして認識する可能性があります。**canonical（カノニカル = 正規の）** を指定すると、「このページの本来の URL はこれですよ」と検索エンジンに伝えられます。
+検索エンジンはこれらを別のページとして認識する可能性があります。**canonical**（カノニカル = 正規の） を指定すると、「このページの本来の URL はこれですよ」と検索エンジンに伝えられます。
 
 ```html
 <link rel="canonical" href="https://example.com/products" />
