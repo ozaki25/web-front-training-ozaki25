@@ -41,26 +41,26 @@ HTML には今も新しい要素や属性が追加されています。ただし
 まずはデモを試してみてください。背景が暗くなり、Escape キーや「キャンセル」で閉じられます:
 
 <style>
-.demo-dialog { border:1px solid #e2e8f0;border-radius:16px;padding:32px;max-width:480px;width:90vw;box-shadow:0 8px 30px rgba(0,0,0,0.12);color:#1e293b;background:white }
-.demo-dialog::backdrop { background-color:rgba(0,0,0,0.5) }
-.demo-dialog h3 { margin:0 0 12px;font-size:1.25em }
-.demo-dialog p { margin:0 0 24px;color:#475569;font-size:1em;line-height:1.7 }
-.demo-dialog-actions { display:flex;gap:12px;justify-content:flex-end }
-.demo-dialog-actions button { padding:10px 24px;border-radius:8px;border:none;cursor:pointer;font-size:0.95em;font-weight:600 }
-.demo-dialog-cancel { background:#f1f5f9;color:#475569 }
-.demo-dialog-cancel:hover { background:#e2e8f0 }
-.demo-dialog-confirm { background:#2563eb;color:white }
-.demo-dialog-confirm:hover { background:#1d4ed8 }
+.day05-dialog { border:1px solid #e2e8f0;border-radius:16px;padding:32px;max-width:480px;width:90vw;box-shadow:0 8px 30px rgba(0,0,0,0.12);color:#1e293b;background:white }
+.day05-dialog::backdrop { background-color:rgba(0,0,0,0.5) }
+.day05-dialog h3 { margin:0 0 12px;font-size:1.25em }
+.day05-dialog p { margin:0 0 24px;color:#475569;font-size:1em;line-height:1.7 }
+.day05-dialog-actions { display:flex;gap:12px;justify-content:flex-end }
+.day05-dialog-actions button { padding:10px 24px;border-radius:8px;border:none;cursor:pointer;font-size:0.95em;font-weight:600 }
+.day05-dialog-cancel { background:#f1f5f9;color:#475569 }
+.day05-dialog-cancel:hover { background:#e2e8f0 }
+.day05-dialog-confirm { background:#2563eb;color:white }
+.day05-dialog-confirm:hover { background:#1d4ed8 }
 </style>
 <div style="padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b">
 <button type="button" onclick="document.getElementById('demo-modal').showModal()" style="padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600">ダイアログを開く</button>
 </div>
-<dialog id="demo-modal" class="demo-dialog">
+<dialog id="demo-modal" class="day05-dialog">
 <h3>プランを変更しますか？</h3>
 <p>現在のプラン「ベーシック」から「プレミアム」に変更します。次回の請求から新しい料金が適用されます。</p>
-<div class="demo-dialog-actions">
-<button type="button" onclick="document.getElementById('demo-modal').close()" class="demo-dialog-cancel">キャンセル</button>
-<button type="button" onclick="document.getElementById('demo-modal').close()" class="demo-dialog-confirm">変更する</button>
+<div class="day05-dialog-actions">
+<button type="button" onclick="document.getElementById('demo-modal').close()" class="day05-dialog-cancel">キャンセル</button>
+<button type="button" onclick="document.getElementById('demo-modal').close()" class="day05-dialog-confirm">変更する</button>
 </div>
 </dialog>
 
@@ -183,17 +183,17 @@ JavaScript は一切不要です。ブラウザがキーボード操作やスク
 ボタンを押してみてください:
 
 <style>
-.demo-tooltip-btn { padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600 }
-.demo-tooltip-pop { padding:12px 16px;border-radius:8px;color:#1e293b;background:white;font-size:0.85em;max-width:240px;line-height:1.6;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.12) }
+.day05-tooltip-btn { padding:10px 20px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;border-radius:8px;cursor:pointer;font-size:0.95em;font-weight:600 }
+.day05-tooltip-pop { padding:12px 16px;border-radius:8px;color:#1e293b;background:white;font-size:0.85em;max-width:240px;line-height:1.6;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.12) }
 @supports (anchor-name: --a) {
-.demo-tooltip-btn { anchor-name:--demo-tooltip-anchor }
-.demo-tooltip-pop { position-anchor:--demo-tooltip-anchor;inset:unset;position-area:block-end;margin:8px 0 0 0;position-try-fallbacks:flip-block;overflow:visible;clip-path:inset(0 round 8px) margin-box }
-.demo-tooltip-pop::before { content:'';position:absolute;z-index:-1;inset:-8px calc(50% - 8px);background:white;clip-path:polygon(0 8px,50% 0,100% 8px,100% calc(100% - 8px),50% 100%,0 calc(100% - 8px));filter:drop-shadow(0 0 0.5px #cbd5e1) drop-shadow(0 0 0.5px #cbd5e1) }
+.day05-tooltip-btn { anchor-name:--demo-tooltip-anchor }
+.day05-tooltip-pop { position-anchor:--demo-tooltip-anchor;inset:unset;position-area:block-end;margin:8px 0 0 0;position-try-fallbacks:flip-block;overflow:visible;clip-path:inset(0 round 8px) margin-box }
+.day05-tooltip-pop::before { content:'';position:absolute;z-index:-1;inset:-8px calc(50% - 8px);background:white;clip-path:polygon(0 8px,50% 0,100% 8px,100% calc(100% - 8px),50% 100%,0 calc(100% - 8px));filter:drop-shadow(0 0 0.5px #cbd5e1) drop-shadow(0 0 0.5px #cbd5e1) }
 }
 </style>
 <div style="padding:40px 20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0;color:#1e293b;text-align:center">
-<button popovertarget="demo-popover" type="button" class="demo-tooltip-btn">💡 ヒント</button>
-<div id="demo-popover" popover class="demo-tooltip-pop">ここにヒントの内容が表示されます。外側をクリックするか Escape キーで閉じます。</div>
+<button popovertarget="demo-popover" type="button" class="day05-tooltip-btn">💡 ヒント</button>
+<div id="demo-popover" popover class="day05-tooltip-pop">ここにヒントの内容が表示されます。外側をクリックするか Escape キーで閉じます。</div>
 </div>
 
 `popover` 属性を付けた要素は最初は非表示で、`popovertarget` で紐付けたボタンをクリックすると表示されます。
