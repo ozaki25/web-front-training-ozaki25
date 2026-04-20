@@ -180,12 +180,12 @@ export function Card() {
 }
 ```
 
-ビルド後、`.title` は `_title_a1b2c` のようなユニークな名前に変わります。別のファイルの `.title` は `_title_x9y8z` に変わります。同じ `.title` と書いても、実際のクラス名は別物です。
+ビルド後、`.title` は `style_title__a1b2c` のようなユニークな名前に変わります。別のファイルの `.title` は `style_title__x9y8z` に変わります。同じ `.title` と書いても、ハッシュが異なるので実際のクラス名は別物です。
 
 ```mermaid
 flowchart LR
-  A["Card.module.css\n.title"] -->|ビルド| A2["_title_a1b2c"]
-  B["Header.module.css\n.title"] -->|ビルド| B2["_title_x9y8z"]
+  A["Card.module.css\n.title"] -->|ビルド| A2["style_title__a1b2c"]
+  B["Header.module.css\n.title"] -->|ビルド| B2["style_title__x9y8z"]
   A2 --> P["衝突しない"]
   B2 --> P
 ```
