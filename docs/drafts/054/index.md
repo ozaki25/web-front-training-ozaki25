@@ -222,6 +222,73 @@ Tailwind CSS は `text-xl`（文字を大きく）、`font-bold`（太字）、`
 
 2026 年 4 月時点で Chrome・Safari・Edge・Firefox の主要ブラウザすべてが対応しており、実用できる段階にあります。
 
+## Tailwind CSS の仕組み — ユーティリティファーストとは何か
+
+歴史の中で Tailwind CSS を「クラスを自分で作らない」と紹介しました。ここではもう少し詳しく、Tailwind がどういう仕組みで動いているのかを見ていきます。
+
+### 従来の CSS と Tailwind の書き比べ
+
+従来の CSS では、まずクラス名を考えて、そのクラスにスタイルを定義します。
+
+```css
+/* card.css */
+.card {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: white;
+}
+.card-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+```
+
+```html
+<div class="card">
+  <h2 class="card-title">タイトル</h2>
+</div>
+```
+
+`.card` や `.card-title` というクラス名を自分で考え、CSS ファイルに定義しています。このクラス名がグローバルスコープに載るため、他のファイルと衝突する可能性があります。
+
+Tailwind CSS では、同じ見た目をこう書きます。
+
+```html
+<div class="p-4 rounded-lg bg-white">
+  <h2 class="text-xl font-bold">タイトル</h2>
+</div>
+```
+
+`p-4`、`rounded-lg`、`bg-white` などは Tailwind があらかじめ用意しているクラスです。それぞれが 1 つの CSS プロパティに対応しています。
+
+| クラス | 対応する CSS |
+|--------|-------------|
+| `p-4` | `padding: 1rem` |
+| `rounded-lg` | `border-radius: 0.5rem` |
+| `bg-white` | `background-color: white` |
+| `text-xl` | `font-size: 1.25rem` |
+| `font-bold` | `font-weight: bold` |
+
+このように、1 クラス = 1 プロパティの小さなクラスを組み合わせてスタイルを作る考え方を**ユーティリティファースト**と呼びます。
+
+### なぜグローバルスコープの問題が消えるのか
+
+従来の CSS では「`.card-title` というクラスを作る → そのクラスにスタイルを定義する」という流れでした。クラスを作るたびに、グローバルスコープに新しい名前が追加されます。
+
+Tailwind では、開発者がクラスを作りません。`text-xl` も `font-bold` も Tailwind が定義済みのクラスです。開発者はそれを選んで並べるだけなので、名前の衝突が起きる余地がありません。
+
+### 使ったクラスだけが出力される
+
+Tailwind は何千ものユーティリティクラスを持っていますが、すべてが CSS ファイルに含まれるわけではありません。ビルド時に HTML をスキャンし、**実際に使われているクラスだけを最終的な CSS に出力**します。
+
+```mermaid
+flowchart LR
+  A["HTML ファイル群\nclass='p-4 text-xl ...'"] --> B["Tailwind のビルド\n（使用クラスをスキャン）"]
+  B --> C["出力 CSS\n（使ったクラスだけ）"]
+```
+
+グローバルスコープの痛点のひとつに「削除できない（使われているか分からない）」がありました。Tailwind ではビルドのたびに使用中のクラスだけが出力されるため、不要な CSS が積もっていく問題も起きません。
+
 ## まとめ
 
 - CSS はファイルを分けてもスタイルが分離されません。すべてのルールがページ全体に届きます。これが**グローバルスコープ**です
