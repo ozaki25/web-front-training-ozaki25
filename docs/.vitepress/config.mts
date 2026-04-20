@@ -94,7 +94,7 @@ export default withMermaid(
             { text: "なぜスタイルが効かない？", link: "/drafts/051/" },
             { text: "画面幅で見た目を変えたい", link: "/drafts/052/" },
             { text: "余白がおかしい", link: "/drafts/053/" },
-            { text: "スタイルが衝突する", link: "/drafts/054/" },
+            { text: "CSS の適用範囲", link: "/drafts/054/" },
             { text: "要素を好きな位置に置きたい", link: "/drafts/055/" },
             { text: "見た目を動かしたい", link: "/drafts/056/" },
             { text: "グリッド状に並べたい", link: "/drafts/057/" },
