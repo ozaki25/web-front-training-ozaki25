@@ -30,7 +30,7 @@ fi
 
 # main でコンテンツファイルを編集しようとしている
 if [ "$BRANCH" = "main" ]; then
-  if [[ "$FILE_PATH" =~ docs/lessons/ ]] || [[ "$FILE_PATH" =~ curriculum\.md ]] || [[ "$FILE_PATH" =~ tech-versions\.md ]]; then
+  if [[ "$FILE_PATH" =~ docs/lessons/day[0-9]+/ ]] || [[ "$FILE_PATH" =~ docs/drafts/ ]] || [[ "$FILE_PATH" =~ docs/rejected/ ]] || [[ "$FILE_PATH" =~ curriculum\.md ]] || [[ "$FILE_PATH" =~ tech-versions\.md ]]; then
     block "ブランチ運用違反: コンテンツファイルは draft で編集してください。対象: $FILE_PATH"
   fi
 fi

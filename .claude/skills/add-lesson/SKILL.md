@@ -1,18 +1,18 @@
 ---
 name: add-lesson
-description: Web Front-end Training に新しい Day のレッスンを追加する。draft ブランチでコンテンツの作成、サイドバー更新、前日レッスンへのリンク追加、ビルド確認、コミット・プッシュまで行う。
-argument-hint: <day番号> <テーマ> <内容の説明>
+description: Web Front-end Training に新しい下書きレッスンを追加する。draft ブランチで docs/drafts/ にコンテンツを作成し、サイドバー更新、ビルド確認、コミット・プッシュまで行う。
+argument-hint: <テーマ> <内容の説明>
 ---
 
 # レッスン追加スキル
 
-Web Front-end Training に新しい Day のレッスンを追加します。
+Web Front-end Training に新しい下書きレッスンを追加します。
 作業は `draft` ブランチ上で行います。
 
 ## 引数
 
-- `$ARGUMENTS` に Day 番号、テーマ、内容の説明が渡されます
-- 例: `/add-lesson 2 リンクと画像 aタグ、imgタグ、パス指定`
+- `$ARGUMENTS` にテーマと内容の説明が渡されます
+- 例: `/add-lesson リンクと画像 aタグ、imgタグ、パス指定`
 
 ## 作業手順
 
@@ -32,19 +32,29 @@ git pull origin draft
 git checkout -b draft origin/main
 ```
 
-### 2. 既存レッスンの確認
+### 2. 次の ID を決定
 
-`docs/.vitepress/config.mts` と既存の最新レッスン（前日分）を読んで、現在の状態を把握してください。
-前日のレッスン内容も読み、今回のレッスンとの繋がりを意識してください。
+`docs/drafts/` 配下の最大連番 +1 を 3 桁ゼロパディングで採番します。
 
-### 3. レッスンファイルの作成
+```bash
+ls docs/drafts/ | sort -n | tail -1
+```
 
-`docs/lessons/dayXX/index.md` を作成します（XX は 0 埋め2桁の Day 番号）。
+例: 最大が `064` なら次は `065`。`docs/drafts/` が空なら `001`。
+
+### 3. 既存レッスンの確認
+
+既存の下書きや公開済みレッスンを読んで、現在の状態を把握してください。
+関連するテーマのレッスンがあれば内容を確認し、重複や整合性を意識してください。
+
+### 4. レッスンファイルの作成
+
+`docs/drafts/<ID>/index.md` を作成します。
 
 レッスンは以下の構成で、**15分程度で読み切れるボリューム**にしてください。
 
 ```markdown
-# Day XX: テーマ名
+# テーマ名
 
 ## 今日のゴール
 
@@ -62,43 +72,19 @@ git checkout -b draft origin/main
 ```
 
 コンテンツの執筆方針は CLAUDE.md を参照すること。加えて:
-- 前の Day までの知識は前提としてよい（それ以降の知識は使わない）
 - レッスンで扱うライブラリ・フレームワーク・Web 標準は、必ず Web 検索または公式ドキュメントで最新の API・仕様を確認してから書くこと。訓練データの知識だけで書かない
 - `tech-versions.md` を読み、該当技術の最新バージョン・API 名・設定方法を確認すること。矛盾があれば `tech-versions.md` を更新する
-- 同じ技術を扱う他のレッスンと整合性が取れているか確認すること（例: Day 31 と Day 40 で Tailwind の設定方法が矛盾しないか）
-
-### 4. 前日のレッスンに「次のレッスン」リンクを追加
-
-前日（Day XX-1）の `index.md` の末尾に以下を追加してください。
-
-```markdown
-
-**次のレッスン**: [Day XX: テーマ名](/lessons/dayXX/)
-```
-
-※ Day 1 を追加する場合はスキップ。
+- 同じ技術を扱う他のレッスンと整合性が取れているか確認すること
 
 ### 5. サイドバーの更新
 
-`docs/.vitepress/config.mts` のサイドバーに新しいレッスンを追加します。
+`docs/.vitepress/config.mts` のサイドバーの「候補」セクションに新しい下書きを追加します。
 
-- 該当する Week のセクションがまだなければ新しく追加する（Week のタイトルとグループ分けは引数の内容から判断する）
-- 既存の Week に追加する場合はその items に追記する
-
-サイドバーの項目形式:
 ```typescript
-{ text: "Day XX: テーマ名", link: "/lessons/dayXX/" },
+{ text: "テーマ名", link: "/drafts/<ID>/" },
 ```
 
-### 6. トップページの更新
-
-`docs/index.md` のレッスン一覧に新しい Day のリンクを追加してください。
-
-```markdown
-- [Day XX: テーマ名](/lessons/dayXX/)
-```
-
-### 7. ビルド確認
+### 6. ビルド確認
 
 ```bash
 npx vitepress build docs
@@ -106,11 +92,11 @@ npx vitepress build docs
 
 ビルドが通ることを確認してください。エラーがあれば修正します。
 
-### 8. コミット & プッシュ
+### 7. コミット & プッシュ
 
 変更をコミットして `draft` ブランチにプッシュしてください。
 
 コミットメッセージの形式:
 ```
-Day XX「テーマ名」のレッスンを追加
+「テーマ名」の下書きを追加 (drafts/<ID>)
 ```
