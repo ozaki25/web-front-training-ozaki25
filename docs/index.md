@@ -10,3 +10,4 @@
 - [Day 2: セマンティック HTML — ページの構造を伝えるタグ](/lessons/day02/)
 - [Day 3: フォーム — HTML だけで送信できる仕組み](/lessons/day03/)
 - [Day 4: カスタムフォーム UI — 見た目を変えてもアクセシビリティを保つ](/lessons/day04/)
+- [Day 5: HTML だけで作れる UI — dialog, popover, details](/lessons/day05/)
