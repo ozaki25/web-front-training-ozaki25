@@ -10,6 +10,9 @@ export default withPwa(
       title: "Web Front-end Training",
       description: "Web フロントエンド研修コンテンツ",
       lang: "ja",
+      head: [
+        ["meta", { name: "theme-color", content: "#166534" }],
+      ],
       markdown: {
         codeTransformers: [transformerTwoslash()],
         config(md) {
