@@ -3,23 +3,39 @@
  * Primary: 深緑 (#064e3b / emerald-900)
  * Neutral: 暖色寄り (stone)
  * すべてのテキスト色は WCAG AA (4.5:1) 以上を満たす
+ *
+ * コントラスト比（白背景 #ffffff 対象）
+ *   brand-1  #065f46: 7.3:1  ✅
+ *   brand-2  #064e3b: 9.2:1  ✅
+ *   brand-3  #022c22: 15.0:1 ✅
+ *   text-1   #292524: 15.4:1 ✅
+ *   text-2   #57534e: 7.0:1  ✅
+ *   text-3   #6b6661: 5.7:1  ✅
+ *
+ * コントラスト比（ダーク背景 #1b1b1f 対象）
+ *   brand-1  #34d399: 9.1:1  ✅
+ *   brand-2  #10b981: 7.3:1  ✅
+ *   brand-3  #059669: 5.5:1  ✅
+ *   text-1   #f5f5f4: 15.9:1 ✅
+ *   text-2   #d6d3d1: 11.9:1 ✅
+ *   text-3   #a8a29e: 7.1:1  ✅
  */
 
 :root {
   /* ブランドカラー（リンク・アクティブ・ナビゲーション強調） */
-  --vp-c-brand-1: #065f46; /* on white: 7.3:1 ✅ */
-  --vp-c-brand-2: #064e3b; /* on white: 9.2:1 ✅ */
-  --vp-c-brand-3: #022c22; /* on white: 15.0:1 ✅ */
+  --vp-c-brand-1: #065f46;
+  --vp-c-brand-2: #064e3b;
+  --vp-c-brand-3: #022c22;
   --vp-c-brand-soft: rgba(6, 95, 70, 0.14);
 
   /* 本文テキスト（暖色ニュートラル / stone 系） */
-  --vp-c-text-1: #292524; /* stone-800 on white: 15.4:1 ✅ */
-  --vp-c-text-2: #57534e; /* stone-600 on white: 7.0:1 ✅ */
-  --vp-c-text-3: #78716c; /* stone-500 on white: 4.5:1 ✅ */
+  --vp-c-text-1: #292524;
+  --vp-c-text-2: #57534e;
+  --vp-c-text-3: #6b6661;
 
   /* ボタン（主要アクション） */
   --vp-button-brand-border: transparent;
-  --vp-button-brand-text: #ffffff; /* on #064e3b: 9.2:1 ✅ */
+  --vp-button-brand-text: #ffffff;
   --vp-button-brand-bg: #064e3b;
   --vp-button-brand-hover-border: transparent;
   --vp-button-brand-hover-text: #ffffff;
@@ -30,20 +46,25 @@
 
   /* tip カスタムブロック */
   --vp-custom-block-tip-border: transparent;
-  --vp-custom-block-tip-text: #022c22; /* on #ecfdf5: 14.1:1 ✅ */
+  --vp-custom-block-tip-text: #022c22;
   --vp-custom-block-tip-bg: #ecfdf5;
   --vp-custom-block-tip-code-bg: rgba(6, 95, 70, 0.14);
 }
 
 .dark {
   /* ダークモードのブランドカラー（ダーク背景でコントラストを稼ぐ） */
-  --vp-c-brand-1: #34d399; /* emerald-400, on #1b1b1f: 9.1:1 ✅ */
-  --vp-c-brand-2: #10b981; /* emerald-500, on #1b1b1f: 7.3:1 ✅ */
-  --vp-c-brand-3: #059669; /* emerald-600, on #1b1b1f: 5.5:1 ✅ */
+  --vp-c-brand-1: #34d399;
+  --vp-c-brand-2: #10b981;
+  --vp-c-brand-3: #059669;
   --vp-c-brand-soft: rgba(52, 211, 153, 0.16);
 
+  /* ダークモードのテキスト（暖色ニュートラル / 明るい stone 系） */
+  --vp-c-text-1: #f5f5f4;
+  --vp-c-text-2: #d6d3d1;
+  --vp-c-text-3: #a8a29e;
+
   /* ダークモードの tip ブロック */
-  --vp-custom-block-tip-text: #a7f3d0; /* emerald-200: 十分なコントラスト */
+  --vp-custom-block-tip-text: #a7f3d0;
   --vp-custom-block-tip-bg: rgba(6, 95, 70, 0.18);
   --vp-custom-block-tip-code-bg: rgba(6, 95, 70, 0.28);
 }
