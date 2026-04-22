@@ -36,6 +36,10 @@ export default withMermaid(
                 text: "Day 5: HTML だけで作れる UI",
                 link: "/lessons/day05/",
               },
+              {
+                text: "Day 6: img タグの書き方",
+                link: "/lessons/day06/",
+              },
             ],
           },
         ],
