@@ -11,7 +11,7 @@ export default withPwa(
       description: "Web フロントエンド研修コンテンツ",
       lang: "ja",
       head: [
-        ["meta", { name: "theme-color", content: "#166534" }],
+        ["meta", { name: "theme-color", content: "#064e3b" }],
       ],
       markdown: {
         codeTransformers: [transformerTwoslash()],
@@ -75,7 +75,7 @@ export default withPwa(
           name: "Web Front-end Training",
           short_name: "WFT",
           description: "Web フロントエンド研修コンテンツ",
-          theme_color: "#166534",
+          theme_color: "#064e3b",
           background_color: "#ffffff",
           lang: "ja",
           display: "standalone",
