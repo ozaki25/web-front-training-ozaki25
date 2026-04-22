@@ -6,7 +6,8 @@
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "pwa:icons": "pwa-assets-generator"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,8 @@
   "license": "ISC",
   "devDependencies": {
     "@shikijs/vitepress-twoslash": "^4.0.2",
+    "@vite-pwa/assets-generator": "^1.0.2",
+    "@vite-pwa/vitepress": "^1.1.0",
     "mermaid": "^11.14.0",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17",
