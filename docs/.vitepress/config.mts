@@ -105,6 +105,7 @@ export default withMermaid(
             { text: "レイアウトが突然はみ出す", link: "/drafts/062/" },
             { text: "スクロールで要素を固定したい", link: "/drafts/063/" },
             { text: "同じ値を何度も書きたくない", link: "/drafts/064/" },
+            { text: "CSS の余白設計", link: "/drafts/065/" },
           ],
         },
       ],
