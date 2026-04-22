@@ -76,7 +76,7 @@ export default withPwa(
           name: "Web Front-end Training",
           short_name: "WFT",
           description: "Web フロントエンド研修コンテンツ",
-          theme_color: "#1e40af",
+          theme_color: "#166534",
           background_color: "#ffffff",
           lang: "ja",
           display: "standalone",
