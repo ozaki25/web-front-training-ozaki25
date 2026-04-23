@@ -45,6 +45,10 @@ export default withPwa(
                   text: "Day 6: img タグの書き方",
                   link: "/lessons/day06/",
                 },
+                {
+                  text: "Day 7: CSS の適用範囲",
+                  link: "/lessons/day07/",
+                },
               ],
             },
           ],
