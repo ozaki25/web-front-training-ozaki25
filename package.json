@@ -24,5 +24,10 @@
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17",
     "vitepress-plugin-tabs": "^0.8.0"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "typescript": "^6.0.3",
+    "vite-plugin-pwa": "^1.2.0"
   }
 }
