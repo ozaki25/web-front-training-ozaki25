@@ -1,47 +1,14 @@
-# Flexbox
+# Flexbox — 横に並べるための仕組み
 
 ## 今日のゴール
 
-- Flexbox の基本的な仕組み（主軸と交差軸）を知る
-- `justify-content` と `align-items` による要素の配置方法を知る
-- Flexbox を使った実用的なレイアウトパターンを知る
+- CSS の要素はデフォルトで縦に積まれることを知る
+- `display: flex` で横に並ぶ仕組みを知る
+- 横方向と縦方向の配置を別々に指定できることを知る
 
-## Flexbox とは
+## CSS の要素は全部縦に積まれる
 
-Day 7 で学んだ `display: block` や `display: inline` では、要素を横に並べたり、中央に配置したりするのは意外と面倒です。**Flexbox**（フレックスボックス）は、1 方向（横または縦）の要素の配置を簡単に制御できるレイアウトモデルです。
-
-```css
-.container {
-  display: flex;
-}
-```
-
-`display: flex` を指定した要素が**フレックスコンテナ**、その直接の子要素が**フレックスアイテム**になります。
-
-## 主軸と交差軸
-
-Flexbox を理解するカギは「2 つの軸」です。
-
-```
-主軸（main axis）→ デフォルトは横方向
-┌──────────────────────────────┐
-│ [アイテム1] [アイテム2] [アイテム3]  │ ← 交差軸（cross axis）
-│                                │   デフォルトは縦方向
-└──────────────────────────────┘
-```
-
-- **主軸**（main axis）: アイテムが並ぶ方向。デフォルトは横（左→右）
-- **交差軸**（cross axis）: 主軸と直角の方向。デフォルトは縦
-
-### flex-direction で主軸を変える
-
-```css
-.container { display: flex; flex-direction: row; }          /* デフォルト: 横方向 */
-.container { display: flex; flex-direction: column; }       /* 縦方向 */
-.container { display: flex; flex-direction: row-reverse; }  /* 横方向（逆順） */
-```
-
-## Flexbox の基本例
+HTML に `<div>` を 3 つ並べると、画面上では縦に積み重なります。
 
 ```html
 <!DOCTYPE html>
@@ -49,54 +16,98 @@ Flexbox を理解するカギは「2 つの軸」です。
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Flexbox の練習</title>
+    <title>縦積みの例</title>
     <style>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: sans-serif;
-        padding: 20px;
-      }
-
-      .container {
-        display: flex;
-        gap: 12px;
+      .box {
+        background-color: #e8f0fe;
+        border: 1px solid #93c5fd;
         padding: 16px;
-        background-color: #f0f0f0;
-        border: 2px solid #ccc;
-      }
-
-      .item {
-        padding: 16px 24px;
-        background-color: #4285f4;
-        color: white;
-        border-radius: 4px;
-        font-weight: bold;
       }
     </style>
   </head>
   <body>
-    <h1>Flexbox の基本</h1>
+    <div class="box">ボックス 1</div>
+    <div class="box">ボックス 2</div>
+    <div class="box">ボックス 3</div>
+  </body>
+</html>
+```
+
+ブラウザで開くと、3 つのボックスが上から下に並びます。横に並んでほしくても、縦に積まれます。
+
+これは `<div>` がブロック要素だからです。ブロック要素は横幅いっぱいに広がり、次の要素を下に押し出します。CSS の世界では**縦積みがデフォルト**です。
+
+では横に並べたいときはどうすればいいのでしょうか。ここで登場するのが Flexbox です。
+
+## display: flex で横に並ぶ
+
+並べたい要素の**親**に `display: flex` を付けます。
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flexbox の例</title>
+    <style>
+      .container {
+        display: flex;
+        gap: 8px;
+      }
+      .box {
+        background-color: #e8f0fe;
+        border: 1px solid #93c5fd;
+        padding: 16px;
+      }
+    </style>
+  </head>
+  <body>
     <div class="container">
-      <div class="item">1</div>
-      <div class="item">2</div>
-      <div class="item">3</div>
+      <div class="box">ボックス 1</div>
+      <div class="box">ボックス 2</div>
+      <div class="box">ボックス 3</div>
     </div>
   </body>
 </html>
 ```
 
-ブラウザで表示すると、3 つのアイテムが横に並びます。`display: flex` を 1 行書くだけで横並びになります。
+たった 1 行、`display: flex` を親に付けるだけで、子要素が横に並びます。
 
-**`gap`** はアイテム同士の間隔を指定するプロパティです。以前は margin で調整する必要がありましたが、`gap` なら簡潔に書けます。
+ポイントは **flex を付けるのは親** ということです。子要素には何も指定していません。Flexbox は「親が子の並べ方を決める」仕組みです。
 
-## justify-content — 主軸方向の配置
+```mermaid
+flowchart TB
+  subgraph container["親: display: flex"]
+    direction LR
+    A["ボックス 1"]
+    B["ボックス 2"]
+    C["ボックス 3"]
+  end
+```
 
-主軸方向（デフォルトでは横方向）のアイテムの位置を制御します。
+`display: flex` を付けた親を**フレックスコンテナ**、その中の子を**フレックスアイテム**と呼びます。
+
+## 横方向と縦方向は別の操作
+
+Flexbox で要素の位置を調整するとき、横方向と縦方向は別々のプロパティで指定します。
+
+```mermaid
+flowchart LR
+  subgraph 横["横方向 → justify-content"]
+    direction TB
+    subgraph 縦["↓ 縦方向 → align-items"]
+      A["アイテム"]
+    end
+  end
+```
+
+- **`justify-content`**: 横方向（アイテムが並ぶ方向）の配置
+- **`align-items`**: 縦方向（アイテムが並ぶ方向に対して垂直）の配置
+
+この 2 つを覚えれば、Flexbox の配置はほとんど理解できます。
+
+### justify-content — 横方向の配置
 
 ```css
 .container {
@@ -105,234 +116,124 @@ Flexbox を理解するカギは「2 つの軸」です。
 }
 ```
 
-| 値 | 動作 |
-|-----|------|
-| `flex-start` | 先頭に寄せる（デフォルト） |
-| `flex-end` | 末尾に寄せる |
+| 値 | 動き |
+|------|------|
+| `flex-start` | 左に寄せる（デフォルト） |
 | `center` | 中央に寄せる |
-| `space-between` | 最初と最後のアイテムを両端に配置し、残りを均等に配分 |
-| `space-around` | 各アイテムの周囲に均等な余白 |
-| `space-evenly` | すべての間隔が完全に均等 |
+| `flex-end` | 右に寄せる |
+| `space-between` | 最初と最後を端に付け、残りを均等に配置 |
 
-`justify-content` の値を変えると、アイテムの配置が変わります。
-
-## align-items — 交差軸方向の配置
-
-交差軸方向（デフォルトでは縦方向）のアイテムの位置を制御します。
+`space-between` は特に便利です。ヘッダーで「ロゴを左、メニューを右」に配置するのにぴったりです。
 
 ```css
-.container {
+.header {
   display: flex;
-  align-items: center;  /* 縦方向の中央揃え */
-  height: 200px;        /* 高さがないと効果がわからない */
+  justify-content: space-between;
+  align-items: center;
 }
 ```
-
-| 値 | 動作 |
-|-----|------|
-| `stretch` | コンテナの高さいっぱいに伸ばす（デフォルト） |
-| `flex-start` | 上に寄せる |
-| `flex-end` | 下に寄せる |
-| `center` | 中央に寄せる |
-| `baseline` | テキストのベースラインに揃える |
-
-## 完全な中央配置
-
-以前の CSS では要素を完全に中央に配置するのは難しい問題でした。Flexbox なら 3 行で実現できます。
-
-```css
-.container {
-  display: flex;
-  justify-content: center;  /* 主軸（横）方向の中央 */
-  align-items: center;      /* 交差軸（縦）方向の中央 */
-  height: 100vh;            /* ビューポートの高さいっぱい */
-}
-```
-
-## flex-wrap — 折り返し
-
-デフォルトでは、アイテムは 1 行に収まるよう縮小されます。`flex-wrap: wrap` を指定すると、収まらないときに折り返します。
-
-```css
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-```
-
-## flex プロパティ — アイテムの伸縮
-
-フレックスアイテムに `flex` プロパティを指定すると、余白をどう分配するかを制御できます。
-
-```css
-.item {
-  flex: 1;  /* 余白を均等に分配 → すべて同じ幅になる */
-}
-```
-
-`flex` は 3 つの値をまとめたショートハンドです。
-
-| 値 | 意味 | 例 |
-|-----|------|-----|
-| `flex-grow` | 余白があるとき、どれだけ伸びるか（0 なら伸びない） | `1` |
-| `flex-shrink` | スペースが足りないとき、どれだけ縮むか（0 なら縮まない） | `0` |
-| `flex-basis` | 伸縮する前の基本サイズ | `250px` |
-
-`flex: 1` は `flex: 1 1 0` の省略形で、「均等に伸び縮みし、基本サイズは 0」という意味です。これを理解すると、次のようなコードが読めるようになります。
-
-```css
-.sidebar {
-  flex: 0 0 250px;  /* 伸びない・縮まない・幅250px固定 */
-}
-.main-content {
-  flex: 1;           /* 残りの幅を占める */
-}
-```
-
-## 実用パターン
-
-ナビゲーションバー、カードの横並び、フッターの下端固定という 3 つの定番パターンを、1 つの完全なページにまとめました。
 
 ```html
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Flexbox 実用パターン</title>
-    <style>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: sans-serif;
-        margin: 0;
-      }
-
-      /* --- ナビバー ---
-         space-between でロゴとリンクを両端に配置 */
-      .navbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 24px;
-        background-color: #1a1a2e;
-      }
-
-      .logo {
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-        text-decoration: none;
-      }
-
-      .nav-links {
-        display: flex;
-        gap: 24px;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-
-      .nav-links a {
-        color: white;
-        text-decoration: none;
-      }
-
-      /* --- スティッキーフッター ---
-         ページ全体を column 方向の Flex にし、
-         main に flex: 1 を指定してフッターを下端に押し出す */
-      .page {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-      }
-
-      .page-content {
-        flex: 1;
-        padding: 24px;
-      }
-
-      /* --- カードグリッド ---
-         flex-wrap: wrap で折り返し、
-         flex: 1 1 300px で最小 300px・均等に伸縮 */
-      .card-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-      }
-
-      .card {
-        flex: 1 1 300px;
-        padding: 24px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-      }
-
-      .card h2 {
-        margin-top: 0;
-      }
-
-      .page-footer {
-        padding: 16px 24px;
-        background-color: #333;
-        color: white;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="page">
-      <nav class="navbar" aria-label="メインナビゲーション">
-        <a href="/" class="logo">MySite</a>
-        <ul class="nav-links">
-          <li><a href="/about">会社概要</a></li>
-          <li><a href="/services">サービス</a></li>
-          <li><a href="/contact">お問い合わせ</a></li>
-        </ul>
-      </nav>
-
-      <main class="page-content">
-        <h1>サービス一覧</h1>
-        <div class="card-container">
-          <article class="card">
-            <h2>Web 制作</h2>
-            <p>レスポンシブ対応のサイトを制作します。</p>
-          </article>
-          <article class="card">
-            <h2>アプリ開発</h2>
-            <p>モバイル・デスクトップアプリを開発します。</p>
-          </article>
-          <article class="card">
-            <h2>コンサルティング</h2>
-            <p>技術選定や設計の相談に対応します。</p>
-          </article>
-        </div>
-      </main>
-
-      <footer class="page-footer">
-        <p>&copy; 2026 MySite</p>
-      </footer>
-    </div>
-  </body>
-</html>
+<header class="header">
+  <div>ロゴ</div>
+  <nav>メニュー</nav>
+</header>
 ```
 
-ポイントを整理します。
+これだけで、ロゴは左端、メニューは右端に配置されます。
 
-- **ナビバー**: `justify-content: space-between` でロゴとリンクを左右に配置し、`align-items: center` で縦方向を揃えています。`<nav>` タグに `aria-label` 属性を付けると、ページ内に複数のナビゲーションがある場合にスクリーンリーダーで区別できます
-- **スティッキーフッター**: `.page` を `flex-direction: column` + `min-height: 100vh` にし、`.page-content` に `flex: 1` を指定します。メインコンテンツが残りの高さをすべて占めるので、フッターは常に画面の下端に押し出されます
-- **カードグリッド**: `flex-wrap: wrap` と `flex: 1 1 300px` の組み合わせです。各カードは最小 300px を確保しつつ、余白があれば均等に伸びます。画面幅が狭くなると自動的に折り返します
+### align-items — 縦方向の配置
+
+```css
+.container {
+  display: flex;
+  align-items: stretch;   /* 高さを揃える（デフォルト） */
+}
+```
+
+| 値 | 動き |
+|------|------|
+| `stretch` | 親の高さいっぱいに伸びる（デフォルト） |
+| `flex-start` | 上に寄せる |
+| `center` | 縦方向の中央 |
+| `flex-end` | 下に寄せる |
+
+デフォルトが `stretch` であることは知っておくと役に立ちます。Flexbox の中で子要素の高さが親と同じになるのは、`stretch` が自動で効いているからです。
+
+## 中央配置が 2 行で終わる
+
+CSS で要素を画面の中央に置くのは、かつてはかなり面倒でした。Flexbox を使うと 2 行で済みます。
+
+```css
+.center {
+  display: flex;
+  justify-content: center;   /* 横方向の中央 */
+  align-items: center;       /* 縦方向の中央 */
+  min-height: 200px;
+}
+```
+
+```html
+<div class="center">
+  <p>ど真ん中に表示されます</p>
+</div>
+```
+
+`justify-content: center` で横の中央、`align-items: center` で縦の中央。これだけです。
+
+Flexbox が登場する前は、`position: absolute` と `transform: translate(-50%, -50%)` を組み合わせたり、`display: table-cell` を使ったりと、直感的ではない方法が必要でした。「CSS で中央寄せが難しい」という話を聞いたことがあるかもしれませんが、それは Flexbox より前の時代の話です。
+
+## flex-wrap — 画面に収まらないとき
+
+デフォルトでは、Flexbox のアイテムは 1 行に収まろうとして縮みます。アイテムの数が多いと潰れてしまいます。
+
+`flex-wrap: wrap` を付けると、収まりきらないアイテムが次の行に折り返されます。
+
+```css
+.card-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.card {
+  width: 200px;
+  padding: 16px;
+  background-color: #e8f0fe;
+  border: 1px solid #93c5fd;
+}
+```
+
+```html
+<ul class="card-list" aria-label="カード一覧">
+  <li class="card">カード 1</li>
+  <li class="card">カード 2</li>
+  <li class="card">カード 3</li>
+  <li class="card">カード 4</li>
+  <li class="card">カード 5</li>
+</ul>
+```
+
+画面幅が広ければ 1 行に並び、狭くなれば自動的に 2 行、3 行と折り返されます。カード一覧のようなレイアウトでよく使われます。
+
+## flex-direction — 縦に並べたいとき
+
+ここまで「flex は横に並べる」と説明してきましたが、縦に並べることもできます。`flex-direction: column` を指定します。
+
+```css
+.vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+```
+
+「わざわざ flex にして縦に並べる意味があるのか」と思うかもしれません。意味はあります。`gap` で間隔を管理できること、`justify-content` や `align-items` で配置を制御できること。素のブロック要素の縦積みでは、これらが使えません。
 
 ## まとめ
 
-- `display: flex` で Flexbox を有効にする。子要素が自動的に横に並ぶ
-- 主軸（アイテムが並ぶ方向）と交差軸（それと直角の方向）の 2 軸で考える
-- `justify-content` で主軸方向、`align-items` で交差軸方向の配置を制御する
-- `gap` でアイテム間の間隔を指定する
-- `flex-wrap: wrap` で折り返しを有効にする
-- `flex: 1` で余白を均等に分配できる
-- ナビバー、カードレイアウト、フッター固定など、実用的なパターンが簡単に実現できる
+- CSS の要素はデフォルトで縦に積まれます。横に並べるには仕組みが必要です
+- `display: flex` を**親**に付けると、子が横に並びます
+- 横方向の配置は `justify-content`、縦方向の配置は `align-items` で指定します。2 つは別の操作です
+- `justify-content: center` と `align-items: center` の 2 行で中央配置ができます
+- `flex-wrap: wrap` で折り返し、`flex-direction: column` で縦並びもできます
