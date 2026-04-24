@@ -1,43 +1,111 @@
-# CSS Grid — 格子状に並べる仕組み
+# CSS Grid — Flexbox だけではきれいに並ばない理由
 
 ## 今日のゴール
 
-- CSS Grid は 2 次元（行と列の両方）を同時に扱えることを知る
-- `grid-template-columns` でグリッドを定義する方法を知る
-- Flexbox との使い分けの考え方を知る
+- Flexbox で格子状のレイアウトを作ろうとすると崩れることを知る
+- CSS Grid は行と列を同時に定義する仕組みだと知る
+- `auto-fill` と `minmax()` でメディアクエリなしのレスポンシブが作れると知る
 
-## Flexbox と Grid の違い
+## Flexbox で「カード一覧」を作ると何が起きるか
 
-Flexbox は「1 方向」のレイアウトです。横に並べるか、縦に並べるか、どちらか一方を指定します。`flex-wrap: wrap` で折り返しはできますが、行と列のサイズを同時に揃える仕組みはありません。
+カードを格子状に並べたい ── Web アプリを作っていればよくある場面です。Flexbox で `flex-wrap: wrap` を使えば折り返しもできるので、これでいけそうに見えます。
 
-CSS Grid は「2 方向」のレイアウトです。**行と列の両方を同時に定義**できます。格子状にきれいに揃えたいとき、Grid のほうが適しています。
+```css
+.card-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.card {
+  flex: 1 1 200px; /* 最小 200px、余ったら伸びる */
+}
+```
+
+3 列にきれいに並んでいるように見えますが、**カードの数が 3 の倍数でないとき**に問題が起きます。
+
+<style>
+.c05-flex-demo { display:flex;flex-wrap:wrap;gap:12px;padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0 }
+.c05-flex-card { flex:1 1 200px;padding:16px;background:white;border:1px solid #93c5fd;border-radius:8px;color:#1e293b;font-size:0.9em;font-weight:600;text-align:center }
+</style>
+
+<div style="font-weight:700;margin-bottom:4px;font-size:0.85em;color:#64748b">カード 6 枚（3 の倍数）— きれいに並ぶ</div>
+<div class="c05-flex-demo">
+<div class="c05-flex-card">カード 1</div>
+<div class="c05-flex-card">カード 2</div>
+<div class="c05-flex-card">カード 3</div>
+<div class="c05-flex-card">カード 4</div>
+<div class="c05-flex-card">カード 5</div>
+<div class="c05-flex-card">カード 6</div>
+</div>
+
+<div style="font-weight:700;margin-bottom:4px;font-size:0.85em;color:#dc2626">カード 5 枚 — 最後の行が引き伸ばされる</div>
+<div class="c05-flex-demo">
+<div class="c05-flex-card">カード 1</div>
+<div class="c05-flex-card">カード 2</div>
+<div class="c05-flex-card">カード 3</div>
+<div class="c05-flex-card">カード 4</div>
+<div class="c05-flex-card">カード 5</div>
+</div>
+
+5 枚目のカードが不自然に広がっているのが見えるでしょうか。`flex: 1 1 200px` は「余ったスペースを均等に分ける」という意味なので、最後の行にカードが 2 枚しかなければ、2 枚で横幅を分け合って太くなってしまいます。
+
+### なぜこうなるのか
+
+原因は Flexbox の根本的な性質にあります。Flexbox は**1 次元**のレイアウトです。横方向に並べるか、縦方向に並べるか、**どちらか一方**しか制御しません。
 
 ```mermaid
 flowchart LR
-  subgraph Flexbox["Flexbox（1 方向）"]
+  subgraph Flexbox["Flexbox — 1 次元"]
     direction LR
-    A1["A"] --- A2["B"] --- A3["C"]
-  end
-  subgraph Grid["Grid（2 方向）"]
-    direction LR
-    B1["A"] --- B2["B"] --- B3["C"]
-    B4["D"] --- B5["E"] --- B6["F"]
+    F1["行ごとに独立"] 
+    F2["各行の子が\n幅を決める"]
   end
 ```
 
-## display: grid で格子を作る
+`flex-wrap: wrap` で折り返しはできますが、**各行は独立**しています。1 行目が 3 列、2 行目が 2 列になっても、Flexbox は気にしません。行をまたいで列の幅を揃える仕組みがないのです。
 
-Flexbox と同じく、**親**に `display: grid` を指定します。そしてグリッドの列数を `grid-template-columns` で定義します。
+これは Flexbox のバグではなく、設計思想です。ナビゲーションのリンクを横に並べる、ヘッダーのロゴとメニューを左右に配置する ── こうした「1 方向に並べる」用途には Flexbox がぴったりです。しかし、**格子状に揃えたい**ときには、別の仕組みが必要でした。
+
+## CSS Grid — 行と列を同時に定義する
+
+この問題を解決するために作られたのが **CSS Grid** です。Grid の考え方は Flexbox とは根本的に違います。
+
+| | Flexbox | Grid |
+|---|---------|------|
+| 次元 | **1 次元**（横 or 縦） | **2 次元**（横 and 縦） |
+| 誰が幅を決めるか | **子要素**が自分の幅を決める | **親要素**が格子を定義する |
+| 行と列の関係 | 行ごとに独立 | 行と列が連動する |
+
+Flexbox は子が「自分は 200px がいい」と主張するボトムアップの仕組みです。Grid は親が「3 列の格子を作る」と宣言するトップダウンの仕組みです。
+
+先ほどの 5 枚のカードを Grid で並べてみます。
 
 ```css
-.grid {
+.card-list {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
 }
 ```
 
-これで 3 列のグリッドができます。子要素は自動的に 3 列の格子に収まります。
+<style>
+.c05-grid-demo { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0 }
+.c05-grid-card { padding:16px;background:white;border:1px solid #60a5fa;border-radius:8px;color:#1e293b;font-size:0.9em;font-weight:600;text-align:center }
+</style>
+
+<div style="font-weight:700;margin-bottom:4px;font-size:0.85em;color:#16a34a">Grid で 5 枚 — 最後の行も列幅が揃う</div>
+<div class="c05-grid-demo">
+<div class="c05-grid-card">カード 1</div>
+<div class="c05-grid-card">カード 2</div>
+<div class="c05-grid-card">カード 3</div>
+<div class="c05-grid-card">カード 4</div>
+<div class="c05-grid-card">カード 5</div>
+</div>
+
+5 枚目のカードが引き伸ばされず、他のカードと同じ幅で収まっています。Grid は「3 列の格子」を先に定義しているので、要素が何枚あっても列の幅は変わりません。
+
+### 書き方を見てみる
 
 ```html
 <!DOCTYPE html>
@@ -47,12 +115,12 @@ Flexbox と同じく、**親**に `display: grid` を指定します。そして
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CSS Grid の例</title>
     <style>
-      .grid {
+      .card-list {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 16px;
       }
-      .item {
+      .card {
         padding: 16px;
         background-color: #e8f0fe;
         border: 1px solid #93c5fd;
@@ -61,21 +129,20 @@ Flexbox と同じく、**親**に `display: grid` を指定します。そして
     </style>
   </head>
   <body>
-    <div class="grid">
-      <div class="item">1</div>
-      <div class="item">2</div>
-      <div class="item">3</div>
-      <div class="item">4</div>
-      <div class="item">5</div>
-      <div class="item">6</div>
-    </div>
+    <ul class="card-list" aria-label="お知らせ一覧">
+      <li class="card">カード 1</li>
+      <li class="card">カード 2</li>
+      <li class="card">カード 3</li>
+      <li class="card">カード 4</li>
+      <li class="card">カード 5</li>
+    </ul>
   </body>
 </html>
 ```
 
-6 つの要素が 3 列 × 2 行にきれいに並びます。要素を追加すれば自動的に次の行に入ります。
+Flexbox と同じく、**親要素**に `display: grid` を指定します。違うのは `grid-template-columns` で**列の構造を先に宣言する**ところです。子要素には幅の指定が一切ありません。
 
-## fr — 余った幅を分け合う単位
+### fr — 余った幅を分け合う単位
 
 `1fr 1fr 1fr` の `fr` は "fraction"（分数）の略で、**余ったスペースを均等に分ける**という意味です。
 
@@ -90,7 +157,7 @@ grid-template-columns: 2fr 1fr 1fr;
 grid-template-columns: 200px 1fr 1fr;
 ```
 
-`fr` を使うと、画面幅が変わっても列が自動的にリサイズされます。`px` で固定するよりも柔軟です。
+`px` は固定、`fr` は可変です。これを組み合わせることで「サイドバーは 250px 固定、メインコンテンツは残り全部」のようなレイアウトも簡単に作れます。
 
 ### repeat() で繰り返す
 
@@ -104,61 +171,96 @@ grid-template-columns: repeat(3, 1fr);
 grid-template-columns: repeat(4, 1fr);
 ```
 
-## レスポンシブなグリッド
+## Grid だけでできるレスポンシブ
 
-メディアクエリを使って画面幅ごとに列数を変えるのが基本的なアプローチです。
+`repeat(3, 1fr)` は「常に 3 列」という意味です。画面が狭くなってもお構いなしに 3 列を維持するので、スマホでは各カードが潰れてしまいます。
+
+通常、これを解決するにはメディアクエリを書きます。
 
 ```css
-.grid {
+.card-list {
   display: grid;
   gap: 16px;
   grid-template-columns: 1fr;
 }
 
 @media (min-width: 768px) {
-  .grid {
+  .card-list {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
-  .grid {
+  .card-list {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 ```
 
-スマホでは 1 列、タブレットでは 2 列、PC では 3 列。メディアクエリの仕組みと組み合わせてレイアウトを切り替えます。
+スマホでは 1 列、タブレットでは 2 列、PC では 3 列。動きますが、メディアクエリを何段も書くのは面倒です。
 
-さらに、メディアクエリを使わずに自動で列数を調整する方法もあります。
+実は Grid には、**メディアクエリなしで画面幅に応じて列数を自動調整する**書き方があります。
 
 ```css
-.grid {
+.card-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
 }
 ```
 
-「各列は最低 200px、余ったスペースは均等に分配、入るだけ列を作る」という意味です。画面幅に応じて列数が自動で変わります。
+この 1 行で以下のことが起きます。
+
+- `minmax(200px, 1fr)` — 各列は **最小 200px、最大は均等分配**
+- `auto-fill` — 200px 以上の列を**入るだけ詰め込む**
+
+画面幅が 700px なら 200px の列が 3 つ入ります。画面幅が 500px なら 2 つ。350px なら 1 つ。ブラウザが自動的に計算してくれます。
+
+<style>
+.c05-auto-demo { display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:20px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0 }
+.c05-auto-card { padding:16px;background:white;border:1px solid #60a5fa;border-radius:8px;color:#1e293b;font-size:0.9em;font-weight:600;text-align:center }
+</style>
+
+<div style="font-weight:700;margin-bottom:4px;font-size:0.85em;color:#16a34a">auto-fill + minmax() — ブラウザの幅を変えてみてください</div>
+<div class="c05-auto-demo">
+<div class="c05-auto-card">カード 1</div>
+<div class="c05-auto-card">カード 2</div>
+<div class="c05-auto-card">カード 3</div>
+<div class="c05-auto-card">カード 4</div>
+<div class="c05-auto-card">カード 5</div>
+<div class="c05-auto-card">カード 6</div>
+</div>
+
+メディアクエリを 1 行も書かずに、画面幅に応じてカードの列数が変わります。カード一覧のようなレイアウトでは、この書き方が非常に便利です。
 
 ## Flexbox と Grid の使い分け
 
-| 場面 | 適したレイアウト |
-|------|----------------|
-| ヘッダーのロゴとメニューを左右に配置 | Flexbox |
-| ナビゲーションのリンクを横に並べる | Flexbox |
-| カードを格子状に並べる | Grid |
-| ダッシュボードのレイアウト（メイン + サイドバー） | Grid |
-| 要素を 1 方向に並べて間隔を調整したい | Flexbox |
-| 行と列のサイズを揃えたい | Grid |
+Flexbox と Grid は対立するものではなく、得意な場面が違います。
 
-シンプルな判断基準は、**1 方向に並べるなら Flexbox、格子状に並べるなら Grid** です。
+```mermaid
+flowchart TB
+  Q["レイアウトを作りたい"]
+  Q -->|"1 方向に並べる"| F["Flexbox"]
+  Q -->|"格子状に揃える"| G["Grid"]
+  F --> F1["ナビリンクを横に並べる"]
+  F --> F2["ロゴとメニューを左右に配置"]
+  F --> F3["ボタンを横に並べて間隔を調整"]
+  G --> G1["カード一覧"]
+  G --> G2["ダッシュボード"]
+  G --> G3["メイン + サイドバー"]
+```
+
+判断基準はシンプルです。
+
+- **並べる方向が 1 つ**なら Flexbox — ナビゲーション、ヘッダー、ボタン群
+- **行と列を揃えたい**なら Grid — カード一覧、ダッシュボード、ページ全体のレイアウト
+
+迷ったら「子の数が変わっても列の幅を揃えたいか？」と考えてみてください。答えが Yes なら Grid です。
 
 ## まとめ
 
-- CSS Grid は行と列の 2 方向を同時に定義できるレイアウトの仕組みです
-- `display: grid` を親に付け、`grid-template-columns` で列を定義します
-- `fr` は余った幅を分け合う単位です。`repeat(3, 1fr)` で 3 列均等になります
-- `auto-fill` と `minmax()` を使うとメディアクエリなしでレスポンシブなグリッドが作れます
-- 1 方向に並べるなら Flexbox、格子状に並べるなら Grid が基本の使い分けです
+- Flexbox は 1 次元のレイアウト。`flex-wrap` で折り返しても行ごとに独立するため、格子状に揃えるのは苦手
+- CSS Grid は 2 次元のレイアウト。**親が格子を定義する**ので、子の数に関係なく列幅が揃う
+- `display: grid` + `grid-template-columns` で列を定義する。`fr` は余った幅を分け合う単位
+- `repeat(auto-fill, minmax(200px, 1fr))` でメディアクエリなしのレスポンシブが作れる
+- 1 方向に並べるなら Flexbox、格子状に揃えるなら Grid
