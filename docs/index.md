@@ -12,3 +12,4 @@
 - [Day 4: カスタムフォーム UI — 見た目を変えてもアクセシビリティを保つ](/lessons/day04/)
 - [Day 5: HTML だけで作れる UI — dialog, popover, details](/lessons/day05/)
 - [Day 6: img タグの書き方 — アクセシビリティと Core Web Vitals](/lessons/day06/)
+- [Day 7: CSS の適用範囲 — グローバルスコープと解決手段の歴史](/lessons/day07/)
