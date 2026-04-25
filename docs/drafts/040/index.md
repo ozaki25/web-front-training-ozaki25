@@ -1,142 +1,122 @@
-# テスト基礎（Vitest）
+# テストの考え方 — AI が書いたコードが正しいかを検証する
 
 ## 今日のゴール
 
-- なぜテストを書くのかを知る
-- テストの構造（describe / it / expect）を知る
-- AAA パターン（準備・実行・検証）を知る
+- テストが「仕様を書くこと」であると知る
+- Vitest で関数のテストを書く方法を知る
+- Testing Library でコンポーネントのテストを書く方法を知る
 
-## なぜテストを書くのか
+## AI が書いたコードは正しいか
 
-「動いているコードにテストは必要なのか？」と思うかもしれません。テストが必要な理由を見ていきます。
+AI にコードを書いてもらったとき、それが正しく動いているかをどう確認しますか。
 
-### テストがないとどうなるか
+ブラウザで動かして確かめる方法もありますが、機能が増えてくると手動で全部確認するのは現実的ではありません。1 箇所直したつもりが別の場所を壊していた、ということも起きます。
 
-コードを修正したとき、その修正が他の機能を壊していないか確認する方法がありません。手動で画面を操作して確認することはできますが、アプリケーションが大きくなると確認しきれなくなります。
+**テスト**は、コードの動作を**自動で検証**する仕組みです。一度書けば、コードを変更するたびに自動で実行して問題がないか確認できます。
 
-たとえば「価格のフォーマット関数を修正したら、一覧画面の表示は直ったけど請求書の表示が壊れていた」という状況は、テストがあれば防げます。修正後にテストを実行するだけで、すべてのケースが問題ないことを確認できるからです。
+## テストは「仕様書」
 
-### テストがもたらす価値
+テストコードは「このコードはこう動くべき」という**仕様**を書いたものです。
 
-1. **変更に自信が持てる** — コードを修正しても、既存の機能が壊れていないことをテストが保証する
-2. **バグの再発を防げる** — バグを見つけたらテストを書くことで、同じバグが二度と起きないようにできる
-3. **コードの仕様書になる** — テストを読めば「この関数はどう動くべきか」がわかる
-4. **リファクタリング（動作を変えずにコードの構造を整理すること）しやすくなる** — テストがあれば、コードの内部構造を安心して変更できる
-
-AI でコードを生成する場面が増えた今、テストはさらに重要になっています。AI が生成したコードが正しく動くかを検証する手段がテストだからです。
-
-## Vitest とは
-
-Vitest は、JavaScript/TypeScript のテストフレームワークです。Vite をベースにしており、高速に動作します。以前は Jest が事実上の標準でしたが、ESM ネイティブ対応や設定なしでの TypeScript サポートにより、Vitest が主流になりつつあります。
-
-Next.js プロジェクトに導入するには、`vitest` パッケージと React プラグインをインストールし、`vitest.config.ts` でテスト環境を設定します。設定の核は `environment: "jsdom"` で、Node.js 上でブラウザの DOM をシミュレートします。
-
-```ts
-// vitest.config.ts の構成イメージ
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
-
-export default defineConfig({
-  plugins: [react()],       // React コンポーネントのテストに必要
-  test: {
-    environment: "jsdom",   // Node.js 上でブラウザの DOM をシミュレート
-    globals: true,           // describe, it, expect をインポートなしで使えるようにする
-  },
-  resolve: {
-    alias: { "@": "./src" }, // import パスのエイリアス（@/ = src/）
-  },
-});
-```
-
-テストは `npm test`（ファイル変更を監視して自動再実行）または `npm run test:run`（一回だけ実行）で実行します。
-
-## テストの見た目
-
-テストがどんなコードなのか、実際に見てみます。以下は `add` 関数のテストです。
-
-```ts
-// src/lib/math.ts
-export function add(a: number, b: number): number {
-  return a + b;
-}
-```
-
-```ts
-// src/lib/math.test.ts
+```typescript
 import { describe, it, expect } from "vitest";
 import { add } from "./math";
 
 describe("add", () => {
-  it("2つの数値を足し算する", () => {
+  it("2つの数値を足す", () => {
     expect(add(1, 2)).toBe(3);
   });
 
-  it("負の数を扱える", () => {
-    expect(add(-1, -2)).toBe(-3);
+  it("負の数も扱える", () => {
+    expect(add(-1, 1)).toBe(0);
   });
 });
 ```
 
-テストファイルは慣例として `.test.ts` という拡張子にします。テストには3つの基本要素があります。
+- `describe("add", ...)` — 「add 関数のテスト」というグループ
+- `it("2つの数値を足す", ...)` — 「2 つの数値を足す」という仕様
+- `expect(add(1, 2)).toBe(3)` — 「add(1, 2) の結果は 3 であるべき」
 
-- **`describe`** — テストをグループ化する。関数名やコンポーネント名を渡すことが多い
-- **`it`**（または `test`）— 個々のテストケース。「何をテストするか」を書く
-- **`expect`** — 期待する結果を検証する。**アサーション**（assertion = 「これはこうであるべき」という宣言）と呼ぶ
+テストを読むだけで、`add` 関数がどう動くべきかがわかります。
 
-## マッチャー
+## Vitest — テストランナー
 
-`expect` に続けて呼ぶメソッドを**マッチャー**（matcher）と呼びます。代表的なものを紹介します。
+Vitest は JavaScript / TypeScript のテストランナーです。テストファイルを実行して、結果を報告します。
 
-| マッチャー | 検証内容 | 例 |
-|-----------|---------|-----|
-| `toBe` | 同一かを比較（プリミティブは値、オブジェクトは参照） | `expect(1 + 1).toBe(2)` |
-| `toEqual` | オブジェクトの中身を比較 | `expect({ a: 1 }).toEqual({ a: 1 })` |
-| `toThrow` | エラーが投げられる | `expect(() => fn()).toThrow("エラー")` |
+```
+$ npx vitest
 
-`toBe` と `toEqual` の違いは重要です。`toBe` は参照の一致で比較するため、オブジェクトや配列の中身を比較するには `toEqual` を使います。
+ ✓ math.test.ts
+   ✓ add > 2つの数値を足す
+   ✓ add > 負の数も扱える
 
-他にも `toBeTruthy`、`toContain`、`toHaveLength` など多数のマッチャーがあります。
+ Test Files  1 passed
+ Tests  2 passed
+```
 
-## AAA パターン
+テストファイルは `*.test.ts` または `*.spec.ts` という名前にします。
 
-テストは **Arrange（準備）→ Act（実行）→ Assert（検証）** の3ステップで書くと、構造がわかりやすくなります。
+### AAA パターン
 
-```ts
-it("ユーザー名が空の場合はエラーを返す", () => {
+テストの書き方には定番のパターンがあります。
+
+```typescript
+it("税込価格を計算する", () => {
   // Arrange（準備）
-  const emptyName = "";
+  const price = 1000;
+  const taxRate = 0.1;
 
   // Act（実行）
-  const result = validateUserName(emptyName);
+  const result = calculateTax(price, taxRate);
 
   // Assert（検証）
-  expect(result).toEqual({ valid: false, error: "名前は必須です" });
+  expect(result).toBe(1100);
 });
 ```
 
-シンプルなテストでは3つのステップが1行ずつになることもありますが、複雑なテストでは AAA を意識すると読みやすくなります。
+1. **Arrange**: テストに必要なデータを準備する
+2. **Act**: テスト対象の関数を実行する
+3. **Assert**: 結果を検証する
 
-## テスト名のコツ
+## コンポーネントのテスト
 
-テスト名は「何が」「どうなるか」を書きます。
+UI コンポーネントのテストには **Testing Library** を使います。特徴は「ユーザーの視点でテストする」ことです。
 
-```ts
-// ✅ よいテスト名
-it("価格が0未満の場合はエラーを投げる", () => {});
-it("メールアドレスに@が含まれない場合はfalseを返す", () => {});
+```tsx
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import Counter from "./Counter";
 
-// ❌ 悪いテスト名
-it("テスト1", () => {});
-it("正常系", () => {});
+describe("Counter", () => {
+  it("ボタンを押すとカウントが増える", async () => {
+    render(<Counter />);
+
+    const button = screen.getByRole("button", { name: "+1" });
+    expect(screen.getByText("0")).toBeDefined();
+
+    await userEvent.click(button);
+
+    expect(screen.getByText("1")).toBeDefined();
+  });
+});
 ```
 
-テスト名を読むだけで、テスト対象の仕様がわかることが理想です。
+- `render(<Counter />)` — コンポーネントを仮想的にレンダリング
+- `screen.getByRole("button")` — ユーザーが見つける方法で要素を取得
+- `userEvent.click(button)` — ユーザーのクリック操作をシミュレーション
+
+内部の state や DOM 操作をテストするのではなく、「ユーザーが画面上で何を見て、何を操作するか」をテストします。
+
+### なぜ getByRole なのか
+
+`getByRole` はアクセシビリティの観点から要素を探します。「ボタン」というロールを持つ要素を探すのは、スクリーンリーダーが要素を認識する方法と同じです。
+
+テストを `getByRole` で書く習慣がつくと、アクセシビリティを意識した HTML を自然に書くようになります。
 
 ## まとめ
 
-- テストはコードの品質を保ち、変更に自信を持つための仕組み
-- Vitest は高速で TypeScript 対応のテストフレームワーク
-- `describe` でグループ化、`it` でテストケース、`expect` でアサーション
-- `toBe` は厳密等価、`toEqual` はオブジェクトの中身を比較
-- AAA パターン（準備 → 実行 → 検証）でテストを構造化する
-- テスト名は「何がどうなるか」を明確に書く
+- テストは「コードがこう動くべき」という仕様を自動で検証する仕組みです
+- `describe` でグループ化し、`it` で個別の仕様を書き、`expect` で結果を検証します
+- AAA パターン（Arrange → Act → Assert）がテストの基本構造です
+- コンポーネントのテストは Testing Library で、ユーザーの視点から書きます
+- `getByRole` を使うと、アクセシビリティを意識したテストになります

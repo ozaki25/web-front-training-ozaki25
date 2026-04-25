@@ -1,247 +1,116 @@
-# Route Handlers
+# Route Handlers と Server Actions — サーバー処理の 2 つの方法
 
 ## 今日のゴール
 
-- Route Handlers（`route.ts`）で API エンドポイントを作る方法を知る
-- リクエストとレスポンスの処理方法を知る
-- Route Handlers をいつ使うべきかの判断基準を知る
+- Route Handlers で API エンドポイントを作れることを知る
+- Server Actions で関数呼び出しのようにサーバー処理を実行できることを知る
+- 2 つの使い分けを知る
 
-## Route Handlers とは
+## サーバーで処理を実行したい
 
-Day 34 で、`page.tsx` はページを表示するファイルだと学びました。一方、`route.ts`（`.tsx` ではなく `.ts`）は **API エンドポイント**を作るためのファイルです。
+Web アプリでは、ブラウザだけでなくサーバーで処理を実行したい場面があります。
 
-API エンドポイントとは、ブラウザの画面ではなく、JSON などのデータを返す URL のことです。外部サービスとの連携や、Client Component からのデータ送信に使います。
+- ユーザー登録のデータをデータベースに保存する
+- 外部 API にリクエストを送る（API キーをブラウザに渡したくない）
+- ファイルをアップロードする
 
-## 基本的な Route Handler
+Next.js には、サーバー処理を書く方法が 2 つあります。**Route Handlers** と **Server Actions** です。
 
-`src/app/api/hello/route.ts` を作成する例です。
+## Route Handlers — API エンドポイントを作る
 
-```ts
-// src/app/api/hello/route.ts
+`app/api/` フォルダに `route.ts` ファイルを作ると、API エンドポイントになります。
+
+```typescript
+// app/api/users/route.ts
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  return NextResponse.json({ message: "こんにちは！" });
-}
-```
-
-ブラウザで `http://localhost:3000/api/hello` にアクセスすると、JSON が返されます。
-
-```json
-{ "message": "こんにちは！" }
-```
-
-### HTTP メソッドと関数名
-
-Route Handler では、HTTP メソッドに対応する関数名をエクスポートします。
-
-```ts
-// src/app/api/posts/route.ts
-import { NextRequest, NextResponse } from "next/server";
-
-// GET /api/posts — データの取得
-export async function GET() {
-  const posts = [
-    { id: 1, title: "最初の投稿" },
-    { id: 2, title: "2番目の投稿" },
-  ];
-  return NextResponse.json(posts);
+  const users = await db.user.findMany();
+  return NextResponse.json(users);
 }
 
-// POST /api/posts — データの作成
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   const body = await request.json();
-  // 本来はデータベースに保存する
-  const newPost = { id: 3, title: body.title };
-  return NextResponse.json(newPost, { status: 201 });
+  const user = await db.user.create({ data: body });
+  return NextResponse.json(user, { status: 201 });
 }
 ```
 
-| 関数名 | HTTP メソッド | 用途 |
-|--------|-------------|------|
-| `GET` | GET | データの取得 |
-| `POST` | POST | データの作成 |
-| `PUT` | PUT | データの更新（全体） |
-| `PATCH` | PATCH | データの更新（一部） |
-| `DELETE` | DELETE | データの削除 |
+- `GET` 関数をエクスポートすると `GET /api/users` に対応
+- `POST` 関数をエクスポートすると `POST /api/users` に対応
 
-> **HTTP メソッド**とは、リクエストの「目的」を表すものです。Day 10 で学んだ HTML フォームでは `GET` と `POST` を使いましたが、API ではより細かく使い分けます。
+ファイル名が `route.ts` であること、関数名が HTTP メソッドと一致することがルールです。
 
-## リクエストの処理
+クライアントからは `fetch` で呼び出します。
 
-### URL パラメータの取得
+```tsx
+const res = await fetch("/api/users", {
+  method: "POST",
+  body: JSON.stringify({ name: "田中" }),
+});
+```
 
-URL のクエリパラメータ（`?key=value` の部分）を取得する方法です。
+## Server Actions — 関数呼び出しでサーバー処理
 
-```ts
-// src/app/api/search/route.ts
-import { NextRequest, NextResponse } from "next/server";
+Server Actions は、React 19 で追加された仕組みです。**サーバーで実行される関数を、クライアントから直接呼び出せます**。
 
-// GET /api/search?q=nextjs
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const query = searchParams.get("q");
+```tsx
+// app/actions.ts
+"use server";
 
-  if (!query) {
-    return NextResponse.json(
-      { error: "検索クエリが必要です" },
-      { status: 400 }
-    );
-  }
-
-  // 本来はデータベースを検索する
-  const results = [{ id: 1, title: `「${query}」の検索結果` }];
-  return NextResponse.json(results);
+export async function createUser(formData: FormData) {
+  const name = formData.get("name") as string;
+  await db.user.create({ data: { name } });
 }
 ```
 
-### リクエストボディの取得
+```tsx
+// app/page.tsx
+import { createUser } from "./actions";
 
-POST や PUT で送られてくるデータを取得します。
-
-```ts
-// src/app/api/contact/route.ts
-import { NextRequest, NextResponse } from "next/server";
-
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-
-  // バリデーション（入力チェック）
-  if (!body.name || !body.email || !body.message) {
-    return NextResponse.json(
-      { error: "名前、メール、メッセージは必須です" },
-      { status: 400 }
-    );
-  }
-
-  // 本来はメール送信やデータベース保存を行う
-  console.log("お問い合わせ:", body);
-
-  return NextResponse.json(
-    { success: true, message: "お問い合わせを受け付けました" },
-    { status: 200 }
+export default function CreateUserForm() {
+  return (
+    <form action={createUser}>
+      <input name="name" placeholder="名前" required />
+      <button type="submit">作成</button>
+    </form>
   );
 }
 ```
 
-### リクエストヘッダーの取得
+`"use server"` が付いた関数は、サーバーで実行されます。`<form action={createUser}>` と書くだけで、フォーム送信時にサーバーの `createUser` が呼ばれます。API エンドポイントを作る必要がありません。
 
-```ts
-import { NextRequest, NextResponse } from "next/server";
+## 2 つの違い
 
-export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
+| | Route Handlers | Server Actions |
+|---|---|---|
+| ファイル | `app/api/.../route.ts` | `"use server"` 付きの関数 |
+| 呼び出し方 | `fetch("/api/...")` | `<form action={関数}>` や直接呼び出し |
+| 用途 | 外部から呼ばれる API、Webhook | フォーム送信、ボタンクリック |
+| HTTP メソッドの制御 | GET/POST/PUT/DELETE を自分で定義 | 自動（POST が使われる） |
 
-  if (!authHeader) {
-    return NextResponse.json(
-      { error: "認証が必要です" },
-      { status: 401 }
-    );
-  }
-
-  return NextResponse.json({ data: "認証済みデータ" });
-}
+```mermaid
+flowchart TB
+  Q["サーバーで処理したい"]
+  Q -->|"外部システムから\n呼ばれる API"| RH["Route Handlers\n（/api/... エンドポイント）"]
+  Q -->|"フォーム送信や\nボタン操作"| SA["Server Actions\n（use server 関数）"]
 ```
 
-## レスポンスの返し方
+## 使い分けの基準
 
-### JSON レスポンス
+**Server Actions を使う場面**:
+- フォームの送信（ユーザー登録、設定変更）
+- ボタン操作に応じたサーバー処理（いいね、削除）
+- アプリ内部のサーバー処理全般
 
-最も一般的なパターンです。
+**Route Handlers を使う場面**:
+- 外部のシステムからアクセスされる API（Webhook、モバイルアプリ向け API）
+- GET リクエストで JSON を返す公開 API
 
-```ts
-return NextResponse.json(
-  { data: "値" },       // レスポンスボディ
-  { status: 200 }       // ステータスコード（省略すると 200）
-);
-```
-
-### リダイレクト
-
-```ts
-import { redirect } from "next/navigation";
-
-export async function GET() {
-  redirect("/login");
-}
-```
-
-### ストリーミングレスポンス
-
-大量のデータを少しずつ返したい場合に使います。
-
-```ts
-export async function GET() {
-  const stream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(new TextEncoder().encode("Hello "));
-      controller.enqueue(new TextEncoder().encode("World"));
-      controller.close();
-    },
-  });
-
-  return new Response(stream, {
-    headers: { "Content-Type": "text/plain" },
-  });
-}
-```
-
-## 動的ルートの Route Handler
-
-Day 40 で詳しく学ぶ動的ルーティングは、Route Handler でも使えます。
-
-```ts
-// src/app/api/posts/[id]/route.ts
-import { NextRequest, NextResponse } from "next/server";
-
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-
-  // 本来はデータベースから取得
-  const post = { id, title: `記事 ${id}` };
-  return NextResponse.json(post);
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params;
-
-  // 本来はデータベースから削除
-  return NextResponse.json({ message: `記事 ${id} を削除しました` });
-}
-```
-
-`GET /api/posts/42` にアクセスすると `{ id: "42", title: "記事 42" }` が返されます。
-
-## Route Handlers をいつ使うか
-
-Server Components や Server Actions（Day 39 で学習）がある今、Route Handlers の出番はどこでしょうか。
-
-### Route Handlers が適しているケース
-
-| ケース | 理由 |
-|-------|------|
-| 外部サービスへの Webhook 受信 | 外部サービスが POST する先として URL が必要 |
-| OAuth のコールバック | 認証プロバイダからのリダイレクト先 |
-| 外部に公開する API | 他のサービスやモバイルアプリから呼ばれる |
-| ストリーミングレスポンス | Server Components では難しい応答パターン |
-
-### Server Components / Server Actions で十分なケース
-
-- ページ表示のためのデータ取得 → Server Components で直接 fetch（Day 37）
-- フォーム送信やデータ変更 → Server Actions（Day 39）
-
-**基本方針: まず Server Components と Server Actions で実現できないか考える。外部とのインターフェースが必要な場合に Route Handlers を使う。**
+Next.js のアプリ内の処理は Server Actions で済むことが多く、Route Handlers は「外部に公開する API が必要なとき」に使います。
 
 ## まとめ
 
-- `route.ts` で API エンドポイントを作成でき、HTTP メソッドに対応する関数をエクスポートする
-- `NextRequest` でリクエスト情報を取得し、`NextResponse` でレスポンスを返す
-- リクエストボディ、URL パラメータ、ヘッダーなどを処理できる
-- 外部サービスとの連携や公開 API には Route Handlers が適している
-- ページのデータ取得やフォーム送信は Server Components / Server Actions が基本
+- **Route Handlers** は `app/api/.../route.ts` に HTTP メソッドごとの関数をエクスポートして API エンドポイントを作る仕組みです
+- **Server Actions** は `"use server"` 付きの関数で、`<form action>` やイベントハンドラから直接サーバー処理を呼び出す仕組みです
+- アプリ内のフォーム送信や操作には Server Actions、外部向け API には Route Handlers が基本の使い分けです

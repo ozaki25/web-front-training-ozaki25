@@ -1,202 +1,82 @@
-# SPA・CSR・SSR — レンダリング戦略を理解する
+# SPA・CSR・SSR — ブラウザで作るか、サーバーで作るか
 
 ## 今日のゴール
 
-- SPA（Single Page Application）の仕組みと特徴を知る
-- CSR（Client-Side Rendering）と SSR（Server-Side Rendering）の違いを知る
-- それぞれの方式のメリット・デメリットを知る
-- Next.js がこれらの課題をどう解決するか概要を知る
+- SPA（Single Page Application）の仕組みと限界を知る
+- SSR（Server-Side Rendering）がその限界をどう解決するかを知る
+- Next.js が SSR を簡単に実現するフレームワークだと知る
 
-## React アプリの動き方を振り返る
+## React 単体で作ると何が起きるか
 
-Day 23〜30 で React の基礎を学びました。React でアプリを作ると、ブラウザで動くのは次のような仕組みです。
-
-1. ブラウザがサーバーに HTML をリクエストする
-2. サーバーが**ほぼ空の HTML** と **JavaScript ファイル**を返す
-3. ブラウザが JavaScript をダウンロード・実行する
-4. JavaScript が DOM を組み立てて画面を表示する
-
-この「JavaScript がブラウザ上で画面を組み立てる」方式を **CSR（Client-Side Rendering）** と呼びます。「Client」とはブラウザのことです。
-
-## SPA とは何か
-
-React で作ったアプリは **SPA（Single Page Application）** です。名前の通り「ページが 1 つだけ」のアプリケーションです。
-
-従来の Web サイトでは、ページごとに HTML ファイルが存在し、リンクをクリックするたびにサーバーから新しい HTML を取得していました。
-
-**従来の Web サイト（MPA: Multi Page Application）:**
-
-```mermaid
-sequenceDiagram
-    participant B as ブラウザ
-    participant S as サーバー
-    B->>S: /index.html
-    S-->>B: HTML（トップ）
-    Note over B: リンクをクリック
-    B->>S: /about.html
-    S-->>B: HTML（About）
-    Note over B: ページ全体を再読込
-```
-
-SPA では、最初に 1 つの HTML と JavaScript を読み込み、以降のページ遷移は **JavaScript が画面を書き換えるだけ**で実現します。サーバーへの HTML リクエストは最初の 1 回だけです。
-
-```
-SPA（Single Page Application）:
-
-ブラウザ            サーバー
-  │  / (最初のリクエスト)  │
-  │ ──────────────→    │
-  │  空の HTML + JS    │
-  │ ←──────────────    │
-  │                    │
-  │  JS が画面を構築    │
-  │                    │
-  │  「About」をクリック  │
-  │  → JS が画面を書換  │  ← サーバーへのリクエストなし！
-  │  （URLも変わる）    │
-```
-
-ページ遷移のたびにサーバーと通信する必要がないため、**画面の切り替えが非常に高速**です。ネイティブアプリのようなスムーズな操作感が得られます。
-
-## CSR の仕組みをもう少し詳しく
-
-SPA は通常 CSR で動作します。サーバーが返す HTML の中身は次のようになっています。
+React だけでアプリを作ると、ブラウザに送られる HTML はほぼ空です。
 
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title>My App</title>
-</head>
-<body>
-  <!-- ここはほぼ空っぽ -->
-  <div id="root"></div>
-  <script src="/bundle.js"></script>
-</body>
+  <body>
+    <div id="root"></div>
+    <script src="/bundle.js"></script>
+  </body>
 </html>
 ```
 
-`<div id="root"></div>` — たったこれだけです。React の `createRoot` がこの空の `<div>` の中に UI を構築します。つまり、**JavaScript が実行されるまで画面には何も表示されません**。
+中身は `<div id="root"></div>` だけ。ブラウザが `bundle.js`（React のコード）をダウンロードして実行し、JavaScript が DOM を組み立てて画面を表示します。
+
+この方式を **CSR**（Client-Side Rendering）と呼びます。「クライアント（ブラウザ）がレンダリングする」という意味です。ページ遷移してもサーバーから HTML を取り直さず、JavaScript が画面を書き換えるだけなので、アプリのように滑らかに動きます。ページが 1 つしかないので **SPA**（Single Page Application）とも呼ばれます。
+
+## CSR の限界
+
+CSR には 2 つの弱点があります。
+
+**初回表示が遅い**: ブラウザは空の HTML を受け取った後、JavaScript をダウンロードして実行し、さらに API からデータを取得して、やっと画面が表示されます。JavaScript のサイズが大きいほど、ユーザーは白い画面を見る時間が長くなります。
 
 ```mermaid
 sequenceDiagram
     participant B as ブラウザ
     participant S as サーバー
-
-    B->>S: リクエスト
-    S-->>B: ほぼ空の HTML
-    Note over B: 白画面のまま
-    S-->>B: JavaScript
-    Note over B: JS を実行中...
-    B->>S: データ取得（API）
-    S-->>B: データ
-    Note over B: 表示完了
+    B->>S: HTML をリクエスト
+    S-->>B: 空の HTML + JS リンク
+    B->>S: JS をダウンロード
+    S-->>B: bundle.js（大きい）
+    Note over B: JS を実行して DOM を構築
+    B->>S: API でデータを取得
+    S-->>B: JSON データ
+    Note over B: やっと画面が表示される
 ```
 
-## CSR の弱点
+**検索エンジンに内容が見えない**: 検索エンジンのクローラーが HTML を読んでも、`<div id="root"></div>` しかありません。JavaScript を実行しないと中身がわからないため、検索結果に正しく表示されない場合があります。
 
-CSR には大きく 2 つの弱点があります。
+## SSR — サーバーで HTML を作って返す
 
-### 1. 初期表示が遅い
-
-JavaScript のダウンロードと実行が終わるまで、ユーザーには**白画面**が表示されます。アプリが大きくなるほど JavaScript ファイルも大きくなり、初期表示はさらに遅くなります。
-
-特にモバイル回線や低スペックなデバイスでは、この遅延が顕著です。
-
-### 2. SEO に弱い場合がある
-
-**SEO（Search Engine Optimization）** とは、Google などの検索エンジンにページの内容を正しく認識してもらうための取り組みです。
-
-検索エンジンの**クローラー**（Web ページの内容を自動で読み取るプログラム）が HTML を取得すると、`<div id="root"></div>` しかありません。JavaScript を実行しなければ中身がわからないため、ページの内容を正しくインデックスできない場合があります。
-
-> **補足**: Google のクローラーは JavaScript を実行する能力がありますが、すべてのクローラーがそうとは限りません。また、JavaScript の実行にはコストがかかるため、クローリングの効率も下がります。
-
-## SSR — サーバーで HTML を作る
-
-**SSR（Server-Side Rendering）** は、CSR の弱点を解決するアプローチです。
-
-CSR がブラウザで HTML を組み立てるのに対し、SSR は**サーバー側で HTML を組み立ててからブラウザに送ります**。
+SSR（Server-Side Rendering）は、**サーバー側で React を実行して HTML を作り、完成した HTML をブラウザに返す**方式です。
 
 ```mermaid
 sequenceDiagram
     participant B as ブラウザ
     participant S as サーバー
-
-    B->>S: リクエスト
-    Note over S: ① データ取得
-    Note over S: ② React を実行して HTML を生成
+    B->>S: HTML をリクエスト
+    Note over S: React を実行して HTML を生成
     S-->>B: 完成した HTML
-    Note over B: すぐに画面表示！（コンテンツが見える）
-    S-->>B: JavaScript
-    Note over B: ハイドレーション（ボタンが押せるようになる）
+    Note over B: すぐに画面が表示される
+    B->>S: JS をダウンロード
+    S-->>B: bundle.js
+    Note over B: JS が HTML と結合（ハイドレーション）
 ```
 
-### SSR のメリット
+ブラウザは完成した HTML を受け取るので、すぐに画面が表示されます。その後 JavaScript がダウンロードされて、ボタンのクリックなどのインタラクションが有効になります。この「HTML と JavaScript を結合する」過程を**ハイドレーション**と呼びます。
 
-1. **初期表示が速い** — ブラウザは完成した HTML を受け取るので、すぐに画面を表示できる
-2. **SEO に強い** — クローラーが完成した HTML を読めるので、内容を正しくインデックスできる
-3. **データ取得が速い** — サーバーは DB や API に近い場所にあるため、データ取得のネットワーク遅延が小さい
+検索エンジンにも完成した HTML が返されるので、内容が正しくインデックスされます。
 
-### ハイドレーション
+## Next.js — SSR を簡単にするフレームワーク
 
-SSR で送られた HTML は、最初は**静的な HTML**です。ボタンをクリックしても何も起きません。JavaScript が読み込まれた後、React がこの HTML に**イベントハンドラーを結びつけて**、インタラクティブにします。
+React 単体で SSR を実装するのは複雑です。サーバーの設定、ルーティング、データ取得のタイミング管理など、多くのことを自分で組む必要があります。
 
-この「静的な HTML を動的にする」プロセスを**ハイドレーション**（hydration）と呼びます。「乾いた HTML に水を注いで生き返らせる」というイメージです。
+Next.js はこれらを**フレームワークとして一括で提供**します。ファイルを作って React コンポーネントを書くだけで、SSR が自動的に行われます。
 
-```mermaid
-sequenceDiagram
-    participant B as ブラウザ
-    participant S as サーバー
-
-    B->>S: リクエスト
-    S-->>B: HTML 受信
-    Note over B: 見える（静的）
-    S-->>B: JS 受信
-    Note over B: ハイドレーション中...
-    Note over B: 操作可能（インタラクティブ）
-```
-
-CSR と比べて、「画面が見える」タイミングが大幅に早くなっている点がポイントです。
-
-## SSG — ビルド時に HTML を生成する
-
-もう 1 つの方式として **SSG（Static Site Generation）** があります。SSR がリクエストのたびにサーバーで HTML を生成するのに対し、SSG は**ビルド時（デプロイ前）にあらかじめ HTML を生成**しておきます。
-
-```
-SSG の流れ:
-
-ビルド時:
-  React コンポーネント → HTML ファイルを生成 → サーバーに配置
-
-リクエスト時:
-  ブラウザ → 生成済みの HTML をそのまま返すだけ（超高速）
-```
-
-SSG はページの内容がほとんど変わらないサイト（ブログ、ドキュメントサイトなど）に適しています。実はこの研修サイト自体も SSG で構築されています（VitePress という SSG ツールを使っています）。
-
-ただし、ユーザーごとに異なる内容を表示するページ（マイページ、ダッシュボードなど）には向きません。配属先のプロジェクトでは主に SSR を使うため、SSG の詳細は省略します。
-
-## 比較まとめ
-
-| 方式 | HTML の生成タイミング | 初期表示 | SEO | 向いているケース |
-|------|---------------------|---------|-----|----------------|
-| CSR | ブラウザで実行時 | 遅い | 弱い場合がある | 管理画面、ログイン後の画面 |
-| SSR | サーバーでリクエスト時 | 速い | 強い | ほとんどのページ |
-| SSG | ビルド時（事前生成） | 最速 | 強い | ブログ、ドキュメント |
-
-## Next.js はこれらをどう解決するか
-
-React 単体では CSR（SPA）しかできません。SSR を自分で実装しようとすると、サーバーの構築、ルーティング、データ取得のタイミング制御など、非常に多くの設定が必要になります。
-
-**Next.js** は、これらの複雑さを抽象化し、SSR・SSG を簡単に使えるようにしたフレームワークです。さらに、Next.js の **Server Components** は SSR の考え方をコンポーネント単位に細かく適用できるようにしたもので、Day 35 で詳しく学びます。
-
-Day 34 では、Next.js のプロジェクト構成を見ていきます。
+AI が Next.js でアプリを作っているのは、「React を使いつつ、CSR の弱点を解消するため」です。
 
 ## まとめ
 
-- **SPA** は 1 つの HTML で動くアプリ。ページ遷移が高速だが、初期表示は JavaScript に依存する
-- **CSR** はブラウザで HTML を組み立てる方式。初期表示が遅く、SEO に弱い場合がある
-- **SSR** はサーバーで HTML を組み立てる方式。初期表示が速く、SEO に強い
-- **ハイドレーション**により、SSR で送られた静的 HTML がインタラクティブになる
-- **SSG** はビルド時に HTML を生成する方式。静的サイトに最適
-- Next.js はこれらのレンダリング戦略を簡単に扱えるフレームワーク
+- React 単体の CSR は、ブラウザが JavaScript を実行して画面を作ります。初回表示が遅く、検索エンジンに内容が見えにくい弱点があります
+- SSR はサーバーで HTML を作って返します。初回表示が速く、検索エンジンにも対応できます
+- Next.js は SSR を簡単に実現するフレームワークです。React の書き方をそのまま使えます

