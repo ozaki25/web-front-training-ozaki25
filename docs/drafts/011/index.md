@@ -1,177 +1,126 @@
-# 非同期処理
+# データを取りに行く — fetch と非同期処理
 
 ## 今日のゴール
 
-- 同期処理と非同期処理の違いを知る
-- コールバック、Promise、async/await の 3 つの書き方を知る
-- `fetch` API でデータを取得する方法を知る
-- なぜ非同期処理が Web 開発で重要なのかを知る
+- ページ遷移しなくてもサーバーからデータを取れることを知る
+- `fetch` でサーバーにリクエストを送り、JSON でデータを受け取る流れを知る
+- 非同期処理の仕組みと `async` / `await` の書き方を知る
+- ネットワーク通信のエラーに備える必要があることを知る
 
-## 同期処理と非同期処理
+## ページを開いた後に中身が変わる
 
-### 同期処理 — 順番に 1 つずつ
+天気予報サイトを開くと、最初は「読み込み中...」と表示されて、少し経つと気温や天気のデータが現れます。SNS のタイムラインを開くと、ページ遷移していないのに新しい投稿が次々と表示されます。
 
-Day 11〜11 で書いてきた JavaScript のコードは、上から順に 1 行ずつ実行されていました。これが**同期処理**です。
+この「ページを開いた後にデータが表示される」体験の裏では、JavaScript がサーバーにデータを取りに行っています。ページ全体を再読み込みしなくても、必要なデータだけを取得して画面に反映できるのです。
 
-```javascript
-console.log("1番目");
-console.log("2番目");
-console.log("3番目");
-// 必ず 1 → 2 → 3 の順に表示される
+```mermaid
+sequenceDiagram
+    participant B as ブラウザ
+    participant S as サーバー
+    B->>B: ページを表示（HTMLを描画）
+    B->>S: 「天気のデータをください」
+    Note over B: 読み込み中...と表示
+    S-->>B: JSONでデータを返す
+    B->>B: 受け取ったデータで画面を更新
 ```
 
-### 非同期処理 — 待っている間に次へ進む
+このデータの取得に使うのが `fetch` という仕組みです。そして `fetch` を理解するには、**非同期処理**という考え方を知る必要があります。
 
-Web 開発では「時間がかかる処理」がたくさんあります。
+## fetch — サーバーにデータを取りに行く
 
-- サーバーからデータを取得する（ネットワーク通信）
-- ファイルを読み込む
-- タイマーで一定時間待つ
-
-これらの処理で「完了するまで何もできない」のでは、画面が固まってしまいます。**非同期処理**は、時間がかかる処理の完了を待たずに次の処理に進み、完了したら結果を受け取る仕組みです。
+`fetch` はブラウザに組み込まれている関数で、指定した URL にリクエストを送り、サーバーからの応答を受け取ります。
 
 ```javascript
-console.log("1番目");
-
-setTimeout(() => {
-  console.log("2番目（1秒後）");
-}, 1000);
-
-console.log("3番目");
-
-// 表示順: "1番目" → "3番目" → "2番目（1秒後）"
+const response = await fetch("https://jsonplaceholder.typicode.com/users/1");
+const user = await response.json();
+console.log(user.name); // "Leanne Graham"
 ```
 
-`setTimeout` は指定したミリ秒後に関数を実行する非同期処理です。1 秒待つ間に「3番目」が先に実行されています。
+やっていることは 2 ステップです。
 
-## コールバック — 昔のやり方
+1. **`fetch(URL)`** — サーバーにリクエストを送る。サーバーからの応答（レスポンス）が返ってくる
+2. **`response.json()`** — レスポンスの中身を JSON として読み取る
 
-初期の JavaScript では、非同期処理の結果を「コールバック関数」で受け取っていました。
+### JSON とは
+
+サーバーから返ってくるデータの形式は、多くの場合 **JSON**（JavaScript Object Notation）です。JavaScript のオブジェクトとほぼ同じ見た目をしています。
+
+```json
+{
+  "id": 1,
+  "name": "Leanne Graham",
+  "email": "Sincere@april.biz"
+}
+```
+
+`response.json()` を呼ぶと、この JSON 文字列が JavaScript のオブジェクトに変換されます。変換後は `user.name` のようにプロパティにアクセスできます。
+
+## 非同期処理 — なぜ await が必要か
+
+先ほどのコードに `await` というキーワードが出てきました。これがないとどうなるか、まずは `await` を外して考えてみます。
 
 ```javascript
-function fetchData(callback) {
-  setTimeout(() => {
-    callback("データを取得しました");
-  }, 1000);
+// await なしで fetch を呼ぶと...
+const response = fetch("https://jsonplaceholder.typicode.com/users/1");
+console.log(response); // Promise { <pending> } — データではない！
+```
+
+`fetch` はすぐにはデータを返しません。ネットワーク越しにサーバーと通信するので、応答が返ってくるまでに時間がかかります。もし「応答が返るまで何もしない」としたら、待っている間ページが完全に固まります。ボタンを押しても反応せず、スクロールもできません。
+
+だから JavaScript には**非同期処理**という仕組みがあります。「時間がかかる処理は裏で待って、その間も他の処理を進める」という考え方です。
+
+```mermaid
+graph LR
+    A["fetch を呼ぶ"] --> B["裏でサーバーの応答を待つ"]
+    A --> C["その間も画面操作できる"]
+    B --> D["応答が届いたら結果を受け取る"]
+```
+
+### Promise — 「後で届く結果」の入れ物
+
+`fetch` を呼ぶと、すぐにデータが返る代わりに **Promise**（プロミス）というオブジェクトが返ります。Promise は「今はまだ結果がないけど、後で届けます」という約束です。
+
+Promise には 3 つの状態があります。
+
+| 状態 | 意味 |
+|------|------|
+| **pending**（保留中） | まだ結果が届いていない |
+| **fulfilled**（成功） | 結果が届いた |
+| **rejected**（失敗） | エラーが起きた |
+
+### async / await — 「ここで待つ」と書ける構文
+
+Promise の結果を受け取るために使うのが `await` です。`await` を付けると、Promise の結果が届くまでその行で待ちます。ただし、ページ全体が固まるわけではありません。あくまでその関数の中だけが一時停止し、他の処理（画面のスクロールやボタンのクリックなど）は引き続き動きます。
+
+```javascript
+// await を付けると、結果が届くまで待ってから次の行に進む
+const response = await fetch("https://jsonplaceholder.typicode.com/users/1");
+// ↑ サーバーの応答が届いてから、次の行が実行される
+const user = await response.json();
+// ↑ JSON の変換が終わってから、次の行が実行される
+console.log(user.name); // "Leanne Graham" — ちゃんとデータが入っている
+```
+
+`await` を使うには、関数に `async` を付ける必要があります。`async` は「この関数の中で `await` を使います」という宣言です。
+
+```javascript
+async function loadUser() {
+  const response = await fetch("https://jsonplaceholder.typicode.com/users/1");
+  const user = await response.json();
+  console.log(user.name);
 }
 
-fetchData((result) => {
-  console.log(result);  // 1秒後に "データを取得しました"
-});
+loadUser();
 ```
 
-### コールバック地獄
+`async` と `await` はセットで覚えてください。
 
-非同期処理を連続して行うと、コールバックが入れ子になって読みにくくなります。
+- **`async`** を関数の前に付ける → その関数の中で `await` が使えるようになる
+- **`await`** を Promise の前に付ける → 結果が届くまで待ってから次に進む
 
-```javascript
-fetchUser(userId, (user) => {
-  fetchPosts(user.id, (posts) => {
-    fetchComments(posts[0].id, (comments) => {
-      console.log(comments);
-      // さらにネストが深くなる...
-    });
-  });
-});
-```
+## 実際のコード例
 
-これを**コールバック地獄（callback hell）** と呼びます。この問題を解決するために Promise が生まれました。
-
-## Promise — 非同期処理を扱うオブジェクト
-
-**Promise**（プロミス = 約束）は、「まだ結果が出ていないが、いずれ成功か失敗で結果が返る」ことを表すオブジェクトです。
-
-```javascript
-const promise = new Promise((resolve, reject) => {
-  setTimeout(() => {
-    const success = true;
-    if (success) {
-      resolve("成功しました！");   // 成功時
-    } else {
-      reject("エラーが発生しました");  // 失敗時
-    }
-  }, 1000);
-});
-```
-
-### then / catch で結果を受け取る
-
-```javascript
-promise
-  .then((result) => {
-    console.log(result);  // "成功しました！"
-  })
-  .catch((error) => {
-    console.log(error);   // エラー時
-  });
-```
-
-### Promise チェーン
-
-Promise は `.then()` を連結できるので、コールバック地獄を解消できます。
-
-```javascript
-fetchUser(userId)
-  .then((user) => fetchPosts(user.id))
-  .then((posts) => fetchComments(posts[0].id))
-  .then((comments) => {
-    console.log(comments);
-  })
-  .catch((error) => {
-    console.log("エラー:", error);
-  });
-```
-
-ネストが深くならず、上から下に読めるようになりました。
-
-## async / await — Promise をさらに読みやすく
-
-**async/await** は Promise をまるで同期処理のように書ける構文です。ES2017 で追加されました。
-
-```javascript
-async function loadData() {
-  try {
-    const user = await fetchUser(userId);
-    const posts = await fetchPosts(user.id);
-    const comments = await fetchComments(posts[0].id);
-    console.log(comments);
-  } catch (error) {
-    console.log("エラー:", error);
-  }
-}
-
-loadData();
-```
-
-- `async` を関数の前に付けると、その関数は非同期関数になる
-- `await` を Promise の前に付けると、その Promise が完了するまで待ってから次に進む
-- `await` は `async` 関数の中でだけ使える
-- エラーハンドリングは `try/catch` を使う（Day 18 で詳しく学びます）
-
-**コールバック → Promise → async/await と、書き方は進化してきましたが、やっていることは同じ「非同期処理」です。** 現在の実務では async/await が主流です。
-
-## fetch API — サーバーからデータを取得する
-
-**`fetch`** はブラウザに組み込まれた、HTTP リクエスト（サーバーとの通信）を行うための API です。Promise を返します。
-
-### 基本的な使い方
-
-```javascript
-async function loadUsers() {
-  const response = await fetch("https://jsonplaceholder.typicode.com/users");
-  const users = await response.json();
-  console.log(users);
-}
-
-loadUsers();
-```
-
-処理の流れ:
-
-1. `fetch(URL)` — サーバーにリクエストを送り、レスポンスの Promise を返す
-2. `await response.json()` — レスポンスの本文を JSON として解析する（これも非同期）
-
-### 完成形のコード
+ここまでの知識を使って、サーバーからユーザー一覧を取得して画面に表示する完全なコードを見てみます。
 
 ```html
 <!DOCTYPE html>
@@ -179,45 +128,12 @@ loadUsers();
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>fetch API の練習</title>
-    <style>
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-      body {
-        font-family: sans-serif;
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-      .user-card {
-        padding: 16px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        margin-bottom: 12px;
-      }
-      .user-card h2 {
-        margin: 0 0 8px;
-        font-size: 18px;
-      }
-      .user-card p {
-        margin: 4px 0;
-        color: #666;
-      }
-      .loading {
-        color: #888;
-      }
-      .error {
-        color: #d32f2f;
-      }
-    </style>
+    <title>ユーザー一覧</title>
   </head>
   <body>
     <h1>ユーザー一覧</h1>
     <div id="user-list" aria-live="polite">
-      <p class="loading">読み込み中...</p>
+      <p>読み込み中...</p>
     </div>
 
     <script>
@@ -235,21 +151,20 @@ loadUsers();
 
           const users = await response.json();
 
-          // コンテナの中身をクリア
           container.innerHTML = "";
 
-          users.forEach((user) => {
+          for (const user of users) {
             const card = document.createElement("article");
-            card.className = "user-card";
             card.innerHTML = `
               <h2>${user.name}</h2>
               <p>${user.email}</p>
-              <p>${user.company.name}</p>
             `;
             container.appendChild(card);
-          });
+          }
         } catch (error) {
-          container.innerHTML = `<p class="error">データの取得に失敗しました: ${error.message}</p>`;
+          container.innerHTML = `
+            <p>データの取得に失敗しました: ${error.message}</p>
+          `;
         }
       }
 
@@ -259,47 +174,80 @@ loadUsers();
 </html>
 ```
 
-このコードにはいくつかのポイントがあります。
+コードの流れを整理します。
 
-- **`response.ok`** のチェック — `fetch` はネットワークエラー以外ではエラーを投げません。404 や 500 のレスポンスもエラーにならないため、`response.ok` で成功かどうかを確認する必要があります
-- **`aria-live="polite"`** — この属性を付けた要素の内容が変わると、スクリーンリーダーがその変更を読み上げます。「読み込み中」から「ユーザー一覧」に変わったことが伝わります
-- **エラーハンドリング** — ネットワーク通信は失敗する可能性があるので、必ず `try/catch` でエラーを処理します
+1. ページが表示されると `loadUsers()` が呼ばれる
+2. `fetch` でサーバーにリクエストを送り、ユーザー一覧の JSON を受け取る
+3. 受け取ったデータをループで回し、1 人ずつ画面に追加する
+4. 通信中は「読み込み中...」が表示され、データが届くと内容が置き換わる
 
-### POST リクエスト（データの送信）
+このコードには `try / catch`、`response.ok`、`aria-live` という 3 つの見慣れない要素があります。次のセクションで説明します。
 
-データを取得するだけでなく、サーバーにデータを送ることもできます。
+## エラーへの備え
+
+ネットワーク通信は失敗する可能性があります。Wi-Fi が切れる、サーバーが落ちている、URL が間違っている — 原因はさまざまです。
+
+### try / catch — エラーを受け止める
+
+`try / catch` は「エラーが起きるかもしれないコードを安全に実行する」構文です。
 
 ```javascript
-async function createUser(userData) {
-  const response = await fetch("https://jsonplaceholder.typicode.com/users", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  });
-
-  const newUser = await response.json();
-  console.log("作成されたユーザー:", newUser);
+try {
+  // エラーが起きるかもしれない処理
+  const response = await fetch("https://example.com/api/data");
+  const data = await response.json();
+  console.log(data);
+} catch (error) {
+  // エラーが起きたときの処理
+  console.log("エラーが発生しました:", error.message);
 }
-
-createUser({
-  name: "山田太郎",
-  email: "yamada@example.com",
-});
 ```
 
-- `method: "POST"` — GET（取得）の代わりに POST（作成）を指定
-- `headers` — リクエストの付加情報。`Content-Type` で送信データの形式を伝える
-- `body` — 送信するデータ。`JSON.stringify` でオブジェクトを JSON 文字列に変換する
+- **`try`** ブロックの中でエラーが起きると、残りの処理をスキップして `catch` ブロックに飛ぶ
+- **`catch`** ブロックでエラーの内容を受け取り、ユーザーにメッセージを表示するなどの対処をする
+- エラーが起きなければ `catch` ブロックは実行されない
 
-HTTP メソッドやヘッダーについては Day 16 で詳しく学びます。
+`fetch` を使うときは `try / catch` で囲むのが基本です。ネットワーク通信が切れた場合、`fetch` 自体がエラーを投げるので `catch` で捕まえられます。
+
+### response.ok — サーバーのエラーを見分ける
+
+`fetch` は「通信自体が成功すれば」エラーを投げません。サーバーが「404 Not Found」や「500 Internal Server Error」を返しても、通信が成立していれば `fetch` はエラーにしません。
+
+```javascript
+const response = await fetch("https://example.com/api/not-found");
+// サーバーが 404 を返しても fetch はエラーにならない
+
+console.log(response.ok);     // false — 成功ではなかった
+console.log(response.status); // 404 — ステータスコード
+```
+
+だから `response.ok` を確認して、成功でなければ自分でエラーを発生させるのが定番のパターンです。
+
+```javascript
+if (!response.ok) {
+  throw new Error(`HTTP エラー: ${response.status}`);
+}
+```
+
+先ほどの完全なコード例では、この 2 つのパターン（`try / catch` と `response.ok` のチェック）をどちらも使っています。
+
+### aria-live でスクリーンリーダーに変化を伝える
+
+完全なコード例にもう 1 つ、`aria-live="polite"` という属性がありました。
+
+```html
+<div id="user-list" aria-live="polite">
+  <p>読み込み中...</p>
+</div>
+```
+
+`aria-live` を付けた要素の中身が変わると、スクリーンリーダーがその変更を読み上げます。`"polite"` は「今の読み上げが終わったら通知する」という意味です。「読み込み中...」からユーザー一覧に変わったこと、あるいはエラーメッセージが表示されたことが、目で画面を見られないユーザーにも伝わります。
 
 ## まとめ
 
-- 非同期処理は「時間がかかる処理の完了を待たずに次へ進む」仕組み
-- コールバック → Promise → async/await と進化した。**現在は async/await が主流**
-- `fetch` でサーバーと通信する。`fetch` は Promise を返す
-- `response.ok` でレスポンスの成否を確認する。`fetch` は HTTP エラーを自動で throw しない
-- ネットワーク通信は失敗する可能性があるので、必ずエラーハンドリングする
-- `aria-live` を使うと、動的に変わるコンテンツの変更をスクリーンリーダーに伝えられる
+- `fetch` でサーバーにリクエストを送り、データを取得できる。ページ遷移は不要
+- サーバーからのデータは **JSON** 形式で返ってくることが多い。`response.json()` でオブジェクトに変換する
+- `fetch` はすぐに結果を返さない。**非同期処理**として裏でサーバーの応答を待ち、その間も画面は固まらない
+- **`async` / `await`** で「ここで待つ」と書ける。`async` が付いた関数の中で `await` が使える
+- ネットワーク通信は失敗する前提で書く。**`try / catch`** でエラーを受け止め、**`response.ok`** でサーバーのエラーを見分ける
+- `aria-live` で動的に変わるコンテンツの変更をスクリーンリーダーに伝えられる
