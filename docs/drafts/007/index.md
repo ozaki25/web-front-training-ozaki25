@@ -1,23 +1,14 @@
-# JavaScript の基本文法
+# JavaScript の役割 — HTML と CSS だけでは作れない「動き」
 
 ## 今日のゴール
 
-- JavaScript の役割を知る
-- 変数（`const` / `let`）の使い分けを知る
-- 基本的なデータ型を知る
-- 条件分岐（`if`）とループ（`for`）の書き方を知る
+- HTML と CSS だけではページに「動き」を付けられないことを知る
+- JavaScript がブラウザで動く仕組みを知る
+- JavaScript で何ができるかの全体像を知る
 
-## JavaScript とは
+## ボタンを押しても何も起きない
 
-Day 1〜8 で HTML（構造）と CSS（見た目）を学びました。ここからは 3 つ目の柱である **JavaScript**（ジャバスクリプト）を学んでいきます。
-
-JavaScript は Web ページに**動き**を与える言語です。ボタンをクリックしたら何かが起こる、データを取得して表示する、入力内容をチェックする — こうしたインタラクティブな動作はすべて JavaScript の役割です。
-
-> Java と JavaScript は名前が似ていますが、まったく別の言語です。歴史的な事情で似た名前になっただけで、関係はありません。
-
-## JavaScript を書く場所
-
-HTML ファイルに `<script>` タグを書いて、その中に JavaScript を記述します。
+HTML でボタンを作ってみます。
 
 ```html
 <!DOCTYPE html>
@@ -25,245 +16,180 @@ HTML ファイルに `<script>` タグを書いて、その中に JavaScript を
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JavaScript の練習</title>
+    <title>ボタンの例</title>
   </head>
   <body>
-    <h1>JavaScript の練習</h1>
-    <p id="output"></p>
+    <button type="button">クリックしてください</button>
+    <p id="message"></p>
+  </body>
+</html>
+```
+
+ブラウザで開くと、ボタンは表示されます。押すこともできます。でも**何も起きません**。
+
+HTML はページの**構造**を作るための言語です。CSS は**見た目**を整える言語です。どちらも「ボタンを押したら何かする」という**動き**を記述する機能を持っていません。
+
+この「動き」を担当するのが JavaScript です。
+
+## JavaScript を足すと動き出す
+
+先ほどの HTML に `<script>` タグを足します。
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript の例</title>
+  </head>
+  <body>
+    <button type="button" id="btn">クリックしてください</button>
+    <p id="message"></p>
 
     <script>
-      document.getElementById("output").textContent = "JavaScript が動いています！";
+      const button = document.getElementById("btn");
+      const message = document.getElementById("message");
+
+      button.addEventListener("click", () => {
+        message.textContent = "ボタンが押されました！";
+      });
     </script>
   </body>
 </html>
 ```
 
-ブラウザで開くと、段落に「JavaScript が動いています！」と表示されます。
+今度はボタンを押すと「ボタンが押されました！」というテキストが表示されます。
 
-`<script>` タグは `<body>` の末尾に置くのが一般的です。HTML の読み込みが終わってから JavaScript が実行されるようにするためです。
+`<script>` タグの中に書かれたコードが JavaScript です。ブラウザは HTML を上から順に読んでいき、`<script>` タグを見つけると、その中のコードを**実行**します。
 
-### console.log で確認する
-
-開発中は `console.log()` を使ってブラウザの開発者ツール（DevTools）のコンソールに値を出力します。
-
-```html
-<script>
-  console.log("こんにちは");
-  console.log(1 + 2);
-  console.log("これは" + "文字列の結合");
-</script>
+```mermaid
+flowchart LR
+  HTML["HTML<br/>構造を作る"] --> CSS["CSS<br/>見た目を整える"]
+  CSS --> JS["JavaScript<br/>動きを付ける"]
+  JS --> Page["完成したページ"]
 ```
 
-ブラウザで F12 キー（または右クリック →「検証」）で DevTools を開き、「Console」タブを見ると出力が確認できます。
+## JavaScript にできること
 
-## 変数 — 値に名前を付ける
+JavaScript がブラウザで行える代表的なことを見てみましょう。
 
-**変数**は、値（データ）に名前を付けて保存しておく仕組みです。
-
-### const — 再代入しない変数（基本はこちら）
+### HTML の中身を書き換える
 
 ```javascript
-const name = "山田太郎";
-const age = 25;
-const isStudent = true;
-
-console.log(name);  // "山田太郎"
-console.log(age);   // 25
+document.getElementById("message").textContent = "こんにちは";
 ```
 
-`const` で宣言した変数には、あとから別の値を入れ直す（再代入する）ことができません。
+ページに表示されているテキストや HTML を、後から書き換えられます。ページを再読み込みしなくても、表示内容が変わります。
+
+### ユーザーの操作に反応する
 
 ```javascript
-const name = "山田太郎";
-name = "佐藤花子";  // ❌ エラーになる
+button.addEventListener("click", () => {
+  // ボタンがクリックされたときに実行される
+});
 ```
 
-### let — 再代入する変数
+クリック、キーボード入力、スクロールなど、ユーザーの操作を検知して、それに応じた処理を実行できます。
 
-値を後から変える必要がある場合は `let` を使います。
+### サーバーにデータを取りに行く
 
 ```javascript
-let count = 0;
-count = 1;      // ✅ 再代入できる
-count = count + 1;
-console.log(count);  // 2
+const response = await fetch("https://api.example.com/data");
+const data = await response.json();
 ```
 
-### var は使わない
+ページを表示した後に、サーバーにリクエストを送ってデータを取得できます。天気予報や SNS のタイムラインなど、後からデータを読み込んで表示する機能はこれで実現されています。
 
-古い JavaScript には `var` という変数宣言もありますが、スコープ（有効範囲）の挙動が直感的でない問題があるため、現在は使いません。**`const` を基本にし、再代入が必要なときだけ `let` を使う**のがルールです。
-
-## データ型
-
-JavaScript の値にはいくつかの**型**（データの種類）があります。
+### 表示を条件で切り替える
 
 ```javascript
-// 文字列（string）— ダブルクォートまたはシングルクォートで囲む
-const greeting = "こんにちは";
-const name = 'JavaScript';
-
-// 数値（number）— 整数も小数もすべて number
-const age = 25;
-const price = 1980.5;
-
-// 真偽値（boolean）— true（真）または false（偽）
-const isLoggedIn = true;
-const isEmpty = false;
-
-// null — 「値がない」を意図的に表す
-const data = null;
-
-// undefined — まだ値が設定されていない
-let result;
-console.log(result);  // undefined
-```
-
-### テンプレートリテラル
-
-バッククォート（`` ` ``）で囲むと、文字列の中に変数を埋め込めます。
-
-```javascript
-const name = "山田太郎";
-const age = 25;
-
-// 文字列結合（読みにくい）
-console.log("私は" + name + "で、" + age + "歳です。");
-
-// テンプレートリテラル（読みやすい）
-console.log(`私は${name}で、${age}歳です。`);
-```
-
-`${}` の中に変数や式を書きます。実務ではテンプレートリテラルが主流です。
-
-### typeof — 型を調べる
-
-```javascript
-console.log(typeof "hello");    // "string"
-console.log(typeof 42);         // "number"
-console.log(typeof true);       // "boolean"
-console.log(typeof undefined);  // "undefined"
-console.log(typeof null);       // "object" ← 歴史的なバグ。本当は null
-```
-
-## 演算子
-
-### 算術演算子
-
-```javascript
-console.log(10 + 3);   // 13（加算）
-console.log(10 - 3);   // 7（減算）
-console.log(10 * 3);   // 30（乗算）
-console.log(10 / 3);   // 3.333...（除算）
-console.log(10 % 3);   // 1（余り）
-```
-
-### 比較演算子
-
-```javascript
-console.log(5 === 5);     // true（厳密等価）
-console.log(5 === "5");   // false（型が違う）
-console.log(5 !== 3);     // true（厳密不等価）
-console.log(5 > 3);       // true
-console.log(5 >= 5);      // true
-console.log(5 < 3);       // false
-```
-
-> **`===`（厳密等価）と `==`（等価）の違い**: `==` は型変換を行ってから比較するため、`5 == "5"` が `true` になるなど予想外の結果を生みます。**常に `===` を使うのが基本です。**
-
-### 論理演算子
-
-```javascript
-console.log(true && true);    // true（AND: 両方 true なら true）
-console.log(true && false);   // false
-console.log(true || false);   // true（OR: どちらか true なら true）
-console.log(!true);           // false（NOT: 反転）
-```
-
-## 条件分岐
-
-### if 文
-
-```javascript
-const age = 20;
-
-if (age >= 18) {
-  console.log("成人です");
+if (count > 0) {
+  badge.textContent = count;
+  badge.style.display = "block";
 } else {
-  console.log("未成年です");
+  badge.style.display = "none";
 }
 ```
 
-### else if で複数の条件
+「通知が 0 件ならバッジを隠す」「ログイン中なら名前を表示する」のように、状態に応じて表示を切り替えられます。
+
+## JavaScript の基本的な書き方
+
+JavaScript のコードを読むための最低限の文法を紹介します。
+
+### 変数 — 値に名前を付ける
 
 ```javascript
-const score = 75;
+const name = "田中";       // 変更しない値
+let count = 0;             // 変更する値
+count = count + 1;         // let で宣言した変数は後から変更できる
+```
 
-if (score >= 90) {
-  console.log("優秀");
-} else if (score >= 70) {
-  console.log("良好");
-} else if (score >= 50) {
-  console.log("合格");
-} else {
-  console.log("不合格");
+`const` は値を変更しない変数、`let` は変更する変数に使います。迷ったら `const` を使い、変更が必要になったら `let` に変えるのが一般的です。
+
+### 関数 — 処理をまとめる
+
+```javascript
+function greet(name) {
+  return `こんにちは、${name}さん`;
 }
+
+greet("田中");  // "こんにちは、田中さん"
 ```
 
-### 三項演算子
+処理をまとめて名前を付けたものが関数です。`function` で定義し、`()` で呼び出します。
 
-簡単な条件分岐は 1 行で書けます。
+アロー関数という書き方もよく使われます。
 
 ```javascript
-const age = 20;
-const label = age >= 18 ? "成人" : "未成年";
-console.log(label);  // "成人"
+const greet = (name) => {
+  return `こんにちは、${name}さん`;
+};
 ```
 
-`条件 ? trueの場合の値 : falseの場合の値` という書き方です。React で頻繁に使うパターンです。
+`=>` を使う以外は同じです。Next.js のコードではアロー関数がよく出てきます。
 
-## ループ
-
-### for 文
+### オブジェクト — 関連するデータをまとめる
 
 ```javascript
-for (let i = 0; i < 5; i++) {
-  console.log(`${i}回目のループ`);
-}
-// 0回目のループ
-// 1回目のループ
-// ...
-// 4回目のループ
+const user = {
+  name: "田中",
+  age: 25,
+  email: "tanaka@example.com",
+};
+
+console.log(user.name);  // "田中"
 ```
 
-`for (初期化; 条件; 更新)` の 3 つの部分で構成されます。
+`{ }` で囲んで、キーと値のペアを並べます。`.` でキーを指定して値を取り出します。
 
-- `let i = 0` — カウンター変数を 0 で初期化
-- `i < 5` — この条件が true の間ループを続ける
-- `i++` — 毎回のループ後に i を 1 増やす（`i = i + 1` と同じ）
-
-### for...of 文
-
-配列（Day 13 で詳しく学びます）の各要素を順に処理するときに使います。
+### 配列 — 複数の値を並べる
 
 ```javascript
-const fruits = ["りんご", "みかん", "バナナ"];
+const colors = ["赤", "青", "緑"];
 
-for (const fruit of fruits) {
-  console.log(fruit);
-}
-// りんご
-// みかん
-// バナナ
+console.log(colors[0]);     // "赤"
+console.log(colors.length); // 3
 ```
 
-`for...of` は配列の各要素を直接変数に入れてくれるので、インデックスを気にする必要がありません。
+`[ ]` で囲んで、複数の値を順番に並べます。`[0]` のようにインデックス（0 から始まる番号）で取り出します。
+
+## console.log — 確認のための出力
+
+JavaScript を書くとき、値を確認する方法があります。
+
+```javascript
+const name = "田中";
+console.log(name);  // ブラウザの開発者ツールに "田中" と表示される
+```
+
+`console.log()` で渡した値が、ブラウザの開発者ツール（DevTools）の「Console」タブに表示されます。「この変数に何が入っているか」「ここまで処理が来ているか」を確認するために使います。
 
 ## まとめ
 
-- JavaScript は Web ページに動きを与える言語
-- 変数は `const`（基本）と `let`（再代入が必要な場合のみ）を使う。`var` は使わない
-- データ型: 文字列（`string`）、数値（`number`）、真偽値（`boolean`）、`null`、`undefined`
-- テンプレートリテラル（`` `${変数}` ``）で文字列に変数を埋め込める
-- 比較は必ず `===`（厳密等価）を使う
-- 条件分岐は `if` / `else if` / `else`。三項演算子は React で頻出
-- ループは `for` と `for...of` を使い分ける
+- HTML は構造、CSS は見た目、JavaScript は**動き**を担当します
+- `<script>` タグの中に書いたコードをブラウザが実行します
+- JavaScript で HTML の書き換え、ユーザー操作への反応、サーバーからのデータ取得などができます
+- `const` / `let` で変数、`function` で関数、`{ }` でオブジェクト、`[ ]` で配列を作ります
+- `console.log()` で開発者ツールに値を出力して確認できます
