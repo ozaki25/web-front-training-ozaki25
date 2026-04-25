@@ -1,72 +1,80 @@
-# ジェネリクスとユーティリティ型
+# ジェネリクスと型の絞り込み
 
 ## 今日のゴール
 
-- ジェネリクスの基本と使いどころを知る
-- 実用的なユーティリティ型（Partial, Required, Pick, Omit, Record）の使い方を知る
+- `<T>` は「型の変数」であることを知る
+- ユーティリティ型（Partial, Pick, Omit）で既存の型から新しい型を作れることを知る
+- 型の絞り込み（narrowing）の仕組みを知る
 
-## ジェネリクスとは
+## `<T>` は型の変数
 
-Day 13 で学んだ配列メソッド `map` を振り返ります。`map` は配列の要素を変換する関数です。
-
-```typescript
-const numbers = [1, 2, 3];
-const strings = numbers.map((n) => String(n)); // string[]
-```
-
-`numbers` は `number[]`、`strings` は `string[]` です。`map` は `number` の配列にも `string` の配列にも使えます。こういった「型に依存しない汎用的な処理」を実現するのがジェネリクス（generics）です。
-
-## ジェネリクスの基本
-
-ジェネリクスは「型を引数として受け取る仕組み」です。`<T>` のように山括弧で型パラメータを宣言します。
+AI が生成した TypeScript のコードを読んでいると、`<T>` や `<Props>` のような山括弧を見かけることがあります。
 
 ```typescript
-// T は「何かの型」を表すプレースホルダー
 function first<T>(items: T[]): T | undefined {
   return items[0];
 }
-
-// 使うときに T が具体的な型に置き換わる
-const num = first([1, 2, 3]);       // T = number → number | undefined
-const str = first(["a", "b", "c"]); // T = string → string | undefined
 ```
 
-`first` 関数は「配列の最初の要素を返す」というロジックです。配列の要素が何型であっても同じロジックが使えるので、ジェネリクスで型を抽象化しています。
-
-型パラメータ名は慣例として `T`（Type）、`U`、`V` や、`K`（Key）、`V`（Value）がよく使われます。
-
-## ジェネリクスなしだとどうなるか
-
-ジェネリクスを使わないで同じことをしようとすると、問題が起きます。
+この `T` は**型パラメータ**と呼ばれるもので、いわば「型の変数」です。普通の変数が値を入れる箱であるように、型パラメータは型を入れる箱です。関数を呼ぶときに、中に入る型が決まります。
 
 ```typescript
-// any を使う → 型安全でない
+const num = first([1, 2, 3]);       // T = number → 戻り値は number | undefined
+const str = first(["a", "b", "c"]); // T = string → 戻り値は string | undefined
+```
+
+TypeScript は引数から `T` に入る型を自動で推論します。`first([1, 2, 3])` なら配列の中身が `number` なので `T = number` です。
+
+この仕組みを**ジェネリクス**（generics）と呼びます。「型に依存しない汎用的な処理」を型安全に書けるようにするための仕組みです。
+
+### 実はもう見ている — `Array<string>` と `Promise<Response>`
+
+ジェネリクスは特別な構文に見えますが、日常的に触れている型にもすでに使われています。
+
+```typescript
+const names: Array<string> = ["Alice", "Bob"];
+const res: Promise<Response> = fetch("/api/data");
+```
+
+`Array<string>` は「`string` の配列」、`Promise<Response>` は「`Response` を返す Promise」です。`<>` の中に具体的な型を渡すことで、汎用的な型を特定の型に絞っています。
+
+`string[]` という書き方は `Array<string>` の省略形です。どちらも同じ意味ですが、ジェネリクスの仕組みが見えやすいのは `Array<string>` の方です。
+
+### ジェネリクスがないとどうなるか
+
+ジェネリクスを使わずに同じことをしようとすると、2 つの選択肢があります。どちらにも問題があります。
+
+```typescript
+// 方法 1: any を使う → 型安全でなくなる
 function firstAny(items: any[]): any {
   return items[0];
 }
-
 const value = firstAny([1, 2, 3]); // any 型 → 型チェックが効かない
 value.toUpperCase(); // エラーにならない！（実行時にクラッシュ）
 ```
 
 ```typescript
-// 型ごとに関数を作る → 冗長
+// 方法 2: 型ごとに関数を作る → 冗長
 function firstNumber(items: number[]): number | undefined {
   return items[0];
 }
 function firstString(items: string[]): string | undefined {
   return items[0];
 }
+// 型が増えるたびに同じ関数を量産する...
 ```
 
-ジェネリクスは「型安全かつ汎用的」を両立する仕組みです。
+ジェネリクスは「型安全」と「汎用性」を両立する仕組みです。
 
-## 型パラメータに制約を付ける
+## 自分でジェネリクスを作る
 
-型パラメータには `extends` で制約を付けられます。
+AI が書いたコードを読むだけでなく、ジェネリクスがどう作られるかを知っておくと理解が深まります。
+
+### 型に制約を付ける
+
+型パラメータには `extends` で制約を付けられます。「何でもよい」ではなく「この条件を満たす型だけ受け付ける」という指定です。
 
 ```typescript
-// T は { length: number } を持つ型に限定
 function logLength<T extends { length: number }>(item: T): void {
   console.log(item.length);
 }
@@ -76,14 +84,13 @@ logLength([1, 2, 3]);  // OK: 配列は length を持つ
 logLength(123);        // エラー！ number は length を持たない
 ```
 
-## ジェネリクスの実用例
+`T extends { length: number }` は「`T` は `length` プロパティ（`number` 型）を持つ型でなければならない」という制約です。
 
-実際の開発でよく見るパターンをいくつか紹介します。
+### API レスポンスの型を作る
 
-### API レスポンスのラッパー
+実際の開発でよく見るパターンです。API から返ってくるデータの「外側の構造」は共通で、「中身のデータ」だけが違うという場面を考えます。
 
 ```typescript
-// どんなデータでも包める汎用的な型
 interface ApiResponse<T> {
   data: T;
   status: number;
@@ -101,30 +108,20 @@ interface Product {
   price: number;
 }
 
-// 使うときに T を指定
 type UserResponse = ApiResponse<User>;
+// { data: User; status: number; message: string; }
+
 type ProductListResponse = ApiResponse<Product[]>;
+// { data: Product[]; status: number; message: string; }
 ```
 
-### キーと値のペア
+`ApiResponse<T>` という「型の枠」を 1 つ定義しておけば、中身を差し替えるだけで何種類でもレスポンス型を作れます。
 
-```typescript
-function toEntries<K extends string, V>(
-  obj: Record<K, V>
-): [K, V][] {
-  return Object.entries(obj) as [K, V][];
-}
-```
+## ユーティリティ型 — 既存の型から新しい型を作る
 
-> **`as` について**: `as [K, V][]` は**型アサーション**と呼ばれる構文で、「この値はこの型である」と TypeScript に明示的に伝えます。`Object.entries` の戻り値は `[string, V][]` ですが、実際にはキーが `K` 型であるとわかっているので `as` で型を指定しています。型アサーションは型チェックをすり抜けるため、本当にその型であると確信がある場合にだけ使います。Day 22 で学ぶ narrowing（型の絞り込み）で安全に型を判別できる場合は、そちらを優先します。
+TypeScript には、既存の型を変換する便利な組み込み型が用意されています。これを**ユーティリティ型**と呼びます。ジェネリクスの仕組みで作られており、`<>` の中に変換したい型を渡して使います。
 
-> **ポイント**: ジェネリクスは「同じロジックを異なる型で使い回す」ときに使います。すべてをジェネリクスにする必要はありません。具体的な型で十分な場面では具体的な型を使います。
-
-## ユーティリティ型
-
-TypeScript には、既存の型を変換する便利な組み込み型が用意されています。これをユーティリティ型と呼びます。
-
-### Partial\<T\> ― すべてのプロパティを省略可能に
+### Partial\<T\> — すべてのプロパティを省略可能に
 
 ```typescript
 interface User {
@@ -133,37 +130,36 @@ interface User {
   email: string;
 }
 
-// すべてのプロパティが省略可能になる
 type PartialUser = Partial<User>;
 // { name?: string; age?: number; email?: string; }
+```
 
-// ユーザー情報の部分更新に便利
+すべてのプロパティに `?` が付いた型になります。「一部だけ更新したい」という場面で便利です。
+
+```typescript
 function updateUser(id: number, changes: Partial<User>): void {
-  // name だけ、age だけ、など部分的な更新を受け付ける
   console.log(`ユーザー ${id} を更新:`, changes);
 }
 
-updateUser(1, { name: "新しい名前" });       // OK
-updateUser(1, { age: 26, email: "new@ex.com" }); // OK
+updateUser(1, { name: "新しい名前" });            // OK: name だけ
+updateUser(1, { age: 26, email: "new@example.com" }); // OK: age と email だけ
 ```
 
-### Required\<T\> ― すべてのプロパティを必須に
+### Required\<T\> — すべてのプロパティを必須に
 
-`Partial` の逆で、Optional なプロパティも必須にします。
+`Partial` の逆です。省略可能なプロパティも必須にします。
 
 ```typescript
 interface Config {
   apiUrl?: string;
   timeout?: number;
-  retries?: number;
 }
 
-// すべてのプロパティが必須になる
 type RequiredConfig = Required<Config>;
-// { apiUrl: string; timeout: number; retries: number; }
+// { apiUrl: string; timeout: number; }
 ```
 
-### Pick\<T, K\> ― 特定のプロパティだけ抽出
+### Pick\<T, K\> — 特定のプロパティだけ抽出
 
 ```typescript
 interface User {
@@ -173,83 +169,194 @@ interface User {
   email: string;
 }
 
-// name と email だけ抽出
 type UserContact = Pick<User, "name" | "email">;
 // { name: string; email: string; }
 ```
 
-### Omit\<T, K\> ― 特定のプロパティを除外
+元の型から必要なプロパティだけを選んで新しい型を作ります。
 
-`Pick` の逆です。
+### Omit\<T, K\> — 特定のプロパティを除外
+
+`Pick` の逆です。指定したプロパティを除いた型を作ります。
 
 ```typescript
-interface User {
-  id: number;
-  name: string;
-  age: number;
-  email: string;
-}
-
-// id を除外（新規作成時に id はまだない、という場面で便利）
+// 新規作成時は id がまだないので除外する
 type NewUser = Omit<User, "id">;
 // { name: string; age: number; email: string; }
 ```
 
-### Record\<K, V\> ― キーと値の型を指定したオブジェクト
+### 組み合わせて使う
+
+ユーティリティ型は組み合わせることで、より的確な型を作れます。
 
 ```typescript
-// string のキーに number の値を持つオブジェクト
-type ScoreMap = Record<string, number>;
-
-const scores: ScoreMap = {
-  math: 90,
-  english: 85,
-  science: 92,
-};
-```
-
-リテラル型と組み合わせると、キーを限定できます。
-
-```typescript
-type Subject = "math" | "english" | "science";
-type ScoreMap = Record<Subject, number>;
-
-const scores: ScoreMap = {
-  math: 90,
-  english: 85,
-  science: 92,
-  // history: 80, // エラー！ "history" は Subject に含まれない
-};
-```
-
-## ユーティリティ型の組み合わせ
-
-ユーティリティ型は組み合わせて使うこともできます。
-
-```typescript
-interface User {
-  id: number;
-  name: string;
-  age: number;
-  email: string;
-}
-
 // id 以外のプロパティを部分的に更新できる型
 type UserUpdate = Partial<Omit<User, "id">>;
 // { name?: string; age?: number; email?: string; }
+```
 
-function updateUser(id: number, changes: UserUpdate): void {
-  console.log(`ユーザー ${id} を更新:`, changes);
+`Omit<User, "id">` で `id` を除き、`Partial<>` で残りを省略可能にしています。「id は変えられないが、他の項目は好きなものだけ更新できる」という意図がそのまま型になります。
+
+```mermaid
+flowchart LR
+  A["User\nid, name, age, email"] -->|"Omit&lt;User, 'id'&gt;"| B["name, age, email"]
+  B -->|"Partial&lt;...&gt;"| C["name?, age?, email?"]
+```
+
+## 型の絞り込み（narrowing）
+
+TypeScript にはユニオン型という「複数の型のどれか」を表す仕組みがあります。
+
+```typescript
+let value: string | number;
+```
+
+この `value` は `string` かもしれないし `number` かもしれません。そのままでは `string` 専用のメソッドも `number` 専用のメソッドも呼べません。
+
+```typescript
+function format(value: string | number): string {
+  return value.toUpperCase(); // エラー！ number には toUpperCase がない
+}
+```
+
+そこで `if` 文を使って型を確定させます。TypeScript は条件分岐を読み取って、ブロック内の型を自動的に絞り込みます。この仕組みを**ナローイング**（narrowing）と呼びます。
+
+### typeof による絞り込み
+
+`typeof` 演算子で値の型を判定できます。
+
+```typescript
+function format(value: string | number): string {
+  if (typeof value === "string") {
+    // ここでは value は string 型
+    return value.toUpperCase();
+  }
+  // ここでは value は number 型（string の可能性が排除された）
+  return value.toFixed(2);
+}
+```
+
+TypeScript のコンパイラは `if (typeof value === "string")` を見て、そのブロック内では `value` が `string` であることを理解します。`else` 側では `string` の可能性が排除されるので `number` と確定します。これを**制御フロー分析**（control flow analysis）と呼びます。
+
+### in 演算子による絞り込み
+
+オブジェクトが特定のプロパティを持つかどうかで型を絞り込めます。
+
+```typescript
+interface Dog {
+  bark(): void;
 }
 
-updateUser(1, { name: "佐藤" }); // OK
+interface Cat {
+  meow(): void;
+}
+
+function makeSound(animal: Dog | Cat): void {
+  if ("bark" in animal) {
+    // ここでは animal は Dog 型
+    animal.bark();
+  } else {
+    // ここでは animal は Cat 型
+    animal.meow();
+  }
+}
 ```
+
+### null チェックによる絞り込み
+
+`null` や `undefined` の可能性がある値は、真偽チェックで絞り込めます。
+
+```typescript
+function greet(name: string | null): string {
+  if (name) {
+    // ここでは name は string 型
+    return `こんにちは、${name}さん`;
+  }
+  return "こんにちは";
+}
+```
+
+### Discriminated Union — 共通プロパティで型を判別する
+
+複数の型が共通のプロパティ（リテラル型）を持つとき、そのプロパティの値で型を安全に判別できます。このパターンを **discriminated union**（判別可能なユニオン）と呼びます。
+
+```typescript
+interface LoadingState {
+  status: "loading";
+}
+
+interface SuccessState {
+  status: "success";
+  data: string[];
+}
+
+interface ErrorState {
+  status: "error";
+  message: string;
+}
+
+type State = LoadingState | SuccessState | ErrorState;
+```
+
+`status` プロパティの値がそれぞれ異なるリテラル型になっています。`switch` で分岐すると、各 `case` の中で型が確定します。
+
+```typescript
+function render(state: State): string {
+  switch (state.status) {
+    case "loading":
+      return "読み込み中...";
+    case "success":
+      // ここでは state は SuccessState → data にアクセスできる
+      return `${state.data.length}件のデータ`;
+    case "error":
+      // ここでは state は ErrorState → message にアクセスできる
+      return `エラー: ${state.message}`;
+  }
+}
+```
+
+このパターンは API のレスポンス状態の管理でよく使われます。「読み込み中」「成功」「エラー」を 1 つの型で表現しつつ、各状態に固有のデータへ安全にアクセスできます。
+
+### 網羅性チェック
+
+discriminated union の大きなメリットは、すべてのケースを処理しているかをコンパイラがチェックできることです。
+
+```typescript
+// 後から新しい状態を追加したとする
+interface RetryingState {
+  status: "retrying";
+  attempt: number;
+}
+
+type State = LoadingState | SuccessState | ErrorState | RetryingState;
+
+function render(state: State): string {
+  switch (state.status) {
+    case "loading":
+      return "読み込み中...";
+    case "success":
+      return `${state.data.length}件のデータ`;
+    case "error":
+      return `エラー: ${state.message}`;
+    // "retrying" のケースがない！
+    default: {
+      const _exhaustive: never = state;
+      // RetryingState が処理されていないのでコンパイルエラーになる
+      return _exhaustive;
+    }
+  }
+}
+```
+
+`never` 型は「ありえない値」を表す型です。すべてのケースを処理していれば `default` に到達する型は `never` になりますが、処理漏れがあると `never` に代入できない型が残るのでエラーになります。新しい状態を追加したときに処理漏れを機械的に検出できる仕組みです。
 
 ## まとめ
 
-- ジェネリクスは「型を引数として受け取る」仕組みで、型安全かつ汎用的なコードを書ける
-- `extends` で型パラメータに制約を付けられる
-- `Partial<T>` は全プロパティを省略可能に、`Required<T>` は全プロパティを必須にする
-- `Pick<T, K>` で特定プロパティを抽出、`Omit<T, K>` で特定プロパティを除外
-- `Record<K, V>` でキーと値の型を指定したオブジェクトを定義できる
-- ユーティリティ型は組み合わせて使える
+- `<T>` は「型の変数」。`Array<string>` も `Promise<Response>` も同じジェネリクスの仕組み
+- ジェネリクスは「型安全」と「汎用性」を両立する。`any` を使わなくて済む
+- ユーティリティ型で既存の型を変換できる
+  - `Partial<T>` は全プロパティを省略可能に、`Required<T>` は全プロパティを必須に
+  - `Pick<T, K>` で特定プロパティを抽出、`Omit<T, K>` で特定プロパティを除外
+  - 組み合わせて `Partial<Omit<User, "id">>` のような型も作れる
+- 型の絞り込み（narrowing）は `typeof`、`in`、null チェックなどで型を確定する仕組み
+- discriminated union は共通のリテラル型プロパティで型を判別するパターン。`never` 型で網羅性もチェックできる

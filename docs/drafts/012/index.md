@@ -1,254 +1,112 @@
-# HTTP とネットワーク基礎
+# HTTP — ページを 1 回開くだけでブラウザは何十回もリクエストしている
 
 ## 今日のゴール
 
-- HTTP の基本的な仕組み（リクエストとレスポンス）を知る
-- HTTP メソッド（GET / POST / PUT / DELETE）の使い分けを知る
-- ステータスコードの意味を知る
-- REST の基本概念を知る
+- HTTP がリクエストとレスポンスのやり取りであることを知る
+- ブラウザの Network タブで通信の中身が丸見えであることを知る
+- ステータスコードの読み方を知る
 
-## HTTP とは
+## ページを開いただけで何が起きているか
 
-Day 15 で `fetch` を使ってサーバーからデータを取得しました。このとき、ブラウザとサーバーの間で使われていた通信の取り決め（プロトコル）が **HTTP（HyperText Transfer Protocol）** です。
+ブラウザで Web ページを 1 つ開きます。画面にはテキスト、画像、スタイルが表示されます。ユーザーの目にはページが「表示された」だけですが、裏ではブラウザが大量の通信を行っています。
 
-HTTP は**「**リクエスト（要求）とレスポンス（応答）」のやり取りで成り立っています。
+ブラウザの開発者ツール（DevTools）を開いて「Network」タブを見ると、それが丸見えになります。
+
+1. ブラウザで任意のサイトを開く
+2. 右クリック → 「検証」→ 「Network」タブ
+3. ページを再読み込み
+
+すると、HTML、CSS、JavaScript、画像、フォントなど、何十ものファイルが一覧に並びます。1 つのページを表示するために、ブラウザはこれだけの回数サーバーと通信しているのです。
+
+## HTTP — リクエストとレスポンス
+
+この通信に使われているのが **HTTP** です。仕組みはシンプルで、**リクエスト（要求）とレスポンス（応答）** の 1 往復が基本単位です。
 
 ```mermaid
 sequenceDiagram
-    participant Browser as ブラウザ（クライアント）
-    participant Server as サーバー
-    Browser->>Server: HTTPリクエスト「このデータをください」
-    Server->>Browser: HTTPレスポンス「はい、どうぞ」
+    participant B as ブラウザ
+    participant S as サーバー
+    B->>S: リクエスト（このファイルをください）
+    S-->>B: レスポンス（ファイルの中身 + ステータス）
 ```
 
-Web ページを表示するとき、ブラウザは裏側で多数の HTTP リクエストを送っています。HTML ファイル、CSS ファイル、画像、JavaScript ファイル — それぞれが個別の HTTP リクエストで取得されます。
+ブラウザが「この URL のファイルをください」とリクエストを送り、サーバーが「はい、これです」とレスポンスを返す。Network タブに並んでいる行の 1 つ 1 つが、この 1 往復に対応しています。
 
-## HTTP リクエストの構造
+## リクエストの中身
 
-HTTP リクエストは主に以下の部分で構成されます。
+Network タブで行をクリックすると、リクエストの詳細が見えます。
 
-```
-GET /users HTTP/1.1
-Host: api.example.com
-Accept: application/json
-Authorization: Bearer xxxxx
-```
+### HTTP メソッド — 何をしたいか
 
-| 部分 | 説明 |
-|------|------|
-| メソッド | 何をしたいか（GET, POST, PUT, DELETE など） |
-| パス | どのリソースに対してか（`/users`） |
-| ヘッダー | 付加情報（認証情報、受け入れるデータ形式など） |
-| ボディ | 送信するデータ（POST/PUT で使う） |
+リクエストには「何をしたいか」を示す**メソッド**が含まれています。
 
-## HTTP メソッド
-
-HTTP メソッドは「このリクエストで何をしたいか」を表します。
-
-| メソッド | 用途 | 例 |
+| メソッド | 意味 | 例 |
 |---------|------|-----|
-| **GET** | データの取得 | ユーザー一覧を取得する |
-| **POST** | データの作成 | 新しいユーザーを登録する |
-| **PUT** | データの全体更新 | ユーザー情報を丸ごと更新する |
-| **PATCH** | データの部分更新 | ユーザーのメールアドレスだけ更新する |
-| **DELETE** | データの削除 | ユーザーを削除する |
+| `GET` | データを取得する | ページの表示、API からデータを読む |
+| `POST` | データを送信する | フォームの送信、新しいデータの作成 |
+| `PUT` | データを更新する | プロフィールの更新 |
+| `DELETE` | データを削除する | 投稿の削除 |
 
-### fetch での使い分け
+ページを開いたときの通信はほとんど `GET` です。フォームを送信したときに `POST` が飛びます。
+
+### URL — どこに送るか
+
+リクエストには送り先の URL が含まれています。`https://api.example.com/users` のように、サーバーの住所とパスで構成されます。
+
+## レスポンスの中身
+
+サーバーが返すレスポンスには、ファイルの中身のほかに**ステータスコード**が含まれています。
+
+### ステータスコード — 結果を 3 桁の数字で伝える
+
+| コード | 意味 | よく見る場面 |
+|--------|------|-------------|
+| `200` | 成功 | ページが正常に表示された |
+| `301` | 恒久的な移動 | URL が変わった（リダイレクト） |
+| `404` | 見つからない | URL を間違えた、ページが削除された |
+| `500` | サーバーエラー | サーバー側のプログラムが壊れた |
+
+百の位で大まかな意味がわかります。
+
+- **2xx**: 成功
+- **3xx**: リダイレクト
+- **4xx**: クライアント側のエラー（URL 間違いなど）
+- **5xx**: サーバー側のエラー
+
+Network タブでステータスコードが赤字（4xx, 5xx）になっていたら、そこが問題の手がかりです。
+
+## fetch と HTTP の関係
+
+JavaScript の `fetch` は、HTTP リクエストをコードから送る仕組みです。
 
 ```javascript
-// GET（デフォルト）
 const response = await fetch("https://api.example.com/users");
-
-// POST
-const response = await fetch("https://api.example.com/users", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ name: "山田太郎", email: "yamada@example.com" }),
-});
-
-// PUT
-const response = await fetch("https://api.example.com/users/1", {
-  method: "PUT",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ name: "山田太郎", email: "new@example.com" }),
-});
-
-// DELETE
-const response = await fetch("https://api.example.com/users/1", {
-  method: "DELETE",
-});
 ```
 
-## HTTP レスポンスの構造
-
-```
-HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 256
-
-{"id": 1, "name": "山田太郎", "email": "yamada@example.com"}
-```
-
-| 部分 | 説明 |
-|------|------|
-| ステータスコード | 処理結果を数字で表す（200, 404, 500 など） |
-| ヘッダー | 付加情報（データ形式、サイズなど） |
-| ボディ | レスポンスデータ（JSON、HTML など） |
-
-## ステータスコード
-
-ステータスコードは 3 桁の数字で、最初の 1 桁でカテゴリが決まります。
-
-### 2xx — 成功
-
-| コード | 意味 |
-|--------|------|
-| **200** OK | リクエスト成功 |
-| **201** Created | リソースの作成に成功（POST の成功時によく使う） |
-| **204** No Content | 成功したがレスポンスボディなし（DELETE の成功時によく使う） |
-
-### 3xx — リダイレクト
-
-| コード | 意味 |
-|--------|------|
-| **301** Moved Permanently | URL が恒久的に変更された |
-| **302** Found | URL が一時的に変更された |
-| **304** Not Modified | キャッシュがそのまま使える |
-
-### 4xx — クライアントエラー（リクエスト側の問題）
-
-| コード | 意味 |
-|--------|------|
-| **400** Bad Request | リクエストの形式が不正 |
-| **401** Unauthorized | 認証が必要（ログインしていない） |
-| **403** Forbidden | アクセス権限がない |
-| **404** Not Found | リソースが見つからない |
-| **422** Unprocessable Entity | リクエストの形式は正しいがデータに問題がある |
-
-### 5xx — サーバーエラー（サーバー側の問題）
-
-| コード | 意味 |
-|--------|------|
-| **500** Internal Server Error | サーバー内部エラー |
-| **502** Bad Gateway | 中間サーバーが不正なレスポンスを受け取った |
-| **503** Service Unavailable | サーバーが一時的に利用不可（メンテナンス中など） |
-
-### fetch でステータスコードを扱う
+この 1 行で、ブラウザは `GET https://api.example.com/users` という HTTP リクエストをサーバーに送ります。サーバーが返した HTTP レスポンスが `response` に入ります。
 
 ```javascript
-async function fetchUser(id) {
-  const response = await fetch(`https://api.example.com/users/${id}`);
-
-  if (response.status === 404) {
-    console.log("ユーザーが見つかりません");
-    return null;
-  }
-
-  if (!response.ok) {
-    throw new Error(`HTTP エラー: ${response.status}`);
-  }
-
-  return await response.json();
-}
+console.log(response.status);  // 200
+const data = await response.json();
 ```
 
-## リクエストヘッダーとレスポンスヘッダー
+`response.status` でステータスコード（200 など）が取れます。Network タブに表示される情報と同じものが、コードからアクセスできるのです。
 
-ヘッダーはリクエストやレスポンスの「付加情報」です。
+## Network タブは最強のデバッグツール
 
-### よく使うリクエストヘッダー
+「API からデータが返ってこない」「画像が表示されない」「ページが遅い」。こうした問題に遭遇したとき、最初に見るべき場所が Network タブです。
 
-| ヘッダー | 用途 | 例 |
-|---------|------|-----|
-| `Content-Type` | 送信するデータの形式 | `application/json` |
-| `Accept` | 受け取りたいデータの形式 | `application/json` |
-| `Authorization` | 認証情報 | `Bearer eyJhbGci...` |
+- **ステータスコードが 404**: URL が間違っている
+- **ステータスコードが 500**: サーバー側のバグ
+- **リクエストが飛んでいない**: そもそもコードが実行されていない
+- **レスポンスの中身が空**: サーバーがデータを返していない
 
-### よく使うレスポンスヘッダー
-
-| ヘッダー | 用途 | 例 |
-|---------|------|-----|
-| `Content-Type` | レスポンスデータの形式 | `application/json; charset=utf-8` |
-| `Cache-Control` | キャッシュの制御 | `max-age=3600` |
-| `Set-Cookie` | Cookie の設定 | `session=abc123` |
-
-### DevTools で確認する
-
-ブラウザの DevTools の「Network」タブで、実際の HTTP リクエストとレスポンスを確認できます。
-
-1. DevTools を開く（F12）
-2. 「Network」タブを選択
-3. ページを更新する
-4. 一覧に表示されるリクエストをクリックすると、ヘッダーやレスポンスの詳細が見られる
-
-Day 15 のユーザー一覧ページを開いた状態で確認すると、`jsonplaceholder.typicode.com/users` へのリクエストが見つかります。
-
-## JSON
-
-**JSON（JavaScript Object Notation）** は、データのやり取りに使われる最も一般的なフォーマットです。
-
-```json
-{
-  "name": "山田太郎",
-  "age": 25,
-  "isStudent": false,
-  "hobbies": ["読書", "ランニング"],
-  "address": {
-    "city": "東京",
-    "zip": "100-0001"
-  }
-}
-```
-
-JavaScript のオブジェクトとほぼ同じ見た目ですが、JSON には制約があります。
-
-- キーは必ずダブルクォート（`"`）で囲む
-- 末尾のカンマ（trailing comma）は不可
-- コメントは書けない
-- 値に関数は使えない
-
-### JavaScript と JSON の変換
-
-```javascript
-// JavaScript オブジェクト → JSON 文字列
-const user = { name: "山田", age: 25 };
-const json = JSON.stringify(user);
-console.log(json);  // '{"name":"山田","age":25}'
-
-// JSON 文字列 → JavaScript オブジェクト
-const parsed = JSON.parse(json);
-console.log(parsed.name);  // "山田"
-```
-
-## REST の基本概念
-
-**REST（Representational State Transfer）** は、Web API の設計スタイルです。「こう設計すると分かりやすい API になる」という考え方の集まりです。
-
-### REST の基本ルール
-
-1. **リソースを URL で表す**: `/users`（ユーザー一覧）、`/users/1`（ID が 1 のユーザー）
-2. **HTTP メソッドで操作を表す**: GET（取得）、POST（作成）、PUT（更新）、DELETE（削除）
-3. **ステートレス**: サーバーはリクエスト間の状態を保持しない。必要な情報は毎回リクエストに含める
-
-### RESTful な API の例
-
-| 操作 | メソッド | URL | 説明 |
-|------|---------|-----|------|
-| ユーザー一覧 | GET | `/users` | 全ユーザーを取得 |
-| ユーザー詳細 | GET | `/users/1` | ID=1 のユーザーを取得 |
-| ユーザー作成 | POST | `/users` | 新しいユーザーを作成 |
-| ユーザー更新 | PUT | `/users/1` | ID=1 のユーザーを更新 |
-| ユーザー削除 | DELETE | `/users/1` | ID=1 のユーザーを削除 |
-
-URL が「何を」、メソッドが「どうするか」を表しています。この一貫した設計により、API の使い方が予測しやすくなります。
-
-Next.js の Route Handlers（API エンドポイント）も、この REST の考え方に基づいて設計することが多いです。
+Network タブを開く習慣をつけるだけで、問題の原因がわかるスピードが大きく変わります。
 
 ## まとめ
 
-- HTTP はリクエストとレスポンスのやり取り
-- HTTP メソッド: GET（取得）、POST（作成）、PUT/PATCH（更新）、DELETE（削除）
-- ステータスコード: 2xx（成功）、3xx（リダイレクト）、4xx（クライアントエラー）、5xx（サーバーエラー）
-- ヘッダーはリクエスト/レスポンスの付加情報。DevTools の Network タブで確認できる
-- JSON は Web API のデータ交換で最も使われるフォーマット
-- REST は URL でリソースを、HTTP メソッドで操作を表す API 設計スタイル
+- ページを 1 回開くだけで、ブラウザは何十回もの HTTP リクエストをサーバーに送っています
+- HTTP は「リクエストとレスポンス」の 1 往復が基本単位です
+- リクエストには「何をしたいか」を示すメソッド（GET, POST など）が含まれます
+- レスポンスには結果を示すステータスコード（200 成功、404 見つからない、500 サーバーエラー）が含まれます
+- ブラウザの Network タブでこれらの通信が丸見えになります。デバッグの第一歩はここを開くことです
