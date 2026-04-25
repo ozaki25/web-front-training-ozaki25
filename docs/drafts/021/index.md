@@ -1,21 +1,55 @@
-# state とイベント処理
+# state — let で変数を変えても画面が変わらない理由
 
 ## 今日のゴール
 
-- useState で状態を管理する方法を知る
-- イベントハンドラーの書き方を知る
-- 再レンダリングの仕組みを知る
-- state の不変性がなぜ重要かを知る
+- React で画面を更新するには `useState` が必要な理由を知る
+- state が変わると React がコンポーネントを再実行する仕組みを知る
+- イベントハンドラで state を更新するパターンを知る
 
-## state とは
+## let で変数を変えても画面は変わらない
 
-Day 24 で学んだ props は、親から渡されるデータでした。では、コンポーネント自身が「今何回クリックされたか」「入力フォームに何が入力されているか」といった変化する情報を持つにはどうすればよいでしょうか。
+React でカウンターを作ろうとして、こう書いたとします。
 
-これを実現するのが **state**（ステート、状態）です。state はコンポーネントが自分で管理する値で、変更すると React が画面を自動的に更新します。
+```tsx
+function Counter() {
+  let count = 0;
 
-## useState
+  const handleClick = () => {
+    count = count + 1;
+    console.log(count);  // 1, 2, 3... と増える
+  };
 
-React で state を使うには `useState` Hook（フック）を呼び出します。
+  return (
+    <div>
+      <p>{count}</p>
+      <button onClick={handleClick}>+1</button>
+    </div>
+  );
+}
+```
+
+ボタンを押すと `console.log` では `count` が増えています。しかし**画面上の数字は 0 のまま変わりません**。
+
+これは React の根本的な仕組みに関わる話です。
+
+## React は関数を「再実行」して画面を作り直す
+
+React のコンポーネントは関数です。React はこの関数を呼び出して、戻り値の JSX から画面を作ります。
+
+画面を更新するとき、React はこの関数を**もう一度呼び出します**。これを**再レンダリング**と呼びます。
+
+```mermaid
+flowchart LR
+  A["state が変わる"] --> B["コンポーネント関数を再実行"]
+  B --> C["新しい JSX を生成"]
+  C --> D["前回との差分を DOM に反映"]
+```
+
+`let count = 0` の問題はここにあります。関数が再実行されるたびに `let count = 0` も再実行され、**毎回 0 に戻ってしまいます**。
+
+## useState — 再実行をまたいで値を保持する
+
+`useState` は、コンポーネントの再実行をまたいで値を保持する仕組みです。
 
 ```tsx
 import { useState } from "react";
@@ -23,227 +57,98 @@ import { useState } from "react";
 function Counter() {
   const [count, setCount] = useState(0);
 
+  const handleClick = () => {
+    setCount(count + 1);
+  };
+
   return (
     <div>
-      <p>カウント: {count}</p>
-      <button onClick={() => setCount(count + 1)}>
-        +1
-      </button>
+      <p>{count}</p>
+      <button onClick={handleClick}>+1</button>
     </div>
   );
 }
 ```
 
-`useState(0)` は配列を返します。
+`useState(0)` は「初期値 0 の state を作る」という意味です。戻り値は 2 つ:
 
-- `count` — 現在の state の値（初期値は `0`）
-- `setCount` — state を更新する関数
+- `count`: 現在の値
+- `setCount`: 値を更新する関数
 
-`setCount` を呼ぶと state が更新され、React がコンポーネントを再実行（**再レンダリング**）して画面が更新されます。
+`setCount(count + 1)` を呼ぶと:
 
-> **Hook（フック）とは**: `use` で始まる関数を Hook と呼びます。React の機能（state、副作用など）をコンポーネントで使えるようにする仕組みです。Hook はコンポーネントのトップレベルで呼び出す必要があり、`if` の中やループの中では使えません。
+1. React が新しい値（`count + 1`）を記憶する
+2. コンポーネント関数を再実行する
+3. 今度は `useState(0)` が `0` ではなく記憶した新しい値を返す
+4. 新しい JSX が生成される
+5. 画面が更新される
 
-## イベントハンドラー
+`let` は関数内の普通の変数なので再実行で消えます。`useState` は React が管理する「関数の外にある保管場所」なので、再実行をまたいで値が残ります。
 
-Day 14 で学んだ `addEventListener` の React 版がイベントハンドラーです。JSX 属性として `on` + イベント名で指定します。
+## イベントハンドラ — ユーザーの操作をきっかけにする
+
+`onClick` に渡す関数を**イベントハンドラ**と呼びます。
 
 ```tsx
-function App() {
-  function handleClick() {
-    console.log("クリックされました");
-  }
+<button onClick={handleClick}>+1</button>
+```
 
-  return <button onClick={handleClick}>クリック</button>;
+React のイベントハンドラは HTML の属性名とは少し違います。
+
+| HTML | React |
+|------|-------|
+| `onclick` | `onClick` |
+| `onchange` | `onChange` |
+| `onsubmit` | `onSubmit` |
+
+キャメルケース（小文字始まり、単語の区切りを大文字）になっています。
+
+### よくある state + イベントのパターン
+
+```tsx
+function Toggle() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div>
+      <button onClick={() => setIsOpen(!isOpen)}>
+        {isOpen ? "閉じる" : "開く"}
+      </button>
+      {isOpen && <p>コンテンツが表示されています</p>}
+    </div>
+  );
 }
 ```
 
-`onClick={handleClick}` に注目です。`handleClick()` と括弧を付けると関数がその場で実行されてしまいます。括弧なしで関数の参照を渡すのがポイントです。
+- `isOpen` が `false` → ボタンに「開く」と表示。コンテンツは非表示
+- ボタンをクリック → `setIsOpen(!isOpen)` で `true` に
+- React がコンポーネントを再実行 → ボタンが「閉じる」に、コンテンツが表示
 
-### TypeScript でのイベント型
+state を変えると画面が自動で変わる。これが DOM を手動で書き換えていた時代との決定的な違いです。
 
-Day 22 で DOM イベントの型を学びました。React では独自のイベント型を使います。
+## state は「1 つの値」ではない
+
+state は 1 つのコンポーネント内に複数持てます。
 
 ```tsx
-function SearchForm() {
-  const [query, setQuery] = useState("");
-
-  function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setQuery(event.target.value);
-  }
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    console.log(`検索: ${query}`);
-  }
+function Form() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="search">検索</label>
-      <input
-        id="search"
-        type="text"
-        value={query}
-        onChange={handleChange}
-      />
-      <button type="submit">検索する</button>
+    <form>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <input value={email} onChange={(e) => setEmail(e.target.value)} />
     </form>
   );
 }
 ```
 
-よく使うイベント型をまとめます。
-
-| JSX 属性 | イベント型 |
-|----------|-----------|
-| `onClick` | `React.MouseEvent<HTMLButtonElement>` |
-| `onChange` | `React.ChangeEvent<HTMLInputElement>` |
-| `onSubmit` | `React.FormEvent<HTMLFormElement>` |
-| `onKeyDown` | `React.KeyboardEvent<HTMLInputElement>` |
-| `onFocus` | `React.FocusEvent<HTMLInputElement>` |
-
-## 再レンダリングの仕組み
-
-`useState` の更新関数（`setCount` など）を呼ぶと何が起きるか、順を追って見ていきます。
-
-```tsx
-function Counter() {
-  console.log("Counter がレンダリングされました");
-  const [count, setCount] = useState(0);
-
-  return (
-    <div>
-      <p>カウント: {count}</p>
-      <button onClick={() => setCount(count + 1)}>+1</button>
-    </div>
-  );
-}
-```
-
-1. 初回レンダリング: `count` は `0`、画面に「カウント: 0」が表示される
-2. ボタンをクリック: `setCount(1)` が呼ばれる
-3. React が `Counter` 関数を再度呼び出す（再レンダリング）
-4. 今度は `count` が `1` になっている
-5. 新しい仮想 DOM と前の仮想 DOM を比較し、差分だけ実際の DOM に反映する
-
-コンソールを見ると、クリックするたびに「Counter がレンダリングされました」と表示されるのが確認できます。
-
-### state は「次のレンダリング」で反映される
-
-重要な注意点があります。`setCount` を呼んでも、**その時点の `count` は変わりません**。
-
-```tsx
-function Counter() {
-  const [count, setCount] = useState(0);
-
-  function handleClick() {
-    setCount(count + 1);
-    console.log(count); // まだ 0 のまま！
-    // 次のレンダリングで count が 1 になる
-  }
-
-  return <button onClick={handleClick}>カウント: {count}</button>;
-}
-```
-
-`setCount` は「次のレンダリングで使う値」を予約するだけです。現在の関数実行中の `count` は変わりません。これを **state のスナップショット** と呼びます。
-
-## state の不変性
-
-state を更新するときは、**既存の値を直接変更せず、新しい値を作って渡す**のがルールです。
-
-### プリミティブ値の場合
-
-数値や文字列はそもそも直接変更できないので、自然に正しく書けます。
-
-```tsx
-setCount(count + 1);       // OK: 新しい数値を渡している
-setName("新しい名前");      // OK: 新しい文字列を渡している
-```
-
-### 配列の場合
-
-配列を state にしている場合、`push` や `splice` で直接変更してはいけません。
-
-```tsx
-function TodoApp() {
-  const [todos, setTodos] = useState<string[]>(["買い物", "掃除"]);
-
-  function addTodo() {
-    // NG: 既存の配列を直接変更している
-    // todos.push("新しいタスク");
-    // setTodos(todos);
-
-    // OK: スプレッド構文で新しい配列を作る
-    setTodos([...todos, "新しいタスク"]);
-  }
-
-  function removeTodo(index: number) {
-    // OK: filter で新しい配列を作る
-    setTodos(todos.filter((_, i) => i !== index));
-  }
-
-  return (
-    <div>
-      <ul>
-        {todos.map((todo, index) => (
-          <li key={index}>
-            {todo}
-            <button onClick={() => removeTodo(index)}>削除</button>
-          </li>
-        ))}
-      </ul>
-      <button onClick={addTodo}>追加</button>
-    </div>
-  );
-}
-```
-
-### オブジェクトの場合
-
-オブジェクトも同様に、スプレッド構文で新しいオブジェクトを作ります。
-
-```tsx
-const [form, setForm] = useState({ name: "", email: "" });
-
-// NG: 直接変更
-// form.name = "新しい名前";
-// setForm(form);
-
-// OK: スプレッド構文で新しいオブジェクトを作る
-setForm({ ...form, name: "新しい名前" });
-```
-
-### なぜ不変性が重要なのか
-
-React は state が更新されたかどうかを**参照の比較**（`===`）で判断します。
-
-```javascript
-const arr = [1, 2, 3];
-arr.push(4);       // 同じ配列オブジェクトを変更
-arr === arr;       // true → React は「変化なし」と判断
-
-const newArr = [...arr, 4]; // 新しい配列を作成
-arr === newArr;    // false → React は「変化あり」と判断 → 再レンダリング
-```
-
-既存のオブジェクトを直接変更しても、参照が同じなので React は変化を検知できません。新しいオブジェクトを作ることで、React が変化を正しく検知し、画面を更新できるのです。
-
-## 複数の state
-
-1つのコンポーネントで複数の `useState` を使えます。例えば、メールアドレス・パスワード・パスワード表示切り替えをそれぞれ別の state として管理できます。
-
-```tsx
-const [email, setEmail] = useState("");
-const [password, setPassword] = useState("");
-const [isVisible, setIsVisible] = useState(false);
-```
-
-関連する値は1つのオブジェクトにまとめる場合と、個別の `useState` に分ける場合があります。一緒に更新されることが多い値はまとめ、独立して変化する値は分けるのが一般的です。
+`name` と `email` はそれぞれ独立した state です。一方を更新しても、もう一方には影響しません。
 
 ## まとめ
 
-- `useState` でコンポーネント自身の状態を管理できる
-- state が更新されると React がコンポーネントを再レンダリングする
-- `setCount` は即座に値を変えるのではなく、次のレンダリングで反映される
-- state は不変性を守る（既存の値を変更せず、新しい値を作る）
-- React は参照の比較で変化を検知するので、新しいオブジェクトや配列を作ることが重要
+- `let` で変数を変えても React の画面は更新されません。関数が再実行されるたびに変数は初期値に戻ります
+- `useState` は再実行をまたいで値を保持し、更新時に再レンダリングを引き起こします
+- `setCount(新しい値)` を呼ぶと、React がコンポーネントを再実行して画面を作り直します
+- イベントハンドラ（`onClick`, `onChange` など）で state を更新するのが React の基本パターンです

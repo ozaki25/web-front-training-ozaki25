@@ -1,285 +1,125 @@
-# 条件分岐とリストレンダリング
+# リストと条件分岐 — map と key、そして JSX の中の if
 
 ## 今日のゴール
 
-- JSX の中で条件に応じて表示を切り替える方法を知る
-- `map` で配列をリスト表示する方法を知る
-- `key` の役割と仕組みを知る
+- `.map()` でリストを表示する方法を知る
+- `key` が何のために必要かを知る
+- JSX の中で条件分岐する方法を知る
 
-## 条件付きレンダリング
+## 配列からリストを作る
 
-アプリケーションでは「ログインしていたら名前を表示」「エラーがあればエラーメッセージを表示」のように、条件に応じて表示を変えたい場面が頻繁にあります。
-
-### if 文で分岐
-
-最もシンプルな方法は、`return` の前に `if` 文を使うことです。
+React でリスト（一覧）を表示するとき、`.map()` がほぼ必ず登場します。
 
 ```tsx
-interface StatusProps {
-  isLoggedIn: boolean;
-}
-
-function Status({ isLoggedIn }: StatusProps) {
-  if (isLoggedIn) {
-    return <p>ようこそ！</p>;
-  }
-  return <p>ログインしてください。</p>;
-}
-```
-
-### 三項演算子
-
-JSX の `{}` の中で三項演算子を使えば、インラインで分岐できます。
-
-```tsx
-function Status({ isLoggedIn }: StatusProps) {
-  return (
-    <p>{isLoggedIn ? "ようこそ！" : "ログインしてください。"}</p>
-  );
-}
-```
-
-要素ごと切り替えることもできます。
-
-```tsx
-function AuthButton({ isLoggedIn }: StatusProps) {
-  return (
-    <div>
-      {isLoggedIn ? (
-        <button>ログアウト</button>
-      ) : (
-        <button>ログイン</button>
-      )}
-    </div>
-  );
-}
-```
-
-### && 演算子（短絡評価）
-
-「条件を満たすときだけ表示、満たさないときは何も表示しない」場合は `&&` が便利です。
-
-```tsx
-interface NotificationProps {
-  count: number;
-}
-
-function Notification({ count }: NotificationProps) {
-  return (
-    <div>
-      {count > 0 && (
-        <span className="badge">
-          {count}件の通知があります
-        </span>
-      )}
-    </div>
-  );
-}
-```
-
-`count > 0` が `true` のときだけ `<span>` が描画されます。`false` のときは何も描画されません。
-
-> **注意**: `&&` の左側に数値を直接書くと意図しない表示になることがあります。`{0 && <span>...</span>}` は `0` が画面に表示されてしまいます。数値の場合は `{count > 0 && ...}` のように必ず比較式にする必要があります。
-
-### 何も表示しないとき
-
-条件によって何も表示したくない場合は `null` を返します。
-
-```tsx
-interface ErrorMessageProps {
-  error: string | null;
-}
-
-function ErrorMessage({ error }: ErrorMessageProps) {
-  if (!error) {
-    return null; // 何も描画しない
-  }
-  return <p role="alert">{error}</p>;
-}
-```
-
-`role="alert"` はスクリーンリーダーに「これは重要なメッセージです」と伝えるための属性です。エラーメッセージが動的に表示されたとき、支援技術がユーザーに通知できます。
-
-## リストレンダリング
-
-配列のデータをリスト表示するには、Day 13 で学んだ `map` メソッドを使います。
-
-```tsx
-function FruitList() {
-  const fruits = ["りんご", "みかん", "バナナ"];
+function TodoList() {
+  const todos = ["買い物", "洗濯", "掃除"];
 
   return (
     <ul>
-      {fruits.map((fruit) => (
-        <li key={fruit}>{fruit}</li>
+      {todos.map((todo) => (
+        <li>{todo}</li>
       ))}
     </ul>
   );
 }
 ```
 
-`map` で配列の各要素を JSX に変換しています。Day 13 で `map` を学んだときは値を変換していましたが、ここでは値を JSX 要素に変換しているのがポイントです。
+`todos.map()` は配列の各要素を `<li>` に変換して、新しい配列（`<li>` の配列）を返します。React はその配列をそのまま画面に表示します。
 
-### オブジェクトの配列
+## key — React がリストの変更を追跡するための目印
 
-実際のアプリでは、オブジェクトの配列を表示することがほとんどです。
+先ほどのコードをブラウザで動かすと、コンソールに警告が出ます。
 
-```tsx
-interface User {
-  id: number;
-  name: string;
-  department: string;
-}
-
-function UserList() {
-  const users: User[] = [
-    { id: 1, name: "田中太郎", department: "開発部" },
-    { id: 2, name: "佐藤花子", department: "デザイン部" },
-    { id: 3, name: "鈴木一郎", department: "開発部" },
-  ];
-
-  return (
-    <table>
-      <thead>
-        <tr>
-          <th scope="col">名前</th>
-          <th scope="col">部署</th>
-        </tr>
-      </thead>
-      <tbody>
-        {users.map((user) => (
-          <tr key={user.id}>
-            <td>{user.name}</td>
-            <td>{user.department}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
+```
+Warning: Each child in a list should have a unique "key" prop.
 ```
 
-Day 3 で学んだテーブルのセマンティクスを活かし、`<thead>`, `<tbody>`, `scope` 属性をきちんと使っています。
-
-## key の役割
-
-リストの各要素に `key` を付けているのに気づいたでしょうか。これは React の仕組み上、必須です。
-
-### key がないとどうなるか
+`key` は、React がリストの各要素を**識別するための目印**です。
 
 ```tsx
-// key がないと警告が出る
-{fruits.map((fruit) => (
-  <li>{fruit}</li>  // Warning: Each child in a list should have a unique "key" prop.
+<ul>
+  {todos.map((todo, index) => (
+    <li key={todo}>{todo}</li>
+  ))}
+</ul>
+```
+
+### なぜ key が必要なのか
+
+React はコンポーネントを再実行して新しい JSX を作り、前回の画面との**差分**だけを DOM に反映します。リストの場合、「どの要素が追加されたのか」「どの要素が削除されたのか」「どの要素が移動したのか」を判断する必要があります。
+
+`key` がないと、React はリストの順番だけで判断するしかありません。途中に要素を挿入したとき、その位置以降のすべての要素が「変更された」と見なされ、不必要な再レンダリングが起きます。
+
+```mermaid
+flowchart TB
+  subgraph keyなし["key なし — 順番で比較"]
+    direction LR
+    A1["A"] --> B1["B 🔄"]
+    B1 --> C1["C 🔄"]
+    C1 --> D1["D 🔄（新規扱い）"]
+  end
+  subgraph keyあり["key あり — ID で比較"]
+    direction LR
+    A2["A"] --> D2["D ✨（挿入）"]
+    D2 --> B2["B"]
+    B2 --> C2["C"]
+  end
+```
+
+key があれば「A, B, C は変わっていない。D が新しく入った」と正しく判断でき、D だけを追加します。
+
+### key に index を使うのは危険
+
+AI が生成するコードに `key={index}` が使われていることがありますが、これは問題を起こす場合があります。
+
+```tsx
+// 危険: 要素の追加・削除で index がずれる
+{todos.map((todo, index) => (
+  <li key={index}>{todo}</li>
 ))}
 ```
 
-### key が必要な理由
+リストの先頭に要素を追加すると、すべての要素の index が変わります。React は「同じ key の要素は同じもの」と判断するため、中身がずれて表示が壊れることがあります。
 
-React は仮想 DOM の差分を計算するとき、リストの要素を「どの要素が追加/削除/移動されたか」判断する必要があります。`key` はそのための目印です。
+**key にはリスト内で一意な値（ID など）を使います**。
 
-例えば、リストの先頭に要素を追加する場合を考えます。
+## JSX の中での条件分岐
 
-```
-変更前: [B, C]
-変更後: [A, B, C]
-```
+JSX の `{ }` の中には JavaScript の式が書けます。条件によって表示を切り替えるパターンがいくつかあります。
 
-**key がない場合**: React はインデックスで比較します。
-- 0番目: B → A に変更（更新）
-- 1番目: C → B に変更（更新）
-- 2番目: なし → C を追加
-
-3つの操作が必要です。
-
-**key がある場合**: React は key で要素を追跡します。
-- key="B": そのまま
-- key="C": そのまま
-- key="A": 新しく追加
-
-1つの操作で済みます。さらに、B と C の内部の state も保持されます。
-
-### key のルール
-
-1. **兄弟要素の間で一意であること**（全体で一意である必要はない）
-2. **安定した値であること**（レンダリングのたびに変わらない）
+### 三項演算子 — 2 択の切り替え
 
 ```tsx
-// 良い例: id を key にする
-{users.map((user) => (
-  <UserCard key={user.id} user={user} />
-))}
-
-// 悪い例: インデックスを key にする
-{users.map((user, index) => (
-  <UserCard key={index} user={user} />  // 並び替えや削除で問題が起きる
-))}
-
-// 悪い例: ランダムな値を key にする
-{users.map((user) => (
-  <UserCard key={Math.random()} user={user} />  // 毎回再作成される
-))}
+<p>{isLoggedIn ? "ログイン中" : "未ログイン"}</p>
 ```
 
-> **ポイント**: データに `id` がある場合は `id` を使うのが基本です。`id` がなく、リストが固定で並び替えや削除がない場合に限り、インデックスを key にしても問題ありません。
+`条件 ? true のとき : false のとき` です。
 
-## 条件分岐とリストの組み合わせ
-
-実際のアプリでは、条件分岐とリストを組み合わせることが多いです。
+### && 演算子 — 表示/非表示の切り替え
 
 ```tsx
-interface Task {
-  id: number;
-  title: string;
-  completed: boolean;
-}
+{hasError && <p>エラーが発生しました</p>}
+```
 
-interface TaskListProps {
-  tasks: Task[];
-  filter: "all" | "active" | "completed";
-}
+`hasError` が `true` のときだけ `<p>` が表示されます。`false` のときは何も表示されません。
 
-function TaskList({ tasks, filter }: TaskListProps) {
-  const filteredTasks = tasks.filter((task) => {
-    switch (filter) {
-      case "active":
-        return !task.completed;
-      case "completed":
-        return task.completed;
-      default:
-        return true;
-    }
-  });
+### 早期 return — コンポーネントごと切り替え
 
-  if (filteredTasks.length === 0) {
-    return <p>タスクがありません。</p>;
+```tsx
+function Dashboard({ user }: { user: User | null }) {
+  if (!user) {
+    return <p>ログインしてください</p>;
   }
 
-  return (
-    <ul>
-      {filteredTasks.map((task) => (
-        <li key={task.id}>
-          <span
-            style={{
-              textDecoration: task.completed ? "line-through" : "none",
-            }}
-          >
-            {task.title}
-          </span>
-          {task.completed && <span aria-label="完了済み"> ✓</span>}
-        </li>
-      ))}
-    </ul>
-  );
+  return <div>ようこそ、{user.name}さん</div>;
 }
 ```
 
-Day 13 で学んだ `filter` メソッドで配列を絞り込み、Day 22 の `switch` で条件を分岐しています。これまで学んだ知識がつながっていることを感じてもらえるでしょうか。
+条件に合わないときは早めに `return` して、メインの表示をシンプルに保ちます。
 
 ## まとめ
 
-- 条件付きレンダリングには `if` 文、三項演算子、`&&` を使い分ける
-- `&&` で数値を直接使うと `0` が表示されるので比較式にする
-- `map` で配列を JSX に変換してリスト表示する
-- `key` は React がリストの差分を効率的に計算するために必要
-- `key` にはデータの `id` を使い、インデックスやランダム値は避ける
+- `.map()` で配列から JSX のリストを作ります。React でリストを表示する基本パターンです
+- `key` は React がリストの変更を正しく追跡するための目印です。一意な値（ID など）を使います
+- `key={index}` はリストの追加・削除で表示が壊れる原因になります
+- JSX の中では三項演算子（`? :`）、`&&` 演算子、早期 return で条件分岐できます

@@ -1,228 +1,148 @@
-# useEffect とライフサイクル
+# useEffect — レンダリングの「外」で起きることを扱う
 
 ## 今日のゴール
 
-- 副作用（side effect）とは何かを知る
-- `useEffect` の基本的な使い方を知る
-- 依存配列とクリーンアップの仕組みを知る
-- `useEffect` の適切な使い方と避けるべきパターンを知る
+- useEffect が何のためにあるかを知る
+- 依存配列の仕組みを知る
+- useEffect を使わなくていいケースを知る
 
-## 副作用とは
+## コンポーネントの仕事は JSX を返すこと
 
-Day 25 で学んだように、React のコンポーネントは「state と props を受け取って JSX を返す関数」です。この「JSX を返す」以外の処理を**副作用**（side effect）と呼びます。
+React のコンポーネントは関数です。その仕事は **state と props を受け取って JSX を返す**こと。これだけです。
 
-代表的な副作用:
+```tsx
+function Greeting({ name }: { name: string }) {
+  return <p>こんにちは、{name}さん</p>;
+}
+```
 
-- 外部 API からデータを取得する
-- ドキュメントのタイトルを変更する
-- タイマーを設定する
-- イベントリスナーを登録する
-- ローカルストレージにデータを保存する
+しかし実際のアプリでは、JSX を返す以外のことが必要になる場面があります。
 
-これらの処理は「画面を描画する」こととは別の仕事なので、レンダリングとは別のタイミングで実行する必要があります。
+- ページが表示されたら**サーバーからデータを取得**したい
+- state が変わったら**ドキュメントのタイトルを更新**したい
+- コンポーネントが消えるとき**タイマーを止めたい**
+
+これらはすべて「JSX を返す」こととは別の処理です。このような「レンダリングの外で起きること」を**副作用**（side effect）と呼びます。
+
+`useEffect` は、この副作用をコンポーネントに組み込むための仕組みです。
 
 ## useEffect の基本
 
-`useEffect` は副作用をレンダリングとは別に実行するための Hook です。
-
 ```tsx
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-function PageTitle() {
-  const [count, setCount] = useState(0);
+function UserProfile({ userId }: { userId: string }) {
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // レンダリング後に実行される
-    document.title = `${count}回クリックしました`;
-  });
-
-  return (
-    <button onClick={() => setCount(count + 1)}>
-      クリック: {count}
-    </button>
-  );
-}
-```
-
-`useEffect` に渡した関数は、コンポーネントのレンダリングが完了した**後**に実行されます。
-
-## 依存配列
-
-上の例では、`useEffect` は毎回のレンダリング後に実行されます。しかし、「特定の値が変わったときだけ実行したい」場合が大半です。第2引数に**依存配列**を渡すことで制御できます。
-
-### 特定の値が変わったときだけ実行
-
-```tsx
-useEffect(() => {
-  document.title = `${count}回クリックしました`;
-}, [count]); // count が変わったときだけ実行
-```
-
-依存配列に `[count]` を指定すると、`count` が変化したレンダリングの後だけ関数が実行されます。
-
-### マウント時のみ実行
-
-空の配列 `[]` を渡すと、コンポーネントが画面に追加されたとき（マウント時）に1回だけ実行されます。
-
-```tsx
-function UserProfile() {
-  const [user, setUser] = useState<{ name: string } | null>(null);
-
-  useEffect(() => {
-    // コンポーネントの初回表示時に API からデータを取得
-    fetch("https://api.example.com/user/1")
-      .then((response) => response.json())
+    fetch(`/api/users/${userId}`)
+      .then((res) => res.json())
       .then((data) => setUser(data));
-  }, []); // 空の依存配列 → マウント時に1回だけ
+  }, [userId]);
 
-  if (!user) {
-    return <p>読み込み中...</p>;
-  }
-
-  return <p>ようこそ、{user.name}さん！</p>;
+  if (!user) return <p>読み込み中...</p>;
+  return <p>{user.name}</p>;
 }
 ```
 
-### 依存配列なし
+`useEffect` は 2 つの引数を取ります。
 
-依存配列を省略すると、毎回のレンダリング後に実行されます。これが必要な場面はほとんどありません。
+1. **実行したい処理**（関数）
+2. **依存配列**（いつ実行するかの条件）
+
+## 依存配列 — いつ実行されるか
+
+依存配列の内容によって、useEffect の実行タイミングが変わります。
 
 ```tsx
-// 毎回実行される（通常は避ける）
+// userId が変わるたびに実行
 useEffect(() => {
-  console.log("レンダリングされました");
+  // データを取得
+}, [userId]);
+
+// 初回のみ実行（空配列）
+useEffect(() => {
+  // 初期化処理
+}, []);
+
+// 毎回実行（依存配列なし。通常は使わない）
+useEffect(() => {
+  // 何かの処理
 });
 ```
 
-## クリーンアップ
+| 依存配列 | 実行タイミング |
+|---------|--------------|
+| `[userId]` | `userId` が変わったとき |
+| `[]` | 初回レンダリング後の 1 回だけ |
+| なし | 毎回のレンダリング後 |
 
-副作用の中には、コンポーネントが画面から消える（アンマウントされる）ときに後片付けが必要なものがあります。例えば、イベントリスナーやタイマーです。
+依存配列は「この値が変わったら、処理をやり直してほしい」という宣言です。
 
-`useEffect` の関数から**クリーンアップ関数**を返すことで、後片付けができます。
+## クリーンアップ — 後片付け
 
-```tsx
-function WindowSize() {
-  const [width, setWidth] = useState(window.innerWidth);
-
-  useEffect(() => {
-    function handleResize() {
-      setWidth(window.innerWidth);
-    }
-
-    // イベントリスナーを登録
-    window.addEventListener("resize", handleResize);
-
-    // クリーンアップ: コンポーネントが消えるときにリスナーを解除
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []); // マウント時に登録、アンマウント時に解除
-
-  return <p>ウィンドウ幅: {width}px</p>;
-}
-```
-
-クリーンアップが必要な理由は、コンポーネントが消えた後もイベントリスナーが残り続けると、存在しないコンポーネントの state を更新しようとしてメモリリークや意図しない動作を引き起こすためです。
-
-### タイマーのクリーンアップ
+useEffect の関数から関数を返すと、**クリーンアップ**（後片付け）として扱われます。
 
 ```tsx
-function Timer() {
-  const [seconds, setSeconds] = useState(0);
+useEffect(() => {
+  const timer = setInterval(() => {
+    console.log("tick");
+  }, 1000);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setSeconds((prev) => prev + 1);
-    }, 1000);
-
-    // クリーンアップ: タイマーを停止
-    return () => clearInterval(id);
-  }, []);
-
-  return <p>経過時間: {seconds}秒</p>;
-}
+  // クリーンアップ: コンポーネントが消えるとき、またはやり直す前に実行
+  return () => {
+    clearInterval(timer);
+  };
+}, []);
 ```
 
-`setSeconds((prev) => prev + 1)` のように関数を渡す形式を使っています。これは**更新関数**と呼ばれ、最新の state 値を確実に参照できます。`setSeconds(seconds + 1)` と書くと、クロージャに閉じ込められた `seconds`（常に `0`）を参照してしまいます。
+タイマーやイベントリスナーを設定した場合、コンポーネントが消えるときに止めないとメモリリークになります。クリーンアップ関数でそれを防ぎます。
 
-## useEffect の実行タイミング
+## useEffect を使わなくていいケース
 
-依存配列の値が変わったとき、クリーンアップ関数は新しい Effect が実行される**前**に呼ばれます。
+useEffect は便利ですが、**使わなくて済むなら使わないほうがよい**場面があります。
+
+### state から計算できる値
 
 ```tsx
-function ChatRoom({ roomId }: { roomId: string }) {
-  useEffect(() => {
-    console.log(`${roomId} に接続`);
+// ❌ useEffect で派生 state を作る
+const [items, setItems] = useState([]);
+const [count, setCount] = useState(0);
 
-    return () => {
-      console.log(`${roomId} から切断`);
-    };
-  }, [roomId]);
+useEffect(() => {
+  setCount(items.length);
+}, [items]);
 
-  return <p>チャットルーム: {roomId}</p>;
-}
+// ✅ レンダリング中に計算する
+const [items, setItems] = useState([]);
+const count = items.length;
 ```
 
-`roomId` が `"general"` から `"random"` に変わると:
-
-1. `"general から切断"` （古い Effect のクリーンアップ）
-2. `"random に接続"` （新しい Effect の実行）
-
-## useEffect を使うべきでない場面
-
-`useEffect` は強力ですが、使いすぎると問題になります。以下は `useEffect` を使わなくてよいパターンです。
-
-### レンダリング中に計算できるもの
-
-```tsx
-// NG: useEffect で計算している
-function FilteredList({ items, query }: { items: string[]; query: string }) {
-  const [filtered, setFiltered] = useState(items);
-
-  useEffect(() => {
-    setFiltered(items.filter((item) => item.includes(query)));
-  }, [items, query]);
-
-  return <ul>{filtered.map((item) => <li key={item}>{item}</li>)}</ul>;
-}
-
-// OK: レンダリング中に直接計算する
-function FilteredList({ items, query }: { items: string[]; query: string }) {
-  const filtered = items.filter((item) => item.includes(query));
-
-  return <ul>{filtered.map((item) => <li key={item}>{item}</li>)}</ul>;
-}
-```
-
-props や state から計算できる値は、`useEffect` を使わずにレンダリング中に直接計算しましょう。無駄な state と再レンダリングを避けられます。
+`count` は `items` から計算できます。わざわざ useEffect で state を同期させる必要はありません。普通の変数で十分です。
 
 ### イベントに応じた処理
 
 ```tsx
-// NG: query が変わるたびに useEffect で検索 API を呼んでいる
+// ❌ useEffect でイベント応答
 useEffect(() => {
-  if (query) {
-    fetch(`/api/search?q=${query}`)
-      .then((res) => res.json())
-      .then((data) => setResults(data));
+  if (submitted) {
+    navigate("/success");
   }
-}, [query]); // 入力のたびに API 呼び出しが走ってしまう
+}, [submitted]);
 
-// OK: フォーム送信時にイベントハンドラーで処理する
-function handleSubmit(event: React.FormEvent) {
-  event.preventDefault();
-  fetch(`/api/search?q=${query}`)
-    .then((res) => res.json())
-    .then((data) => setResults(data));
-}
+// ✅ イベントハンドラで直接やる
+const handleSubmit = () => {
+  // 送信処理
+  navigate("/success");
+};
 ```
 
-「ユーザーのアクションに応じた処理」はイベントハンドラーに書くべきです。`useEffect` は「表示されたときに何かする」場面で使います。
+ボタンを押したら何かする、という処理は useEffect ではなくイベントハンドラに書きます。
 
 ## まとめ
 
-- `useEffect` はレンダリング後に副作用を実行する Hook
-- 依存配列で実行タイミングを制御する: `[value]` で値の変化時、`[]` でマウント時のみ
-- クリーンアップ関数でイベントリスナーやタイマーの後片付けをする
-- props や state から計算できる値には `useEffect` を使わない
-- ユーザーアクションへの応答はイベントハンドラーに書く
+- コンポーネントの仕事は JSX を返すこと。それ以外の処理（データ取得、タイマーなど）は**副作用**です
+- `useEffect` は副作用をコンポーネントに組み込むための仕組みです
+- **依存配列**で「いつ実行するか」を宣言します。`[userId]` なら userId が変わったとき、`[]` なら初回のみ
+- クリーンアップ関数を返すことで、タイマーやリスナーの後片付けができます
+- state から計算できる値やイベント応答には useEffect は不要です

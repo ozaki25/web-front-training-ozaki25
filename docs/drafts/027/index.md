@@ -1,341 +1,156 @@
-# Context と状態管理パターン
+# Context — props のバケツリレーを解消する
 
 ## 今日のゴール
 
-- props drilling の問題を知る
-- `useContext` で離れたコンポーネント間でデータを共有する方法を知る
-- Context の適切な使い方と使いすぎの弊害を知る
-- 状態をどこに置くかの設計指針を知る
+- props を何層も渡す「バケツリレー」の問題を知る
+- Context でコンポーネントツリーを飛び越えてデータを渡せることを知る
+- Context の使いどころと使いすぎの注意点を知る
 
-## props drilling 問題
+## props のバケツリレー
 
-Day 24 で学んだように、React のデータは親から子へ props として流れます。しかし、深くネストしたコンポーネントにデータを渡すとき、途中のコンポーネントが「バケツリレー」のように props を受け渡す必要があります。
-
-```tsx
-// App → Layout → Sidebar → UserInfo と props を渡す必要がある
-function App() {
-  const user = { name: "田中", role: "admin" };
-  return <Layout user={user} />;
-}
-
-function Layout({ user }: { user: User }) {
-  return (
-    <div>
-      <Sidebar user={user} />  {/* user を渡すだけ */}
-      <main>コンテンツ</main>
-    </div>
-  );
-}
-
-function Sidebar({ user }: { user: User }) {
-  return (
-    <aside>
-      <UserInfo user={user} />  {/* user を渡すだけ */}
-    </aside>
-  );
-}
-
-function UserInfo({ user }: { user: User }) {
-  return <p>{user.name}さん（{user.role}）</p>;
-}
-```
-
-`Layout` と `Sidebar` は `user` を使わないのに、子に渡すためだけに props を受け取っています。これが **props drilling**（プロップス掘削）です。
-
-props drilling の問題点:
-
-- 途中のコンポーネントが不要な props を持つ
-- props の追加・削除時に中間のコンポーネントもすべて変更が必要
-- コンポーネントの再利用性が下がる
-
-## Context の基本
-
-Context は、コンポーネントツリーを飛び越えてデータを共有する仕組みです。
-
-### Step 1: Context を作成する
-
-```tsx
-import { createContext } from "react";
-
-interface User {
-  name: string;
-  role: "admin" | "editor" | "viewer";
-}
-
-const UserContext = createContext<User | null>(null);
-```
-
-`createContext` の引数は初期値（Provider で囲まれていないときの値）です。
-
-### Step 2: Provider でデータを提供する
+React のコンポーネントは、親から子に props でデータを渡します。しかし、深くネストしたコンポーネントにデータを渡したいとき、途中のコンポーネントが「自分では使わないけど子に渡すためだけに受け取る」状況が起きます。
 
 ```tsx
 function App() {
-  const user: User = { name: "田中", role: "admin" };
+  const [theme, setTheme] = useState("light");
+  return <Layout theme={theme} />;
+}
 
+function Layout({ theme }: { theme: string }) {
+  // Layout 自身は theme を使わない。ただ渡すだけ
+  return <Sidebar theme={theme} />;
+}
+
+function Sidebar({ theme }: { theme: string }) {
+  // Sidebar も theme を使わない。ただ渡すだけ
+  return <ThemeToggle theme={theme} />;
+}
+
+function ThemeToggle({ theme }: { theme: string }) {
+  // ここで初めて theme を使う
+  return <button>{theme === "light" ? "🌙" : "☀️"}</button>;
+}
+```
+
+`theme` は `App` → `Layout` → `Sidebar` → `ThemeToggle` と 3 層を経由しています。`Layout` と `Sidebar` は自分では `theme` を使いません。渡すためだけに props を受け取っています。
+
+これを **props のバケツリレー**（prop drilling）と呼びます。層が増えるほど面倒になり、途中で渡し忘れるとバグになります。
+
+## Context — ツリーを飛び越えてデータを渡す
+
+Context を使うと、途中のコンポーネントを経由せずにデータを渡せます。
+
+```tsx
+import { createContext, use, useState } from "react";
+
+// 1. Context を作る
+const ThemeContext = createContext("light");
+
+function App() {
+  const [theme, setTheme] = useState("light");
+
+  // 2. Provider でツリーを囲む
   return (
-    <UserContext.Provider value={user}>
+    <ThemeContext value={theme}>
       <Layout />
-    </UserContext.Provider>
+    </ThemeContext>
   );
 }
-```
 
-`Provider` の `value` に渡したデータが、子孫コンポーネントから参照可能になります。
-
-### Step 3: useContext でデータを取得する
-
-```tsx
-import { useContext } from "react";
-
-function UserInfo() {
-  const user = useContext(UserContext);
-
-  if (!user) return null;
-
-  return <p>{user.name}さん（{user.role}）</p>;
-}
-```
-
-もう `Layout` や `Sidebar` で `user` を受け渡す必要はありません。
-
-> **React 19 の `use()` API**: React 19 では `use(ThemeContext)` のように `use()` を使って Context を読み取ることもできます。`useContext` との違いは、`use()` は `if` 文や `for` 文の中でも呼び出せる点です。将来的には `use()` が推奨される方向ですが、現時点ではどちらも使えます。
-
-```tsx
 function Layout() {
-  return (
-    <div>
-      <Sidebar />
-      <main>コンテンツ</main>
-    </div>
-  );
+  // theme を受け取らなくてよい
+  return <Sidebar />;
 }
 
 function Sidebar() {
-  return (
-    <aside>
-      <UserInfo />
-    </aside>
-  );
+  // theme を受け取らなくてよい
+  return <ThemeToggle />;
+}
+
+function ThemeToggle() {
+  // 3. use() で直接読み取る
+  const theme = use(ThemeContext);
+  return <button>{theme === "light" ? "🌙" : "☀️"}</button>;
 }
 ```
 
-## カスタム Hook で Context を使いやすくする
+```mermaid
+flowchart TB
+  App["App（Provider）"]
+  Layout["Layout"]
+  Sidebar["Sidebar"]
+  Toggle["ThemeToggle"]
+  App --> Layout --> Sidebar --> Toggle
+  App -.->|"Context で直接渡す"| Toggle
+```
 
-Day 30 で学んだカスタム Hook を使い、Context の利用をさらにシンプルにできます。
+`Layout` と `Sidebar` から `theme` の props が消えました。`ThemeToggle` は `use(ThemeContext)` で直接データを読み取ります。
+
+## Context の使い方
+
+### 1. createContext で作る
 
 ```tsx
-import { createContext, useContext } from "react";
-
-interface User {
-  name: string;
-  role: "admin" | "editor" | "viewer";
-}
-
-const UserContext = createContext<User | null>(null);
-
-// カスタム Hook: null チェックを一箇所にまとめる
-function useUser(): User {
-  const user = useContext(UserContext);
-  if (!user) {
-    throw new Error("useUser は UserProvider の中で使ってください");
-  }
-  return user;
-}
-
-// Provider コンポーネント
-function UserProvider({
-  user,
-  children,
-}: {
-  user: User;
-  children: React.ReactNode;
-}) {
-  return <UserContext.Provider value={user}>{children}</UserContext.Provider>;
-}
+const ThemeContext = createContext("light");  // デフォルト値
 ```
 
-使う側は非常にシンプルになります。
+### 2. Provider でツリーを囲む
 
 ```tsx
-function App() {
-  const user: User = { name: "田中", role: "admin" };
-
-  return (
-    <UserProvider user={user}>
-      <Layout />
-    </UserProvider>
-  );
-}
-
-function UserInfo() {
-  const user = useUser(); // null チェック不要！
-  return <p>{user.name}さん（{user.role}）</p>;
-}
+<ThemeContext value={theme}>
+  {/* この中のどのコンポーネントからでも theme を読める */}
+</ThemeContext>
 ```
 
-## Context で状態を管理する
-
-ここまでの例は静的なデータの共有でした。`useState` と組み合わせると、状態の共有もできます。
+### 3. use() で読み取る
 
 ```tsx
-import { createContext, useContext, useState } from "react";
-
-interface ThemeContextType {
-  theme: "light" | "dark";
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | null>(null);
-
-function useTheme(): ThemeContextType {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme は ThemeProvider の中で使ってください");
-  }
-  return context;
-}
-
-function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  function toggleTheme() {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  }
-
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-}
+const theme = use(ThemeContext);
 ```
 
-```tsx
-function App() {
-  return (
-    <ThemeProvider>
-      <Header />
-      <main>
-        <Content />
-      </main>
-    </ThemeProvider>
-  );
-}
+`use()` は React 19 で追加された API です。`if` 文の中でも使えます。
 
-function Header() {
-  const { theme, toggleTheme } = useTheme();
+## Context の使いどころ
 
-  return (
-    <header>
-      <button onClick={toggleTheme}>
-        {theme === "light" ? "🌙 ダークモード" : "☀️ ライトモード"}
-      </button>
-    </header>
-  );
-}
+Context が適しているのは「多くのコンポーネントが必要とする、あまり変わらないデータ」です。
 
-function Content() {
-  const { theme } = useTheme();
-
-  return (
-    <div style={{ background: theme === "light" ? "#fff" : "#333", color: theme === "light" ? "#333" : "#fff" }}>
-      <p>現在のテーマ: {theme}</p>
-    </div>
-  );
-}
-```
+| 適している | 理由 |
+|-----------|------|
+| テーマ（ライト/ダーク） | ほぼ全コンポーネントが参照、変更は稀 |
+| ログインユーザー | 多くの場所で表示、変更は稀 |
+| ロケール（言語設定） | 全テキストに影響、変更は稀 |
 
 ## Context の使いすぎに注意
 
-Context は便利ですが、なんでも Context にするのは問題です。
-
-### Context の更新は子孫全体に影響する
-
-Provider の `value` が変わると、その Context を使っているすべてのコンポーネントが再レンダリングされます。
+Context は便利ですが、**グローバル変数と同じ危うさ**があります。
 
 ```tsx
-// 問題: value が変わるたびに、UserContext を使うすべてのコンポーネントが再レンダリング
-function AppProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [theme, setTheme] = useState("light");
-  const [notifications, setNotifications] = useState(0);
-
-  // theme が変わるだけで user を参照するコンポーネントも再レンダリングされる
-  return (
-    <AppContext.Provider value={{ user, theme, notifications, setUser, setTheme, setNotifications }}>
-      {children}
-    </AppContext.Provider>
-  );
-}
+// ❌ なんでも Context に入れる
+const AppContext = createContext({
+  user: null,
+  theme: "light",
+  cart: [],
+  notifications: [],
+  sidebarOpen: false,
+});
 ```
 
-### 解決策: Context を分割する
+Context の値が変わると、その Context を使っているすべてのコンポーネントが再レンダリングされます。`cart` が変わっただけなのに `theme` しか使っていないコンポーネントまで再レンダリングされてしまいます。
+
+**Context は目的別に分けます**。
 
 ```tsx
-// 関心ごとに Context を分ける
-function App() {
-  return (
-    <UserProvider>
-      <ThemeProvider>
-        <NotificationProvider>
-          <Layout />
-        </NotificationProvider>
-      </ThemeProvider>
-    </UserProvider>
-  );
-}
+const ThemeContext = createContext("light");
+const UserContext = createContext(null);
+const CartContext = createContext([]);
 ```
 
-テーマが変わっても、User や Notification の Context を使うコンポーネントは影響を受けません。
-
-## Context を使う前に考えること
-
-Context が必要になる前に、まずこれらのアプローチを検討する価値があります。
-
-### 1. コンポーネント合成で解決できないか
-
-Day 30 の合成パターンを使えば、props drilling を避けられる場合があります。
-
-```tsx
-// props drilling に見えるが...
-function Page() {
-  const user = useUser();
-  return <Layout sidebar={<UserInfo user={user} />} />;
-}
-
-function Layout({ sidebar }: { sidebar: React.ReactNode }) {
-  return (
-    <div>
-      <aside>{sidebar}</aside>
-      <main>コンテンツ</main>
-    </div>
-  );
-}
-```
-
-`Layout` は `user` を知る必要がなく、`sidebar` として渡された JSX をそのまま表示するだけです。
-
-### 2. state を持ち上げるだけで済まないか
-
-2〜3階層の props 渡しなら、Context よりも明示的な props のほうがコードの追跡が容易です。
-
-## 状態の設計指針
-
-| 状態の性質 | 置く場所 |
-|-----------|---------|
-| 1つのコンポーネントだけで使う | そのコンポーネントの `useState` |
-| 親子で共有する | 親の `useState` + props |
-| 離れたコンポーネントで共有する | Context |
-| アプリ全体で共有する | Context（テーマ、認証情報など） |
-| サーバーから取得するデータ | Server Components で取得（Next.js, Day 37 で学ぶ） |
-
-> **ポイント**: state は「必要な場所に、できるだけ近くに」置くのが原則です。最初から Context を使わず、props で不便になってから Context を検討するのが定石です。
+また、2〜3 層程度の props リレーなら Context を使わずそのまま渡したほうがシンプルなこともあります。「バケツリレーが辛い」と感じたときに初めて Context を検討するのがよいバランスです。
 
 ## まとめ
 
-- props drilling は途中のコンポーネントが不要な props を受け渡す問題
-- `createContext` + `useContext` で、コンポーネントツリーを飛び越えてデータを共有できる
-- カスタム Hook（`useUser` など）と Provider コンポーネントのセットで使うのが定番
-- Context は関心ごとに分割し、不要な再レンダリングを避ける
-- Context の前に、合成パターンや state の持ち上げで解決できないか考える
+- props を何層も経由して渡す「バケツリレー」は、層が深くなると管理が大変になります
+- Context を使うと、途中のコンポーネントを経由せずにデータを渡せます
+- `createContext` で作り、`<Context value={...}>` で囲み、`use(Context)` で読み取ります
+- テーマ、ログインユーザー、ロケールなど「広く参照され、あまり変わらないデータ」に適しています
+- Context は目的別に分けます。1 つにまとめると不要な再レンダリングが起きます

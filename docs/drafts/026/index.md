@@ -1,362 +1,169 @@
-# カスタム Hooks とコンポーネント設計
+# カスタム Hooks — `use` で始まる関数を自分で作る
 
 ## 今日のゴール
 
-- カスタム Hook でロジックを再利用する方法を知る
-- コンポーネントを適切に分割するという考え方を知る
-- 合成（Composition）パターンを知る
+- カスタム Hooks が「ロジックの再利用」の仕組みであることを知る
+- コンポーネントの分割とは別の軸の設計判断であることを知る
+- カスタム Hooks の作り方と使い方を知る
 
-## カスタム Hook とは
+## 同じロジックが 2 箇所に出てきたら
 
-Day 25〜27 で `useState`, `useEffect`, `useTransition` などの組み込み Hook を学びました。これらを組み合わせて独自の Hook を作れます。それがカスタム Hook です。
-
-カスタム Hook は `use` で始まる関数で、中で他の Hook を呼び出します。
-
-### なぜカスタム Hook が必要か
-
-同じロジックを複数のコンポーネントで使いたい場面を考えます。
+画面のサイズを取得するロジックを、2 つのコンポーネントで使いたいとします。
 
 ```tsx
-// UserProfile コンポーネント
-function UserProfile() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function Header() {
+  const [width, setWidth] = useState(window.innerWidth);
 
   useEffect(() => {
-    fetch("/api/user")
-      .then((res) => res.json())
-      .then((data) => setUser(data))
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ...
+  return <header>{width > 768 ? "デスクトップ" : "モバイル"}</header>;
 }
 
-// Settings コンポーネント（同じデータ取得ロジック）
-function Settings() {
-  const [settings, setSettings] = useState<Settings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function Sidebar() {
+  const [width, setWidth] = useState(window.innerWidth);
 
   useEffect(() => {
-    fetch("/api/settings")
-      .then((res) => res.json())
-      .then((data) => setSettings(data))
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ...
+  if (width <= 768) return null;
+  return <aside>サイドバー</aside>;
 }
 ```
 
-データ取得のロジックが重複しています。これをカスタム Hook に抽出できます。
+`useState` + `useEffect` + `addEventListener` の部分がまったく同じです。コピペで動きますが、片方を修正したらもう片方も直す必要があります。
 
-## カスタム Hook の作り方
+## カスタム Hooks — ロジックを関数に切り出す
+
+同じロジックを `use` で始まる関数に切り出したものが**カスタム Hook** です。
 
 ```tsx
-import { useState, useEffect } from "react";
-
-function useFetch<T>(url: string) {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function useWindowWidth() {
+  const [width, setWidth] = useState(window.innerWidth);
 
   useEffect(() => {
-    let cancelled = false;
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    setLoading(true);
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((json) => {
-        if (!cancelled) setData(json);
-      })
-      .catch((e) => {
-        if (!cancelled) setError(e.message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [url]);
-
-  return { data, loading, error };
+  return width;
 }
 ```
-
-Day 21 で学んだジェネリクスを使い、どんな型のデータにも対応できるようにしています。`cancelled` フラグは、コンポーネントがアンマウントされた後に state を更新しないためのクリーンアップです。
 
 使う側はこうなります。
 
 ```tsx
-interface User {
-  id: number;
-  name: string;
+function Header() {
+  const width = useWindowWidth();
+  return <header>{width > 768 ? "デスクトップ" : "モバイル"}</header>;
 }
 
-function UserProfile() {
-  const { data: user, loading, error } = useFetch<User>("/api/user");
-
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p role="alert">エラー: {error}</p>;
-  if (!user) return null;
-
-  return <h1>{user.name}</h1>;
-}
-
-interface Settings {
-  theme: string;
-  language: string;
-}
-
-function SettingsPage() {
-  const { data: settings, loading, error } = useFetch<Settings>("/api/settings");
-
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p role="alert">エラー: {error}</p>;
-  if (!settings) return null;
-
-  return <p>テーマ: {settings.theme}</p>;
+function Sidebar() {
+  const width = useWindowWidth();
+  if (width <= 768) return null;
+  return <aside>サイドバー</aside>;
 }
 ```
 
-ロジックは `useFetch` に集約され、各コンポーネントは表示に集中できます。
+ロジックが 1 箇所にまとまり、使う側はシンプルになりました。
 
-### もう1つの例: useLocalStorage
+## `use` で始める理由
 
-ローカルストレージとの同期もよくカスタム Hook にします。
+カスタム Hooks の名前は**必ず `use` で始めます**。これは React のルールです。
 
 ```tsx
-import { useState } from "react";
+// ✅ use で始まる
+function useWindowWidth() { ... }
+function useUser(id: string) { ... }
+function useLocalStorage(key: string) { ... }
 
-function useLocalStorage<T>(key: string, initialValue: T) {
-  const [value, setValue] = useState<T>(() => {
-    if (typeof window === "undefined") return initialValue; // SSR対応
-    try {
-      const stored = window.localStorage.getItem(key);
-      return stored ? (JSON.parse(stored) as T) : initialValue;
-    } catch {
-      return initialValue;
-    }
-  });
-
-  function updateValue(newValue: T) {
-    setValue(newValue);
-    localStorage.setItem(key, JSON.stringify(newValue));
-  }
-
-  return [value, updateValue] as const;
-}
+// ❌ use で始まらない（Hooks のルールが適用されない）
+function getWindowWidth() { ... }
 ```
 
-`useState` の初期値に関数を渡しています。これは**遅延初期化**と呼ばれ、`localStorage` の読み取りのような重い処理を初回レンダリング時だけ実行するための書き方です。
+`use` で始まる関数の中では、`useState` や `useEffect` などの React Hooks が使えます。`use` で始まらない関数の中では使えません。React がこの命名規則で Hooks の呼び出しを追跡しているからです。
 
-> **Next.js での注意**: Server Components や SSR 時には `window` オブジェクトが存在しないため、`typeof window === "undefined"` のチェックが必要です。
+## コンポーネントの分割とは別の話
 
-```tsx
-function ThemeSwitcher() {
-  const [theme, setTheme] = useLocalStorage("theme", "light");
+カスタム Hooks は**ロジック**の再利用です。コンポーネントは **UI** の再利用です。この 2 つは別の軸です。
 
-  return (
-    <button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-      現在のテーマ: {theme}
-    </button>
-  );
-}
+```mermaid
+flowchart TB
+  subgraph UI["UI の再利用 → コンポーネント"]
+    C1["Button"]
+    C2["Card"]
+    C3["Modal"]
+  end
+  subgraph Logic["ロジックの再利用 → カスタム Hook"]
+    H1["useWindowWidth"]
+    H2["useUser"]
+    H3["useLocalStorage"]
+  end
 ```
 
-## カスタム Hook のルール
+- **コンポーネント**: 見た目のかたまり（ボタン、カード、モーダル）
+- **カスタム Hook**: 振る舞いのかたまり（画面幅の監視、ユーザーデータの取得、ローカルストレージの操作）
 
-1. **名前は `use` で始める**: React が Hook として認識するために必要
-2. **トップレベルで呼び出す**: `if` やループの中では使えない（組み込み Hook と同じルール）
-3. **Hook の中で Hook を使える**: カスタム Hook の中で `useState` や別のカスタム Hook を呼べる
+「この見た目を再利用したい」→ コンポーネントに切り出す
+「このロジックを再利用したい」→ カスタム Hook に切り出す
 
-## コンポーネント分割の考え方
+## よく見るカスタム Hooks のパターン
 
-カスタム Hook がロジックの再利用なら、コンポーネント分割は UI の構造化です。
-
-### いつ分割するか
-
-- **繰り返し使う UI**: ボタン、カード、入力フィールドなど
-- **独立した責務**: ヘッダー、サイドバー、フォームなど
-- **state が局所的**: 特定の state がコンポーネントの一部でしか使われないとき
-- **見通しが悪くなったとき**: 1つのコンポーネントが長くなりすぎたら分割のサイン
-
-### 分割の例
+### データ取得
 
 ```tsx
-// 分割前: 1つのコンポーネントにすべてが入っている
-function App() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
+function useUser(userId: string) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // 100行以上のコード...
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/users/${userId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setUser(data);
+        setLoading(false);
+      });
+  }, [userId]);
 
-  return (
-    <main>
-      {/* ヘッダー、フォーム、フィルター、リスト、フッター... */}
-    </main>
-  );
-}
-```
-
-```tsx
-// 分割後: 責務ごとにコンポーネントを分ける
-function App() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
-
-  const filteredTodos = todos.filter((todo) => {
-    if (filter === "active") return !todo.completed;
-    if (filter === "completed") return todo.completed;
-    return true;
-  });
-
-  return (
-    <main>
-      <h1>やることリスト</h1>
-      <TodoForm onAdd={(title) => setTodos([...todos, { id: Date.now(), title, completed: false }])} />
-      <TodoFilter current={filter} onChange={setFilter} />
-      <TodoList todos={filteredTodos} />
-    </main>
-  );
-}
-```
-
-各コンポーネントは自分の役割だけに集中し、全体の見通しがよくなります。
-
-## 合成（Composition）パターン
-
-React のコンポーネント設計で最も重要なパターンが**合成**です。Day 24 で学んだ `children` を使い、コンポーネントを「入れ物」として設計します。
-
-### レイアウトコンポーネント
-
-```tsx
-interface PageLayoutProps {
-  title: string;
-  children: React.ReactNode;
-}
-
-function PageLayout({ title, children }: PageLayoutProps) {
-  return (
-    <div className="page">
-      <header>
-        <h1>{title}</h1>
-      </header>
-      <main>{children}</main>
-      <footer>
-        <p>&copy; 2026 My App</p>
-      </footer>
-    </div>
-  );
-}
-
-// 使う側が中身を決める
-function AboutPage() {
-  return (
-    <PageLayout title="About">
-      <p>このアプリについて...</p>
-    </PageLayout>
-  );
-}
-
-function ContactPage() {
-  return (
-    <PageLayout title="Contact">
-      <ContactForm />
-    </PageLayout>
-  );
-}
-```
-
-### 特殊化（Specialization）
-
-汎用的なコンポーネントを作り、特定の用途に特殊化するパターンです。
-
-```tsx
-interface ButtonProps {
-  variant: "primary" | "danger" | "ghost";
-  children: React.ReactNode;
-  onClick?: () => void;
-  type?: "button" | "submit";
-}
-
-function Button({ variant, children, onClick, type = "button" }: ButtonProps) {
-  return (
-    <button type={type} className={`btn btn-${variant}`} onClick={onClick}>
-      {children}
-    </button>
-  );
-}
-
-// 特殊化: 削除ボタン
-function DeleteButton({ onDelete }: { onDelete: () => void }) {
-  return (
-    <Button variant="danger" onClick={onDelete}>
-      削除
-    </Button>
-  );
-}
-
-// 特殊化: 送信ボタン
-function SubmitButton() {
-  return (
-    <Button variant="primary" type="submit">
-      送信
-    </Button>
-  );
-}
-```
-
-### slots パターン
-
-`children` 以外にも、複数の「差し込み口」を持つコンポーネントを作れます。
-
-```tsx
-interface DialogProps {
-  title: React.ReactNode;
-  children: React.ReactNode;
-  footer: React.ReactNode;
-}
-
-function Dialog({ title, children, footer }: DialogProps) {
-  return (
-    <div role="dialog" aria-labelledby="dialog-title" className="dialog">
-      <h2 id="dialog-title" className="dialog-title">{title}</h2>
-      <div className="dialog-body">{children}</div>
-      <div className="dialog-footer">{footer}</div>
-    </div>
-  );
+  return { user, loading };
 }
 
 // 使う側
-<Dialog
-  title="確認"
-  footer={
-    <>
-      <Button variant="ghost" onClick={onCancel}>キャンセル</Button>
-      <Button variant="danger" onClick={onDelete}>削除する</Button>
-    </>
-  }
->
-  <p>本当に削除しますか？この操作は取り消せません。</p>
-</Dialog>
+function UserProfile({ userId }: { userId: string }) {
+  const { user, loading } = useUser(userId);
+  if (loading) return <p>読み込み中...</p>;
+  return <p>{user.name}</p>;
+}
 ```
 
-`role="dialog"` と `aria-labelledby` で、ダイアログがスクリーンリーダーに正しく認識されるようにしています。
+### ローカルストレージ
+
+```tsx
+function useLocalStorage(key: string, initialValue: string) {
+  const [value, setValue] = useState(() => {
+    const saved = localStorage.getItem(key);
+    return saved ?? initialValue;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(key, value);
+  }, [key, value]);
+
+  return [value, setValue] as const;
+}
+```
 
 ## まとめ
 
-- カスタム Hook は `use` で始まる関数で、ロジックを再利用できる仕組み
-- データ取得、ローカルストレージ連携など、共通のロジックをカスタム Hook に抽出する
-- コンポーネントは責務ごとに分割し、見通しをよくする
-- 合成パターン（children、slots）でコンポーネントを柔軟に組み合わせる
-- 汎用コンポーネントを特殊化して再利用する
+- カスタム Hooks は `use` で始まる関数で、ロジック（state + effect の組み合わせ）を再利用する仕組みです
+- コンポーネント（UI の再利用）とカスタム Hook（ロジックの再利用）は別の軸の設計判断です
+- `use` で始める命名規則は React のルールであり、Hooks の呼び出しを追跡するために必要です
+- データ取得、ローカルストレージ操作、画面サイズ監視など、よく使うパターンがあります
