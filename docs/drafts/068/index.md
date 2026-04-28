@@ -169,6 +169,45 @@ sequenceDiagram
 
 DevTools の「Application」→「Cache Storage」を開くと、キャッシュされているファイルの一覧が確認できます。
 
+### Cache API — キャッシュをコードで制御する
+
+Service Worker がキャッシュを管理するために使っているのが **Cache API** です。JavaScript からキャッシュの読み書きを直接制御できます。
+
+```javascript
+// キャッシュにファイルを保存
+const cache = await caches.open("my-cache-v1");
+await cache.add("/index.html");
+await cache.add("/style.css");
+
+// キャッシュからファイルを取り出す
+const response = await cache.match("/index.html");
+```
+
+Service Worker の中でこれを使い、「リクエストが来たらまずキャッシュを見て、なければネットワークに取りに行く」というロジックを組みます。
+
+```javascript
+// Service Worker 内のキャッシュ戦略（簡略版）
+self.addEventListener("fetch", (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      return cached || fetch(event.request);
+    })
+  );
+});
+```
+
+この研修サイトでは、ビルド時にすべてのページを自動でキャッシュに入れる **precache** という戦略を使っています。だから一度サイトを開けば、全ページがオフラインで読めるのです。
+
+### キャッシュ戦略の種類
+
+| 戦略 | 動き | 用途 |
+|------|------|------|
+| Cache First | まずキャッシュ、なければネットワーク | 変わらないファイル（CSS, JS, 画像） |
+| Network First | まずネットワーク、失敗したらキャッシュ | 最新データが重要な API |
+| Stale While Revalidate | キャッシュを返しつつ裏でネットワーク更新 | ニュースフィードなど |
+
+「オフラインで動く」の裏には、こうしたキャッシュ戦略の選択があります。
+
 ## まとめ
 
 - **PWA**: manifest + Service Worker で Web サイトがアプリとしてインストールできます
