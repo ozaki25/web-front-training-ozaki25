@@ -129,7 +129,8 @@ Web サイトから OS のネイティブ通知を出すこともできます。
 
 <div style="background:#f8fafc;color:#1e293b;padding:20px;border-radius:8px;border:1px solid #e2e8f0;margin:16px 0">
 <p style="margin:0 0 12px;font-weight:bold;color:#1e293b">通知デモ</p>
-<button type="button" onclick="Notification.requestPermission().then(p=>{if(p==='granted')new Notification('Web Front-end Training',{body:'ブラウザから通知が届きました！',icon:'/pwa-192x192.png'})})" style="padding:8px 16px;background:#064e3b;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px">通知を送る</button>
+<button type="button" onclick="(async()=>{const s=document.getElementById('nt68-status');try{const p=await Notification.requestPermission();s.textContent='権限: '+p;if(p==='granted'){new Notification('Web Front-end Training',{body:'ブラウザから通知が届きました！',icon:'/pwa-192x192.png'});s.textContent='権限: granted — 通知を送信しました。表示されない場合は OS の通知設定を確認してください'}else{s.textContent='権限が拒否されました（'+p+'）'}}catch(e){s.textContent='エラー: '+e.message}})()" style="padding:8px 16px;background:#064e3b;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px">通知を送る</button>
+<p id="nt68-status" style="margin:8px 0 0;font-size:13px;color:#475569"></p>
 <p style="margin:8px 0 0;font-size:13px;color:#475569">初回は許可ダイアログが出ます。</p>
 </div>
 
