@@ -50,7 +50,7 @@ export default withPwa(
                   link: "/lessons/day07/",
                 },
                 {
-                  text: "Day 8 番外編: ブラウザでここまでできる",
+                  text: "Day 8: PWA と Web API",
                   link: "/lessons/day08/",
                 },
               ],
