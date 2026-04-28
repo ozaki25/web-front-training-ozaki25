@@ -88,7 +88,7 @@ export default withPwa(
               { text: "CSS の余白設計", link: "/drafts/065/" },
               { text: "ダークモードの仕組み", link: "/drafts/066/" },
               { text: "JSON", link: "/drafts/067/" },
-              { text: "番外編: ブラウザでここまでできる", link: "/drafts/068/" },
+              { text: "PWA と Web API", link: "/drafts/068/" },
             ],
           },
         ],
