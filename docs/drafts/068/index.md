@@ -28,11 +28,16 @@
 DevTools の「Application」タブを開くと、manifest の中身や Service Worker の状態が確認できます。
 
 ```mermaid
-flowchart LR
-  A["Web サイト"] -->|"manifest.json\n+ Service Worker"| B["PWA"]
-  B --> C["デスクトップアプリのように動く"]
-  B --> D["オフラインでも読める"]
-  B --> E["OS の通知が出せる"]
+flowchart TB
+  subgraph before["普通の Web サイト"]
+    W["ブラウザのタブで開く\nオフライン ✗\n通知 ✗"]
+  end
+  subgraph after["PWA にすると"]
+    P1["独立ウィンドウで起動"]
+    P2["オフラインで読める"]
+    P3["OS 通知が出せる"]
+  end
+  before -->|"manifest.json\n+\nService Worker\nを追加"| after
 ```
 
 App Store を通さずに、URL を開くだけでインストールできる。これが PWA の面白いところです。
@@ -115,13 +120,18 @@ const summary = await summarizer.summarize(text);
 翻訳も要約も、サーバーには一切データを送っていません。すべてブラウザ内の Gemini Nano（Google のオンデバイス AI モデル）が処理しています。
 
 ```mermaid
-flowchart LR
-  subgraph ブラウザの中
-    A["JavaScript"] --> B["Gemini Nano\n（オンデバイス AI）"]
-    B --> C["翻訳 / 要約の結果"]
+flowchart TB
+  subgraph browser["ブラウザの中（ユーザーの端末）"]
+    direction LR
+    A["JavaScript\nで呼び出す"] --> B["Gemini Nano\n（AI モデル）"]
+    B --> C["翻訳 / 要約\nの結果"]
   end
-  D["サーバー"] -.->|"データは送られない"| ブラウザの中
+  D["外部サーバー"]
+  browser ~~~ D
+  style D fill:#f1f5f9,stroke:#94a3b8,stroke-dasharray: 5 5,color:#94a3b8
 ```
+
+データはブラウザの外に出ません。外部サーバーへの通信は一切発生しません。
 
 ## 通知を出す — Notification API
 
