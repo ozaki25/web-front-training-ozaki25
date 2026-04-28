@@ -27,19 +27,6 @@
 
 DevTools の「Application」タブを開くと、manifest の中身や Service Worker の状態が確認できます。
 
-```mermaid
-flowchart TB
-  subgraph before["普通の Web サイト"]
-    W["ブラウザのタブで開く\nオフライン ✗\n通知 ✗"]
-  end
-  subgraph after["PWA にすると"]
-    P1["独立ウィンドウで起動"]
-    P2["オフラインで読める"]
-    P3["OS 通知が出せる"]
-  end
-  before -->|"manifest.json\n+\nService Worker\nを追加"| after
-```
-
 App Store を通さずに、URL を開くだけでインストールできる。これが PWA の面白いところです。
 
 ## ブラウザが喋る — Speech Synthesis API
