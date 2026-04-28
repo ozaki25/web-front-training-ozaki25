@@ -150,22 +150,32 @@ if (permission === "granted") {
 
 この研修サイトは、一度開けばオフラインでも読めます。試しにネットワークを切ってページを移動してみてください。
 
-これは Service Worker が初回アクセス時にページのデータをキャッシュしているからです。次のアクセスからはキャッシュから返すため、ネットワークがなくても表示できます。
+これは Service Worker が初回アクセス時にページのデータをキャッシュしているからです。Service Worker はブラウザの中で動くプログラムで、ページとサーバーの間に立ってリクエストを仲介します。ネットワークの手前、**ブラウザ側に立つ中間者**です。
 
 ```mermaid
 sequenceDiagram
-    participant B as ブラウザ
+    box ブラウザ（ユーザーの端末）
+    participant B as ページ
     participant SW as Service Worker
+    participant C as Cache Storage
+    end
+    box インターネット
     participant S as サーバー
+    end
     B->>SW: ページをリクエスト
+    SW->>C: キャッシュにある？
     alt キャッシュにある
-        SW-->>B: キャッシュから返す（高速）
+        C-->>SW: キャッシュされたデータ
+        SW-->>B: そのまま返す（高速・オフライン OK）
     else キャッシュにない
-        SW->>S: サーバーに取りに行く
+        SW->>S: ネットワーク越しに取りに行く
         S-->>SW: レスポンス
-        SW-->>B: レスポンスを返す + キャッシュに保存
+        SW->>C: キャッシュに保存
+        SW-->>B: レスポンスを返す
     end
 ```
+
+ポイントは、Service Worker とキャッシュが**ブラウザの中にいる**ことです。ネットワークが切れてもブラウザの中で完結するため、オフラインでも表示できます。
 
 DevTools の「Application」→「Cache Storage」を開くと、キャッシュされているファイルの一覧が確認できます。
 
