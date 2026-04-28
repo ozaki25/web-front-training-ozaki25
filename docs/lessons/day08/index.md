@@ -240,3 +240,19 @@ self.addEventListener("fetch", (event) => {
 - **Service Worker**: ページをキャッシュしてオフラインでも表示できます
 
 どれもブラウザの標準機能です。「Web サイト = ドキュメントを表示するもの」というイメージは、もう過去のものかもしれません。
+
+## おまけ: 他にもブラウザでできること
+
+今日紹介したのはほんの一部です。「スマホアプリでしかできない」と思われがちですが、ブラウザだけでこんなこともできます。
+
+| できること | 使われている API |
+|-----------|----------------|
+| QR コード・バーコードの読み取り | Barcode Detection API |
+| カメラ映像からの顔検出 | Shape Detection API |
+| 音声認識（喋った内容の文字起こし） | Web Speech Recognition |
+| 現在地の緯度経度の取得 | Geolocation API |
+| Bluetooth デバイスへの接続 | Web Bluetooth |
+| ローカルファイルの保存ダイアログ | File System Access API |
+| 画面の録画 | MediaRecorder + Screen Capture |
+| 動画の小窓表示（ピクチャインピクチャ） | Picture-in-Picture API |
+| ゲームコントローラーの入力取得 | Gamepad API |
