@@ -13,3 +13,4 @@
 - [Day 5: HTML だけで作れる UI — dialog, popover, details](/lessons/day05/)
 - [Day 6: img タグの書き方 — アクセシビリティと Core Web Vitals](/lessons/day06/)
 - [Day 7: CSS の適用範囲 — グローバルスコープと解決手段の歴史](/lessons/day07/)
+- [Day 8 番外編: ブラウザでここまでできる — PWA と Web API デモ](/lessons/day08/)
