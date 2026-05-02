@@ -43,6 +43,7 @@ export default withPwa(
               { text: "Day 5: 専用の HTML 要素で作れる UI", link: "/lessons/day05/" },
               { text: "Day 6: img タグの書き方", link: "/lessons/day06/" },
               { text: "Day 7: CSS の適用範囲", link: "/lessons/day07/" },
+              { text: "Day 8: PWA と Web API", link: "/lessons/day08/" },
             ],
           },
           {
@@ -88,7 +89,6 @@ export default withPwa(
               { text: "CSS の余白設計", link: "/drafts/065/" },
               { text: "ダークモードの仕組み", link: "/drafts/066/" },
               { text: "JSON", link: "/drafts/067/" },
-              { text: "PWA と Web API", link: "/drafts/068/" },
             ],
           },
         ],
