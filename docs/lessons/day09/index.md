@@ -29,9 +29,9 @@ flowchart TB
       content["content（テキストや画像）"]
     end
   end
-  style margin fill:#fef3c7,stroke:#f59e0b
-  style padding fill:#dbeafe,stroke:#3b82f6
-  style content fill:#ffffff,stroke:#94a3b8
+  style margin fill:#fef3c7,stroke:#f59e0b,color:#1e293b
+  style padding fill:#dbeafe,stroke:#3b82f6,color:#1e293b
+  style content fill:#ffffff,stroke:#94a3b8,color:#1e293b
 ```
 
 ### padding を見てみる
