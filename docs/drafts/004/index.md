@@ -1,167 +1,207 @@
-# CSS のレイアウト — flex と grid を正しく使い分ける
+# CSS の横並び — float から Grid までの変遷
 
 ## 今日のゴール
 
 - CSS の要素はデフォルトで縦に積まれることを知る
-- flex と grid は得意な場面が違うことを知る
-- 全部 flex でやろうとすると壊れる理由を知る
+- 横に並べる方法が時代とともに進化してきたことを知る
+- flex と grid の得意な場面の違いを知る
 
 ## CSS のデフォルトは縦積み
 
-HTML の `<div>` や `<p>` といったブロック要素は、横幅いっぱいに広がって、次の要素を下に押し出します。何もしなければ**全部縦に積まれる**のがデフォルトです。
+HTML の `<div>` や `<p>` といったブロック要素は、横幅いっぱいに広がって、次の要素を下に押し出します。何もしなければ全部縦に積まれるのがデフォルトです。
+
+<div class="c04-demo">
+  <div class="c04-block">ボックス 1</div>
+  <div class="c04-block">ボックス 2</div>
+  <div class="c04-block">ボックス 3</div>
+</div>
+
+どれだけ横幅に余裕があっても、ブロック要素は上から下に並びます。Web ページで要素を「横に並べたい」場面は多いのに、CSS にはそのための仕組みが長い間ありませんでした。ここからは、横並びをどうやって実現してきたか、その変遷を見ていきます。
+
+## float — 回り込みを転用した時代
+
+### 新聞のような画像の回り込み
+
+`float` はもともと、新聞のように画像の横にテキストを回り込ませるための仕組みです。
+
+```css
+img {
+  float: left;
+  margin-right: 16px;
+}
+```
+
+画像が左に寄り、テキストがその右側に回り込みます。これが本来の用途でした。
+
+### float でナビゲーションを横に並べる
+
+2000 年代、横並びの仕組みがなかった時代に、開発者はこの回り込みをレイアウトに転用しました。
+
+<div class="c04-demo">
+  <p class="c04-demo-label">float で横並びにしたナビゲーション</p>
+  <div class="c04-float-nav" id="c04-float-nav">
+    <div class="c04-float-item">ホーム</div>
+    <div class="c04-float-item">製品</div>
+    <div class="c04-float-item">お問い合わせ</div>
+  </div>
+  <div class="c04-float-after" id="c04-float-after">← ナビの下に来てほしいコンテンツ</div>
+</div>
+
+一見うまくいっているように見えます。しかし float には厄介な副作用がありました。
+
+### 親の高さが消える
+
+float した要素は通常のフローから外れるため、親要素の高さが 0 になります。下のデモで「float の問題を見る」を押してください。
+
+<div class="c04-demo">
+  <p class="c04-demo-label">float の問題: 親の高さが消える</p>
+  <div class="c04-float-parent" id="c04-float-parent">
+    <div class="c04-float-item">ホーム</div>
+    <div class="c04-float-item">製品</div>
+    <div class="c04-float-item">お問い合わせ</div>
+  </div>
+  <div class="c04-float-content" id="c04-float-content">このテキストはナビの下にあるはずが、回り込んでしまう</div>
+  <div style="margin-top:12px;display:flex;gap:8px">
+    <button type="button" class="c04-btn" id="c04-float-break-btn">float の問題を見る</button>
+    <button type="button" class="c04-btn" id="c04-float-fix-btn" style="display:none">clearfix で直す</button>
+  </div>
+</div>
+
+親の枠線が潰れ、後続のテキストが回り込んでしまいます。これを直すために `clearfix` というハックが生まれました。
+
+```css
+/* clearfix — float の後始末 */
+.nav::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+```
+
+「横に並べたいだけなのに、後始末のハックが必要」——これが float レイアウトの現実でした。
+
+## inline-block — ブロックをインラインに並べる
+
+float の問題を避けるために、`display: inline-block` を使う方法も広まりました。テキストと同じようにブロック要素を横に並べます。
+
+<div class="c04-demo">
+  <p class="c04-demo-label">inline-block で横並び</p>
+  <div class="c04-inline-block-container" id="c04-ib-container">
+    <div class="c04-ib-item">ホーム</div>
+    <div class="c04-ib-item">製品</div>
+    <div class="c04-ib-item">お問い合わせ</div>
+  </div>
+  <p class="c04-demo-note" id="c04-ib-note">横に並んだが、要素の間に謎の隙間がある（↑ よく見てください）</p>
+</div>
+
+float のような親の高さ問題は起きません。しかし inline-block には別の厄介な問題がありました。要素と要素の間に **意図しない隙間** ができるのです。
+
+この隙間は CSS の余白ではなく、HTML のソースコードにある改行やスペースが原因です。ブラウザがインライン要素の間の空白をそのまま描画してしまいます。
 
 ```html
-<div style="background:#dbeafe;border:1px solid #93c5fd;padding:16px">ボックス 1</div>
-<div style="background:#dbeafe;border:1px solid #93c5fd;padding:16px">ボックス 2</div>
-<div style="background:#dbeafe;border:1px solid #93c5fd;padding:16px">ボックス 3</div>
+<!-- この改行が隙間になる -->
+<div class="item">ホーム</div>
+<div class="item">製品</div>
 ```
 
-3 つのボックスは、どれだけ横幅に余裕があっても上から下に並びます。この「縦積みがデフォルト」を変えるための仕組みが `flex` と `grid` です。
-
-## flex — 1 方向に並べる仕組み
-
-### display: flex で子が横に並ぶ
-
-並べたい要素の**親に** `display: flex` を付けると、子要素が横に並びます。
+隙間を消すには `font-size: 0` を親に指定して子で戻す、HTML の改行を消す、コメントで繋ぐ、といったハックが必要でした。
 
 ```html
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Flexbox の例</title>
-    <style>
-      .container {
-        display: flex;
-        gap: 8px;
-      }
-      .item {
-        background-color: #dbeafe;
-        border: 1px solid #93c5fd;
-        padding: 16px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="item">ボックス 1</div>
-      <div class="item">ボックス 2</div>
-      <div class="item">ボックス 3</div>
-    </div>
-  </body>
-</html>
+<!-- ハック: コメントで改行を消す -->
+<div class="item">ホーム</div><!--
+--><div class="item">製品</div>
 ```
 
-ポイントは<strong>「親が子の並べ方を決める」</strong>ということです。子要素には何も指定していません。`display: flex` を付けた親が、中の子をどう配置するかを一括で決めます。
+横に並べるだけのことに、なぜこんな工夫が必要なのか。float も inline-block も、横並びのための仕組みではなかったからです。
 
-```mermaid
-flowchart TB
-  subgraph container["親: display: flex"]
-    direction LR
-    A["ボックス 1"]
-    B["ボックス 2"]
-    C["ボックス 3"]
-  end
+## flex — 横並びのために生まれた仕組み
+
+2012 年頃から使えるようになった Flexbox は、CSS で初めて「要素を並べる」ために設計されたレイアウト手法です。
+
+```css
+.nav {
+  display: flex;
+  gap: 8px;
+}
 ```
+
+<div class="c04-demo">
+  <p class="c04-demo-label">flex で横並び — これだけで完成</p>
+  <div class="c04-flex-nav">
+    <div class="c04-flex-item">ホーム</div>
+    <div class="c04-flex-item">製品</div>
+    <div class="c04-flex-item">お問い合わせ</div>
+  </div>
+</div>
+
+float の後始末も inline-block の隙間もありません。親に `display: flex` を付けるだけで、子要素が横に並びます。
 
 ### ヘッダーのロゴ左・ナビ右
 
-`justify-content` は主軸方向（アイテムが並ぶ方向）の配置を決めるプロパティです。`space-between` を使うと、最初の要素を左端に、最後の要素を右端に配置できます。
+`justify-content: space-between` を加えると、最初の要素を左端に、最後の要素を右端に配置できます。
 
-```html
-<header style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border:1px solid #e2e8f0">
-  <div>MyApp</div>
-  <nav aria-label="メインナビゲーション">メニュー</nav>
-</header>
+```css
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 ```
+
+<div class="c04-demo">
+  <div class="c04-flex-header">
+    <div class="c04-flex-logo">MyApp</div>
+    <nav class="c04-flex-menu" aria-label="メインナビゲーション">メニュー</nav>
+  </div>
+</div>
 
 ロゴを左、メニューを右。ヘッダーのレイアウトがこれだけで完成します。
 
-### 上下中央の配置が 2 行で終わる
+### 中央配置が 2 行で終わる
 
-`align-items` は交差軸方向（主軸に対して垂直な方向）の配置を決めるプロパティです。この 2 つを組み合わせれば、中央寄せが 2 行で書けます。
+CSS で上下中央に配置するのは、昔は `position: absolute` と `transform: translate(-50%, -50%)` を組み合わせる必要がありました。「CSS で中央寄せが難しい」はインターネット上で長年ネタにされてきた話です。Flexbox がこれを過去のものにしました。
 
 ```css
 .center {
   display: flex;
   justify-content: center;  /* 横の中央 */
   align-items: center;      /* 縦の中央 */
-  min-height: 200px;
 }
 ```
 
-昔は `position: absolute` と `transform: translate(-50%, -50%)` を組み合わせるテクニックが必要でした。「CSS で中央寄せが難しい」はインターネット上で長年ネタにされてきた話です。Flexbox がこれを過去のものにしました。
+### flex の限界 — 格子が作れない
 
-### flex は「1 方向」の仕組み
+ここまで見てきたように、flex は横並びを簡潔に書けます。しかし「カード一覧のように格子状に並べたい」場面では問題が出ます。
 
-ここまで見てきたように、flex はヘッダーの横並び、中央配置、サイドバーとメインの分割など、**1 方向の配置**が得意です。要素を一列に並べる場面では最適な道具です。
-
-しかし、ここで疑問が出てきます。「じゃあカード一覧みたいな格子状のレイアウトも flex でいけるのでは？」と。
-
-## flex で格子を作ると崩れる
-
-### 6 枚のカードなら問題ない
-
-カード一覧を flex で作ってみます。`flex-wrap: wrap` で折り返しを有効にし、各カードに `flex: 1 1 200px`（最低 200px、余白があれば伸びる）を指定します。
-
-<div class="c04-flex-grid-ok" style="background:#f8fafc;color:#1e293b;padding:16px;border-radius:8px;margin:16px 0">
-  <p style="margin:0 0 8px;font-weight:bold;color:#1e293b">flex で 6 枚（3×2）— きれいに並ぶ ✓</p>
-  <div style="display:flex;flex-wrap:wrap;gap:8px">
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 1</div>
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 2</div>
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 3</div>
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 4</div>
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 5</div>
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 6</div>
+<div class="c04-demo">
+  <p class="c04-demo-label">flex で 5 枚のカード — 最後の行が伸びてしまう</p>
+  <div class="c04-flex-grid">
+    <div class="c04-grid-card">カード 1</div>
+    <div class="c04-grid-card">カード 2</div>
+    <div class="c04-grid-card">カード 3</div>
+    <div class="c04-grid-card">カード 4</div>
+    <div class="c04-grid-card">カード 5</div>
   </div>
 </div>
 
-6 枚なら 3 列 × 2 行でぴったり。問題なさそうに見えます。
-
-### 5 枚にすると最後の行が崩れる
-
-では、カードが 5 枚だったらどうなるでしょう。
-
-<div class="c04-flex-grid-ng" style="background:#f8fafc;color:#1e293b;padding:16px;border-radius:8px;margin:16px 0">
-  <p style="margin:0 0 8px;font-weight:bold;color:#1e293b">flex で 5 枚 — 最後の行が伸びてしまう ✗</p>
-  <div style="display:flex;flex-wrap:wrap;gap:8px">
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 1</div>
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 2</div>
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 3</div>
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 4</div>
-    <div style="flex:1 1 200px;background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 5</div>
-  </div>
-</div>
-
-最後の行にカードが 2 枚しかないのに、**残りのスペースを 2 枚で分け合って幅が広くなってしまいます**。上の行のカードと幅が揃いません。
-
-### なぜ崩れるのか — flex は 1 行ずつ独立している
-
-これはバグではなく、flex の仕様どおりの動きです。
+最後の行のカード 2 枚が、残りのスペースを分け合って幅が広がってしまいます。これはバグではなく、flex の仕様です。flex は 1 行ずつ独立して動く仕組みなので、行をまたいで列幅を揃えることができません。
 
 ```mermaid
 flowchart TB
-  subgraph row1["1行目 — 3枚で余白を分け合う"]
+  subgraph row1["1 行目 — 3 枚で余白を分け合う"]
     direction LR
-    A["カード1"] --- B["カード2"] --- C["カード3"]
+    A["カード 1"] --- B["カード 2"] --- C["カード 3"]
   end
-  subgraph row2["2行目 — 2枚で余白を分け合う"]
+  subgraph row2["2 行目 — 2 枚で余白を分け合う → 伸びる"]
     direction LR
-    D["カード4"] --- E["カード5"]
+    D["カード 4"] --- E["カード 5"]
   end
   row1 ~~~ row2
 ```
 
-`flex-wrap: wrap` で折り返すと、各行は独立した flex コンテナのように振る舞います。1 行目は 3 枚で余白を分け合い、2 行目は 2 枚で余白を分け合います。**行をまたいで列幅を揃える仕組みがありません**。
+## grid — 格子そのものを定義する仕組み
 
-これが「flex は 1 次元（1D）」と言われる理由です。flex は「1 行の中でアイテムをどう並べるか」だけを扱います。複数行にまたがる格子のレイアウトは、そもそも flex の守備範囲ではないのです。
-
-## grid — 格子を定義する仕組み
-
-### 親が格子を作り、子がそこに収まる
-
-`display: grid` と `grid-template-columns` を使うと、親が**格子（グリッド）そのものを定義**します。
+2017 年頃から使えるようになった Grid は、親が格子を定義し、子がそこに収まるレイアウト手法です。
 
 ```css
 .card-grid {
@@ -171,102 +211,230 @@ flowchart TB
 }
 ```
 
-`repeat(3, 1fr)` は「同じ幅の列を 3 つ作る」という意味です。`1fr` は「余白を 1 等分する」という単位で、flex の `flex: 1` に似た考え方です。
-
-<div class="c04-grid-demo" style="background:#f8fafc;color:#1e293b;padding:16px;border-radius:8px;margin:16px 0">
-  <p style="margin:0 0 8px;font-weight:bold;color:#1e293b">grid で 5 枚 — 列幅が揃ったまま ✓</p>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-    <div style="background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 1</div>
-    <div style="background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 2</div>
-    <div style="background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 3</div>
-    <div style="background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 4</div>
-    <div style="background:#dbeafe;border:1px solid #93c5fd;padding:16px;border-radius:4px;color:#1e293b">カード 5</div>
+<div class="c04-demo">
+  <p class="c04-demo-label">grid で 5 枚のカード — 列幅が揃ったまま</p>
+  <div class="c04-grid-grid">
+    <div class="c04-grid-card">カード 1</div>
+    <div class="c04-grid-card">カード 2</div>
+    <div class="c04-grid-card">カード 3</div>
+    <div class="c04-grid-card">カード 4</div>
+    <div class="c04-grid-card">カード 5</div>
   </div>
 </div>
 
-5 枚でも列幅は 3 列のまま。最後の行のカードが伸びたりしません。格子が親によって固定されているので、中身が何枚でもレイアウトは崩れないのです。
+5 枚でも列幅は 3 列のまま。親が格子を定義しているので、中身が何枚でもレイアウトは崩れません。
 
-### flex と grid の根本的な違い
+`repeat(3, 1fr)` は「同じ幅の列を 3 つ作る」という意味です。`1fr` は「余白を 1 等分する」単位で、flex の `flex: 1` に似た考え方です。
 
-flex と grid の違いは、**誰がサイズを決めるか**です。
+## 今の現在地
 
-```mermaid
-flowchart LR
-  subgraph flex["Flexbox（ボトムアップ）"]
-    direction TB
-    F1["子が自分の幅を申告"] --> F2["親が1行の中で調整"]
-  end
-  subgraph grid["Grid（トップダウン）"]
-    direction TB
-    G1["親が格子を定義"] --> G2["子は格子に収まる"]
-  end
-```
+横並びの歴史を振り返ると、float と inline-block はどちらも「横に並べるために作られたものではない」仕組みの転用でした。float は画像の回り込み、inline-block はテキストと同じ行内に置く仕組みです。横並びに使えはしたものの、後始末のハックや謎の隙間が付きまといました。
 
-| | Flexbox | Grid |
-|---|---|---|
-| 方向 | 1 次元（横 or 縦） | 2 次元（横 × 縦） |
-| サイズの決め方 | 子が自分の幅を申告、親が行内で調整 | 親が列・行のサイズを定義 |
-| 行をまたぐ列幅の統一 | できない | できる |
-| 得意な場面 | ナビバー、ヘッダー、中央配置 | カード一覧、ダッシュボード |
+flex と grid は、最初からレイアウトのために設計されています。だからハックがいりません。
 
-### レスポンシブ対応も grid なら簡単
+| 時代 | 方法 | 弱点 |
+|------|------|------|
+| 2000 年代 | `float` | 親の高さが消える。clearfix ハックが必要 |
+| 2000 年代後半 | `inline-block` | HTML の改行が隙間になる |
+| 2012 年〜 | `flex` | 1 方向は得意だが、格子は作れない |
+| 2017 年〜 | `grid` | 格子を定義できる。2 次元のレイアウト |
 
-`auto-fill` と `minmax()` を使えば、メディアクエリを書かずにレスポンシブなグリッドが作れます。
+今は flex と grid を場面に応じて使い分けるのが定番です。
 
-```css
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px;
-}
-```
+- **1 方向に並べる**（ヘッダー、ナビバー、中央配置） → `flex`
+- **格子状に揃える**（カード一覧、ダッシュボード） → `grid`
 
-`auto-fill` は「入るだけ列を作る」、`minmax(200px, 1fr)` は「最低 200px、余白があれば均等に広がる」という意味です。画面が狭くなれば列数が減り、広くなれば増えます。メディアクエリなしで、カードの数が変わっても常にきれいな格子を維持できます。
-
-## 使い分けの判断基準
-
-### シンプルなルール
-
-迷ったときの判断基準はシンプルです。
-
-- **1 方向に並べるだけ** → `flex`
-- **格子状に揃えたい** → `grid`
-
-もう少し具体的に言えば、<strong>「子の数が変わっても列幅を揃えたいか？」</strong>がポイントです。Yes なら Grid。No なら Flex で十分です。
-
-```mermaid
-flowchart TD
-  A["要素を並べたい"] --> B{"格子状に揃えたい？"}
-  B -- Yes --> C["grid を使う"]
-  B -- No --> D{"1方向に並べるだけ？"}
-  D -- Yes --> E["flex を使う"]
-  D -- No --> B
-```
-
-### flex 乱用の典型パターン
-
-「flex しか知らない」状態でカード一覧を作ると、こうなりがちです。
-
-```css
-/* flex でカードグリッドを作ろうとする（よくある失敗） */
-.card-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-.card {
-  flex: 1 1 calc(33.33% - 16px); /* 3列に見せたい */
-}
-```
-
-一見うまくいきますが、カードが 4 枚や 5 枚のときに最後の行が崩れます。さらに `calc` の計算で gap を考慮する必要があり、列数を変えるたびに計算し直す羽目になります。
-
-Grid なら `grid-template-columns: repeat(3, 1fr)` の一行で済み、カードが何枚になっても列幅は揃います。**道具選びを間違えると、コードが複雑になるだけでなく、レイアウトも壊れる**のです。
+AI が生成した CSS に `display: flex` や `display: grid` が入っているのを見かけたら、「float や inline-block のハックなしに横並びができるようになったんだな」と思い出してください。
 
 ## まとめ
 
-- CSS の要素はデフォルトで縦に積まれます。横に並べるには `flex` か `grid` を使います
-- **flex は 1 方向の配置が得意**です。ヘッダーの横並び、中央配置、サイドバー + メインのような場面で使います
-- **flex で格子を作ると、最後の行でカードが伸びて崩れます**。これはバグではなく、flex が 1 行ずつ独立して動く仕様です
-- **grid は格子を定義する仕組み**です。親が列と行を決めるので、子の数が変わっても列幅が揃います
-- 迷ったら「1 方向なら flex、格子なら grid」。全部 flex でやろうとせず、場面に合った道具を選ぶことが大切です
+- CSS の要素はデフォルトで縦に積まれます。横に並べるには工夫が必要でした
+- **float** は回り込みの転用。親の高さが消える問題があり、clearfix ハックが必要でした
+- **inline-block** は HTML の改行が隙間になる問題がありました
+- **flex** は横並びのために生まれた初めての仕組みです。1 方向の配置が得意ですが、格子は苦手です
+- **grid** は格子そのものを定義します。行をまたいで列幅を揃えられます
+- 今は flex（1 方向）と grid（格子）を場面で使い分けるのが定番です
+
+<style>
+.c04-demo {
+  background: #f8fafc;
+  color: #1e293b;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.c04-demo-label {
+  margin: 0 0 8px;
+  font-weight: bold;
+  color: #1e293b;
+}
+.c04-demo-note {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #64748b;
+}
+.c04-block {
+  background: #dbeafe;
+  color: #1e293b;
+  border: 1px solid #93c5fd;
+  padding: 12px 16px;
+  margin-bottom: 4px;
+}
+.c04-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.c04-btn:hover {
+  background: #2563eb;
+}
+
+/* float デモ */
+.c04-float-nav {
+  border: 2px dashed #93c5fd;
+  padding: 8px;
+  overflow: hidden;
+}
+.c04-float-item {
+  float: left;
+  background: #dbeafe;
+  color: #1e293b;
+  border: 1px solid #93c5fd;
+  padding: 8px 16px;
+  margin-right: 4px;
+}
+.c04-float-after {
+  background: #fef3c7;
+  color: #1e293b;
+  border: 1px solid #f59e0b;
+  padding: 8px 16px;
+  margin-top: 8px;
+  clear: both;
+}
+.c04-float-parent {
+  border: 2px dashed #93c5fd;
+  padding: 8px;
+  transition: all 0.3s;
+}
+.c04-float-parent.c04-collapsed .c04-float-item {
+  float: left;
+  margin-right: 4px;
+}
+.c04-float-parent.c04-collapsed {
+  border-color: #ef4444;
+}
+.c04-float-content {
+  background: #fef3c7;
+  color: #1e293b;
+  border: 1px solid #f59e0b;
+  padding: 8px 16px;
+  margin-top: 8px;
+  transition: all 0.3s;
+}
+.c04-float-parent.c04-clearfix::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+/* inline-block デモ */
+.c04-inline-block-container {
+  border: 2px dashed #93c5fd;
+  padding: 8px;
+  font-size: 0;
+}
+.c04-ib-item {
+  display: inline-block;
+  font-size: 16px;
+  background: #dbeafe;
+  color: #1e293b;
+  border: 1px solid #93c5fd;
+  padding: 8px 16px;
+}
+.c04-inline-block-container.c04-show-gap {
+  font-size: 16px;
+}
+
+/* flex デモ */
+.c04-flex-nav {
+  display: flex;
+  gap: 8px;
+}
+.c04-flex-item {
+  background: #dbeafe;
+  color: #1e293b;
+  border: 1px solid #93c5fd;
+  padding: 8px 16px;
+}
+.c04-flex-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+}
+.c04-flex-logo {
+  font-weight: bold;
+  color: #1e293b;
+}
+.c04-flex-menu {
+  color: #475569;
+}
+.c04-flex-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.c04-grid-card {
+  background: #dbeafe;
+  color: #1e293b;
+  border: 1px solid #93c5fd;
+  padding: 16px;
+  border-radius: 4px;
+}
+.c04-flex-grid .c04-grid-card {
+  flex: 1 1 150px;
+}
+
+/* grid デモ */
+.c04-grid-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+</style>
+
+<script setup>
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  const breakBtn = document.getElementById('c04-float-break-btn')
+  const fixBtn = document.getElementById('c04-float-fix-btn')
+  const parent = document.getElementById('c04-float-parent')
+  const content = document.getElementById('c04-float-content')
+
+  breakBtn?.addEventListener('click', () => {
+    parent?.classList.add('c04-collapsed')
+    content.style.marginTop = '0'
+    content.style.clear = 'none'
+    breakBtn.style.display = 'none'
+    if (fixBtn) fixBtn.style.display = 'inline-block'
+  })
+
+  fixBtn?.addEventListener('click', () => {
+    parent?.classList.add('c04-clearfix')
+    content.style.marginTop = '8px'
+    content.style.clear = 'both'
+  })
+
+  const ibContainer = document.getElementById('c04-ib-container')
+  setTimeout(() => {
+    ibContainer?.classList.add('c04-show-gap')
+  }, 100)
+})
+</script>
