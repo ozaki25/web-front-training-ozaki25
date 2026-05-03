@@ -33,6 +33,114 @@ flowchart TB
   end
 ```
 
+### padding を見てみる
+
+6 つの箱を隙間なく敷き詰めました。すべて `padding: 0` です。テキストが枠線にぴったりくっついています。
+
+右下の 1 つだけ `padding: 16px` を加えてみましょう。チェックを入れてください。
+
+<div class="day09-padding-demo">
+  <div class="day09-padding-grid">
+    <div class="day09-padding-cell">テキスト</div>
+    <div class="day09-padding-cell">テキスト</div>
+    <div class="day09-padding-cell">テキスト</div>
+    <div class="day09-padding-cell">テキスト</div>
+    <div class="day09-padding-cell">テキスト</div>
+    <div class="day09-padding-cell day09-padding-target" id="day09-padding-target">テキスト</div>
+  </div>
+  <label class="day09-toggle" style="margin-top:12px;display:flex;align-items:center;gap:8px;cursor:pointer;color:#1e293b">
+    <input type="checkbox" id="day09-padding-toggle" style="width:18px;height:18px;cursor:pointer">
+    <span>右下の箱に <code>padding: 16px</code> を付ける</span>
+  </label>
+</div>
+
+テキストと枠線の間にスペースが生まれました。箱のサイズが広がり、中身が枠に押しつけられなくなります。これが padding — **内側の余白**です。
+
+### margin を見てみる
+
+今度は 5 つの箱を縦に隙間なく積みました。すべて `margin: 0` です。
+
+3 番目の箱だけ `margin: 16px` を加えてみましょう。
+
+<div class="day09-margin-demo">
+  <div class="day09-margin-stack">
+    <div class="day09-margin-cell">1</div>
+    <div class="day09-margin-cell">2</div>
+    <div class="day09-margin-cell day09-margin-target" id="day09-margin-target">3</div>
+    <div class="day09-margin-cell">4</div>
+    <div class="day09-margin-cell">5</div>
+  </div>
+  <label class="day09-toggle" style="margin-top:12px;display:flex;align-items:center;gap:8px;cursor:pointer;color:#1e293b">
+    <input type="checkbox" id="day09-margin-toggle" style="width:18px;height:18px;cursor:pointer">
+    <span>3 番目の箱に <code>margin: 16px</code> を付ける</span>
+  </label>
+</div>
+
+箱自体のサイズは変わらず、**周囲との距離**が広がりました。上下だけでなく左右にもスペースができています。これが margin — **外側の余白**です。
+
+<style>
+.day09-padding-demo,
+.day09-margin-demo {
+  background: #f8fafc;
+  color: #1e293b;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 16px 0;
+}
+.day09-padding-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid #cbd5e1;
+}
+.day09-padding-cell {
+  background: #dbeafe;
+  color: #1e293b;
+  border: 1px solid #93c5fd;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  transition: padding 0.3s, background-color 0.3s;
+}
+.day09-padding-target.day09-padding-on {
+  padding: 16px;
+  background: #bfdbfe;
+}
+.day09-margin-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+.day09-margin-cell {
+  background: #dbeafe;
+  color: #1e293b;
+  border: 1px solid #93c5fd;
+  padding: 8px 16px;
+  font-size: 14px;
+  text-align: center;
+  margin: 0;
+  transition: margin 0.3s, background-color 0.3s;
+}
+.day09-margin-target.day09-margin-on {
+  margin: 16px;
+  background: #bfdbfe;
+}
+</style>
+
+<script setup>
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  document.getElementById('day09-padding-toggle')?.addEventListener('change', (e) => {
+    document.getElementById('day09-padding-target')?.classList.toggle('day09-padding-on', e.target.checked)
+  })
+  document.getElementById('day09-margin-toggle')?.addEventListener('change', (e) => {
+    document.getElementById('day09-margin-target')?.classList.toggle('day09-margin-on', e.target.checked)
+  })
+})
+</script>
+
 使い分けの基本はシンプルです。
 
 | やりたいこと | 使うプロパティ |
