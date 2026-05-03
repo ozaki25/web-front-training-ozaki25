@@ -51,7 +51,7 @@ export default withPwa(
             collapsed: true,
             items: [
               { text: "CSS ボックスモデル", link: "/drafts/003/" },
-              { text: "CSS の横並び", link: "/drafts/004/" },
+              { text: "CSS のレイアウト", link: "/drafts/004/" },
               { text: "レスポンシブの仕組み", link: "/drafts/006/" },
               { text: "JavaScript の役割", link: "/drafts/007/" },
               { text: "アロー関数とスコープ", link: "/drafts/008/" },
