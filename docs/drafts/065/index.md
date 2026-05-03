@@ -51,7 +51,7 @@ margin には直感に反する仕組みがあります。
 
 上に `margin-bottom: 24px`、下に `margin-top: 24px` を付けたので、間は 48px 空きそうに思えます。しかし実際の間隔は **24px** です。
 
-これを**margin の相殺（margin collapsing）**と呼びます。隣り合うブロック要素の上下の margin は、合算されるのではなく、大きい方だけが適用されます。
+これを <strong>margin の相殺（margin collapsing）</strong> と呼びます。隣り合うブロック要素の上下の margin は、合算されるのではなく、大きい方だけが適用されます。
 
 ```css
 .first  { margin-bottom: 30px; }
