@@ -58,7 +58,7 @@ flowchart TB
 
 今度は 5 つの箱を縦に隙間なく積みました。すべて `margin: 0` です。
 
-3 番目の箱だけ `margin: 16px` を加えてみましょう。
+3 番目の箱だけ `margin-top: 16px` を加えてみましょう。
 
 <div class="day09-margin-demo">
   <div class="day09-margin-stack">
@@ -70,11 +70,11 @@ flowchart TB
   </div>
   <label class="day09-toggle" style="margin-top:12px;display:flex;align-items:center;gap:8px;cursor:pointer;color:#1e293b">
     <input type="checkbox" id="day09-margin-toggle" style="width:18px;height:18px;cursor:pointer">
-    <span>3 番目の箱に <code>margin: 16px</code> を付ける</span>
+    <span>3 番目の箱に <code>margin-top: 16px</code> を付ける</span>
   </label>
 </div>
 
-箱自体のサイズは変わらず、**周囲との距離**が広がりました。上下だけでなく左右にもスペースができています。これが margin — **外側の余白**です。
+箱自体のサイズは変わらず、**上の箱との距離**が広がりました。これが margin — **外側の余白**です。
 
 <style>
 .day09-padding-demo,
@@ -121,7 +121,7 @@ flowchart TB
   transition: margin 0.3s, background-color 0.3s;
 }
 .day09-margin-target.day09-margin-on {
-  margin: 16px;
+  margin-top: 16px;
   background: #bfdbfe;
 }
 </style>
