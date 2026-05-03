@@ -82,7 +82,7 @@ export default withPwa(
               { text: "認証とセキュリティ", link: "/drafts/046/" },
               { text: "なぜスタイルが効かない？", link: "/drafts/051/" },
               { text: "要素を好きな位置に置きたい", link: "/drafts/055/" },
-              { text: "見た目を動かしたい", link: "/drafts/056/" },
+              { text: "CSS アニメーション", link: "/drafts/056/" },
               { text: "疑似クラス", link: "/drafts/061/" },
               { text: "レイアウトが突然はみ出す", link: "/drafts/062/" },
               { text: "スクロールで要素を固定したい", link: "/drafts/063/" },
