@@ -8,16 +8,23 @@
 
 ## アニメーションの選択肢
 
-Web で「動き」をつけたいとき、選択肢はいくつかあります。
+Web で「動き」をつけたいとき、選択肢はいくつかあります。選ぶ基準は「何がきっかけで動くか」と「どこまで制御したいか」です。
 
-| 方法 | どんなとき |
-|------|----------|
-| CSS `transition` | ホバーで色を変える、メニューをスッと開くなど |
-| CSS `@keyframes` + `animation` | スピナーを回し続ける、要素をふわっと表示するなど |
-| CSS Scroll-driven animations | スクロールに連動してプログレスバーを伸ばす、要素を動かすなど |
-| JavaScript（Web Animations API） | ユーザー操作に応じて動きを途中で止めたり、速度を変えたい |
-| JavaScript ライブラリ（Framer Motion など） | React コンポーネントが現れる/消えるときの演出など |
-| Canvas / WebGL | ゲームや粒子エフェクトなど、大量の描画が必要なとき |
+```mermaid
+flowchart TD
+  Q["動きをつけたい"] --> Q1{"何がきっかけ？"}
+  Q1 -->|"ホバーやクリック"| T["CSS transition"]
+  Q1 -->|"自動で動く・ループ"| A["CSS animation"]
+  Q1 -->|"スクロール"| S["CSS Scroll-driven animations"]
+  Q1 -->|"JS から細かく制御"| J["Web Animations API\nライブラリ"]
+  Q1 -->|"大量の描画"| C["Canvas / WebGL"]
+```
+
+- **CSS `transition`**: ホバーで色が変わる、クリックでメニューが開くなど、何かのきっかけで状態が A → B に変わる動き
+- **CSS `animation`**: スピナーがずっと回る、ページ表示時にふわっと現れるなど、きっかけがなくても動くもの
+- **CSS Scroll-driven animations**: スクロール量に連動してプログレスバーが伸びるなど
+- **JavaScript**: 動きを途中で止めたい、速度を動的に変えたいなど、CSS だけでは制御しきれない場面
+- **Canvas / WebGL**: ゲームや粒子エフェクトなど、大量の描画が必要な場面
 
 多くの UI アニメーション（ボタンのホバー演出、メニューの開閉、読み込みスピナーなど）は CSS だけで十分です。このレッスンでは CSS の `transition` と `animation` に絞って見ていきます。
 
