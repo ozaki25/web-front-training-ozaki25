@@ -10,14 +10,14 @@
 
 Web で「動き」をつけたいとき、選択肢はいくつかあります。
 
-| 方法 | 特徴 |
-|------|------|
-| CSS `transition` | 状態 A → B の滑らかな変化。ホバーやクラスの付け外しがきっかけ |
-| CSS `@keyframes` + `animation` | 複数段階の動きやループ。きっかけがなくても動く |
-| CSS Scroll-driven animations | スクロール量に連動する動き |
-| Web Animations API | CSS アニメーションと同じエンジンを JavaScript から制御 |
-| ライブラリ（Framer Motion, GSAP など） | React コンポーネントのマウント/アンマウント時の演出など |
-| Canvas / WebGL | ゲームや複雑なグラフィックの描画 |
+| 方法 | どんなとき |
+|------|----------|
+| CSS `transition` | ホバーやクラスの付け外しで、滑らかに変化させたい |
+| CSS `@keyframes` + `animation` | ループさせたい、複数段階の動きをつけたい |
+| CSS Scroll-driven animations | スクロールに連動してプログレスバーを伸ばす、要素を動かすなど |
+| JavaScript（Web Animations API） | ユーザー操作に応じて動きを途中で止めたり、速度を変えたい |
+| JavaScript ライブラリ（Framer Motion など） | React コンポーネントが現れる/消えるときの演出など |
+| Canvas / WebGL | ゲームや粒子エフェクトなど、大量の描画が必要なとき |
 
 多くの UI アニメーション——ボタンのホバー演出、メニューの開閉、読み込みスピナー——は CSS だけで十分です。このレッスンでは CSS の `transition` と `animation` に絞って見ていきます。
 
