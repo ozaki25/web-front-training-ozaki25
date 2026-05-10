@@ -61,6 +61,10 @@ export default withPwa(
                   text: "Day 10: CSS のレイアウト",
                   link: "/lessons/day10/",
                 },
+                {
+                  text: "Day 11: レスポンシブデザイン",
+                  link: "/lessons/day11/",
+                },
               ],
             },
           ],
