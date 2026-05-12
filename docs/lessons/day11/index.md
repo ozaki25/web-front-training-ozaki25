@@ -17,7 +17,13 @@ flowchart LR
   S -->|UA が PC| D["example.com"]
 ```
 
-サーバーはブラウザが送ってくる User-Agent（UA）という文字列を見て、スマホかどうかを判定していました。これを UA スニッフィングと呼びます。
+サーバーはブラウザが送ってくる User-Agent（UA）という文字列を見て、スマホかどうかを判定していました。これを UA スニッフィングと呼びます。下のデモで、今あなたのブラウザが送っている UA 文字列を確認できます。
+
+<div class="c06-demo">
+  <p class="c06-demo-label">あなたのブラウザの User-Agent:</p>
+  <code class="c06-ua-text" id="c06-ua-text">---</code>
+  <p class="c06-demo-note">サーバーはこの文字列を見て「スマホか PC か」を判定していました。端末が増えるほど判定は難しくなります。</p>
+</div>
 
 この方法には大きな問題がありました。
 
@@ -162,10 +168,10 @@ flowchart TB
 下のデモではスライダーで親の幅を変えられます。同じカードコンポーネントが、親の幅に応じて縦並び ↔ 横並びに切り替わるのを確認してください。
 
 <div class="c06-demo">
-  <p class="c06-demo-label">親の幅: <strong id="c06-cq-width-label">500</strong>px</p>
+  <p class="c06-demo-label">親の幅: <strong id="c06-cq-width-label">500</strong>px <span id="c06-cq-status" class="c06-demo-note" style="margin:0"></span></p>
   <input type="range" id="c06-cq-slider" min="200" max="600" value="500" style="width:100%;cursor:pointer">
-  <div class="c06-cq-wrapper" id="c06-cq-wrapper" style="width:500px;max-width:100%">
-    <div class="c06-cq-card">
+  <div class="c06-cq-wrapper" id="c06-cq-wrapper" style="width:500px">
+    <div class="c06-cq-card" id="c06-cq-card">
       <div class="c06-cq-thumb"></div>
       <div class="c06-cq-body">
         <div class="c06-cq-title">カードタイトル</div>
@@ -243,13 +249,27 @@ Grid の `auto-fit` と `minmax()` を組み合わせれば、カード一覧の
   text-align: center;
 }
 
+/* UA デモ */
+.c06-ua-text {
+  display: block;
+  background: white;
+  color: #1e293b;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  word-break: break-all;
+  line-height: 1.6;
+}
+
 /* コンテナクエリデモ */
 .c06-cq-wrapper {
   container-type: inline-size;
+  container-name: c06-card-container;
   border: 2px dashed #93c5fd;
   padding: 12px;
   border-radius: 8px;
-  transition: width 0.15s ease-out;
+  overflow: hidden;
 }
 .c06-cq-card {
   display: grid;
@@ -275,7 +295,7 @@ Grid の `auto-fit` と `minmax()` を組み合わせれば、カード一覧の
   font-size: 14px;
   color: #475569;
 }
-@container (min-width: 400px) {
+@container c06-card-container (min-width: 400px) {
   .c06-cq-card {
     grid-template-columns: 120px 1fr;
   }
@@ -293,6 +313,9 @@ Grid の `auto-fit` と `minmax()` を組み合わせれば、カード一覧の
 import { onMounted } from 'vue'
 
 onMounted(() => {
+  const uaText = document.getElementById('c06-ua-text')
+  if (uaText) uaText.textContent = navigator.userAgent
+
   const vpWidth = document.getElementById('c06-viewport-width')
   const mqStatus = document.getElementById('c06-mq-status')
   if (vpWidth) {
@@ -312,11 +335,13 @@ onMounted(() => {
   const slider = document.getElementById('c06-cq-slider')
   const wrapper = document.getElementById('c06-cq-wrapper')
   const label = document.getElementById('c06-cq-width-label')
+  const cqStatus = document.getElementById('c06-cq-status')
   if (slider && wrapper) {
     slider.addEventListener('input', (e) => {
       const v = e.target.value
       wrapper.style.width = v + 'px'
       if (label) label.textContent = v
+      if (cqStatus) cqStatus.textContent = Number(v) >= 400 ? '→ 横並び' : '→ 縦並び'
     })
   }
 })
