@@ -17,7 +17,17 @@ flowchart LR
   S -->|UA が PC| D["example.com"]
 ```
 
-サーバーはブラウザが送ってくる User-Agent（UA）という文字列を見て、スマホかどうかを判定していました。これを UA スニッフィングと呼びます。
+サーバーはブラウザが送ってくる User-Agent（UA）という文字列を見て、スマホかどうかを判定していました。これを UA スニッフィングと呼びます。下のデモで、今あなたのブラウザが送っている UA 文字列を確認できます。
+
+<div class="c06-demo">
+  <p class="c06-demo-label">あなたのブラウザの User-Agent:</p>
+  <code class="c06-ua-text" id="c06-ua-text">---</code>
+  <p class="c06-demo-note">サーバーはこの文字列の中に「iPhone」や「Android」が含まれるかどうかで判定していました。見慣れないブラウザ名が混じっているかもしれませんが、それは正常です。UA 文字列は歴史的な経緯で複数のブラウザ名が入り混じる構造になっています。</p>
+</div>
+
+::: details UA 文字列とプライバシー
+UA 文字列はブラウザの種類・バージョン・OS などの情報を含んでおり、他の情報と組み合わせるとユーザーを個別に識別する手がかり（フィンガープリンティング）に使われることがあります。この問題を受けて、Chrome は UA 文字列の情報を段階的に削減する方針（User-Agent Reduction）を進めています。UA スニッフィングが過去の手法になった理由は、技術的な限界だけでなく、プライバシーの観点からも UA に頼るべきではなくなっているためです。
+:::
 
 この方法には大きな問題がありました。
 
@@ -60,6 +70,18 @@ flowchart LR
 
 - **画面幅が 768px 未満**: カードは縦に 1 列で並ぶ
 - **画面幅が 768px 以上**: カードは 3 列で並ぶ
+
+下のデモで実際に確認できます。ブラウザの幅を変えるか、スマホなら横に回転してみてください。
+
+<div class="c06-demo">
+  <p class="c06-demo-label">現在の画面幅: <strong id="c06-viewport-width">---</strong>px</p>
+  <div class="c06-mq-cards">
+    <div class="c06-mq-card">カード 1</div>
+    <div class="c06-mq-card">カード 2</div>
+    <div class="c06-mq-card">カード 3</div>
+  </div>
+  <p class="c06-demo-note" id="c06-mq-status">---</p>
+</div>
 
 `min-width`（〇〇px 以上のとき）でスマホをベースに書き、画面が広くなるにつれてスタイルを足していく書き方が定番です。これはモバイルファーストと呼ばれます。
 
@@ -147,6 +169,22 @@ flowchart TB
   end
 ```
 
+下のデモではスライダーで親の幅を変えられます。同じカードコンポーネントが、親の幅に応じて縦並び ↔ 横並びに切り替わるのを確認してください。
+
+<div class="c06-demo">
+  <p class="c06-demo-label">親の幅: <strong id="c06-cq-width-label">500</strong>px <span id="c06-cq-status" class="c06-demo-note" style="margin:0"></span></p>
+  <input type="range" id="c06-cq-slider" min="200" max="600" value="500" style="width:100%;cursor:pointer">
+  <div class="c06-cq-wrapper" id="c06-cq-wrapper" style="width:500px">
+    <div class="c06-cq-card" id="c06-cq-card">
+      <div class="c06-cq-thumb"></div>
+      <div class="c06-cq-body">
+        <div class="c06-cq-title">カードタイトル</div>
+        <div class="c06-cq-text">親の幅が 400px 以上なら横並び、未満なら縦並びになります。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 コンテナクエリを使えば、同じカードコンポーネントがメインエリアでは横並び、サイドバーでは縦並びになります。コンポーネント自身が「自分がどのくらいの幅で表示されているか」を知って、見た目を切り替えるのです。
 
 2026 年 5 月時点で、コンテナクエリは Chrome・Safari・Edge・Firefox の主要ブラウザすべてで対応しており、実用できる段階にあります。
@@ -162,7 +200,7 @@ Grid の `auto-fit` と `minmax()` を組み合わせれば、カード一覧の
 こうした仕組みを使うと、メディアクエリの出番は「サイドバーの有無を切り替える」「ナビゲーションをハンバーガーメニューに変える」といった、大きなレイアウト変更だけになります。
 
 | やりたいこと | 今の手法 |
-|-------------|---------|
+|-------------|--------|
 | フォントサイズを画面幅に応じて変える | `clamp()` |
 | カードの列数を画面幅に応じて変える | Grid の `auto-fit` + `minmax()` |
 | コンポーネントの見た目を親の幅で変える | コンテナクエリ |
@@ -176,3 +214,139 @@ Grid の `auto-fit` と `minmax()` を組み合わせれば、カード一覧の
 - メディアクエリは画面幅しか見られず、端末の多様化でブレークポイントの前提も揺らいでいます
 - **コンテナクエリ**は親要素の幅で切り替えます。コンポーネントが自分の表示幅に応じて見た目を変えられます
 - `clamp()` や Grid の `auto-fit` を使えば、ブレークポイントなしで滑らかに適応できます。メディアクエリは大きなレイアウト変更だけに使うのが今の定番です
+
+<style>
+.c06-demo {
+  background: #f8fafc;
+  color: #1e293b;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.c06-demo-label {
+  margin: 0 0 8px;
+  font-weight: bold;
+  color: #1e293b;
+}
+.c06-demo-note {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* メディアクエリデモ */
+.c06-mq-cards {
+  display: grid;
+  gap: 8px;
+}
+@media (min-width: 768px) {
+  .c06-mq-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.c06-mq-card {
+  background: #dbeafe;
+  color: #1e293b;
+  border: 1px solid #93c5fd;
+  padding: 16px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* UA デモ */
+.c06-ua-text {
+  display: block;
+  background: white;
+  color: #1e293b;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  font-size: 12px;
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+/* コンテナクエリデモ */
+.c06-cq-wrapper {
+  container-type: inline-size;
+  container-name: c06-card-container;
+  border: 2px dashed #93c5fd;
+  padding: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.c06-cq-card {
+  display: grid;
+  gap: 12px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.c06-cq-thumb {
+  height: 80px;
+  background: #dbeafe;
+}
+.c06-cq-body {
+  padding: 0 12px 12px;
+}
+.c06-cq-title {
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+.c06-cq-text {
+  font-size: 14px;
+  color: #475569;
+}
+@container c06-card-container (min-width: 400px) {
+  .c06-cq-card {
+    grid-template-columns: 120px 1fr;
+  }
+  .c06-cq-thumb {
+    height: auto;
+    min-height: 100px;
+  }
+  .c06-cq-body {
+    padding: 12px 12px 12px 0;
+  }
+}
+</style>
+
+<script setup>
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  const uaText = document.getElementById('c06-ua-text')
+  if (uaText) uaText.textContent = navigator.userAgent
+
+  const vpWidth = document.getElementById('c06-viewport-width')
+  const mqStatus = document.getElementById('c06-mq-status')
+  if (vpWidth) {
+    const update = () => {
+      const w = window.innerWidth
+      vpWidth.textContent = w
+      if (mqStatus) {
+        mqStatus.textContent = w >= 768
+          ? '768px 以上 → 3 列で表示中'
+          : '768px 未満 → 1 列で表示中'
+      }
+    }
+    update()
+    window.addEventListener('resize', update)
+  }
+
+  const slider = document.getElementById('c06-cq-slider')
+  const wrapper = document.getElementById('c06-cq-wrapper')
+  const label = document.getElementById('c06-cq-width-label')
+  const cqStatus = document.getElementById('c06-cq-status')
+  if (slider && wrapper) {
+    slider.addEventListener('input', (e) => {
+      const v = e.target.value
+      wrapper.style.width = v + 'px'
+      if (label) label.textContent = v
+      if (cqStatus) cqStatus.textContent = Number(v) >= 400 ? '→ 横並び' : '→ 縦並び'
+    })
+  }
+})
+</script>
