@@ -44,6 +44,10 @@ export default withPwa(
               { text: "Day 6: img タグの書き方", link: "/lessons/day06/" },
               { text: "Day 7: CSS の適用範囲", link: "/lessons/day07/" },
               { text: "Day 8: PWA と Web API", link: "/lessons/day08/" },
+              { text: "Day 9: CSS の余白設計", link: "/lessons/day09/" },
+              { text: "Day 10: CSS のレイアウト", link: "/lessons/day10/" },
+              { text: "Day 11: レスポンシブデザイン", link: "/lessons/day11/" },
+              { text: "Day 12: CSS アニメーション", link: "/lessons/day12/" },
             ],
           },
           {
