@@ -17,3 +17,4 @@
 - [Day 9: CSS の余白設計 — margin、padding、gap の使い分け](/lessons/day09/)
 - [Day 10: CSS のレイアウト — 横並びの変遷](/lessons/day10/)
 - [Day 11: レスポンシブデザイン — 1 つの HTML をあらゆる画面に届ける](/lessons/day11/)
+- [Day 12: CSS アニメーション — 動きの選択肢と使い分け](/lessons/day12/)

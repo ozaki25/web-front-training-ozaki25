@@ -65,6 +65,10 @@ export default withPwa(
                   text: "Day 11: レスポンシブデザイン",
                   link: "/lessons/day11/",
                 },
+                {
+                  text: "Day 12: CSS アニメーション",
+                  link: "/lessons/day12/",
+                },
               ],
             },
           ],
