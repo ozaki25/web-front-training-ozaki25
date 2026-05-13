@@ -84,6 +84,7 @@ export default withPwa(
               { text: "認証とセキュリティ", link: "/drafts/046/" },
               { text: "ダークモードの仕組み", link: "/drafts/066/" },
               { text: "JSON", link: "/drafts/067/" },
+              { text: "JavaScript の実行環境", link: "/drafts/069/" },
             ],
           },
         ],
