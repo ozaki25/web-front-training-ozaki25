@@ -39,6 +39,14 @@ flowchart TB
 
 JavaScript には ECMAScript と呼ばれる共通の土台があります。変数の宣言、関数、条件分岐といった基本的な文法はこの土台に含まれていて、どの環境でも同じように動きます。
 
+::: details ECMAScript とは
+JavaScript の文法や機能は、Ecma International という標準化団体が「ECMAScript」という仕様書にまとめています。たとえば「変数を `const` で宣言できる」「配列に `.map()` が使える」といったことは、この仕様書で決められています。
+
+ブラウザや Node.js などの各環境は、この仕様書に沿って JavaScript を実装しています。だから同じコードがどの環境でも同じように動きます。ECMAScript は毎年更新されており（ES2023、ES2024 など）、新しい文法や機能が追加されていきます。
+
+「JavaScript」と「ECMAScript」はほぼ同じものを指していますが、厳密には ECMAScript が仕様、JavaScript がその実装です。
+:::
+
 ただし、環境ごとに「追加で使えるもの」が違います。
 
 | 機能 | ブラウザ | Node.js | なぜ違う？ |
