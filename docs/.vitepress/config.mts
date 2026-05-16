@@ -54,7 +54,9 @@ export default withPwa(
           {
             text: "候補",
             collapsed: true,
-            items: [],
+            items: [
+              { text: "npm", link: "/drafts/001/" },
+            ],
           },
         ],
         outline: {
