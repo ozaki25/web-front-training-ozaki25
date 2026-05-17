@@ -56,6 +56,7 @@ export default withPwa(
             collapsed: true,
             items: [
               { text: "npm", link: "/drafts/001/" },
+              { text: "動的型付けと TypeScript", link: "/drafts/002/" },
             ],
           },
         ],
