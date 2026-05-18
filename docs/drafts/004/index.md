@@ -274,21 +274,6 @@ async function ProductList() {
 
 ## まとめ
 
-```mermaid
-flowchart TB
-  subgraph rendering["描画: いつ・どこで HTML を作るか"]
-    direction LR
-    CSR["CSR"] --- SSR["SSR"] --- SSG["SSG / ISR"]
-    SSR --- Streaming["Streaming"]
-    Streaming --- PPR["PPR"]
-  end
-  subgraph caching["キャッシュ: 作った結果をどう保持するか"]
-    direction LR
-    PageCache["ISR\n（ページ単位）"]
-    ComponentCache["Cache Components\n（コンポーネント単位）"]
-  end
-```
-
 | 段階 | 何をするか | 仕組み |
 |------|----------|-------|
 | 1. ページ単位の描画 | ページ全体を「いつ」「どこで」作るか決める | CSR / SSR / SSG / ISR |
