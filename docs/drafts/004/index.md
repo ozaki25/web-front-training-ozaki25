@@ -4,9 +4,10 @@
 
 - Web ページの描画にはいくつかの方式があることを知る
 - CSR / SSR / SSG / ISR の違いを知る
-- Streaming / PPR / Cache Components で、ページ内をコンポーネント単位で制御できることを知る
+- Streaming と PPR でページ内を部分ごとに描画できることを知る
+- Cache Components でコンポーネント単位のキャッシュができることを知る
 
-## ページ単位の描画方式
+## 1. ページ単位の描画方式
 
 Web ページの HTML を「いつ」「どこで」作るか。この違いで、ユーザーに届くまでの速度や体験が変わります。
 
@@ -87,7 +88,7 @@ flowchart LR
 
 ---
 
-## ページの中をコンポーネント単位で制御する
+## 2. ページ内を部分ごとに描画する
 
 ここからは、ページ全体ではなく「ページの中の一部分」を単位にして描画を制御する仕組みです。
 
@@ -159,7 +160,7 @@ export default async function Page() {
 }
 ```
 
-### PPR — 静的と動的を 1 ページに混ぜる
+### PPR — 枠を事前に作っておき、中身だけ後から届ける
 
 Streaming ではページの部品を順に送れるようになりましたが、最初の表示もサーバーの処理を待つ必要があります。
 
@@ -190,13 +191,18 @@ flowchart TB
 | 枠（ヘッダー等） | サーバーが処理してから届く | ビルド済みなので即座に届く |
 | 動的な部分 | サーバーが処理してから届く | サーバーが処理してから届く |
 | 最初の表示 | サーバーの処理開始を待つ | 待たない |
-:::
 
-### Cache Components — コンポーネント単位でキャッシュする
+---
+
+## 3. キャッシュをコンポーネント単位で制御する
+
+SSG や ISR はページ全体をキャッシュする仕組みでした。しかし 1 つのページの中にも「長期間キャッシュしていいもの」と「毎回最新を取得すべきもの」が混在します。
+
+### Cache Components — `"use cache"` でキャッシュを宣言する
 
 Next.js 16 で導入された Cache Components は、コンポーネントや関数の単位でキャッシュを制御する仕組みです。
 
-関数やコンポーネントの先頭に `"use cache"` と書くと、その出力がキャッシュされます。
+関数やコンポーネントの先頭に `"use cache"` と書くと、その出力がキャッシュされます。`"use cache"` を書かなければキャッシュされません。
 
 ```tsx
 async function ProductList() {
@@ -206,7 +212,7 @@ async function ProductList() {
 }
 ```
 
-ページ単位で「SSR か SSG か」を選ぶのではなく、コンポーネントごとに「キャッシュするかしないか」を宣言できます。`"use cache"` を書かなければキャッシュされません。
+同じページの中でも、部品ごとにキャッシュするかしないかを宣言できます。
 
 ```
 ページ
@@ -216,27 +222,33 @@ async function ProductList() {
 └── フッター       → "use cache"（キャッシュする）
 ```
 
+| キャッシュの粒度 | 仕組み |
+|----------------|-------|
+| ページ全体 | SSG / ISR |
+| コンポーネント単位 | Cache Components（`"use cache"`） |
+
 ## まとめ
 
 ```mermaid
 flowchart TB
-  subgraph page_level["ページ単位"]
+  subgraph rendering["描画: いつ・どこで HTML を作るか"]
     direction LR
-    CSR["CSR"] --> SSR["SSR"] --> SSG["SSG"] --> ISR["ISR"]
+    CSR["CSR"] --- SSR["SSR"] --- SSG["SSG / ISR"]
+    SSR --- Streaming["Streaming"]
+    Streaming --- PPR["PPR"]
   end
-  subgraph component_level["コンポーネント単位"]
+  subgraph caching["キャッシュ: 作った結果をどう保持するか"]
     direction LR
-    Stream["Streaming\n（Suspense）"] --> PPR["PPR\n（静的シェル + 動的な穴）"] --> Cache["Cache Components\n（use cache）"]
+    PageCache["SSG / ISR\n（ページ単位）"]
+    ComponentCache["Cache Components\n（コンポーネント単位）"]
   end
-  page_level -->|粒度を細かく| component_level
 ```
 
-| 粒度 | 方式 | 特徴 |
-|------|------|------|
-| ページ全体 | CSR / SSR / SSG / ISR | ページごとに「いつ」「どこで」HTML を作るか決める |
-| ページの一部分 | Streaming / PPR / Cache Components | コンポーネント単位で描画方式やキャッシュを制御する |
-
-制御の粒度がページからコンポーネントへと細かくなっています。
+| 段階 | 何をするか | 仕組み |
+|------|----------|-------|
+| 1. ページ単位の描画 | ページ全体を「いつ」「どこで」作るか決める | CSR / SSR / SSG / ISR |
+| 2. ページ内の部分描画 | ページの中を部品ごとに順次描画する | Streaming（`<Suspense>`）/ PPR |
+| 3. コンポーネント単位のキャッシュ | 部品ごとにキャッシュするかしないかを宣言する | Cache Components（`"use cache"`） |
 
 <style>
 .c04-demo {
