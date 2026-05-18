@@ -228,7 +228,7 @@ flowchart TB
 
 ## 3. キャッシュをコンポーネント単位で制御する
 
-SSG や ISR はページ全体をキャッシュする仕組みでした。しかし 1 つのページの中にも「長期間キャッシュしていいもの」と「毎回最新を取得すべきもの」が混在します。
+ISR はページ全体をキャッシュして定期的に再生成する仕組みでした。しかし 1 つのページの中にも「長期間キャッシュしていいもの」と「毎回最新を取得すべきもの」が混在します。
 
 ### Cache Components — `"use cache"` でキャッシュを宣言する
 
@@ -256,7 +256,7 @@ async function ProductList() {
 
 | キャッシュの粒度 | 仕組み |
 |----------------|-------|
-| ページ全体 | SSG / ISR |
+| ページ全体 | ISR |
 | コンポーネント単位 | Cache Components（`"use cache"`） |
 
 ## まとめ
@@ -271,7 +271,7 @@ flowchart TB
   end
   subgraph caching["キャッシュ: 作った結果をどう保持するか"]
     direction LR
-    PageCache["SSG / ISR\n（ページ単位）"]
+    PageCache["ISR\n（ページ単位）"]
     ComponentCache["Cache Components\n（コンポーネント単位）"]
   end
 ```
