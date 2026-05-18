@@ -48,6 +48,8 @@ sequenceDiagram
 | SEO に強い | 最も遅いデータ取得に全体が律速される |
 | 常に最新のデータ | サーバーの負荷が高い |
 
+> 参考: [SPAでSSRする](https://speakerdeck.com/ozaki25/20181017-spa-ssr) — CSR（SPA）の初期表示の課題と SSR による改善を図解したスライド
+
 ### SSG と ISR — 事前生成とその更新
 
 ```mermaid
