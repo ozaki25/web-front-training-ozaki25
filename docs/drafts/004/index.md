@@ -161,36 +161,40 @@ export default async function Page() {
 
 ### PPR — 静的と動的を 1 ページに混ぜる
 
-PPR（Partial Prerendering）は、SSG の速さと SSR のデータ鮮度を 1 つのページの中で両立します。
+Streaming ではページの部品を順に送れるようになりましたが、最初の表示もサーバーの処理を待つ必要があります。
+
+PPR（Partial Prerendering）は、ページの「枠」（ヘッダー、ナビ、フッターなど変わらない部分）をデプロイ前のビルド時に HTML として生成しておきます。ユーザーがアクセスすると、この枠がサーバーの処理を待たずに即座に届きます。動的な部分（ユーザーごとに変わるコンテンツ）だけを Streaming で後から埋めます。
 
 ```mermaid
 flowchart TB
-  subgraph page["1 つのページ"]
-    direction TB
-    Header["ヘッダー・ナビ\n（静的シェル — 事前生成済み）"]
-    Content["メインコンテンツ\n（動的な穴 — Streaming で後から届く）"]
-    Sidebar["サイドバー\n（動的な穴 — Streaming で後から届く）"]
-    Footer["フッター\n（静的シェル — 事前生成済み）"]
+  subgraph build["ビルド時（デプロイ前）"]
+    Shell["ヘッダー・ナビ・フッターの HTML を生成"]
   end
+  subgraph request["ユーザーのアクセス時"]
+    direction TB
+    Instant["枠が即座に表示される"]
+    Loading["動的な部分はローディング表示"]
+    Done["サーバーの処理が終わると本体に差し替わる"]
+    Instant --> Loading --> Done
+  end
+  build --> request
 ```
 
-| 部分 | 方式 | 届くタイミング |
-|------|------|-------------|
-| ヘッダー、フッター | 静的シェル（事前生成） | 即座 |
-| メインコンテンツ | Streaming（`<Suspense>`） | データ取得後 |
-| サイドバー | Streaming（`<Suspense>`） | データ取得後 |
+| 部分 | いつ作るか | 届くタイミング |
+|------|----------|-------------|
+| ヘッダー、ナビ、フッター | ビルド時（デプロイ前） | 即座 |
+| メインコンテンツ | アクセス時（サーバーで） | データ取得後 |
 
-ページの枠（静的シェル）は事前生成して即座に届け、動的な部分（穴）だけ Streaming で後から埋めます。
-
-::: info PPR のメリットはインフラ構成で変わる
-PPR の静的シェルを CDN のエッジから配信できる構成では、TTFB（最初の 1 バイトが届くまでの時間）が大幅に短縮されます。一方、CDN がエッジキャッシュに対応していない構成では、サーバー（オリジン）のメモリから配信するため、通常の SSR + Streaming との性能差は小さくなります。
+| | SSR + Streaming | PPR |
+|---|----------------|-----|
+| 枠（ヘッダー等） | サーバーが処理してから届く | ビルド済みなので即座に届く |
+| 動的な部分 | サーバーが処理してから届く | サーバーが処理してから届く |
+| 最初の表示 | サーバーの処理開始を待つ | 待たない |
 :::
 
-### Cache Components — `"use cache"` でキャッシュを宣言する
+### Cache Components — コンポーネント単位でキャッシュする
 
-Next.js 16 で導入された Cache Components は、コンポーネントや関数の単位でキャッシュを宣言的に制御する仕組みです。`next.config.ts` で `cacheComponents: true` を設定すると有効になります。
-
-#### `"use cache"` ディレクティブ
+Next.js 16 で導入された Cache Components は、コンポーネントや関数の単位でキャッシュを制御する仕組みです。
 
 関数やコンポーネントの先頭に `"use cache"` と書くと、その出力がキャッシュされます。
 
@@ -202,81 +206,15 @@ async function ProductList() {
 }
 ```
 
-`"use cache"` を書かなければキャッシュされません。つまり「デフォルトは動的、キャッシュは明示的に opt-in」というモデルです。
-
-| バリアント | キャッシュの保存先 | 用途 |
-|-----------|-----------------|------|
-| `"use cache"` | サーバーのインメモリ | 一般的なキャッシュ |
-| `"use cache: remote"` | 外部ストア（Redis 等） | サーバーインスタンス間で共有するキャッシュ |
-
-#### `cacheLife` — キャッシュの有効期間
-
-`cacheLife()` でキャッシュの有効期間を指定します。
-
-```tsx
-import { cacheLife } from "next/cache";
-
-async function ProductList() {
-  "use cache";
-  cacheLife("hours");
-  const products = await db.products.findMany();
-  return <ul>{products.map(p => <li key={p.id}>{p.name}</li>)}</ul>;
-}
-```
-
-| プロファイル | 意味 |
-|------------|------|
-| `"seconds"` | 秒単位の短いキャッシュ |
-| `"minutes"` | 分単位 |
-| `"hours"` | 時間単位 |
-| `"days"` | 日単位 |
-| `"weeks"` | 週単位 |
-| `"max"` | 最大限キャッシュ |
-
-#### `cacheTag` と `updateTag` — オンデマンド無効化
-
-`cacheTag()` でキャッシュにタグを付け、`updateTag()` でそのタグのキャッシュを無効化できます。
-
-```tsx
-import { cacheTag } from "next/cache";
-
-async function ProductList() {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("products");
-  const products = await db.products.findMany();
-  return <ul>{products.map(p => <li key={p.id}>{p.name}</li>)}</ul>;
-}
-```
-
-```tsx
-// Server Action で商品を更新したとき
-"use server";
-import { updateTag } from "next/cache";
-
-async function updateProduct(data) {
-  await db.products.update(data);
-  updateTag("products");  // "products" タグのキャッシュを即座に無効化
-}
-```
-
-#### コンポーネント単位のキャッシュ戦略
-
-Cache Components により、同じページの中でも部品ごとにキャッシュ戦略を変えられます。
+ページ単位で「SSR か SSG か」を選ぶのではなく、コンポーネントごとに「キャッシュするかしないか」を宣言できます。`"use cache"` を書かなければキャッシュされません。
 
 ```
 ページ
-├── ヘッダー       → "use cache" + cacheLife("days")
-├── 商品一覧       → "use cache" + cacheLife("hours") + cacheTag("products")
+├── ヘッダー       → "use cache"（キャッシュする）
+├── 商品一覧       → "use cache"（キャッシュする）
 ├── ユーザー情報    → キャッシュなし（毎回取得）
-└── フッター       → "use cache" + cacheLife("days")
+└── フッター       → "use cache"（キャッシュする）
 ```
-
-ページ単位で「SSR か SSG か」を選ぶのではなく、コンポーネントごとにキャッシュを宣言する。これが Next.js が向かっている方向です。
-
-::: details `unstable_cache` との関係
-Next.js 16 以前は `unstable_cache` という関数でキャッシュを制御していました。Next.js 16 の公式ドキュメントでは `unstable_cache` は `"use cache"` に置き換えることが推奨されています。`unstable_cache` は引き続き動作しますが、新規で書くなら `"use cache"` が公式の推奨パスです。
-:::
 
 ## まとめ
 
@@ -298,7 +236,7 @@ flowchart TB
 | ページ全体 | CSR / SSR / SSG / ISR | ページごとに「いつ」「どこで」HTML を作るか決める |
 | ページの一部分 | Streaming / PPR / Cache Components | コンポーネント単位で描画方式やキャッシュを制御する |
 
-制御の粒度がページからコンポーネントへと細かくなっています。`<Suspense>` で Streaming の境界を決め、`"use cache"` でキャッシュの対象を宣言し、`cacheLife` で期間を、`cacheTag` + `updateTag` で無効化を制御する。これが現在の Next.js のレンダリングとキャッシュの全体像です。
+制御の粒度がページからコンポーネントへと細かくなっています。
 
 <style>
 .c04-demo {
