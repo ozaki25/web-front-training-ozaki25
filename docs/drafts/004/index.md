@@ -58,6 +58,8 @@ flowchart LR
 
 **SSG**（Static Site Generation）はビルド時に全ページの HTML を生成しておく方式です。リクエスト時はファイルを返すだけなので最速ですが、データはビルド時点のまま古くなります。
 
+> 参考: [Jamstackって何なの？何がいいの？](https://qiita.com/ozaki25/items/4075d03278d1fb51cc37) — SSG の考え方をベースにした Web サイト構成の解説
+
 **ISR**（Incremental Static Regeneration）は SSG の弱点を補う方式です。一定時間が経過したページにリクエストが来ると、キャッシュを返しつつ裏側で HTML を再生成します。
 
 ::: info SSG / ISR が使えない場面
