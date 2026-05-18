@@ -58,6 +58,7 @@ export default withPwa(
             items: [
               { text: "npm", link: "/drafts/001/" },
               { text: "関数の書き方", link: "/drafts/003/" },
+              { text: "Web ページの届け方", link: "/drafts/004/" },
             ],
           },
         ],
