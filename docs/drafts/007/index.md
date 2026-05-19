@@ -1,5 +1,7 @@
 # モジュール — require と import が 2 つある理由
 
+Next.js のコードで `import` を何気なく書いていると思います。一方で、ネットの記事やサンプルコードで `require` という別の書き方を見かけることもあるはずです。なぜ同じ「他のファイルを読み込む」という機能に 2 種類の書き方があるのでしょうか。その理由は JavaScript の歴史にあります。
+
 ## 今日のゴール
 
 - JavaScript にモジュールがなかった時代の問題を知る
@@ -38,18 +40,14 @@ function setup() {
 `utils.js` と `main.js` の両方に `count` と `setup` があります。ブラウザはこれらを順番に読み込みますが、どちらも同じグローバルスコープに置かれるため、後から読み込まれた `main.js` の `count` と `setup` が `utils.js` のものを上書きします。エラーは出ません。静かに壊れます。
 
 ```mermaid
-flowchart TB
-  subgraph グローバルスコープ
+flowchart LR
+  U["utils.js\ncount = 0\nsetup()"] -->|読み込み| G
+  M["main.js\ncount = 0\nsetup()"] -->|読み込み\n（上書き）| G
+  subgraph G ["グローバルスコープ（1つだけ）"]
     direction TB
-    V1["count = 0（utils.js）"]
-    V2["count = 0（main.js）\n↑ 上書きされる"]
-    F1["setup()（utils.js）"]
-    F2["setup()（main.js）\n↑ 上書きされる"]
+    V["count = 0 ← main.js のもので上書き"]
+    F["setup() ← main.js のもので上書き"]
   end
-  U["utils.js"] --> V1
-  U --> F1
-  M["main.js"] --> V2
-  M --> F2
 ```
 
 小さなプロジェクトなら名前が衝突しないように気をつければ済みます。しかし Web アプリが大規模化するにつれて、ファイル数が数十、数百と増えていきます。すべての変数名・関数名がぶつからないように管理するのは現実的ではありません。
@@ -78,7 +76,7 @@ var MyUtils = (function() {
 
 2009 年、JavaScript をブラウザの外で動かすための実行環境として Node.js が登場しました。サーバーサイドの開発では多数のファイルに分けて大規模なアプリケーションを構築する必要があり、モジュールの仕組みが不可欠でした。
 
-しかし、当時の JavaScript の言語仕様にはモジュールの仕組みがありません。そこで Node.js は独自のモジュールシステムを作りました。それが CommonJS です。
+しかし、当時の JavaScript の言語仕様（<strong>ECMAScript</strong> — JavaScript の正式な仕様を定める標準規格）にはモジュールの仕組みがありません。そこで Node.js は独自のモジュールシステムを作りました。それが CommonJS です。
 
 CommonJS では、`require()` で他のファイルを読み込み、`module.exports` で公開するものを指定します。
 
@@ -123,13 +121,18 @@ flowchart LR
 
 CommonJS の重要な特徴は、<strong>同期的</strong>に読み込むことです。`require()` を実行すると、その場でファイルを読み込み、完了するまで次の行に進みません。
 
-サーバー（Node.js）ではファイルがローカルのディスクにあるため、読み込みは一瞬で終わります。しかし、ブラウザではどうでしょうか。ファイルをネットワーク越しにダウンロードする必要があるため、同期的に読み込むとその間ページが止まってしまいます。
+サーバー（Node.js）ではファイルがローカルのディスクにあるため、読み込みは一瞬で終わります。しかし、ブラウザではどうでしょうか。ファイルをネットワーク越しにダウンロードする必要があるため、同期的に読み込むとその間ページが固まってしまいます。
+
+| 環境 | ファイルの場所 | 同期読み込みの影響 |
+|------|---------------|-------------------|
+| Node.js（サーバー） | ローカルディスク | 一瞬で完了するので問題なし |
+| ブラウザ | ネットワーク越し | ダウンロード完了までページが止まる |
 
 つまり CommonJS はサーバーサイド向けの仕組みであり、ブラウザでそのまま使うのには適していませんでした。
 
 ## ES Modules — 言語標準になった仕組み
 
-2015 年、JavaScript の言語仕様（ECMAScript 2015、ES6 とも呼ばれる）に、ついにモジュールの仕組みが正式に追加されました。これが<strong>ES Modules</strong>（ESM）です。
+2015 年、ECMAScript の改定版（ECMAScript 2015、ES6 とも呼ばれる）に、ついにモジュールの仕組みが正式に追加されました。これが<strong>ES Modules</strong>（ESM）です。
 
 ES Modules では、`export` で公開し、`import` で読み込みます。
 
@@ -156,7 +159,7 @@ console.log(subtract(5, 3)); // 2
 
 ### 静的な構造
 
-CommonJS の `require()` は関数なので、条件分岐の中で呼んだり、変数に応じて読み込むファイルを変えたりできます。
+CommonJS の `require()` は普通の関数呼び出しなので、条件分岐の中で呼んだり、変数に応じて読み込むファイルを変えたりできます。
 
 ```javascript
 // CommonJS — 実行時に決まる
@@ -256,7 +259,7 @@ ES Modules は JavaScript の公式なモジュールシステムです。新し
 
 ES Modules が言語の標準なら、CommonJS はもう不要では？　そう思うかもしれません。しかし現実には、今も 2 つが混在しています。
 
-理由は単純です。Node.js は 2009 年から CommonJS で動いてきました。npm に公開されている膨大な数のパッケージが CommonJS で書かれています。これらを一夜にして ES Modules に書き換えることはできません。
+理由は単純です。Node.js は 2009 年から CommonJS で動いてきました。npm に公開されている膨大な数のライブラリが CommonJS で書かれています。これらを一夜にして ES Modules に書き換えることはできません。
 
 ```mermaid
 timeline
@@ -297,6 +300,19 @@ Node.js は 1 つのファイルを CommonJS として解釈するか、ES Modul
 | `.mjs` | ES Modules として解釈 |
 | `.cjs` | CommonJS として解釈 |
 
+この判断の流れをまとめると次のようになります。
+
+```mermaid
+flowchart TD
+  A["Node.js が .js ファイルを読み込む"] --> B{拡張子は .mjs?}
+  B -- はい --> C["ES Modules として解釈"]
+  B -- いいえ --> D{拡張子は .cjs?}
+  D -- はい --> E["CommonJS として解釈"]
+  D -- いいえ --> F{"package.json の\ntype は?"}
+  F -- '"module"' --> C
+  F -- '"commonjs" または未指定' --> E
+```
+
 プロジェクトの設定ファイル（`eslint.config.mjs` など）で `.mjs` という拡張子を見かけることがあるかもしれません。これは「このファイルは必ず ES Modules として解釈してほしい」という明示的な指定です。
 
 ## Next.js での実際
@@ -323,17 +339,17 @@ export default function HomePage() {
 
 React の `useState` は名前付きエクスポートなので `{ useState }` で受け取り、Next.js の `Link` はデフォルトエクスポートなのでそのまま `Link` で受け取っています。
 
-ただし、`node_modules` の中にはまだ CommonJS で書かれたパッケージが多数あります。Next.js が使っているビルドツールが、CommonJS と ES Modules の違いを自動的に吸収してくれるため、開発者が意識する場面はほとんどありません。
+ただし、<strong>npm</strong>（Node.js のパッケージ管理ツール）で配布されるライブラリの中には、まだ CommonJS で書かれたものが多数あります。Next.js が使っているビルドツールが、CommonJS と ES Modules の違いを自動的に吸収してくれるため、開発者が意識する場面はほとんどありません。
 
 ```mermaid
 flowchart LR
   subgraph "自分のコード（ESM）"
     A["import { useState } from 'react'"]
-    B["import dayjs from 'dayjs'"]
+    B["import lodash from 'lodash'"]
   end
   subgraph "node_modules"
     C["react（ESM）"]
-    D["dayjs（CommonJS）"]
+    D["lodash（CommonJS）"]
   end
   subgraph "ビルドツール"
     E["CommonJS ⇔ ESM の違いを吸収"]
@@ -348,7 +364,7 @@ flowchart LR
 つまり、Next.js で開発するとき覚えておくことは 1 つです。自分が書くコードでは `import` / `export` を使う。それだけです。
 
 ::: tip require() を見かけたら
-他の人のコードやネット上のサンプルで `require()` を見かけることがあります。それは CommonJS で書かれたコードです。古い記事やNode.js 向けのツールの設定ファイルで使われていることが多く、同じことを `import` で書き換えられます。
+他の人のコードやネット上のサンプルで `require()` を見かけることがあります。それは CommonJS で書かれたコードです。古い記事や Node.js 向けのツールの設定ファイルで使われていることが多く、同じことを `import` で書き換えられます。
 
 ```javascript
 // CommonJS（古い書き方）
@@ -361,8 +377,8 @@ import express from "express";
 
 ## まとめ
 
-- 初期の JavaScript にはモジュールの仕組みがなく、すべてがグローバルスコープに置かれるため、変数名の衝突が問題になっていた
-- Node.js が CommonJS（`require` / `module.exports`）を作り、ファイル単位のスコープを実現した
-- 2015 年に JavaScript の言語仕様として ES Modules（`import` / `export`）が追加された。静的に解析できるため、ツリーシェイキングなどの最適化が可能になった
-- 今も CommonJS と ES Modules が混在するのは、Node.js が CommonJS で始まり、膨大な既存パッケージがあるから
+- 初期の JavaScript にはモジュールの仕組みがなく、すべてがグローバルスコープに置かれるため、変数名の衝突が問題だった
+- Node.js が独自に CommonJS（`require` / `module.exports`）を作り、ファイル単位のスコープを実現した
+- 2015 年に言語仕様として ES Modules（`import` / `export`）が追加された。静的に解析できるため、ツリーシェイキングなどの最適化が可能になった
+- 今も 2 つが混在するのは、CommonJS で書かれた膨大な既存ライブラリがあるから
 - Next.js では ES Modules を使う。CommonJS との違いはビルドツールが吸収してくれる
