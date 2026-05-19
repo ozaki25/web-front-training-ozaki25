@@ -57,9 +57,8 @@ export default withPwa(
             collapsed: true,
             items: [
               { text: "npm", link: "/drafts/001/" },
-              { text: "関数の書き方", link: "/drafts/003/" },
               { text: "Web ページの届け方", link: "/drafts/004/" },
-              { text: "コールバックと高階関数", link: "/drafts/005/" },
+              { text: "関数とコールバック", link: "/drafts/005/" },
               { text: "Promise と async/await", link: "/drafts/006/" },
               { text: "モジュールの歴史", link: "/drafts/007/" },
               { text: "参照とイミュータビリティ", link: "/drafts/008/" },
