@@ -27,7 +27,10 @@ export default withPwa(
         },
       },
       themeConfig: {
-        nav: [{ text: "ホーム", link: "/" }],
+        nav: [
+          { text: "ホーム", link: "/" },
+          { text: "候補", link: "/drafts/001/" },
+        ],
         sidebar: {
           "/lessons/": [
             {
