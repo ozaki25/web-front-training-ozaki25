@@ -9,6 +9,7 @@ Next.js のコードを見ていると、`async function` や `await fetch(...)`
 - JavaScript がシングルスレッドであること、それが非同期処理を必要とする理由を知る
 - Promise が「まだ結果がない」状態を扱うための仕組みであることを知る
 - async/await が Promise を同期処理のように読める構文であることを知る
+- AI 生成コードでよく見落とされる落とし穴（`fetch` の 4xx/5xx、逐次 `await`、await し忘れ）に気づける
 
 ## JavaScript はシングルスレッドで動く
 
@@ -150,7 +151,7 @@ stateDiagram-v2
 | **fulfilled**（成功） | 処理が成功して値が手に入った | データが返ってきた |
 | **rejected**（失敗） | 処理が失敗してエラーになった | 通信エラーが発生した |
 
-一度 fulfilled か rejected になると、その後は状態が変わりません。成功したものが後から失敗になることはありません。
+一度 fulfilled か rejected になると、その後は状態が変わりません。成功したものが後から失敗になることはありません。fulfilled と rejected をまとめて<strong>settled</strong>（決着済み）と呼びます。後で出てくる `Promise.allSettled` の `settled` はこの状態のことです。
 
 ### `.then()` と `.catch()` でチェーンする
 
@@ -171,7 +172,7 @@ fetch("https://api.example.com/user/1")
 
 `.then()` の中で値を返すと、その値を包んだ新しい Promise が返るので、さらに `.then()` を繋げられます。この仕組みを<strong>Promise チェーン</strong>と呼びます。
 
-上のコードで `.then()` が 2 つ続いているのは、`fetch` の結果が 2 段階になっているためです。最初の `.then()` で通信の応答（response）を受け取り、`response.json()` で本文を JavaScript のオブジェクトに変換します。この変換にも時間がかかるため `response.json()` 自体も Promise を返します。
+上のコードで `.then()` が 2 つ続いているのは、`fetch` の結果が 2 段階になっているためです。最初の `.then()` で通信の応答（response）を受け取り、`response.json()` で本文を JavaScript のオブジェクトに変換します。本文はネットワーク越しに少しずつ届くため、全部を読み終わるのを待つ必要があり、`response.json()` も Promise を返します。
 
 コールバック地獄だったコードを Promise で書き直してみます。
 
@@ -231,6 +232,8 @@ async function getProductName(userId) {
 
 やっていることはコールバックや Promise チェーンのときと同じですが、まるで同期処理のように上から下へ読めます。
 
+`await` の行に来ると、関数の実行はそこで<strong>いったん中断</strong>します。Promise が settled になるのを待つ間、JavaScript は他のコード（ボタンのクリック処理、別の `await` で待っていた処理など）を進めます。結果が出ると、中断していた場所から続きが実行されます。「画面がフリーズしないまま結果を待てる」のは、`await` が裏側でこの中断と再開をやってくれているからです。
+
 ### Promise チェーンとの比較
 
 同じ処理を `.then()` チェーンと async/await で並べてみます。
@@ -277,6 +280,39 @@ async function getUser() {
 
 `try` ブロックの中で `await` している Promise が rejected になると、`catch` ブロックに処理が移ります。同期処理のエラーハンドリングとまったく同じ書き方なので、非同期処理を特別に意識する必要がありません。
 
+### fetch の罠 — 4xx / 5xx は catch されない
+
+`fetch` には注意点があります。`fetch` の Promise が rejected になるのは、ネットワーク自体に失敗したとき（オフライン、DNS 解決失敗など）だけです。サーバーが 404 や 500 を返しても、通信としては成功しているので Promise は<strong>fulfilled になります</strong>。`try/catch` だけではこれらのエラーを検知できません。
+
+```javascript
+async function getUser() {
+  try {
+    const response = await fetch("/api/user/9999");
+    // サーバーが 404 を返してもここに来る
+    const user = await response.json();
+    console.log(user);
+  } catch (error) {
+    // ネットワーク断線などのときだけ呼ばれる
+    console.error(error);
+  }
+}
+```
+
+HTTP のステータスが成功（2xx）かどうかは `response.ok` で確認します。
+
+```javascript
+async function getUser() {
+  const response = await fetch("/api/user/9999");
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  const user = await response.json();
+  return user;
+}
+```
+
+AI が生成するコードでこの確認が抜けていることはよくあります。「エラーのはずなのに画面が普通に表示されておかしい」と思ったら、まずここを疑うと当たることが多いです。
+
 ### await は async 関数の中でしか使えない
 
 `await` には 1 つ重要な制約があります。`await` は `async` がついた関数の中でしか使えません。
@@ -305,6 +341,58 @@ const config = await response.json();
 Next.js の Server Components でもトップレベル await に近い書き方ができますが、これは Next.js がコンポーネント自体を `async` 関数として扱っているためです。
 :::
 
+### 並列に動かす — Promise.all
+
+`await` を続けて書くと、1 つ目の結果が出てから 2 つ目が始まる<strong>直列実行</strong>になります。互いに依存しない処理を直列で書くと、本来同時にできるはずの待ち時間を無駄に積み上げてしまいます。
+
+```javascript
+// それぞれ 1 秒かかるとすると、合計 3 秒
+async function loadDashboard() {
+  const user = await fetchUser();
+  const posts = await fetchPosts();
+  const notifications = await fetchNotifications();
+  return { user, posts, notifications };
+}
+```
+
+3 つの取得は互いに関係ないので、同時に始めればよいはずです。これを書くのが `Promise.all` です。配列で Promise を渡すと、すべてが fulfilled になるまで待ち、結果を配列で返します。
+
+```javascript
+// 3 つ同時に走るので、合計 1 秒
+async function loadDashboard() {
+  const [user, posts, notifications] = await Promise.all([
+    fetchUser(),
+    fetchPosts(),
+    fetchNotifications(),
+  ]);
+  return { user, posts, notifications };
+}
+```
+
+ポイントは「`Promise.all` を `await` で受ける」こと。async/await の世界に居続けたまま並列化できます。
+
+なお、1 つでも rejected になると `Promise.all` 全体が rejected になります。「どれか 1 つが失敗しても他の結果は欲しい」場合は `Promise.allSettled` を使い、各要素の `status`（`"fulfilled"` または `"rejected"`）を見て処理します。
+
+AI が生成したコードで `await` が縦に並んでいたら、「これは順番に実行する必要があるか、それとも同時にやれるか」を一度立ち止まって考えると、不要な待ち時間に気づけます。
+
+### await し忘れに注意 — Unhandled Rejection
+
+`async` 関数を呼んだだけで `await` も `.catch()` も付けないと、エラーになっても気づけません。
+
+```javascript
+async function saveUser(user) {
+  const response = await fetch("/api/user", { method: "POST", body: JSON.stringify(user) });
+  if (!response.ok) throw new Error("保存に失敗");
+}
+
+// await も .catch も付けていない
+saveUser(user);
+```
+
+このコードで `saveUser` がエラーを投げると、行き場のないエラー（<strong>unhandled rejection</strong>）として、ブラウザのコンソールに警告だけが出て処理は素通りします。「保存できなかったのにユーザーには成功したように見える」という事故になります。
+
+Promise を返す関数を呼ぶときは、原則として `await` するか `.then().catch()` を付ける。これだけ意識しておくと事故が減ります。
+
 ### Promise と async/await の関係
 
 async/await は Promise の「別の書き方」であって、Promise を置き換えるものではありません。async/await で書いたコードも、裏側では Promise が動いています。
@@ -320,7 +408,9 @@ async/await は Promise の「別の書き方」であって、Promise を置き
 | 仕組み | Promise そのもの | Promise の上に乗った構文糖衣 |
 | 読みやすさ | チェーンが長いと追いにくい | 上から下に読める |
 | エラー処理 | `.catch()` | `try/catch` |
-| 使い分け | 短い処理や並列処理 | 直列の処理全般 |
+| 使い分け | ライブラリ API で 1 つだけ繋ぐとき | 直列・並列を問わず通常の書き方 |
+
+並列処理も `await Promise.all([...])` と書けば async/await の世界のまま扱えるので、現代では「async/await を基本にして、必要なら `Promise.all` などを組み合わせる」のが標準です。`.then()` チェーンは、関数を 1 つだけ繋げたいときや、`async` 関数にしたくない場面で使う程度に減っています。
 
 <strong>構文糖衣（シンタックスシュガー）</strong>とは、機能は同じだが読みやすく書ける別の記法のことです。
 
@@ -368,7 +458,7 @@ export default async function UserPage() {
 | コードの形 | ネストが深くなる | `.then()` で平坦に繋がる | 上から下に読める |
 | エラー処理 | 各段階で個別に書く | `.catch()` で一括 | `try/catch` |
 | 可読性 | 処理が増えると低下 | チェーンが長いと追いにくい | 同期処理と同じ感覚で読める |
-| 現在の使われ方 | タイマーなど一部で残る | 短い処理や並列処理 | 主流の書き方 |
+| 現在の使われ方 | 非同期処理ではほぼ使わない（`setTimeout` など一部の API で残る） | ライブラリ API で 1 つだけ繋ぐとき | 主流の書き方 |
 
 ## まとめ
 
@@ -376,4 +466,7 @@ export default async function UserPage() {
 - コールバックは最も古い非同期処理の書き方だが、処理が連続するとネストが深くなり読みにくくなる（コールバック地獄）
 - Promise は非同期処理の結果を包むオブジェクト。`.then()` でチェーンすることでネストを平坦にできる。状態は pending → fulfilled（成功）/ rejected（失敗）の 3 つ
 - async/await は Promise の構文糖衣で、同期処理のように読める書き方。`async` 関数の中で `await` を使うと、Promise の結果を待ってから次の行に進むように書ける
+- `fetch` は 4xx / 5xx でも reject しない。`response.ok` の確認が必要
+- 互いに依存しない処理は `await Promise.all([...])` で並列化できる。逐次 `await` を並べると待ち時間を無駄にする
+- Promise を返す関数を呼んだら `await` か `.catch()` を付ける。付け忘れるとエラーが黙って消える（unhandled rejection）
 - Next.js の Server Components は `async` 関数として定義でき、`fetch` の結果を `await` で受け取ってそのまま表示に使える
