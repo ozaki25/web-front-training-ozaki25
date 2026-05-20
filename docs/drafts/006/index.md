@@ -92,31 +92,7 @@ fetchUser(userId, (user) => {
 });
 ```
 
-コールバックの中にコールバック、その中にさらにコールバック。ネストが深くなり、読みにくくなります。これが<strong>コールバック地獄</strong>（callback hell）と呼ばれる問題です。
-
-さらに、エラー処理を入れると悲惨なことになります。
-
-```javascript
-fetchUser(userId, (user) => {
-  if (!user) {
-    console.error("ユーザーが見つかりません");
-    return;
-  }
-  fetchOrders(user.id, (orders) => {
-    if (!orders) {
-      console.error("注文が見つかりません");
-      return;
-    }
-    fetchProduct(orders[0].productId, (product) => {
-      if (!product) {
-        console.error("商品が見つかりません");
-        return;
-      }
-      console.log(product.name);
-    });
-  });
-});
-```
+コールバックの中にコールバック、その中にさらにコールバック。ネストが深くなり、読みにくくなります。これが<strong>コールバック地獄</strong>（callback hell）と呼ばれる問題です。さらに各段階でエラー処理（`if (!user) ...`）を入れると、ネストの中に if が並んでさらに膨らみます。
 
 処理の本質は「ユーザー → 注文 → 商品」という直線的な流れなのに、コードはどんどん右にネストしていきます。この問題を解決するために生まれたのが Promise です。
 
