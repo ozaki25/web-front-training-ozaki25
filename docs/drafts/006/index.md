@@ -280,7 +280,21 @@ async function getUser() {
 
 `try` ブロックの中で `await` している Promise が rejected になると、`catch` ブロックに処理が移ります。同期処理のエラーハンドリングとまったく同じ書き方なので、非同期処理を特別に意識する必要がありません。
 
-ただし「どんなときに reject するか」は関数ごとに違います。`try/catch` を書いておけば全てのエラーを拾える、とは限らないので、扱う関数の仕様を確認する習慣を持っておくと安全です。
+ただし「どんなときに reject するか」は関数ごとに違います。Promise を自分で作る側のコードを覗いてみると、その理由が見えます。
+
+```javascript
+function fetchUser(id) {
+  return new Promise((resolve, reject) => {
+    if (id < 0) {
+      reject(new Error("不正な ID"));  // ← rejected になる
+    } else {
+      resolve({ id, name: "Alice" });  // ← fulfilled になる
+    }
+  });
+}
+```
+
+`new Promise(...)` のコールバックの中で `resolve` を呼ぶか `reject` を呼ぶかは、Promise を作る側が決めています。「何を reject 条件にするか」は関数ごとに思想が違うので、`try/catch` を書いておけば全てのエラーを拾える、とは限りません。扱う関数の仕様を確認する習慣を持っておくと安全です。
 
 ### await は async 関数の中でしか使えない
 
