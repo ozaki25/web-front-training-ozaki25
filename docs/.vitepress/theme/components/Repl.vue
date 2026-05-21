@@ -149,6 +149,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onBeforeUnmount, watch, computed, nextTick } from "vue";
+import { useData } from "vitepress";
+
+const { isDark } = useData();
 
 const STORAGE_KEY = "wft-repl-v1";
 const tabs = ["HTML", "CSS", "JS", "TS"] as const;
@@ -201,8 +204,10 @@ type CMRefs = {
   langCompartment: any;
   wrapCompartment: any;
   fontCompartment: any;
+  themeCompartment: any;
   getLang: (t: Tab) => any;
   fontTheme: (size: number) => any;
+  oneDark: any;
 };
 let cm: CMRefs | null = null;
 let updatingDoc = false;
@@ -216,6 +221,7 @@ async function ensureEditor() {
     { javascript },
     { html },
     cssMod,
+    { oneDark },
   ] = await Promise.all([
     import("codemirror"),
     import("@codemirror/state"),
@@ -223,6 +229,7 @@ async function ensureEditor() {
     import("@codemirror/lang-javascript"),
     import("@codemirror/lang-html"),
     import("@codemirror/lang-css"),
+    import("@codemirror/theme-one-dark"),
   ]);
   const cssLang = (cssMod as any).css;
 
@@ -234,18 +241,29 @@ async function ensureEditor() {
   };
   const fontTheme = (size: number) =>
     EditorView.theme({
-      "&": { fontSize: size + "px" },
+      "&": { fontSize: size + "px", backgroundColor: "transparent" },
       ".cm-scroller": {
         fontFamily:
           "var(--vp-font-family-mono, ui-monospace, SFMono-Regular, monospace)",
         lineHeight: "1.5",
       },
-      ".cm-content": { padding: "8px 0" },
+      ".cm-content": { padding: "8px 0", caretColor: "var(--vp-c-text-1)" },
+      ".cm-gutters": {
+        backgroundColor: "var(--vp-c-bg-soft)",
+        color: "var(--vp-c-text-3)",
+        border: "none",
+      },
+      ".cm-activeLine": { backgroundColor: "transparent" },
+      ".cm-activeLineGutter": { backgroundColor: "var(--vp-c-bg-alt)" },
+      ".cm-selectionBackground": {
+        backgroundColor: "var(--vp-c-brand-soft) !important",
+      },
     });
 
   const langCompartment = new Compartment();
   const wrapCompartment = new Compartment();
   const fontCompartment = new Compartment();
+  const themeCompartment = new Compartment();
 
   const state = EditorState.create({
     doc: code[tab.value],
@@ -254,6 +272,7 @@ async function ensureEditor() {
       langCompartment.of(getLang(tab.value)),
       wrapCompartment.of(wrap.value ? EditorView.lineWrapping : []),
       fontCompartment.of(fontTheme(fontSize.value)),
+      themeCompartment.of(isDark.value ? oneDark : []),
       keymap.of([
         {
           key: "Mod-Enter",
@@ -278,8 +297,10 @@ async function ensureEditor() {
     langCompartment,
     wrapCompartment,
     fontCompartment,
+    themeCompartment,
     getLang,
     fontTheme,
+    oneDark,
   };
   editorReady.value = true;
 }
@@ -314,6 +335,13 @@ watch(fontSize, (v) => {
   if (!cm) return;
   cm.view.dispatch({
     effects: cm.fontCompartment.reconfigure(cm.fontTheme(v)),
+  });
+});
+
+watch(isDark, (dark) => {
+  if (!cm) return;
+  cm.view.dispatch({
+    effects: cm.themeCompartment.reconfigure(dark ? cm.oneDark : []),
   });
 });
 
