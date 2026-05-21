@@ -81,6 +81,10 @@ export default withPwa(
                   text: "Day 15: Web ページの届け方",
                   link: "/lessons/day15/",
                 },
+                {
+                  text: "Day 16: 参照とイミュータビリティ",
+                  link: "/lessons/day16/",
+                },
               ],
             },
           ],
