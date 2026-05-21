@@ -84,6 +84,10 @@ export default withPwa(
                   text: "Day 15: Web ページの届け方",
                   link: "/lessons/day15/",
                 },
+                {
+                  text: "Day 16: 参照とイミュータビリティ",
+                  link: "/lessons/day16/",
+                },
               ],
             },
           ],
@@ -96,7 +100,6 @@ export default withPwa(
                 { text: "関数とコールバック", link: "/drafts/005/" },
                 { text: "Promise と async/await", link: "/drafts/006/" },
                 { text: "モジュールの歴史", link: "/drafts/007/" },
-                { text: "参照とイミュータビリティ", link: "/drafts/008/" },
               ],
             },
           ],

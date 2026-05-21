@@ -21,6 +21,7 @@
 - [Day 13: JavaScript の実行環境 — 同じ言語が複数の場所で動く](/lessons/day13/)
 - [Day 14: 動的型付けと TypeScript — 変数に型を宣言するということ](/lessons/day14/)
 - [Day 15: Web ページの届け方 — CSR から Cache Components まで](/lessons/day15/)
+- [Day 16: 参照とイミュータビリティ — なぜ直接変更してはいけないか](/lessons/day16/)
 
 ## 候補（下書き）
 
@@ -29,4 +30,3 @@
 - [関数とコールバック](/drafts/005/)
 - [Promise と async/await](/drafts/006/)
 - [モジュールの歴史](/drafts/007/)
-- [参照とイミュータビリティ](/drafts/008/)
