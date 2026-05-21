@@ -37,11 +37,19 @@
       <textarea
         v-model="code[tab]"
         class="repl-editor"
+        :style="{ flexGrow: editorRatio }"
         spellcheck="false"
         :placeholder="placeholder"
         @keydown="onKeydown"
       ></textarea>
-      <div class="repl-output">
+      <div
+        class="repl-body-resizer"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="エディタとプレビューの幅を変更"
+        @pointerdown="startBodyResize"
+      ></div>
+      <div class="repl-output" :style="{ flexGrow: 1 - editorRatio }">
         <iframe
           ref="frame"
           class="repl-preview"
@@ -85,6 +93,7 @@ const open = ref(false);
 const tab = ref<Tab>("JS");
 const panelHeight = ref(380);
 const previewRatio = ref(0.6);
+const editorRatio = ref(0.5);
 const outputEl = ref<HTMLElement | null>(null);
 const code = reactive<Record<Tab, string>>({
   HTML: "",
@@ -120,6 +129,9 @@ onMounted(() => {
       if (typeof parsed.previewRatio === "number") {
         previewRatio.value = Math.max(0.1, Math.min(0.9, parsed.previewRatio));
       }
+      if (typeof parsed.editorRatio === "number") {
+        editorRatio.value = Math.max(0.15, Math.min(0.85, parsed.editorRatio));
+      }
     }
   } catch {
     // ignore
@@ -132,7 +144,7 @@ onBeforeUnmount(() => {
 });
 
 watch(
-  [code, open, panelHeight, previewRatio],
+  [code, open, panelHeight, previewRatio, editorRatio],
   () => {
     try {
       localStorage.setItem(
@@ -142,6 +154,7 @@ watch(
           open: open.value,
           panelHeight: panelHeight.value,
           previewRatio: previewRatio.value,
+          editorRatio: editorRatio.value,
         }),
       );
     } catch {
@@ -212,6 +225,24 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 
+function startBodyResize(e: PointerEvent) {
+  e.preventDefault();
+  const resizer = e.currentTarget as HTMLElement;
+  const container = resizer.parentElement;
+  if (!container) return;
+  function move(ev: PointerEvent) {
+    const rect = container!.getBoundingClientRect();
+    const ratio = (ev.clientX - rect.left) / rect.width;
+    editorRatio.value = Math.max(0.15, Math.min(0.85, ratio));
+  }
+  function up() {
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", up);
+  }
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", up);
+}
+
 function startOutputResize(e: PointerEvent) {
   e.preventDefault();
   const resizer = e.currentTarget as HTMLElement;
@@ -280,10 +311,22 @@ function startResize(e: PointerEvent) {
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
 }
 .repl-resizer {
-  height: 6px;
+  position: relative;
+  height: 1px;
   cursor: ns-resize;
   background: var(--vp-c-divider);
   flex-shrink: 0;
+}
+.repl-resizer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -4px;
+  bottom: -4px;
+}
+.repl-resizer:hover {
+  background: var(--vp-c-brand-1);
 }
 .repl-tabs {
   display: flex;
@@ -318,7 +361,8 @@ function startResize(e: PointerEvent) {
   min-height: 0;
 }
 .repl-editor {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   border: none;
   resize: none;
   padding: 12px;
@@ -330,11 +374,28 @@ function startResize(e: PointerEvent) {
   line-height: 1.5;
   tab-size: 2;
 }
+.repl-body-resizer {
+  position: relative;
+  width: 1px;
+  cursor: ew-resize;
+  background: var(--vp-c-divider);
+  flex-shrink: 0;
+}
+.repl-body-resizer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  right: -4px;
+}
+.repl-body-resizer:hover {
+  background: var(--vp-c-brand-1);
+}
 .repl-output {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--vp-c-divider);
   min-width: 0;
 }
 .repl-preview {
@@ -344,10 +405,19 @@ function startResize(e: PointerEvent) {
   min-height: 0;
 }
 .repl-output-resizer {
-  height: 6px;
+  position: relative;
+  height: 1px;
   cursor: ns-resize;
   background: var(--vp-c-divider);
   flex-shrink: 0;
+}
+.repl-output-resizer::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -4px;
+  bottom: -4px;
 }
 .repl-output-resizer:hover {
   background: var(--vp-c-brand-1);
@@ -377,9 +447,12 @@ function startResize(e: PointerEvent) {
   .repl-body {
     flex-direction: column;
   }
+  .repl-body-resizer {
+    display: none;
+  }
+  .repl-editor,
   .repl-output {
-    border-left: none;
-    border-top: 1px solid var(--vp-c-divider);
+    flex: 1 1 0 !important;
   }
 }
 </style>
