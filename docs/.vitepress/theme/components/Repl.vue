@@ -14,15 +14,16 @@
     class="repl-panel"
     :class="{
       'repl-panel--mobile': isMobile,
+      'repl-panel--fullscreen': !isMobile && fullscreen,
       'repl-panel--code': isMobile && mobileView === 'code',
       'repl-panel--result': isMobile && mobileView === 'result',
     }"
-    :style="!isMobile ? { height: panelHeight + 'px' } : undefined"
+    :style="!isMobile && !fullscreen ? { height: panelHeight + 'px' } : undefined"
     role="region"
     aria-label="コード実行パネル"
   >
     <div
-      v-if="!isMobile"
+      v-if="!isMobile && !fullscreen"
       class="repl-resizer"
       role="separator"
       aria-orientation="horizontal"
@@ -54,18 +55,54 @@
       >
         {{ t }}
       </button>
+      <div class="repl-tab-spacer"></div>
+      <button
+        class="repl-icon"
+        aria-label="文字を小さく"
+        title="文字を小さく"
+        @click="setFontSize(fontSize - 1)"
+      >A−</button>
+      <button
+        class="repl-icon"
+        aria-label="文字を大きく"
+        title="文字を大きく"
+        @click="setFontSize(fontSize + 1)"
+      >A+</button>
+      <button
+        class="repl-icon"
+        :class="{ active: wrap }"
+        :aria-pressed="wrap"
+        aria-label="折り返し"
+        title="折り返し"
+        @click="wrap = !wrap"
+      >↵</button>
+      <button
+        v-if="!isMobile"
+        class="repl-icon"
+        :class="{ active: fullscreen }"
+        :aria-pressed="fullscreen"
+        :aria-label="fullscreen ? '通常表示に戻す' : '全画面表示'"
+        :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
+        @click="fullscreen = !fullscreen"
+      >{{ fullscreen ? '⛶' : '⛶' }}</button>
       <button class="repl-action repl-run" @click="run">{{ isMobile ? '▶ 実行' : '▶ 実行 (Ctrl+Enter)' }}</button>
       <button class="repl-action" @click="clear">クリア</button>
     </div>
     <div class="repl-body">
-      <textarea
-        v-model="code[tab]"
+      <div
+        ref="editorContainer"
         class="repl-editor"
         :style="!isMobile ? { flexGrow: editorRatio } : undefined"
-        spellcheck="false"
-        :placeholder="placeholder"
-        @keydown="onKeydown"
-      ></textarea>
+      >
+        <textarea
+          v-show="!editorReady"
+          v-model="code[tab]"
+          class="repl-editor-fallback"
+          spellcheck="false"
+          :placeholder="placeholder"
+          @keydown="onKeydown"
+        ></textarea>
+      </div>
       <div
         v-if="!isMobile"
         class="repl-body-resizer"
@@ -111,7 +148,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onBeforeUnmount, watch, computed } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount, watch, computed, nextTick } from "vue";
 
 const STORAGE_KEY = "wft-repl-v1";
 const tabs = ["HTML", "CSS", "JS", "TS"] as const;
@@ -122,20 +159,26 @@ const tab = ref<Tab>("JS");
 const panelHeight = ref(380);
 const previewRatio = ref(0.6);
 const editorRatio = ref(0.5);
+const fontSize = ref(13);
+const wrap = ref(false);
+const fullscreen = ref(false);
 const isMobile = ref(false);
 const mobileView = ref<"code" | "result">("code");
-let mql: MediaQueryList | null = null;
-function onMql(e: MediaQueryListEvent | MediaQueryList) {
-  isMobile.value = e.matches;
-}
+const editorReady = ref(false);
 const code = reactive<Record<Tab, string>>({
   HTML: "",
   CSS: "",
   JS: "",
   TS: "",
 });
+const editorContainer = ref<HTMLElement | null>(null);
 const frame = ref<HTMLIFrameElement | null>(null);
 const logs = ref<{ level: string; text: string }[]>([]);
+
+let mql: MediaQueryList | null = null;
+function onMql(e: MediaQueryListEvent | MediaQueryList) {
+  isMobile.value = e.matches;
+}
 
 const placeholder = computed(() => {
   switch (tab.value) {
@@ -151,6 +194,140 @@ const placeholder = computed(() => {
   return "";
 });
 
+// --- CodeMirror lazy setup ---
+type CMRefs = {
+  EditorView: any;
+  view: any;
+  langCompartment: any;
+  wrapCompartment: any;
+  fontCompartment: any;
+  getLang: (t: Tab) => any;
+  fontTheme: (size: number) => any;
+};
+let cm: CMRefs | null = null;
+let updatingDoc = false;
+
+async function ensureEditor() {
+  if (cm || !editorContainer.value) return;
+  const [
+    { EditorView, basicSetup },
+    { EditorState, Compartment },
+    { keymap },
+    { javascript },
+    { html },
+    cssMod,
+  ] = await Promise.all([
+    import("codemirror"),
+    import("@codemirror/state"),
+    import("@codemirror/view"),
+    import("@codemirror/lang-javascript"),
+    import("@codemirror/lang-html"),
+    import("@codemirror/lang-css"),
+  ]);
+  const cssLang = (cssMod as any).css;
+
+  const getLang = (t: Tab) => {
+    if (t === "HTML") return html();
+    if (t === "CSS") return cssLang();
+    if (t === "TS") return javascript({ typescript: true });
+    return javascript();
+  };
+  const fontTheme = (size: number) =>
+    EditorView.theme({
+      "&": { fontSize: size + "px" },
+      ".cm-scroller": {
+        fontFamily:
+          "var(--vp-font-family-mono, ui-monospace, SFMono-Regular, monospace)",
+        lineHeight: "1.5",
+      },
+      ".cm-content": { padding: "8px 0" },
+    });
+
+  const langCompartment = new Compartment();
+  const wrapCompartment = new Compartment();
+  const fontCompartment = new Compartment();
+
+  const state = EditorState.create({
+    doc: code[tab.value],
+    extensions: [
+      basicSetup,
+      langCompartment.of(getLang(tab.value)),
+      wrapCompartment.of(wrap.value ? EditorView.lineWrapping : []),
+      fontCompartment.of(fontTheme(fontSize.value)),
+      keymap.of([
+        {
+          key: "Mod-Enter",
+          run: () => {
+            run();
+            return true;
+          },
+        },
+      ]),
+      EditorView.updateListener.of((u: any) => {
+        if (u.docChanged && !updatingDoc) {
+          code[tab.value] = u.state.doc.toString();
+        }
+      }),
+    ],
+  });
+
+  const view = new EditorView({ state, parent: editorContainer.value });
+  cm = {
+    EditorView,
+    view,
+    langCompartment,
+    wrapCompartment,
+    fontCompartment,
+    getLang,
+    fontTheme,
+  };
+  editorReady.value = true;
+}
+
+function setCmDoc(text: string) {
+  if (!cm) return;
+  updatingDoc = true;
+  cm.view.dispatch({
+    changes: { from: 0, to: cm.view.state.doc.length, insert: text },
+  });
+  updatingDoc = false;
+}
+
+watch(tab, async (next) => {
+  if (!cm) return;
+  setCmDoc(code[next]);
+  cm.view.dispatch({
+    effects: cm.langCompartment.reconfigure(cm.getLang(next)),
+  });
+});
+
+watch(wrap, (v) => {
+  if (!cm) return;
+  cm.view.dispatch({
+    effects: cm.wrapCompartment.reconfigure(
+      v ? cm.EditorView.lineWrapping : [],
+    ),
+  });
+});
+
+watch(fontSize, (v) => {
+  if (!cm) return;
+  cm.view.dispatch({
+    effects: cm.fontCompartment.reconfigure(cm.fontTheme(v)),
+  });
+});
+
+watch(open, async (v) => {
+  if (v) {
+    await nextTick();
+    ensureEditor();
+  }
+});
+
+function setFontSize(v: number) {
+  fontSize.value = Math.max(11, Math.min(22, v));
+}
+
 onMounted(() => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -165,6 +342,12 @@ onMounted(() => {
       if (typeof parsed.editorRatio === "number") {
         editorRatio.value = Math.max(0.15, Math.min(0.85, parsed.editorRatio));
       }
+      if (typeof parsed.fontSize === "number") {
+        fontSize.value = Math.max(11, Math.min(22, parsed.fontSize));
+      }
+      if (typeof parsed.wrap === "boolean") wrap.value = parsed.wrap;
+      if (typeof parsed.fullscreen === "boolean") fullscreen.value = parsed.fullscreen;
+      if (parsed.tab && tabs.includes(parsed.tab)) tab.value = parsed.tab;
     }
   } catch {
     // ignore
@@ -173,15 +356,19 @@ onMounted(() => {
   mql = window.matchMedia("(max-width: 720px)");
   onMql(mql);
   mql.addEventListener("change", onMql);
+  if (open.value) {
+    nextTick(() => ensureEditor());
+  }
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("message", onMessage);
   mql?.removeEventListener("change", onMql);
+  cm?.view.destroy();
 });
 
 watch(
-  [code, open, panelHeight, previewRatio, editorRatio],
+  [code, open, panelHeight, previewRatio, editorRatio, fontSize, wrap, fullscreen, tab],
   () => {
     try {
       localStorage.setItem(
@@ -192,6 +379,10 @@ watch(
           panelHeight: panelHeight.value,
           previewRatio: previewRatio.value,
           editorRatio: editorRatio.value,
+          fontSize: fontSize.value,
+          wrap: wrap.value,
+          fullscreen: fullscreen.value,
+          tab: tab.value,
         }),
       );
     } catch {
@@ -254,6 +445,7 @@ function clear() {
   code.TS = "";
   logs.value = [];
   if (frame.value) frame.value.srcdoc = "";
+  if (cm) setCmDoc("");
 }
 
 function onKeydown(e: KeyboardEvent) {
@@ -348,6 +540,11 @@ function startResize(e: PointerEvent) {
   flex-direction: column;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
 }
+.repl-panel--fullscreen {
+  height: 100dvh !important;
+  top: 0;
+  border-top: none;
+}
 .repl-resizer {
   position: relative;
   height: 1px;
@@ -366,12 +563,56 @@ function startResize(e: PointerEvent) {
 .repl-resizer:hover {
   background: var(--vp-c-brand-1);
 }
+.repl-mobile-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+.repl-views {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+.repl-views button {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.repl-views button.active {
+  background: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+  color: white;
+}
+.repl-close {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--vp-c-text-1);
+  font-size: 18px;
+  cursor: pointer;
+}
+.repl-close:active {
+  background: var(--vp-c-bg-alt);
+}
 .repl-tabs {
   display: flex;
   align-items: stretch;
   border-bottom: 1px solid var(--vp-c-divider);
   background: var(--vp-c-bg-soft);
   flex-shrink: 0;
+  gap: 0;
 }
 .repl-tabs button {
   padding: 8px 14px;
@@ -386,11 +627,21 @@ function startResize(e: PointerEvent) {
   color: var(--vp-c-brand-1);
   border-bottom-color: var(--vp-c-brand-1);
 }
+.repl-tab-spacer {
+  flex: 1;
+}
+.repl-icon {
+  font-size: 13px !important;
+  padding: 8px 10px !important;
+  min-width: 36px;
+  color: var(--vp-c-text-2);
+}
+.repl-icon.active {
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-bg-alt);
+}
 .repl-tabs .repl-action {
   font-size: 12px;
-}
-.repl-tabs .repl-run {
-  margin-left: auto;
 }
 .repl-body {
   flex: 1;
@@ -401,6 +652,20 @@ function startResize(e: PointerEvent) {
 .repl-editor {
   flex: 1 1 0;
   min-width: 0;
+  overflow: hidden;
+  display: flex;
+  background: var(--vp-c-bg);
+}
+.repl-editor :deep(.cm-editor) {
+  height: 100%;
+  width: 100%;
+  outline: none;
+}
+.repl-editor :deep(.cm-scroller) {
+  font-family: var(--vp-font-family-mono, ui-monospace, monospace);
+}
+.repl-editor-fallback {
+  flex: 1;
   border: none;
   resize: none;
   padding: 12px;
@@ -481,49 +746,6 @@ function startResize(e: PointerEvent) {
 .repl-log--warn {
   color: #d97706;
 }
-.repl-mobile-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: var(--vp-c-bg-soft);
-  border-bottom: 1px solid var(--vp-c-divider);
-}
-.repl-views {
-  display: flex;
-  gap: 4px;
-  flex: 1;
-}
-.repl-views button {
-  flex: 1;
-  padding: 10px 12px;
-  background: transparent;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
-  color: var(--vp-c-text-2);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.repl-views button.active {
-  background: var(--vp-c-brand-1);
-  border-color: var(--vp-c-brand-1);
-  color: white;
-}
-.repl-close {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--vp-c-text-1);
-  font-size: 18px;
-  cursor: pointer;
-}
-.repl-close:active {
-  background: var(--vp-c-bg-alt);
-}
 
 .repl-panel--mobile {
   height: 100dvh !important;
@@ -544,6 +766,10 @@ function startResize(e: PointerEvent) {
   .repl-tabs .repl-action {
     font-size: 14px;
     padding: 12px 14px;
+  }
+  .repl-icon {
+    min-width: 44px;
+    padding: 12px 8px !important;
   }
   .repl-body {
     flex-direction: column;
