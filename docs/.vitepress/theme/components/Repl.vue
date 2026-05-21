@@ -85,6 +85,13 @@
         :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
         @click="fullscreen = !fullscreen"
       >{{ fullscreen ? '⛶' : '⛶' }}</button>
+      <button
+        class="repl-icon"
+        :aria-label="formatting ? '整形中' : '整形'"
+        :title="formatting ? '整形中…' : '整形 (Prettier)'"
+        :disabled="formatting"
+        @click="format"
+      >整形</button>
       <button class="repl-action repl-run" @click="run">{{ isMobile ? '▶ 実行' : '▶ 実行 (Ctrl+Enter)' }}</button>
       <button class="repl-action" @click="clear">クリア</button>
     </div>
@@ -198,6 +205,8 @@ const placeholder = computed(() => {
 });
 
 // --- CodeMirror lazy setup ---
+const formatting = ref(false);
+
 type CMRefs = {
   EditorView: any;
   view: any;
@@ -205,13 +214,118 @@ type CMRefs = {
   wrapCompartment: any;
   fontCompartment: any;
   themeCompartment: any;
+  lintCompartment: any;
   getLang: (t: Tab) => any;
   fontTheme: (size: number) => any;
   oneDark: any;
+  buildLint: (t: Tab) => any;
 };
 let cm: CMRefs | null = null;
 let updatingDoc = false;
 let editorLoading = false;
+
+type TsEnv = {
+  languageService: any;
+  updateFile: (name: string, text: string) => void;
+  __ts: any;
+};
+let tsEnvPromise: Promise<TsEnv> | null = null;
+function getTsEnv(): Promise<TsEnv> {
+  if (tsEnvPromise) return tsEnvPromise;
+  tsEnvPromise = (async () => {
+    const ts = (await import("typescript")).default;
+    const vfs = await import("@typescript/vfs");
+    const compilerOptions = {
+      target: ts.ScriptTarget.ESNext,
+      module: ts.ModuleKind.ESNext,
+      strict: false,
+      allowJs: true,
+      checkJs: false,
+      noEmit: true,
+      lib: ["esnext", "dom"],
+    };
+    const fsMap = await vfs.createDefaultMapFromCDN(
+      compilerOptions as any,
+      ts.version,
+      true,
+      ts,
+      undefined,
+      undefined,
+      typeof localStorage !== "undefined" ? (localStorage as any) : undefined,
+    );
+    fsMap.set("/repl.ts", "");
+    fsMap.set("/repl.js", "");
+    const system = vfs.createSystem(fsMap);
+    const env = vfs.createVirtualTypeScriptEnvironment(
+      system,
+      ["/repl.ts", "/repl.js"],
+      ts,
+      compilerOptions as any,
+    );
+    return {
+      languageService: env.languageService,
+      updateFile: (name, text) => env.updateFile(name, text),
+      __ts: ts,
+    };
+  })();
+  return tsEnvPromise;
+}
+
+async function formatCode(source: string, lang: Tab): Promise<string> {
+  const prettier = await import("prettier/standalone");
+  if (lang === "JS") {
+    const [babel, estree] = await Promise.all([
+      import("prettier/plugins/babel"),
+      import("prettier/plugins/estree"),
+    ]);
+    return prettier.format(source, {
+      parser: "babel",
+      plugins: [babel as any, estree as any],
+    });
+  }
+  if (lang === "TS") {
+    const [typescriptPlugin, estree] = await Promise.all([
+      import("prettier/plugins/typescript"),
+      import("prettier/plugins/estree"),
+    ]);
+    return prettier.format(source, {
+      parser: "typescript",
+      plugins: [typescriptPlugin as any, estree as any],
+    });
+  }
+  if (lang === "HTML") {
+    const htmlPlugin = await import("prettier/plugins/html");
+    return prettier.format(source, {
+      parser: "html",
+      plugins: [htmlPlugin as any],
+    });
+  }
+  if (lang === "CSS") {
+    const postcssPlugin = await import("prettier/plugins/postcss");
+    return prettier.format(source, {
+      parser: "css",
+      plugins: [postcssPlugin as any],
+    });
+  }
+  return source;
+}
+
+async function format() {
+  if (formatting.value) return;
+  const current = code[tab.value];
+  if (!current.trim()) return;
+  formatting.value = true;
+  try {
+    const formatted = await formatCode(current, tab.value);
+    code[tab.value] = formatted.replace(/\n$/, "");
+    if (cm) setCmDoc(code[tab.value]);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    logs.value.push({ level: "error", text: "整形に失敗: " + msg });
+  } finally {
+    formatting.value = false;
+  }
+}
 
 async function ensureEditor() {
   if (cm || editorLoading || !editorContainer.value) return;
@@ -225,6 +339,7 @@ async function ensureEditor() {
       { html },
       cssMod,
       { oneDark },
+      lintMod,
     ] = await Promise.all([
       import("codemirror"),
       import("@codemirror/state"),
@@ -233,8 +348,10 @@ async function ensureEditor() {
       import("@codemirror/lang-html"),
       import("@codemirror/lang-css"),
       import("@codemirror/theme-one-dark"),
+      import("@codemirror/lint"),
     ]);
     const cssLang = (cssMod as any).css;
+    const { linter } = lintMod as any;
 
   const getLang = (t: Tab) => {
     if (t === "HTML") return html();
@@ -263,10 +380,45 @@ async function ensureEditor() {
       },
     });
 
+  const tsLinter = async (view: any) => {
+    if (tab.value !== "JS" && tab.value !== "TS") return [];
+    const text = view.state.doc.toString();
+    if (!text.trim()) return [];
+    try {
+      const env = await getTsEnv();
+      const isTS = tab.value === "TS";
+      const fname = isTS ? "/repl.ts" : "/repl.js";
+      env.updateFile(fname, text);
+      const ls = env.languageService;
+      const diags = [
+        ...ls.getSyntacticDiagnostics(fname),
+        ...ls.getSemanticDiagnostics(fname),
+      ];
+      const ts = env.__ts;
+      return diags
+        .filter((d: any) => typeof d.start === "number")
+        .map((d: any) => ({
+          from: d.start,
+          to: d.start + (d.length || 1),
+          severity:
+            d.category === ts.DiagnosticCategory.Error
+              ? "error"
+              : d.category === ts.DiagnosticCategory.Warning
+                ? "warning"
+                : "info",
+          message: ts.flattenDiagnosticMessageText(d.messageText, "\n"),
+        }));
+    } catch {
+      return [];
+    }
+  };
+  const buildLint = (_t: Tab) => linter(tsLinter, { delay: 500 });
+
   const langCompartment = new Compartment();
   const wrapCompartment = new Compartment();
   const fontCompartment = new Compartment();
   const themeCompartment = new Compartment();
+  const lintCompartment = new Compartment();
 
   const state = EditorState.create({
     doc: code[tab.value],
@@ -276,6 +428,7 @@ async function ensureEditor() {
       wrapCompartment.of(wrap.value ? EditorView.lineWrapping : []),
       fontCompartment.of(fontTheme(fontSize.value)),
       themeCompartment.of(isDark.value ? oneDark : []),
+      lintCompartment.of(buildLint(tab.value)),
       keymap.of([
         {
           key: "Mod-Enter",
@@ -307,9 +460,11 @@ async function ensureEditor() {
     wrapCompartment,
     fontCompartment,
     themeCompartment,
+    lintCompartment,
     getLang,
     fontTheme,
     oneDark,
+    buildLint,
   };
     editorReady.value = true;
   } finally {
@@ -330,7 +485,10 @@ watch(tab, async (next) => {
   if (!cm) return;
   setCmDoc(code[next]);
   cm.view.dispatch({
-    effects: cm.langCompartment.reconfigure(cm.getLang(next)),
+    effects: [
+      cm.langCompartment.reconfigure(cm.getLang(next)),
+      cm.lintCompartment.reconfigure(cm.buildLint(next)),
+    ],
   });
 });
 
