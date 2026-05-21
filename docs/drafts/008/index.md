@@ -300,7 +300,7 @@ function handleAddCorrect() {
 
 AI が生成する React コードのスプレッド構文は、見た目を整えるためでも慣習でもなく、`Object.is()` で参照を比較する React の仕組みに合わせた必然的な書き方です。
 
-::: tip const なのに中身が変えられる？
+::: details const なのに中身が変えられる？
 `const user = { name: "田中" }` と宣言しても、`user.name = "鈴木"` はエラーになりません。`const` が禁止するのは変数への再代入（`user = 別のオブジェクト`）だけであり、オブジェクトの中身の変更は制限しません。
 
 ```javascript
