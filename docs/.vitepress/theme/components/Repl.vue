@@ -294,6 +294,12 @@ async function ensureEditor() {
   });
 
   const view = new EditorView({ state, parent: editorContainer.value });
+  // remove any stale CM instances left over from earlier mounts
+  Array.from(
+    editorContainer.value.querySelectorAll(".cm-editor"),
+  ).forEach((el) => {
+    if (el !== view.dom) el.remove();
+  });
   cm = {
     EditorView,
     view,
@@ -399,6 +405,8 @@ onBeforeUnmount(() => {
   window.removeEventListener("message", onMessage);
   mql?.removeEventListener("change", onMql);
   cm?.view.destroy();
+  cm = null;
+  editorLoading = false;
 });
 
 watch(
