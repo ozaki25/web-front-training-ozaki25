@@ -45,10 +45,23 @@
         <iframe
           ref="frame"
           class="repl-preview"
+          :style="{ flexGrow: previewRatio }"
           sandbox="allow-scripts"
           title="プレビュー"
         ></iframe>
-        <div class="repl-console" role="log" aria-label="コンソール出力">
+        <div
+          class="repl-output-resizer"
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label="プレビューとコンソールの高さを変更"
+          @pointerdown="startOutputResize"
+        ></div>
+        <div
+          class="repl-console"
+          :style="{ flexGrow: 1 - previewRatio }"
+          role="log"
+          aria-label="コンソール出力"
+        >
           <div
             v-for="(line, i) in logs"
             :key="i"
@@ -71,6 +84,8 @@ type Tab = (typeof tabs)[number];
 const open = ref(false);
 const tab = ref<Tab>("JS");
 const panelHeight = ref(380);
+const previewRatio = ref(0.6);
+const outputEl = ref<HTMLElement | null>(null);
 const code = reactive<Record<Tab, string>>({
   HTML: "",
   CSS: "",
@@ -102,6 +117,9 @@ onMounted(() => {
       Object.assign(code, parsed.code || {});
       open.value = !!parsed.open;
       panelHeight.value = parsed.panelHeight || 380;
+      if (typeof parsed.previewRatio === "number") {
+        previewRatio.value = Math.max(0.1, Math.min(0.9, parsed.previewRatio));
+      }
     }
   } catch {
     // ignore
@@ -114,7 +132,7 @@ onBeforeUnmount(() => {
 });
 
 watch(
-  [code, open, panelHeight],
+  [code, open, panelHeight, previewRatio],
   () => {
     try {
       localStorage.setItem(
@@ -123,6 +141,7 @@ watch(
           code: { ...code },
           open: open.value,
           panelHeight: panelHeight.value,
+          previewRatio: previewRatio.value,
         }),
       );
     } catch {
@@ -191,6 +210,24 @@ function onKeydown(e: KeyboardEvent) {
     e.preventDefault();
     run();
   }
+}
+
+function startOutputResize(e: PointerEvent) {
+  e.preventDefault();
+  const resizer = e.currentTarget as HTMLElement;
+  const container = resizer.parentElement;
+  if (!container) return;
+  function move(ev: PointerEvent) {
+    const rect = container!.getBoundingClientRect();
+    const ratio = (ev.clientY - rect.top) / rect.height;
+    previewRatio.value = Math.max(0.1, Math.min(0.9, ratio));
+  }
+  function up() {
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", up);
+  }
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", up);
 }
 
 function startResize(e: PointerEvent) {
@@ -301,20 +338,29 @@ function startResize(e: PointerEvent) {
   min-width: 0;
 }
 .repl-preview {
-  flex: 1;
+  flex: 1 1 0;
   border: none;
   background: white;
   min-height: 0;
 }
+.repl-output-resizer {
+  height: 6px;
+  cursor: ns-resize;
+  background: var(--vp-c-divider);
+  flex-shrink: 0;
+}
+.repl-output-resizer:hover {
+  background: var(--vp-c-brand-1);
+}
 .repl-console {
-  flex: 0 0 40%;
+  flex: 1 1 0;
   overflow: auto;
   padding: 8px 12px;
   font-family: var(--vp-font-family-mono, ui-monospace, monospace);
   font-size: 12px;
   background: var(--vp-c-bg-alt);
-  border-top: 1px solid var(--vp-c-divider);
   color: var(--vp-c-text-1);
+  min-height: 0;
 }
 .repl-log {
   white-space: pre-wrap;
