@@ -157,6 +157,7 @@
           @pointerdown="startOutputResize"
         ></div>
         <div
+          ref="consoleEl"
           class="repl-console"
           :style="{ flexGrow: 1 - previewRatio }"
           role="log"
@@ -213,7 +214,17 @@ const code = reactive<Record<Tab, string>>({
 });
 const editorContainer = ref<HTMLElement | null>(null);
 const frame = ref<HTMLIFrameElement | null>(null);
+const consoleEl = ref<HTMLElement | null>(null);
 const logs = ref<{ level: string; text: string }[]>([]);
+
+watch(
+  () => logs.value.length,
+  () => {
+    nextTick(() => {
+      if (consoleEl.value) consoleEl.value.scrollTop = consoleEl.value.scrollHeight;
+    });
+  },
+);
 
 let mql: MediaQueryList | null = null;
 function onMql(e: MediaQueryListEvent | MediaQueryList) {
@@ -611,19 +622,10 @@ onBeforeUnmount(() => {
   editorLoading = false;
 });
 
-watch(
-  [
-    code,
-    open,
-    panelHeight,
-    previewRatio,
-    editorRatio,
-    fontSize,
-    wrap,
-    fullscreen,
-    tab,
-  ],
-  () => {
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
@@ -642,7 +644,21 @@ watch(
     } catch {
       // ignore quota errors
     }
-  },
+  }, 400);
+}
+watch(
+  [
+    code,
+    open,
+    panelHeight,
+    previewRatio,
+    editorRatio,
+    fontSize,
+    wrap,
+    fullscreen,
+    tab,
+  ],
+  scheduleSave,
   { deep: true },
 );
 
@@ -657,6 +673,13 @@ async function transpileTS(src: string): Promise<string> {
   return transform(src, { transforms: ["typescript"] }).code;
 }
 
+function escapeForStyle(s: string) {
+  return s.replace(/<\/style>/gi, "<\\/style>");
+}
+function escapeForScript(s: string) {
+  return s.replace(/<\/script>/gi, "<\\/script>");
+}
+
 async function run() {
   logs.value = [];
   let js = code.JS || "";
@@ -669,13 +692,17 @@ async function run() {
       return;
     }
   }
+  const safeCss = escapeForStyle(code.CSS || "");
+  const safeJs = escapeForScript(js);
+  const targetOrigin = JSON.stringify(location.origin);
   const html = `<!doctype html>
-<html><head><meta charset="utf-8"><style>${code.CSS}</style></head>
+<html><head><meta charset="utf-8"><style>${safeCss}</style></head>
 <body>${code.HTML}
 <script>
 (function(){
+  var TARGET = ${targetOrigin};
   function fmt(a){try{return typeof a==='string'?a:JSON.stringify(a,null,2)}catch{return String(a)}}
-  function send(level, args){parent.postMessage({type:'wft-repl-log',level,text:args.map(fmt).join(' ')},'*')}
+  function send(level, args){parent.postMessage({type:'wft-repl-log',level,text:args.map(fmt).join(' ')}, TARGET)}
   ['log','info','warn','error'].forEach(function(l){
     var orig=console[l].bind(console);
     console[l]=function(){send(l,[].slice.call(arguments));orig.apply(null,arguments)}
@@ -683,7 +710,7 @@ async function run() {
   window.addEventListener('error',function(e){send('error',[e.message])});
   window.addEventListener('unhandledrejection',function(e){send('error',['Unhandled: '+(e.reason&&e.reason.message||e.reason)])});
 })();
-${js}
+${safeJs}
 <\/script>
 </body></html>`;
   if (frame.value) frame.value.srcdoc = html;
