@@ -262,7 +262,7 @@ type TsEnv = {
 let tsEnvPromise: Promise<TsEnv> | null = null;
 function getTsEnv(): Promise<TsEnv> {
   if (tsEnvPromise) return tsEnvPromise;
-  tsEnvPromise = (async () => {
+  const p = (async () => {
     const ts = (await import("typescript")).default;
     const vfs = await import("@typescript/vfs");
     const compilerOptions = {
@@ -298,7 +298,12 @@ function getTsEnv(): Promise<TsEnv> {
       __ts: ts,
     };
   })();
-  return tsEnvPromise;
+  // 失敗時はキャッシュを破棄して次回再試行できるようにする
+  p.catch(() => {
+    if (tsEnvPromise === p) tsEnvPromise = null;
+  });
+  tsEnvPromise = p;
+  return p;
 }
 
 async function formatCode(source: string, lang: Tab): Promise<string> {
@@ -570,14 +575,15 @@ onMounted(() => {
         }
       }
       open.value = !!parsed.open;
-      panelHeight.value = parsed.panelHeight || 380;
-      if (typeof parsed.previewRatio === "number") {
+      if (Number.isFinite(parsed.panelHeight))
+        panelHeight.value = parsed.panelHeight;
+      if (Number.isFinite(parsed.previewRatio)) {
         previewRatio.value = Math.max(0.1, Math.min(0.9, parsed.previewRatio));
       }
-      if (typeof parsed.editorRatio === "number") {
+      if (Number.isFinite(parsed.editorRatio)) {
         editorRatio.value = Math.max(0.15, Math.min(0.85, parsed.editorRatio));
       }
-      if (typeof parsed.fontSize === "number") {
+      if (Number.isFinite(parsed.fontSize)) {
         fontSize.value = Math.max(11, Math.min(22, parsed.fontSize));
       }
       if (typeof parsed.wrap === "boolean") wrap.value = parsed.wrap;
@@ -870,7 +876,7 @@ function startResize(e: PointerEvent) {
   color: var(--vp-c-text-2);
   border-bottom: 2px solid transparent;
 }
-.repl-tabs button.active {
+.repl-tabs > button.active:not(.repl-icon) {
   color: var(--vp-c-brand-1);
   border-bottom-color: var(--vp-c-brand-1);
 }
