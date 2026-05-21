@@ -211,27 +211,30 @@ type CMRefs = {
 };
 let cm: CMRefs | null = null;
 let updatingDoc = false;
+let editorLoading = false;
 
 async function ensureEditor() {
-  if (cm || !editorContainer.value) return;
-  const [
-    { EditorView, basicSetup },
-    { EditorState, Compartment },
-    { keymap },
-    { javascript },
-    { html },
-    cssMod,
-    { oneDark },
-  ] = await Promise.all([
-    import("codemirror"),
-    import("@codemirror/state"),
-    import("@codemirror/view"),
-    import("@codemirror/lang-javascript"),
-    import("@codemirror/lang-html"),
-    import("@codemirror/lang-css"),
-    import("@codemirror/theme-one-dark"),
-  ]);
-  const cssLang = (cssMod as any).css;
+  if (cm || editorLoading || !editorContainer.value) return;
+  editorLoading = true;
+  try {
+    const [
+      { EditorView, basicSetup },
+      { EditorState, Compartment },
+      { keymap },
+      { javascript },
+      { html },
+      cssMod,
+      { oneDark },
+    ] = await Promise.all([
+      import("codemirror"),
+      import("@codemirror/state"),
+      import("@codemirror/view"),
+      import("@codemirror/lang-javascript"),
+      import("@codemirror/lang-html"),
+      import("@codemirror/lang-css"),
+      import("@codemirror/theme-one-dark"),
+    ]);
+    const cssLang = (cssMod as any).css;
 
   const getLang = (t: Tab) => {
     if (t === "HTML") return html();
@@ -302,7 +305,10 @@ async function ensureEditor() {
     fontTheme,
     oneDark,
   };
-  editorReady.value = true;
+    editorReady.value = true;
+  } finally {
+    editorLoading = false;
+  }
 }
 
 function setCmDoc(text: string) {
