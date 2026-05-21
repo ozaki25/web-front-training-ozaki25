@@ -1,5 +1,6 @@
 <template>
   <button
+    v-show="!(isMobile && open)"
     class="repl-toggle"
     :aria-expanded="open"
     aria-controls="repl-panel"
@@ -11,16 +12,39 @@
     v-show="open"
     id="repl-panel"
     class="repl-panel"
-    :style="{ height: panelHeight + 'px' }"
+    :class="{
+      'repl-panel--mobile': isMobile,
+      'repl-panel--code': isMobile && mobileView === 'code',
+      'repl-panel--result': isMobile && mobileView === 'result',
+    }"
+    :style="!isMobile ? { height: panelHeight + 'px' } : undefined"
     role="region"
     aria-label="コード実行パネル"
   >
     <div
+      v-if="!isMobile"
       class="repl-resizer"
       role="separator"
       aria-orientation="horizontal"
       @pointerdown="startResize"
     ></div>
+    <div v-if="isMobile" class="repl-mobile-header">
+      <div class="repl-views" role="tablist" aria-label="表示切り替え">
+        <button
+          role="tab"
+          :aria-selected="mobileView === 'code'"
+          :class="{ active: mobileView === 'code' }"
+          @click="mobileView = 'code'"
+        >コード</button>
+        <button
+          role="tab"
+          :aria-selected="mobileView === 'result'"
+          :class="{ active: mobileView === 'result' }"
+          @click="mobileView = 'result'"
+        >結果</button>
+      </div>
+      <button class="repl-close" aria-label="閉じる" @click="open = false">✕</button>
+    </div>
     <div class="repl-tabs">
       <button
         v-for="t in tabs"
@@ -30,26 +54,30 @@
       >
         {{ t }}
       </button>
-      <button class="repl-action repl-run" @click="run">▶ 実行 (Ctrl+Enter)</button>
+      <button class="repl-action repl-run" @click="run">{{ isMobile ? '▶ 実行' : '▶ 実行 (Ctrl+Enter)' }}</button>
       <button class="repl-action" @click="clear">クリア</button>
     </div>
     <div class="repl-body">
       <textarea
         v-model="code[tab]"
         class="repl-editor"
-        :style="{ flexGrow: editorRatio }"
+        :style="!isMobile ? { flexGrow: editorRatio } : undefined"
         spellcheck="false"
         :placeholder="placeholder"
         @keydown="onKeydown"
       ></textarea>
       <div
+        v-if="!isMobile"
         class="repl-body-resizer"
         role="separator"
         aria-orientation="vertical"
         aria-label="エディタとプレビューの幅を変更"
         @pointerdown="startBodyResize"
       ></div>
-      <div class="repl-output" :style="{ flexGrow: 1 - editorRatio }">
+      <div
+        class="repl-output"
+        :style="!isMobile ? { flexGrow: 1 - editorRatio } : undefined"
+      >
         <iframe
           ref="frame"
           class="repl-preview"
@@ -94,7 +122,12 @@ const tab = ref<Tab>("JS");
 const panelHeight = ref(380);
 const previewRatio = ref(0.6);
 const editorRatio = ref(0.5);
-const outputEl = ref<HTMLElement | null>(null);
+const isMobile = ref(false);
+const mobileView = ref<"code" | "result">("code");
+let mql: MediaQueryList | null = null;
+function onMql(e: MediaQueryListEvent | MediaQueryList) {
+  isMobile.value = e.matches;
+}
 const code = reactive<Record<Tab, string>>({
   HTML: "",
   CSS: "",
@@ -137,10 +170,14 @@ onMounted(() => {
     // ignore
   }
   window.addEventListener("message", onMessage);
+  mql = window.matchMedia("(max-width: 720px)");
+  onMql(mql);
+  mql.addEventListener("change", onMql);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("message", onMessage);
+  mql?.removeEventListener("change", onMql);
 });
 
 watch(
@@ -207,6 +244,7 @@ ${js}
 <\/script>
 </body></html>`;
   if (frame.value) frame.value.srcdoc = html;
+  if (isMobile.value) mobileView.value = "result";
 }
 
 function clear() {
@@ -443,16 +481,84 @@ function startResize(e: PointerEvent) {
 .repl-log--warn {
   color: #d97706;
 }
+.repl-mobile-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+.repl-views {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+.repl-views button {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  color: var(--vp-c-text-2);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.repl-views button.active {
+  background: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+  color: white;
+}
+.repl-close {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--vp-c-text-1);
+  font-size: 18px;
+  cursor: pointer;
+}
+.repl-close:active {
+  background: var(--vp-c-bg-alt);
+}
+
+.repl-panel--mobile {
+  height: 100dvh !important;
+  top: 0;
+  border-top: none;
+}
+.repl-panel--code .repl-output,
+.repl-panel--result .repl-tabs,
+.repl-panel--result .repl-editor {
+  display: none !important;
+}
+
 @media (max-width: 720px) {
+  .repl-tabs button {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  .repl-tabs .repl-action {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
   .repl-body {
     flex-direction: column;
   }
-  .repl-body-resizer {
-    display: none;
-  }
-  .repl-editor,
   .repl-output {
     flex: 1 1 0 !important;
+  }
+  .repl-output-resizer,
+  .repl-resizer {
+    height: 1px;
+  }
+  .repl-output-resizer::before,
+  .repl-resizer::before {
+    top: -8px;
+    bottom: -8px;
   }
 }
 </style>
