@@ -606,6 +606,7 @@ onMounted(() => {
     // ignore
   }
   window.addEventListener("message", onMessage);
+  window.addEventListener("beforeunload", saveNow);
   mql = window.matchMedia("(max-width: 720px)");
   onMql(mql);
   mql.addEventListener("change", onMql);
@@ -615,7 +616,9 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  saveNow();
   window.removeEventListener("message", onMessage);
+  window.removeEventListener("beforeunload", saveNow);
   mql?.removeEventListener("change", onMql);
   cm?.view.destroy();
   cm = null;
@@ -623,28 +626,33 @@ onBeforeUnmount(() => {
 });
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
+function saveNow() {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+  }
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        code: { ...code },
+        open: open.value,
+        panelHeight: panelHeight.value,
+        previewRatio: previewRatio.value,
+        editorRatio: editorRatio.value,
+        fontSize: fontSize.value,
+        wrap: wrap.value,
+        fullscreen: fullscreen.value,
+        tab: tab.value,
+      }),
+    );
+  } catch {
+    // ignore quota errors
+  }
+}
 function scheduleSave() {
   if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          code: { ...code },
-          open: open.value,
-          panelHeight: panelHeight.value,
-          previewRatio: previewRatio.value,
-          editorRatio: editorRatio.value,
-          fontSize: fontSize.value,
-          wrap: wrap.value,
-          fullscreen: fullscreen.value,
-          tab: tab.value,
-        }),
-      );
-    } catch {
-      // ignore quota errors
-    }
-  }, 400);
+  saveTimer = setTimeout(saveNow, 400);
 }
 watch(
   [
@@ -674,10 +682,10 @@ async function transpileTS(src: string): Promise<string> {
 }
 
 function escapeForStyle(s: string) {
-  return s.replace(/<\/style>/gi, "<\\/style>");
+  return s.replace(/<\/style/gi, "<\\/style");
 }
 function escapeForScript(s: string) {
-  return s.replace(/<\/script>/gi, "<\\/script>");
+  return s.replace(/<\/script/gi, "<\\/script");
 }
 
 async function run() {
