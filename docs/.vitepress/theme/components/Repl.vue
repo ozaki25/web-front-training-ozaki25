@@ -6,7 +6,7 @@
     aria-controls="repl-panel"
     @click="open = !open"
   >
-    {{ open ? '▼ REPL' : '▲ REPL' }}
+    {{ open ? "▼ REPL" : "▲ REPL" }}
   </button>
   <div
     v-show="open"
@@ -18,7 +18,9 @@
       'repl-panel--code': isMobile && mobileView === 'code',
       'repl-panel--result': isMobile && mobileView === 'result',
     }"
-    :style="!isMobile && !fullscreen ? { height: panelHeight + 'px' } : undefined"
+    :style="
+      !isMobile && !fullscreen ? { height: panelHeight + 'px' } : undefined
+    "
     role="region"
     aria-label="コード実行パネル"
   >
@@ -36,15 +38,21 @@
           :aria-selected="mobileView === 'code'"
           :class="{ active: mobileView === 'code' }"
           @click="mobileView = 'code'"
-        >コード</button>
+        >
+          コード
+        </button>
         <button
           role="tab"
           :aria-selected="mobileView === 'result'"
           :class="{ active: mobileView === 'result' }"
           @click="mobileView = 'result'"
-        >結果</button>
+        >
+          結果
+        </button>
       </div>
-      <button class="repl-close" aria-label="閉じる" @click="open = false">✕</button>
+      <button class="repl-close" aria-label="閉じる" @click="open = false">
+        ✕
+      </button>
     </div>
     <div class="repl-tabs">
       <button
@@ -61,13 +69,17 @@
         aria-label="文字を小さく"
         title="文字を小さく"
         @click="setFontSize(fontSize - 1)"
-      >A−</button>
+      >
+        A−
+      </button>
       <button
         class="repl-icon"
         aria-label="文字を大きく"
         title="文字を大きく"
         @click="setFontSize(fontSize + 1)"
-      >A+</button>
+      >
+        A+
+      </button>
       <button
         class="repl-icon"
         :class="{ active: wrap }"
@@ -75,7 +87,9 @@
         aria-label="折り返し"
         title="折り返し"
         @click="wrap = !wrap"
-      >↵</button>
+      >
+        ↵
+      </button>
       <button
         v-if="!isMobile"
         class="repl-icon"
@@ -84,15 +98,21 @@
         :aria-label="fullscreen ? '通常表示に戻す' : '全画面表示'"
         :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
         @click="fullscreen = !fullscreen"
-      >{{ fullscreen ? '⛶' : '⛶' }}</button>
+      >
+        ⛶
+      </button>
       <button
         class="repl-icon"
         :aria-label="formatting ? '整形中' : '整形'"
         :title="formatting ? '整形中…' : '整形 (Prettier)'"
         :disabled="formatting"
         @click="format"
-      >整形</button>
-      <button class="repl-action repl-run" @click="run">{{ isMobile ? '▶ 実行' : '▶ 実行 (Ctrl+Enter)' }}</button>
+      >
+        整形
+      </button>
+      <button class="repl-action repl-run" @click="run">
+        {{ isMobile ? "▶ 実行" : "▶ 実行 (Ctrl+Enter)" }}
+      </button>
       <button class="repl-action" @click="clear">クリア</button>
     </div>
     <div class="repl-body">
@@ -147,7 +167,9 @@
             :key="i"
             class="repl-log"
             :class="`repl-log--${line.level}`"
-          >{{ line.text }}</div>
+          >
+            {{ line.text }}
+          </div>
         </div>
       </div>
     </div>
@@ -155,7 +177,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onBeforeUnmount, watch, computed, nextTick } from "vue";
+import {
+  ref,
+  reactive,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  computed,
+  nextTick,
+} from "vue";
 import { useData } from "vitepress";
 
 const { isDark } = useData();
@@ -322,6 +352,7 @@ async function format() {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     logs.value.push({ level: "error", text: "整形に失敗: " + msg });
+    if (isMobile.value) mobileView.value = "result";
   } finally {
     formatting.value = false;
   }
@@ -353,119 +384,121 @@ async function ensureEditor() {
     const cssLang = (cssMod as any).css;
     const { linter } = lintMod as any;
 
-  const getLang = (t: Tab) => {
-    if (t === "HTML") return html();
-    if (t === "CSS") return cssLang();
-    if (t === "TS") return javascript({ typescript: true });
-    return javascript();
-  };
-  const fontTheme = (size: number) =>
-    EditorView.theme({
-      "&": { fontSize: size + "px", backgroundColor: "transparent" },
-      ".cm-scroller": {
-        fontFamily:
-          "var(--vp-font-family-mono, ui-monospace, SFMono-Regular, monospace)",
-        lineHeight: "1.5",
-      },
-      ".cm-content": { padding: "8px 0", caretColor: "var(--vp-c-text-1)" },
-      ".cm-gutters": {
-        backgroundColor: "var(--vp-c-bg-soft)",
-        color: "var(--vp-c-text-3)",
-        border: "none",
-      },
-      ".cm-activeLine": { backgroundColor: "transparent" },
-      ".cm-activeLineGutter": { backgroundColor: "var(--vp-c-bg-alt)" },
-      ".cm-selectionBackground": {
-        backgroundColor: "var(--vp-c-brand-soft) !important",
-      },
+    const getLang = (t: Tab) => {
+      if (t === "HTML") return html();
+      if (t === "CSS") return cssLang();
+      if (t === "TS") return javascript({ typescript: true });
+      return javascript();
+    };
+    const fontTheme = (size: number) =>
+      EditorView.theme({
+        "&": { fontSize: size + "px", backgroundColor: "transparent" },
+        ".cm-scroller": {
+          fontFamily:
+            "var(--vp-font-family-mono, ui-monospace, SFMono-Regular, monospace)",
+          lineHeight: "1.5",
+        },
+        ".cm-content": { padding: "8px 0", caretColor: "var(--vp-c-text-1)" },
+        ".cm-gutters": {
+          backgroundColor: "var(--vp-c-bg-soft)",
+          color: "var(--vp-c-text-3)",
+          border: "none",
+        },
+        ".cm-activeLine": { backgroundColor: "transparent" },
+        ".cm-activeLineGutter": { backgroundColor: "var(--vp-c-bg-alt)" },
+        ".cm-selectionBackground": {
+          backgroundColor: "var(--vp-c-brand-soft) !important",
+        },
+      });
+
+    const tsLinter = async (view: any) => {
+      if (tab.value !== "JS" && tab.value !== "TS") return [];
+      const text = view.state.doc.toString();
+      if (!text.trim()) return [];
+      try {
+        const env = await getTsEnv();
+        const isTS = tab.value === "TS";
+        const fname = isTS ? "/repl.ts" : "/repl.js";
+        env.updateFile(fname, text);
+        const ls = env.languageService;
+        const diags = [
+          ...ls.getSyntacticDiagnostics(fname),
+          ...ls.getSemanticDiagnostics(fname),
+        ];
+        const ts = env.__ts;
+        return diags
+          .filter((d: any) => typeof d.start === "number")
+          .map((d: any) => ({
+            from: d.start,
+            to: d.start + (d.length || 1),
+            severity:
+              d.category === ts.DiagnosticCategory.Error
+                ? "error"
+                : d.category === ts.DiagnosticCategory.Warning
+                  ? "warning"
+                  : "info",
+            message: ts.flattenDiagnosticMessageText(d.messageText, "\n"),
+          }));
+      } catch {
+        return [];
+      }
+    };
+    // tsLinter は tab.value を参照するので関数自体は使い回せるが、Compartment 経由で
+    // reconfigure すると lint がリセットされて即時に再評価される。タブ切替時にそれを利用する。
+    const buildLint = (_t: Tab) => linter(tsLinter, { delay: 500 });
+
+    const langCompartment = new Compartment();
+    const wrapCompartment = new Compartment();
+    const fontCompartment = new Compartment();
+    const themeCompartment = new Compartment();
+    const lintCompartment = new Compartment();
+
+    const state = EditorState.create({
+      doc: code[tab.value],
+      extensions: [
+        basicSetup,
+        langCompartment.of(getLang(tab.value)),
+        wrapCompartment.of(wrap.value ? EditorView.lineWrapping : []),
+        fontCompartment.of(fontTheme(fontSize.value)),
+        themeCompartment.of(isDark.value ? oneDark : []),
+        lintCompartment.of(buildLint(tab.value)),
+        keymap.of([
+          {
+            key: "Mod-Enter",
+            run: () => {
+              run();
+              return true;
+            },
+          },
+        ]),
+        EditorView.updateListener.of((u: any) => {
+          if (u.docChanged && !updatingDoc) {
+            code[tab.value] = u.state.doc.toString();
+          }
+        }),
+      ],
     });
 
-  const tsLinter = async (view: any) => {
-    if (tab.value !== "JS" && tab.value !== "TS") return [];
-    const text = view.state.doc.toString();
-    if (!text.trim()) return [];
-    try {
-      const env = await getTsEnv();
-      const isTS = tab.value === "TS";
-      const fname = isTS ? "/repl.ts" : "/repl.js";
-      env.updateFile(fname, text);
-      const ls = env.languageService;
-      const diags = [
-        ...ls.getSyntacticDiagnostics(fname),
-        ...ls.getSemanticDiagnostics(fname),
-      ];
-      const ts = env.__ts;
-      return diags
-        .filter((d: any) => typeof d.start === "number")
-        .map((d: any) => ({
-          from: d.start,
-          to: d.start + (d.length || 1),
-          severity:
-            d.category === ts.DiagnosticCategory.Error
-              ? "error"
-              : d.category === ts.DiagnosticCategory.Warning
-                ? "warning"
-                : "info",
-          message: ts.flattenDiagnosticMessageText(d.messageText, "\n"),
-        }));
-    } catch {
-      return [];
-    }
-  };
-  const buildLint = (_t: Tab) => linter(tsLinter, { delay: 500 });
-
-  const langCompartment = new Compartment();
-  const wrapCompartment = new Compartment();
-  const fontCompartment = new Compartment();
-  const themeCompartment = new Compartment();
-  const lintCompartment = new Compartment();
-
-  const state = EditorState.create({
-    doc: code[tab.value],
-    extensions: [
-      basicSetup,
-      langCompartment.of(getLang(tab.value)),
-      wrapCompartment.of(wrap.value ? EditorView.lineWrapping : []),
-      fontCompartment.of(fontTheme(fontSize.value)),
-      themeCompartment.of(isDark.value ? oneDark : []),
-      lintCompartment.of(buildLint(tab.value)),
-      keymap.of([
-        {
-          key: "Mod-Enter",
-          run: () => {
-            run();
-            return true;
-          },
-        },
-      ]),
-      EditorView.updateListener.of((u: any) => {
-        if (u.docChanged && !updatingDoc) {
-          code[tab.value] = u.state.doc.toString();
-        }
-      }),
-    ],
-  });
-
-  const view = new EditorView({ state, parent: editorContainer.value });
-  // remove any stale CM instances left over from earlier mounts
-  Array.from(
-    editorContainer.value.querySelectorAll(".cm-editor"),
-  ).forEach((el) => {
-    if (el !== view.dom) el.remove();
-  });
-  cm = {
-    EditorView,
-    view,
-    langCompartment,
-    wrapCompartment,
-    fontCompartment,
-    themeCompartment,
-    lintCompartment,
-    getLang,
-    fontTheme,
-    oneDark,
-    buildLint,
-  };
+    const view = new EditorView({ state, parent: editorContainer.value });
+    // remove any stale CM instances left over from earlier mounts
+    Array.from(editorContainer.value.querySelectorAll(".cm-editor")).forEach(
+      (el) => {
+        if (el !== view.dom) el.remove();
+      },
+    );
+    cm = {
+      EditorView,
+      view,
+      langCompartment,
+      wrapCompartment,
+      fontCompartment,
+      themeCompartment,
+      lintCompartment,
+      getLang,
+      fontTheme,
+      oneDark,
+      buildLint,
+    };
     editorReady.value = true;
   } finally {
     editorLoading = false;
@@ -531,7 +564,11 @@ onMounted(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      Object.assign(code, parsed.code || {});
+      if (parsed.code && typeof parsed.code === "object") {
+        for (const t of tabs) {
+          if (typeof parsed.code[t] === "string") code[t] = parsed.code[t];
+        }
+      }
       open.value = !!parsed.open;
       panelHeight.value = parsed.panelHeight || 380;
       if (typeof parsed.previewRatio === "number") {
@@ -544,7 +581,8 @@ onMounted(() => {
         fontSize.value = Math.max(11, Math.min(22, parsed.fontSize));
       }
       if (typeof parsed.wrap === "boolean") wrap.value = parsed.wrap;
-      if (typeof parsed.fullscreen === "boolean") fullscreen.value = parsed.fullscreen;
+      if (typeof parsed.fullscreen === "boolean")
+        fullscreen.value = parsed.fullscreen;
       if (parsed.tab && tabs.includes(parsed.tab)) tab.value = parsed.tab;
     }
   } catch {
@@ -568,7 +606,17 @@ onBeforeUnmount(() => {
 });
 
 watch(
-  [code, open, panelHeight, previewRatio, editorRatio, fontSize, wrap, fullscreen, tab],
+  [
+    code,
+    open,
+    panelHeight,
+    previewRatio,
+    editorRatio,
+    fontSize,
+    wrap,
+    fullscreen,
+    tab,
+  ],
   () => {
     try {
       localStorage.setItem(
@@ -629,9 +677,7 @@ async function run() {
   window.addEventListener('error',function(e){send('error',[e.message])});
   window.addEventListener('unhandledrejection',function(e){send('error',['Unhandled: '+(e.reason&&e.reason.message||e.reason)])});
 })();
-try {
 ${js}
-} catch (e) { console.error(e.message || String(e)) }
 <\/script>
 </body></html>`;
   if (frame.value) frame.value.srcdoc = html;
@@ -740,7 +786,8 @@ function startResize(e: PointerEvent) {
   flex-direction: column;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
 }
-.repl-panel--fullscreen {
+.repl-panel--fullscreen,
+.repl-panel--mobile {
   height: 100dvh !important;
   top: 0;
   border-top: none;
@@ -869,7 +916,12 @@ function startResize(e: PointerEvent) {
   border: none;
   resize: none;
   padding: 12px;
-  font-family: var(--vp-font-family-mono, ui-monospace, SFMono-Regular, monospace);
+  font-family: var(
+    --vp-font-family-mono,
+    ui-monospace,
+    SFMono-Regular,
+    monospace
+  );
   font-size: 13px;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
@@ -947,11 +999,6 @@ function startResize(e: PointerEvent) {
   color: #d97706;
 }
 
-.repl-panel--mobile {
-  height: 100dvh !important;
-  top: 0;
-  border-top: none;
-}
 .repl-panel--code .repl-output,
 .repl-panel--result .repl-tabs,
 .repl-panel--result .repl-editor {
