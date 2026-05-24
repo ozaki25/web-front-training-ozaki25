@@ -27,7 +27,10 @@ export default withPwa(
         },
       },
       themeConfig: {
-        nav: [{ text: "ホーム", link: "/" }],
+        nav: [
+          { text: "ホーム", link: "/" },
+          { text: "候補", link: "/drafts/001/" },
+        ],
         sidebar: {
           "/lessons/": [
             {
@@ -97,7 +100,6 @@ export default withPwa(
                 { text: "関数とコールバック", link: "/drafts/005/" },
                 { text: "Promise と async/await", link: "/drafts/006/" },
                 { text: "モジュールの歴史", link: "/drafts/007/" },
-                { text: "参照とイミュータビリティ", link: "/drafts/008/" },
               ],
             },
           ],

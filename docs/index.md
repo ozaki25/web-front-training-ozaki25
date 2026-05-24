@@ -22,3 +22,11 @@
 - [Day 14: 動的型付けと TypeScript — 変数に型を宣言するということ](/lessons/day14/)
 - [Day 15: Web ページの届け方 — CSR から Cache Components まで](/lessons/day15/)
 - [Day 16: 参照とイミュータビリティ — なぜ直接変更してはいけないか](/lessons/day16/)
+
+## 候補（下書き）
+
+- [npm](/drafts/001/)
+- [Web ページの届け方](/drafts/004/)
+- [関数とコールバック](/drafts/005/)
+- [Promise と async/await](/drafts/006/)
+- [モジュールの歴史](/drafts/007/)
