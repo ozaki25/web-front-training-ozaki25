@@ -25,6 +25,15 @@ if [[ "$COMMAND" =~ git\ checkout\ -b\ ([^ ]+) ]] || [[ "$COMMAND" =~ git\ switc
   fi
 fi
 
+# --- マージ済み publish ブランチへの checkout を検出 ---
+if [[ "$COMMAND" =~ git\ checkout\ (publish/day[0-9]{2})$ ]]; then
+  PUBLISH_BRANCH="${BASH_REMATCH[1]}"
+  DAY_NUM=$(echo "$PUBLISH_BRANCH" | grep -oP '\d+')
+  if git show "origin/main:docs/lessons/day${DAY_NUM}/index.md" >/dev/null 2>&1; then
+    block "PR マージ済み: ${PUBLISH_BRANCH} の PR は既にマージされています。レッスンの修正は main ブランチで行ってください"
+  fi
+fi
+
 # --- 許可外ブランチへの push 禁止 ---
 if [[ "$COMMAND" =~ ^git\ push ]] && [[ ! "$COMMAND" =~ --delete ]] && [[ "$COMMAND" =~ origin\ ([^ ]+) ]]; then
   PUSHBRANCH="${BASH_REMATCH[1]}"
