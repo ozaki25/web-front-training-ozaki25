@@ -88,6 +88,10 @@ export default withPwa(
                   text: "Day 16: 参照とイミュータビリティ",
                   link: "/lessons/day16/",
                 },
+                {
+                  text: "Day 17: パッケージとバージョン",
+                  link: "/lessons/day17/",
+                },
               ],
             },
           ],
