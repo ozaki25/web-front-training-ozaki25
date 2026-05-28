@@ -285,24 +285,47 @@ function getTsEnv(): Promise<TsEnv> {
       noEmit: true,
       lib: ["esnext", "dom"],
     };
-    const fsMap = await vfs.createDefaultMapFromCDN(
-      compilerOptions as any,
-      ts.version,
-      true,
-      ts,
-      undefined,
-      undefined,
-      typeof localStorage !== "undefined" ? (localStorage as any) : undefined,
-    );
-    fsMap.set("/repl.ts", "");
-    fsMap.set("/repl.js", "");
-    const system = vfs.createSystem(fsMap);
-    const env = vfs.createVirtualTypeScriptEnvironment(
-      system,
-      ["/repl.ts", "/repl.js"],
-      ts,
-      compilerOptions as any,
-    );
+    function tryCreateEnv(opts: any) {
+      let fsMap: Map<string, string>;
+      return vfs.createDefaultMapFromCDN(
+        opts,
+        ts.version,
+        true,
+        ts,
+        undefined,
+        undefined,
+        typeof localStorage !== "undefined" ? (localStorage as any) : undefined,
+      ).catch(() => new Map<string, string>()).then((m: Map<string, string>) => {
+        fsMap = m;
+        fsMap.set("/repl.ts", "");
+        fsMap.set("/repl.js", "");
+        const system = vfs.createSystem(fsMap);
+        return vfs.createVirtualTypeScriptEnvironment(
+          system, ["/repl.ts", "/repl.js"], ts, opts,
+        );
+      });
+    }
+    let env;
+    try {
+      env = await tryCreateEnv(compilerOptions as any);
+    } catch {
+      const fallbackOptions = {
+        target: ts.ScriptTarget.ESNext,
+        module: ts.ModuleKind.ESNext,
+        strict: true,
+        allowJs: true,
+        checkJs: false,
+        noEmit: true,
+        noLib: true,
+      };
+      const fsMap = new Map<string, string>();
+      fsMap.set("/repl.ts", "");
+      fsMap.set("/repl.js", "");
+      const system = vfs.createSystem(fsMap);
+      env = vfs.createVirtualTypeScriptEnvironment(
+        system, ["/repl.ts", "/repl.js"], ts, fallbackOptions as any,
+      );
+    }
     return {
       languageService: env.languageService,
       updateFile: (name, text) => env.updateFile(name, text),
