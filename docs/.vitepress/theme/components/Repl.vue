@@ -275,60 +275,42 @@ function getTsEnv(): Promise<TsEnv> {
   if (tsEnvPromise) return tsEnvPromise;
   const p = (async () => {
     const ts = (await import("typescript")).default;
-    const vfs = await import("@typescript/vfs");
-    const compilerOptions = {
+    const compilerOptions: any = {
       target: ts.ScriptTarget.ESNext,
       module: ts.ModuleKind.ESNext,
       strict: true,
       allowJs: true,
       checkJs: false,
       noEmit: true,
-      lib: ["esnext", "dom"],
+      noLib: true,
     };
-    function tryCreateEnv(opts: any) {
-      let fsMap: Map<string, string>;
-      return vfs.createDefaultMapFromCDN(
-        opts,
-        ts.version,
-        true,
-        ts,
-        undefined,
-        undefined,
-        typeof localStorage !== "undefined" ? (localStorage as any) : undefined,
-      ).catch(() => new Map<string, string>()).then((m: Map<string, string>) => {
-        fsMap = m;
-        fsMap.set("/repl.ts", "");
-        fsMap.set("/repl.js", "");
-        const system = vfs.createSystem(fsMap);
-        return vfs.createVirtualTypeScriptEnvironment(
-          system, ["/repl.ts", "/repl.js"], ts, opts,
-        );
-      });
-    }
-    let env;
-    try {
-      env = await tryCreateEnv(compilerOptions as any);
-    } catch {
-      const fallbackOptions = {
-        target: ts.ScriptTarget.ESNext,
-        module: ts.ModuleKind.ESNext,
-        strict: true,
-        allowJs: true,
-        checkJs: false,
-        noEmit: true,
-        noLib: true,
-      };
-      const fsMap = new Map<string, string>();
-      fsMap.set("/repl.ts", "");
-      fsMap.set("/repl.js", "");
-      const system = vfs.createSystem(fsMap);
-      env = vfs.createVirtualTypeScriptEnvironment(
-        system, ["/repl.ts", "/repl.js"], ts, fallbackOptions as any,
-      );
-    }
+    const files: Record<string, { text: string; version: number }> = {
+      "/repl.ts": { text: "", version: 0 },
+      "/repl.js": { text: "", version: 0 },
+    };
+    const host: any = {
+      getScriptFileNames: () => Object.keys(files),
+      getScriptVersion: (name: string) => String(files[name]?.version ?? 0),
+      getScriptSnapshot: (name: string) => {
+        const f = files[name];
+        if (!f) return undefined;
+        return ts.ScriptSnapshot.fromString(f.text);
+      },
+      getCurrentDirectory: () => "/",
+      getCompilationSettings: () => compilerOptions,
+      getDefaultLibFileName: () => "",
+      fileExists: (name: string) => name in files,
+      readFile: (name: string) => files[name]?.text,
+    };
+    const languageService = ts.createLanguageService(host);
     return {
-      languageService: env.languageService,
-      updateFile: (name, text) => env.updateFile(name, text),
+      languageService,
+      updateFile: (name: string, text: string) => {
+        if (files[name]) {
+          files[name].text = text;
+          files[name].version++;
+        }
+      },
       __ts: ts,
     };
   })();
