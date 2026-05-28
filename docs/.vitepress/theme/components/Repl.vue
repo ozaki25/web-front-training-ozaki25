@@ -485,12 +485,11 @@ async function ensureEditor() {
         const fname = isTS ? "/repl.ts" : "/repl.js";
         env.updateFile(fname, text);
         const ls = env.languageService;
-        const diags = [
-          ...ls.getSyntacticDiagnostics(fname),
-          ...ls.getSemanticDiagnostics(fname),
-        ];
+        const syntactic = ls.getSyntacticDiagnostics(fname);
+        const semantic = ls.getSemanticDiagnostics(fname);
+        const diags = [...syntactic, ...semantic];
         const ts = env.__ts;
-        return diags
+        const results = diags
           .filter((d: any) => typeof d.start === "number")
           .map((d: any) => ({
             from: d.start,
@@ -503,6 +502,8 @@ async function ensureEditor() {
                   : "info",
             message: ts.flattenDiagnosticMessageText(d.messageText, "\n"),
           }));
+        logs.value.push({ level: "info", text: `TS lint: ${results.length} issue(s) found [syntactic=${syntactic.length}, semantic=${semantic.length}]` });
+        return results;
       } catch (e) {
         console.error("[REPL] TS lint failed:", e);
         const msg = e instanceof Error ? e.message.split("\n")[0] : String(e);
