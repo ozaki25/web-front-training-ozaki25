@@ -505,6 +505,8 @@ async function ensureEditor() {
           }));
       } catch (e) {
         console.error("[REPL] TS lint failed:", e);
+        const msg = e instanceof Error ? e.message.split("\n")[0] : String(e);
+        logs.value.push({ level: "error", text: "TS lint: " + msg });
         return [];
       }
     };
