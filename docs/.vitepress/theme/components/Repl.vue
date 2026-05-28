@@ -310,7 +310,8 @@ function getTsEnv(): Promise<TsEnv> {
     };
   })();
   // 失敗時はキャッシュを破棄して次回再試行できるようにする
-  p.catch(() => {
+  p.catch((e) => {
+    console.error("[REPL] TS env init failed:", e);
     if (tsEnvPromise === p) tsEnvPromise = null;
   });
   tsEnvPromise = p;
@@ -479,7 +480,8 @@ async function ensureEditor() {
                   : "info",
             message: ts.flattenDiagnosticMessageText(d.messageText, "\n"),
           }));
-      } catch {
+      } catch (e) {
+        console.error("[REPL] TS lint failed:", e);
         return [];
       }
     };
