@@ -282,94 +282,73 @@ function getTsEnv(): Promise<TsEnv> {
       allowJs: true,
       checkJs: false,
       noEmit: true,
-      noLib: true,
+      lib: ["esnext", "dom"],
     };
-    const globals = `/globals.d.ts`;
-    const globalsDts = `
-declare var console: { log(...args: any[]): void; error(...args: any[]): void; warn(...args: any[]): void; info(...args: any[]): void; dir(...args: any[]): void; table(...args: any[]): void; };
-declare var setTimeout: (fn: (...args: any[]) => void, ms?: number) => number;
-declare var setInterval: (fn: (...args: any[]) => void, ms?: number) => number;
-declare var clearTimeout: (id: number) => void;
-declare var clearInterval: (id: number) => void;
-declare var alert: (msg?: any) => void;
-declare var prompt: (msg?: string, defaultVal?: string) => string | null;
-declare var fetch: (url: string, init?: any) => Promise<any>;
-declare var document: any;
-declare var window: any;
-interface Array<T> { length: number; push(...items: T[]): number; pop(): T | undefined; map<U>(fn: (v: T, i: number, a: T[]) => U): U[]; filter(fn: (v: T, i: number, a: T[]) => boolean): T[]; find(fn: (v: T, i: number, a: T[]) => boolean): T | undefined; forEach(fn: (v: T, i: number, a: T[]) => void): void; includes(v: T): boolean; indexOf(v: T): number; slice(start?: number, end?: number): T[]; splice(start: number, deleteCount?: number, ...items: T[]): T[]; join(sep?: string): string; reduce<U>(fn: (acc: U, v: T, i: number, a: T[]) => U, init: U): U; sort(fn?: (a: T, b: T) => number): T[]; reverse(): T[]; flat<D extends number = 1>(depth?: D): any[]; flatMap<U>(fn: (v: T, i: number, a: T[]) => U | U[]): U[]; every(fn: (v: T, i: number, a: T[]) => boolean): boolean; some(fn: (v: T, i: number, a: T[]) => boolean): boolean; [n: number]: T; }
-interface ReadonlyArray<T> { length: number; [n: number]: T; map<U>(fn: (v: T, i: number) => U): U[]; filter(fn: (v: T) => boolean): T[]; forEach(fn: (v: T) => void): void; includes(v: T): boolean; indexOf(v: T): number; find(fn: (v: T) => boolean): T | undefined; join(sep?: string): string; slice(start?: number, end?: number): T[]; }
-interface String { length: number; charAt(i: number): string; charCodeAt(i: number): number; includes(s: string): boolean; indexOf(s: string): number; slice(start?: number, end?: number): string; split(sep: string | RegExp): string[]; trim(): string; trimStart(): string; trimEnd(): string; toUpperCase(): string; toLowerCase(): string; replace(s: string | RegExp, r: string | ((match: string, ...args: any[]) => string)): string; startsWith(s: string): boolean; endsWith(s: string): boolean; padStart(len: number, fill?: string): string; padEnd(len: number, fill?: string): string; repeat(n: number): string; match(r: RegExp): RegExpMatchArray | null; }
-interface Number { toFixed(digits?: number): string; toString(radix?: number): string; }
-interface Boolean {}
-interface Object { [key: string]: any; }
-interface Function { (...args: any[]): any; bind(thisArg: any, ...args: any[]): Function; call(thisArg: any, ...args: any[]): any; apply(thisArg: any, args?: any[]): any; }
-interface RegExp { test(s: string): boolean; exec(s: string): RegExpExecArray | null; }
-interface RegExpMatchArray extends Array<string> { index?: number; input?: string; }
-interface RegExpExecArray extends Array<string> { index: number; input: string; }
-interface Promise<T> { then<R>(onFulfilled?: (v: T) => R | Promise<R>, onRejected?: (e: any) => R | Promise<R>): Promise<R>; catch<R>(onRejected?: (e: any) => R | Promise<R>): Promise<R>; finally(onFinally?: () => void): Promise<T>; }
-interface PromiseConstructor { new <T>(executor: (resolve: (v: T) => void, reject: (reason?: any) => void) => void): Promise<T>; resolve<T>(v: T): Promise<T>; reject(reason?: any): Promise<never>; all<T>(values: Promise<T>[]): Promise<T[]>; race<T>(values: Promise<T>[]): Promise<T>; allSettled<T>(values: Promise<T>[]): Promise<{status: string; value?: T; reason?: any}[]>; }
-declare var Promise: PromiseConstructor;
-interface Error { message: string; name: string; stack?: string; }
-interface ErrorConstructor { new(message?: string): Error; (message?: string): Error; }
-declare var Error: ErrorConstructor;
-interface JSON { parse(text: string): any; stringify(value: any, replacer?: any, space?: number | string): string; }
-declare var JSON: JSON;
-interface Math { floor(x: number): number; ceil(x: number): number; round(x: number): number; max(...values: number[]): number; min(...values: number[]): number; random(): number; abs(x: number): number; pow(x: number, y: number): number; sqrt(x: number): number; PI: number; }
-declare var Math: Math;
-interface Map<K, V> { get(key: K): V | undefined; set(key: K, value: V): this; has(key: K): boolean; delete(key: K): boolean; size: number; forEach(fn: (value: V, key: K, map: Map<K, V>) => void): void; keys(): IterableIterator<K>; values(): IterableIterator<V>; entries(): IterableIterator<[K, V]>; }
-interface MapConstructor { new<K, V>(entries?: [K, V][]): Map<K, V>; }
-declare var Map: MapConstructor;
-interface Set<T> { add(value: T): this; has(value: T): boolean; delete(value: T): boolean; size: number; forEach(fn: (value: T, value2: T, set: Set<T>) => void): void; }
-interface SetConstructor { new<T>(values?: T[]): Set<T>; }
-declare var Set: SetConstructor;
-interface ArrayConstructor { isArray(arg: any): arg is any[]; from<T>(arrayLike: any, mapfn?: (v: any, k: number) => T): T[]; }
-declare var Array: ArrayConstructor;
-interface ObjectConstructor { keys(o: any): string[]; values(o: any): any[]; entries(o: any): [string, any][]; assign<T>(target: T, ...sources: any[]): T; freeze<T>(o: T): Readonly<T>; is(a: any, b: any): boolean; }
-declare var Object: ObjectConstructor;
-interface NumberConstructor { isNaN(v: any): boolean; isFinite(v: any): boolean; parseInt(s: string, radix?: number): number; parseFloat(s: string): number; }
-declare var Number: NumberConstructor;
-declare var NaN: number;
-declare var Infinity: number;
-declare var undefined: undefined;
-declare function parseInt(s: string, radix?: number): number;
-declare function parseFloat(s: string): number;
-declare function isNaN(v: any): boolean;
-declare function isFinite(v: any): boolean;
-interface IterableIterator<T> { next(): { done: boolean; value: T }; [Symbol.iterator](): IterableIterator<T>; }
-interface SymbolConstructor { readonly iterator: unique symbol; }
-declare var Symbol: SymbolConstructor;
-declare type Partial<T> = { [P in keyof T]?: T[P] };
-declare type Required<T> = { [P in keyof T]-?: T[P] };
-declare type Readonly<T> = { readonly [P in keyof T]: T[P] };
-declare type Record<K extends keyof any, V> = { [P in K]: V };
-declare type Pick<T, K extends keyof T> = { [P in K]: T[P] };
-declare type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
-declare type Exclude<T, U> = T extends U ? never : T;
-declare type Extract<T, U> = T extends U ? T : never;
-declare type NonNullable<T> = T & {};
-declare type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : any;
-declare type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never;
-declare type Awaited<T> = T extends Promise<infer U> ? Awaited<U> : T;
-declare type TemplateStringsArray = ReadonlyArray<string>;
-`;
+    const libNames = [
+      "lib.es5.d.ts", "lib.es2015.d.ts", "lib.es2016.d.ts",
+      "lib.es2017.d.ts", "lib.es2018.d.ts", "lib.es2019.d.ts",
+      "lib.es2020.d.ts", "lib.es2021.d.ts", "lib.es2022.d.ts",
+      "lib.es2023.d.ts", "lib.es2024.d.ts", "lib.esnext.d.ts",
+      "lib.dom.d.ts",
+      "lib.es2015.collection.d.ts", "lib.es2015.core.d.ts",
+      "lib.es2015.generator.d.ts", "lib.es2015.iterable.d.ts",
+      "lib.es2015.promise.d.ts", "lib.es2015.proxy.d.ts",
+      "lib.es2015.reflect.d.ts", "lib.es2015.symbol.d.ts",
+      "lib.es2015.symbol.wellknown.d.ts",
+      "lib.es2017.object.d.ts", "lib.es2017.string.d.ts",
+      "lib.es2018.asyncgenerator.d.ts", "lib.es2018.asynciterable.d.ts",
+      "lib.es2018.promise.d.ts",
+      "lib.es2019.array.d.ts", "lib.es2019.object.d.ts",
+      "lib.es2019.string.d.ts", "lib.es2019.symbol.d.ts",
+      "lib.es2020.bigint.d.ts", "lib.es2020.promise.d.ts",
+      "lib.es2020.string.d.ts", "lib.es2020.symbol.wellknown.d.ts",
+      "lib.es2021.promise.d.ts", "lib.es2021.string.d.ts",
+      "lib.es2021.weakref.d.ts",
+      "lib.es2022.array.d.ts", "lib.es2022.error.d.ts",
+      "lib.es2022.object.d.ts", "lib.es2022.string.d.ts",
+      "lib.es2023.array.d.ts", "lib.es2023.collection.d.ts",
+      "lib.decorators.d.ts", "lib.decorators.legacy.d.ts",
+    ];
+    const cdn = `https://cdn.jsdelivr.net/npm/typescript@${ts.version}/lib/`;
+    const storage = typeof localStorage !== "undefined" ? localStorage : null;
+    const cacheKey = `ts-lib-${ts.version}`;
+    let libFiles: Record<string, string> = {};
+    const cached = storage?.getItem(cacheKey);
+    if (cached) {
+      try { libFiles = JSON.parse(cached); } catch {}
+    }
+    if (!Object.keys(libFiles).length) {
+      const results = await Promise.allSettled(
+        libNames.map(async (name) => {
+          const res = await fetch(cdn + name);
+          if (!res.ok) return;
+          libFiles["/" + name] = await res.text();
+        }),
+      );
+      if (Object.keys(libFiles).length > 0) {
+        try { storage?.setItem(cacheKey, JSON.stringify(libFiles)); } catch {}
+      }
+    }
     const files: Record<string, { text: string; version: number }> = {
-      [globals]: { text: globalsDts, version: 0 },
       "/repl.ts": { text: "", version: 0 },
       "/repl.js": { text: "", version: 0 },
     };
+    const hasLibs = Object.keys(libFiles).length > 0;
+    const opts = hasLibs ? compilerOptions : { ...compilerOptions, lib: undefined, noLib: true };
     const host: any = {
       getScriptFileNames: () => Object.keys(files),
       getScriptVersion: (name: string) => String(files[name]?.version ?? 0),
       getScriptSnapshot: (name: string) => {
         const f = files[name];
-        if (!f) return undefined;
-        return ts.ScriptSnapshot.fromString(f.text);
+        if (f) return ts.ScriptSnapshot.fromString(f.text);
+        if (libFiles[name]) return ts.ScriptSnapshot.fromString(libFiles[name]);
+        return undefined;
       },
       getCurrentDirectory: () => "/",
-      getCompilationSettings: () => compilerOptions,
-      getDefaultLibFileName: () => globals,
-      fileExists: (name: string) => name in files,
-      readFile: (name: string) => files[name]?.text,
+      getCompilationSettings: () => opts,
+      getDefaultLibFileName: () => hasLibs ? "/lib.es5.d.ts" : "",
+      fileExists: (name: string) => name in files || name in libFiles,
+      readFile: (name: string) => files[name]?.text ?? libFiles[name],
     };
     const languageService = ts.createLanguageService(host);
     return {
