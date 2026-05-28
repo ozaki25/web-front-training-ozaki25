@@ -398,7 +398,7 @@ async function ensureEditor() {
       import("@codemirror/lint"),
     ]);
     const cssLang = (cssMod as any).css;
-    const { linter } = lintMod as any;
+    const { linter, lintGutter } = lintMod as any;
 
     const getLang = (t: Tab) => {
       if (t === "HTML") return html();
@@ -424,6 +424,30 @@ async function ensureEditor() {
         ".cm-activeLineGutter": { backgroundColor: "var(--vp-c-bg-alt)" },
         ".cm-selectionBackground": {
           backgroundColor: "var(--vp-c-brand-soft) !important",
+        },
+        ".cm-lintRange-error": {
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='3'%3E%3Cpath d='m0 3 l2 -2 l1 0 l2 2 l1 0' stroke='%23d11' fill='none' stroke-width='.7'/%3E%3C/svg%3E\")",
+          backgroundRepeat: "repeat-x",
+          backgroundPosition: "bottom",
+          paddingBottom: "0.7px",
+        },
+        ".cm-lintRange-warning": {
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='3'%3E%3Cpath d='m0 3 l2 -2 l1 0 l2 2 l1 0' stroke='%23e90' fill='none' stroke-width='.7'/%3E%3C/svg%3E\")",
+          backgroundRepeat: "repeat-x",
+          backgroundPosition: "bottom",
+          paddingBottom: "0.7px",
+        },
+        ".cm-diagnostic-error": {
+          borderLeft: "3px solid #d11",
+          padding: "4px 8px",
+          marginLeft: "0",
+        },
+        ".cm-diagnostic-warning": {
+          borderLeft: "3px solid #e90",
+          padding: "4px 8px",
+          marginLeft: "0",
         },
       });
 
@@ -473,6 +497,7 @@ async function ensureEditor() {
       doc: code[tab.value],
       extensions: [
         basicSetup,
+        lintGutter(),
         langCompartment.of(getLang(tab.value)),
         wrapCompartment.of(wrap.value ? EditorView.lineWrapping : []),
         fontCompartment.of(fontTheme(fontSize.value)),
