@@ -901,6 +901,8 @@ function startResize(e: PointerEvent) {
   background: var(--vp-c-bg-soft);
   flex-shrink: 0;
   gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .repl-tabs button {
   padding: 8px 14px;
