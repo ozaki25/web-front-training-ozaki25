@@ -380,8 +380,7 @@ declare var globalThis: any;
     };
   })();
   // 失敗時はキャッシュを破棄して次回再試行できるようにする
-  p.catch((e) => {
-    console.error("[REPL] TS env init failed:", e);
+  p.catch(() => {
     if (tsEnvPromise === p) tsEnvPromise = null;
   });
   tsEnvPromise = p;
@@ -549,12 +548,8 @@ async function ensureEditor() {
                   : "info",
             message: ts.flattenDiagnosticMessageText(d.messageText, "\n"),
           }));
-        logs.value.push({ level: "info", text: `TS lint: ${results.length} issue(s) found [syntactic=${syntactic.length}, semantic=${semantic.length}]` });
         return results;
-      } catch (e) {
-        console.error("[REPL] TS lint failed:", e);
-        const msg = e instanceof Error ? e.message.split("\n")[0] : String(e);
-        logs.value.push({ level: "error", text: "TS lint: " + msg });
+      } catch {
         return [];
       }
     };
