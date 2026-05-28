@@ -279,7 +279,7 @@ function getTsEnv(): Promise<TsEnv> {
     const compilerOptions = {
       target: ts.ScriptTarget.ESNext,
       module: ts.ModuleKind.ESNext,
-      strict: false,
+      strict: true,
       allowJs: true,
       checkJs: false,
       noEmit: true,
