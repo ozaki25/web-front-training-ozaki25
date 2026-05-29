@@ -840,6 +840,7 @@ function onKeydown(e: KeyboardEvent) {
 function startBodyResize(e: PointerEvent) {
   e.preventDefault();
   const resizer = e.currentTarget as HTMLElement;
+  resizer.setPointerCapture(e.pointerId);
   const container = resizer.parentElement;
   if (!container) return;
   function move(ev: PointerEvent) {
@@ -848,16 +849,17 @@ function startBodyResize(e: PointerEvent) {
     editorRatio.value = Math.max(0.15, Math.min(0.85, ratio));
   }
   function up() {
-    window.removeEventListener("pointermove", move);
-    window.removeEventListener("pointerup", up);
+    resizer.removeEventListener("pointermove", move);
+    resizer.removeEventListener("pointerup", up);
   }
-  window.addEventListener("pointermove", move);
-  window.addEventListener("pointerup", up);
+  resizer.addEventListener("pointermove", move);
+  resizer.addEventListener("pointerup", up);
 }
 
 function startOutputResize(e: PointerEvent) {
   e.preventDefault();
   const resizer = e.currentTarget as HTMLElement;
+  resizer.setPointerCapture(e.pointerId);
   const container = resizer.parentElement;
   if (!container) return;
   function move(ev: PointerEvent) {
@@ -866,15 +868,17 @@ function startOutputResize(e: PointerEvent) {
     previewRatio.value = Math.max(0.1, Math.min(0.9, ratio));
   }
   function up() {
-    window.removeEventListener("pointermove", move);
-    window.removeEventListener("pointerup", up);
+    resizer.removeEventListener("pointermove", move);
+    resizer.removeEventListener("pointerup", up);
   }
-  window.addEventListener("pointermove", move);
-  window.addEventListener("pointerup", up);
+  resizer.addEventListener("pointermove", move);
+  resizer.addEventListener("pointerup", up);
 }
 
 function startResize(e: PointerEvent) {
   e.preventDefault();
+  const resizer = e.currentTarget as HTMLElement;
+  resizer.setPointerCapture(e.pointerId);
   const startY = e.clientY;
   const startH = panelHeight.value;
   function move(ev: PointerEvent) {
@@ -882,11 +886,11 @@ function startResize(e: PointerEvent) {
     panelHeight.value = Math.max(220, Math.min(window.innerHeight - 80, next));
   }
   function up() {
-    window.removeEventListener("pointermove", move);
-    window.removeEventListener("pointerup", up);
+    resizer.removeEventListener("pointermove", move);
+    resizer.removeEventListener("pointerup", up);
   }
-  window.addEventListener("pointermove", move);
-  window.addEventListener("pointerup", up);
+  resizer.addEventListener("pointermove", move);
+  resizer.addEventListener("pointerup", up);
 }
 </script>
 
@@ -934,6 +938,7 @@ function startResize(e: PointerEvent) {
   cursor: ns-resize;
   background: var(--vp-c-divider);
   flex-shrink: 0;
+  touch-action: none;
 }
 .repl-resizer::before {
   content: "";
@@ -1073,6 +1078,7 @@ function startResize(e: PointerEvent) {
   cursor: ew-resize;
   background: var(--vp-c-divider);
   flex-shrink: 0;
+  touch-action: none;
 }
 .repl-body-resizer::before {
   content: "";
@@ -1103,6 +1109,7 @@ function startResize(e: PointerEvent) {
   cursor: ns-resize;
   background: var(--vp-c-divider);
   flex-shrink: 0;
+  touch-action: none;
 }
 .repl-output-resizer::before {
   content: "";
