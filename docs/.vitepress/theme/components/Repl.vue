@@ -680,7 +680,7 @@ onMounted(() => {
           if (typeof parsed.code[t] === "string") code[t] = parsed.code[t];
         }
       }
-      open.value = false;
+      open.value = isMobile.value ? false : !!parsed.open;
       if (Number.isFinite(parsed.panelHeight))
         panelHeight.value = parsed.panelHeight;
       if (Number.isFinite(parsed.previewRatio)) {
@@ -731,6 +731,7 @@ function saveNow() {
       STORAGE_KEY,
       JSON.stringify({
         code: { ...code },
+        open: open.value,
         panelHeight: panelHeight.value,
         previewRatio: previewRatio.value,
         editorRatio: editorRatio.value,
