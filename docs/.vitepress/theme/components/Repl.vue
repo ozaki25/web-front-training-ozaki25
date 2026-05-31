@@ -774,8 +774,10 @@ function onMessage(e: MessageEvent) {
 async function transpileTS(src: string): Promise<string> {
   const { transform } = await import("sucrase");
   const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(src) || src.includes("React");
+  const hasImports = /\bimport\s/.test(src);
   const transforms: string[] = ["typescript"];
   if (hasJSX) transforms.push("jsx");
+  if (hasImports) transforms.push("imports");
   return transform(src, {
     transforms: transforms as any,
     jsxRuntime: "automatic",
@@ -805,7 +807,7 @@ async function run() {
   const safeCss = escapeForStyle(code.CSS || "");
   const safeJs = escapeForScript(js);
   const targetOrigin = JSON.stringify(location.origin);
-  const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(code.TS) || code.TS.includes("React") || code.TS.includes("useState");
+  const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(code.TS) || /\bReact\b|\buseState\b|\bimport\b.*['"]react/.test(code.TS);
   const reactScripts = hasJSX
     ? `<script src="https://cdn.jsdelivr.net/npm/react@19/umd/react.production.min.js"><\/script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@19/umd/react-dom.production.min.js"><\/script>
@@ -815,8 +817,8 @@ var jsxRuntime = { jsx: function(t,p,k){return React.createElement(t,p)}, jsxs: 
     : "";
   const autoRender = hasJSX
     ? `\ntry {
-  var _default = typeof App !== 'undefined' ? App : (typeof Counter !== 'undefined' ? Counter : null);
-  if (!_default && typeof exports !== 'undefined' && exports.default) _default = exports.default;
+  var _default = (typeof exports !== 'undefined' && exports.default) ? exports.default : null;
+  if (!_default) { var _names = ['App','Counter','Page','Component','TodoList','UserList']; for (var i=0;i<_names.length;i++) { try { _default = eval(_names[i]); if (_default) break; } catch(e){} } }
   if (_default) {
     var _root = document.getElementById('root') || document.body.appendChild(document.createElement('div'));
     _root.id = 'root';
