@@ -808,6 +808,12 @@ async function run() {
   const safeJs = escapeForScript(js);
   const targetOrigin = JSON.stringify(location.origin);
   const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(code.TS) || /\bReact\b|\buseState\b|\bimport\b.*['"]react/.test(code.TS);
+  // ソースから大文字始まりのコンポーネント名を抽出（最後に定義されたものを優先）
+  const compNames: string[] = [];
+  const compRe = /(?:function|const|class)\s+([A-Z]\w*)/g;
+  let m: RegExpExecArray | null;
+  while ((m = compRe.exec(code.TS))) compNames.push(m[1]);
+  const renderCandidates = JSON.stringify([...compNames].reverse());
   const reactScripts = hasJSX
     ? `<script src="https://cdn.jsdelivr.net/npm/react@19/umd/react.production.min.js"><\/script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@19/umd/react-dom.production.min.js"><\/script>
@@ -818,7 +824,10 @@ var jsxRuntime = { jsx: function(t,p,k){return React.createElement(t,p)}, jsxs: 
   const autoRender = hasJSX
     ? `\ntry {
   var _default = (typeof exports !== 'undefined' && exports.default) ? exports.default : null;
-  if (!_default) { var _names = ['App','Counter','Page','Component','TodoList','UserList']; for (var i=0;i<_names.length;i++) { try { _default = eval(_names[i]); if (_default) break; } catch(e){} } }
+  if (!_default) {
+    var _names = ${renderCandidates};
+    for (var i=0;i<_names.length;i++) { try { var _c = eval(_names[i]); if (typeof _c === 'function') { _default = _c; break; } } catch(e){} }
+  }
   if (_default) {
     var _root = document.getElementById('root') || document.body.appendChild(document.createElement('div'));
     _root.id = 'root';
