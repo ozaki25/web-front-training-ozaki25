@@ -231,12 +231,12 @@ self.addEventListener("fetch", (event) => {
 
 ## まとめ
 
-- **PWA**: manifest + Service Worker で Web サイトがアプリとしてインストールできます
-- **Speech Synthesis**: ブラウザに組み込まれた音声合成で、テキストを読み上げられます
-- **Translator API**: Chrome に内蔵された AI が、サーバーを使わずにブラウザ内で翻訳します
-- **Summarizer API**: 同じく Chrome 内蔵 AI で、テキストの要約ができます。日本語対応
-- **Notification API**: Web サイトから OS のネイティブ通知を出せます
-- **Service Worker**: ページをキャッシュしてオフラインでも表示できます
+- **PWA**: manifest + Service Worker でアプリとしてインストール可能
+- **Speech Synthesis**: ブラウザ内蔵の音声合成でテキスト読み上げ
+- **Translator API**: ブラウザ内で翻訳が完結（Chrome 138+）
+- **Summarizer API**: ブラウザ内でテキスト要約（Chrome 140+、日本語対応）
+- **Notification API**: Web から OS ネイティブ通知を送れる
+- **Service Worker**: キャッシュでオフライン表示が可能
 
 どれもブラウザの標準機能です。「Web サイト = ドキュメントを表示するもの」というイメージは、もう過去のものかもしれません。
 

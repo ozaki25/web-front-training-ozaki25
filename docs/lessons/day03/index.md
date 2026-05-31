@@ -185,8 +185,8 @@ email=user@example.com&message=こんにちは
 ## まとめ
 
 - HTML だけでフォーム送信ができる。JavaScript は不要
-- `<form>` の `action` と `method` で送信先と送信方法を指定する
-- `name` 属性がない入力欄は送信データに含まれない
-- `<button>` の `type` はデフォルトが `submit`。フォーム内で送信目的でない button には `type="button"` を付ける
-- `<label>` の `for` と `<input>` の `id` を紐付けないと、操作性もアクセシビリティも壊れる
-- `<fieldset>` と `<legend>` で関連する入力欄をグループ化できる
+- `action` で送信先、`method` で送信方法を指定する
+- `name` がない入力欄は送信データに含まれない
+- `<button>` の `type` 省略は `submit` 扱い。送信目的でなければ `type="button"`
+- `<label>` の `for` と `<input>` の `id` を紐付けないと操作性が壊れる
+- `<fieldset>` と `<legend>` で入力欄をグループ化できる
