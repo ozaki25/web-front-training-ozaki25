@@ -421,10 +421,10 @@ export default async function UserPage() {
 
 ## まとめ
 
-- JavaScript はシングルスレッドで一度に 1 つの処理しか実行できない。通信のような時間のかかる処理で画面が固まるのを防ぐために、非同期処理の仕組みがある
-- コールバックは最も古い非同期処理の書き方だが、処理が連続するとネストが深くなり読みにくくなる（コールバック地獄）
-- Promise は非同期処理の結果を包むオブジェクト。`.then()` でチェーンすることでネストを平坦にできる。状態は pending → fulfilled（成功）/ rejected（失敗）の 3 つ
-- async/await は Promise の構文糖衣で、同期処理のように読める書き方。`async` 関数の中で `await` を使うと、Promise の結果を待ってから次の行に進むように書ける
-- 互いに依存しない処理は `await Promise.all([...])` で並列化できる。逐次 `await` を並べると待ち時間を無駄にする
-- Promise を返す関数を呼んだら `await` か `.catch()` を付ける。付け忘れるとエラーが黙って消える（unhandled rejection）
-- Next.js の Server Components は `async` 関数として定義でき、`fetch` の結果を `await` で受け取ってそのまま表示に使える
+- JavaScript は<strong>シングルスレッド</strong>。だから非同期処理の仕組みが要る
+- <strong>コールバック</strong>は最古の書き方。連鎖するとコールバック地獄になる
+- <strong>Promise</strong> は結果を包むオブジェクト。状態は pending → fulfilled / rejected
+- <strong>async/await</strong> は Promise を同期処理のように読める書き方
+- 独立した処理は `Promise.all` で並列化。逐次 `await` は待ち時間の無駄
+- Promise には `await` か `.catch()` を付ける（付け忘れはエラーが消える）
+- Next.js の Server Components は `async` 関数として書ける

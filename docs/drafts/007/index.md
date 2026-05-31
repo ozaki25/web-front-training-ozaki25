@@ -377,8 +377,8 @@ import express from "express";
 
 ## まとめ
 
-- 初期の JavaScript にはモジュールの仕組みがなく、すべてがグローバルスコープに置かれるため、変数名の衝突が問題だった
-- Node.js が独自に CommonJS（`require` / `module.exports`）を作り、ファイル単位のスコープを実現した
-- 2015 年に言語仕様として ES Modules（`import` / `export`）が追加された。静的に解析できるため、ツリーシェイキングなどの最適化が可能になった
-- 今も 2 つが混在するのは、CommonJS で書かれた膨大な既存ライブラリがあるから
-- Next.js では ES Modules を使う。CommonJS との違いはビルドツールが吸収してくれる
+- 初期の JavaScript はモジュールがなく、グローバルスコープで変数が衝突した
+- Node.js が <strong>CommonJS</strong>（`require` / `module.exports`）を作った
+- 2015 年に言語標準の <strong>ES Modules</strong>（`import` / `export`）が登場
+- 2 つが混在するのは CommonJS の既存ライブラリが膨大だから
+- Next.js は ES Modules。違いはビルドツールが吸収する
