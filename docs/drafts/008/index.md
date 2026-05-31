@@ -3,8 +3,8 @@
 ## 今日のゴール
 
 - 命令的（どうやって）と宣言的（何を）の違いを知る
-- 素の JavaScript で画面を更新する大変さを知る
-- React が「状態を変えれば画面が追従する」仕組みでそれを解決していることを知る
+- 命令的に画面を作ると、操作の履歴を追わないと今の表示が分からなくなることを知る
+- React が「状態を見れば画面が分かる」仕組みでそれを解決していることを知る
 
 ## 文字を書き換える命令がないのに、画面が変わる
 
@@ -23,107 +23,99 @@ export default function Counter() {
 
 なぜでしょうか。この「自分で書き換えていないのに画面が変わる」という性質こそ、<strong>宣言的 UI</strong>と呼ばれる考え方の核心です。
 
-## 命令的 — 「どうやって」を一つずつ書く
+## 命令的 — 操作の積み重ねで画面を作る
 
-この仕組みのありがたさを理解するために、まず React を使わず、素の JavaScript で同じカウンターを作ってみます。
+React を使わない素の JavaScript では、画面を自分で書き換えます。
 
 ```html
-<button id="counter">0</button>
+<p id="output">こんにちは</p>
 
 <script>
-let count = 0;
-const button = document.querySelector("#counter");
-
-button.addEventListener("click", () => {
-  count = count + 1;
-  button.textContent = count; // 自分で画面を書き換える
-});
+const el = document.querySelector("#output");
+el.textContent = "おはよう";
 </script>
 ```
 
-注目すべきは `button.textContent = count;` の行です。`count` の値を変えた後、<strong>自分で DOM（画面を構成する要素）を探して、文字を書き換えています</strong>。
+`el.textContent = "おはよう"` で、画面の文字を直接書き換えています。このように「画面のどの要素を、どう変えるか」を手順として書くやり方を<strong>命令的</strong>（imperative）と呼びます。
 
-このように「画面のどの要素を、どう変えるか」を手順として一つずつ書くやり方を<strong>命令的</strong>（imperative）と呼びます。コンピュータに「こうやって、次にこうして」と手順を指示するスタイルです。
+単純なうちは問題ありません。しかし、操作が増えると厄介なことが起きます。
 
-カウンター 1 個ならこれで十分です。しかし、画面が複雑になると問題が起きます。
+## 命令的の限界 — 今の画面が何を表示しているか分からない
 
-## 命令的の限界 — 更新コードが雪だるま式に増える
-
-たとえば「数字が増えると、それに連動して 3 か所の表示が変わる」画面を考えます。
-
-- ボタンの中の数字
-- 「現在 N 回」というメッセージ
-- 偶数か奇数かの表示
-
-命令的に書くと、状態を変えるたびに全部を手で更新する必要があります。
+次のコードを見てください。`#output` には今、何が表示されていますか？
 
 ```html
-<button id="counter">0</button>
-<p id="message">現在 0 回</p>
-<p id="parity">偶数</p>
+<p id="output">こんにちは</p>
 
 <script>
-let count = 0;
-const button = document.querySelector("#counter");
-const message = document.querySelector("#message");
-const parity = document.querySelector("#parity");
+const el = document.querySelector("#output");
 
-button.addEventListener("click", () => {
-  count = count + 1;
-  button.textContent = count;
-  message.textContent = `現在 ${count} 回`;
-  parity.textContent = count % 2 === 0 ? "偶数" : "奇数";
-});
+el.textContent = "おはよう";
+el.textContent = el.textContent + "ございます";
+el.style.color = "red";
+el.textContent = "こんばんは";
+el.style.color = "";
 </script>
 ```
 
-表示が増えるほど、更新する行が増えていきます。さらに怖いのは<strong>更新し忘れ</strong>です。どこか 1 か所の更新を書き忘れると、その部分だけ古い値が残り、画面とデータがズレます。状態が増え、画面が複雑になるほど、この「手作業の更新」と「更新し忘れのバグ」は手に負えなくなります。
+答えは「こんばんは」（色なし）です。しかしそれを知るには、上から順に操作を追いかけるしかありません。5 行の操作でこれです。実際のアプリでは、クリック、タイマー、データ取得など、さまざまなタイミングで画面が書き換えられます。
 
-```mermaid
-flowchart TD
-  S["count を変える"] --> A["ボタンの数字を更新"]
-  S --> B["メッセージを更新"]
-  S --> C["偶数/奇数を更新"]
-  A --> D["どれか1つ忘れると<br>画面とデータがズレる"]
-  B --> D
-  C --> D
-  style D fill:#fee2e2,stroke:#ef4444,color:#1e293b
+```html
+<p id="output">こんにちは</p>
+
+<script>
+const el = document.querySelector("#output");
+
+document.querySelector("#btn-a").addEventListener("click", () => {
+  el.textContent = "ボタン A が押された";
+});
+
+document.querySelector("#btn-b").addEventListener("click", () => {
+  el.textContent = "ボタン B が押された";
+  el.style.color = "blue";
+});
+
+setTimeout(() => {
+  el.textContent = "3秒経ちました";
+  el.style.color = "";
+}, 3000);
+</script>
 ```
 
-## 宣言的 — 「状態」と「見た目」を結びつける
+ユーザーがボタン A → ボタン B → 3 秒待つ、の順に操作したら「3秒経ちました」（色なし）。ボタン B → 3 秒 → ボタン A なら「ボタン A が押された」（色なし）。**操作の履歴によって画面が変わり、コードのどこか 1 か所を見ても今の表示は分かりません。**
 
-React の発想は、これとは逆です。「どうやって更新するか」を書くのをやめて、<strong>「この状態のとき、画面はこう」</strong>という対応だけを書きます。
+これが命令的の本質的なつらさです。画面の状態が「これまでの操作の積み重ね」としてしか存在しないため、コードが増えるほど「今この画面はどうなっているか」の把握が難しくなります。
 
-先ほどの 3 か所連動の画面を React で書くとこうなります。
+## 宣言的 — 状態を見れば画面が分かる
+
+React の発想は逆です。<strong>「この状態のとき、画面はこう」</strong>という対応を 1 か所に書きます。
 
 ```tsx
 import { useState } from "react";
 
-export default function Counter() {
-  const [count, setCount] = useState(0);
+export default function App() {
+  const [message, setMessage] = useState("こんにちは");
+  const [color, setColor] = useState("");
 
   return (
     <div>
-      <button onClick={() => setCount(count + 1)}>{count}</button>
-      <p>現在 {count} 回</p>
-      <p>{count % 2 === 0 ? "偶数" : "奇数"}</p>
+      <p style={{ color: color || undefined }}>{message}</p>
+      <button onClick={() => setMessage("ボタン A が押された")}>A</button>
+      <button onClick={() => { setMessage("ボタン B が押された"); setColor("blue"); }}>B</button>
     </div>
   );
 }
 ```
 
-ここには「文字を書き換えろ」という更新の手順が一つもありません。あるのは「`count` がいくつのとき、画面にはこれを表示する」という<strong>状態と見た目の対応</strong>だけです。
+`message` が `"ボタン A が押された"` で `color` が `""` なら、画面は「ボタン A が押された」（色なし）。状態を見るだけで画面が何を表示しているか分かります。操作の履歴を追う必要がありません。
 
-`setCount` で `count` を変えると、React がこの対応をもう一度評価し直し、画面を作り直します。更新するのは開発者ではなく React です。だから更新し忘れが起きません。状態を変えれば、それに関係する表示はすべて自動的に追従します。
-
-このように「どうやって」ではなく「何を」表示するかを宣言するスタイルを<strong>宣言的</strong>（declarative）と呼びます。
+状態を変えれば React が画面を作り直します。開発者は「どうやって書き換えるか」ではなく「何を表示するか」だけを書きます。このスタイルを<strong>宣言的</strong>（declarative）と呼びます。
 
 | | 命令的（素の JS） | 宣言的（React） |
 |---|---|---|
-| 書くこと | 画面の更新手順 | 状態と見た目の対応 |
+| 画面の作り方 | 操作を積み重ねる | 状態と見た目の対応を書く |
+| 今の表示を知るには | 操作の履歴を追う | 状態を見る |
 | 状態が変わったら | 自分で DOM を書き換える | React が画面を作り直す |
-| 表示が増えると | 更新コードも増える | 対応を書くだけ |
-| 更新し忘れ | 起こりうる | 起こらない |
 
 ## 「作り直す」のに速いのはなぜか
 
@@ -131,11 +123,8 @@ export default function Counter() {
 
 実際には、React は画面を丸ごと描き直しているわけではありません。新しく宣言された画面と、前の画面を比べ、<strong>実際に変わった部分だけ</strong>を本物の画面（DOM）に反映します。カウンターの数字だけが変わったなら、書き換わるのはその数字だけです。だから「作り直す」書き方でも速く動きます。
 
-開発者は「状態が変わったら画面はこう」と宣言するだけでよく、どこをどう書き換えるかという面倒で間違いやすい部分は React が引き受けてくれる、というわけです。
-
 ## まとめ
 
-- <strong>命令的</strong>は更新の手順を自分で書く。表示が増えると更新し忘れでバグが起きる
-- <strong>宣言的 UI</strong> は「この状態のとき画面はこう」だけを書く。更新は React がやる
+- <strong>命令的</strong>は操作の積み重ねで画面を作る。履歴を追わないと今の表示が分からない
+- <strong>宣言的 UI</strong> は「この状態のとき画面はこう」だけを書く。状態を見れば画面が分かる
 - React は変わった部分だけ更新するので、作り直す書き方でも速い
-- AI の React コードはこのスタイル。命令的な DOM 操作が紛れていたら流儀から外れたサイン
