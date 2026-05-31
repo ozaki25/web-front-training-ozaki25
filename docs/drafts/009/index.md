@@ -66,7 +66,7 @@ React は、本物の DOM を直接いじる前に、<strong>画面の構造を 
 
 この「前後を比べて差分を見つける」処理を<strong>差分検出（reconciliation）</strong>と呼びます。書く側は画面全体を宣言し直しているつもりでも、本物の DOM には最小限の書き換えしか起きません。「宣言し直す書きやすさ」と「本物の DOM を最小限しか触らない速さ」が両立します。
 
-> 参考: [図解 仮想DOM](https://speakerdeck.com/ozaki25/20190122-vdom) — 仮想 DOM の差分検出を図で解説したスライド
+> 参考: [仮想 DOM について図解したスライド](https://speakerdeck.com/ozaki25/20190122-vdom)
 
 ## リストの `key` は、差分計算のヒント
 
