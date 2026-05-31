@@ -23,3 +23,4 @@
 - [Day 15: Web ページの届け方 — CSR から Cache Components まで](/lessons/day15/)
 - [Day 16: 参照とイミュータビリティ — なぜ直接変更してはいけないか](/lessons/day16/)
 - [Day 17: パッケージとバージョン — 他人のコードに乗っかるということ](/lessons/day17/)
+- [Day 19: 仮想 DOM — React が画面を速く書き換える仕組み](/lessons/day19/)

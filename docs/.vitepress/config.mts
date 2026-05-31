@@ -89,6 +89,10 @@ export default withPwa(
                   text: "Day 17: パッケージとバージョン",
                   link: "/lessons/day17/",
                 },
+                {
+                  text: "Day 19: 仮想 DOM",
+                  link: "/lessons/day19/",
+                },
               ],
             },
           ],
