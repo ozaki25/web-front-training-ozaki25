@@ -773,7 +773,14 @@ function onMessage(e: MessageEvent) {
 
 async function transpileTS(src: string): Promise<string> {
   const { transform } = await import("sucrase");
-  return transform(src, { transforms: ["typescript"] }).code;
+  const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(src) || src.includes("React");
+  const transforms: string[] = ["typescript"];
+  if (hasJSX) transforms.push("jsx");
+  return transform(src, {
+    transforms: transforms as any,
+    jsxRuntime: "automatic",
+    production: true,
+  }).code;
 }
 
 function escapeForStyle(s: string) {
@@ -798,9 +805,41 @@ async function run() {
   const safeCss = escapeForStyle(code.CSS || "");
   const safeJs = escapeForScript(js);
   const targetOrigin = JSON.stringify(location.origin);
+  const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(code.TS) || code.TS.includes("React") || code.TS.includes("useState");
+  const reactScripts = hasJSX
+    ? `<script src="https://cdn.jsdelivr.net/npm/react@19/umd/react.production.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@19/umd/react-dom.production.min.js"><\/script>
+<script>
+var jsxRuntime = { jsx: function(t,p,k){return React.createElement(t,p)}, jsxs: function(t,p,k){return React.createElement(t,p)}, Fragment: React.Fragment };
+<\/script>`
+    : "";
+  const autoRender = hasJSX
+    ? `\ntry {
+  var _default = typeof App !== 'undefined' ? App : (typeof Counter !== 'undefined' ? Counter : null);
+  if (!_default && typeof exports !== 'undefined' && exports.default) _default = exports.default;
+  if (_default) {
+    var _root = document.getElementById('root') || document.body.appendChild(document.createElement('div'));
+    _root.id = 'root';
+    ReactDOM.createRoot(_root).render(React.createElement(_default));
+  }
+} catch(e) { console.error(e.message); }`
+    : "";
+  const jsxImportShim = hasJSX
+    ? `var _require = function(m) {
+  if (m === 'react') return React;
+  if (m === 'react-dom/client') return ReactDOM;
+  if (m === 'react/jsx-runtime') return jsxRuntime;
+  throw new Error('Module not found: ' + m);
+};
+var require = _require;
+var exports = {};
+var module = { exports: exports };
+`
+    : "";
   const html = `<!doctype html>
 <html><head><meta charset="utf-8"><style>${safeCss}</style></head>
 <body>${code.HTML}
+${reactScripts}
 <script>
 (function(){
   var TARGET = ${targetOrigin};
@@ -813,7 +852,7 @@ async function run() {
   window.addEventListener('error',function(e){send('error',[e.message])});
   window.addEventListener('unhandledrejection',function(e){send('error',['Unhandled: '+(e.reason&&e.reason.message||e.reason)])});
 })();
-${safeJs}
+${jsxImportShim}${safeJs}${autoRender}
 <\/script>
 </body></html>`;
   if (frame.value) frame.value.srcdoc = html;
