@@ -26,8 +26,7 @@
 
 ## 候補（下書き）
 
-- [npm](/drafts/001/)
-- [Web ページの届け方](/drafts/004/)
 - [関数とコールバック](/drafts/005/)
 - [Promise と async/await](/drafts/006/)
 - [モジュールの歴史](/drafts/007/)
+- [宣言的 UI](/drafts/008/)

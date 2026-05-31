@@ -29,7 +29,7 @@ export default withPwa(
       themeConfig: {
         nav: [
           { text: "ホーム", link: "/" },
-          { text: "候補", link: "/drafts/001/" },
+          { text: "候補", link: "/drafts/005/" },
         ],
         sidebar: {
           "/lessons/": [
@@ -99,11 +99,10 @@ export default withPwa(
             {
               text: "候補",
               items: [
-                { text: "npm", link: "/drafts/001/" },
-                { text: "Web ページの届け方", link: "/drafts/004/" },
                 { text: "関数とコールバック", link: "/drafts/005/" },
                 { text: "Promise と async/await", link: "/drafts/006/" },
                 { text: "モジュールの歴史", link: "/drafts/007/" },
+                { text: "宣言的 UI", link: "/drafts/008/" },
               ],
             },
           ],
