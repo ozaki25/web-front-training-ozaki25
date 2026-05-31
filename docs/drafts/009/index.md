@@ -95,12 +95,12 @@ function TodoList({ todos }: { todos: { id: string; text: string }[] }) {
 <div class="c09-demo">
   <div class="c09-cols">
     <div class="c09-col">
-      <p class="c09-col-title">key に ID を使う</p>
+      <p class="c09-col-title">key に ID</p>
       <pre class="c09-code">&lt;li key={fruit.id}&gt;</pre>
       <ul class="c09-list" id="c09-list-id"></ul>
     </div>
     <div class="c09-col">
-      <p class="c09-col-title">key に番号（index）を使う</p>
+      <p class="c09-col-title">key に index</p>
       <pre class="c09-code">&lt;li key={index}&gt;</pre>
       <ul class="c09-list" id="c09-list-index"></ul>
     </div>
@@ -175,7 +175,7 @@ AI が生成したコードで `key={index}`（配列の番号を key にする�
   font-size: 13px;
   margin: 0 0 6px;
   color: #1e293b;
-  min-height: 2.6em;
+  white-space: nowrap;
 }
 .c09-code {
   background: #1e293b;
