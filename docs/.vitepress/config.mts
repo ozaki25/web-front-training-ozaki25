@@ -103,6 +103,7 @@ export default withPwa(
                 { text: "Promise と async/await", link: "/drafts/006/" },
                 { text: "モジュールの歴史", link: "/drafts/007/" },
                 { text: "宣言的 UI", link: "/drafts/008/" },
+                { text: "仮想 DOM", link: "/drafts/009/" },
               ],
             },
           ],

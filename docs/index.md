@@ -30,3 +30,4 @@
 - [Promise と async/await](/drafts/006/)
 - [モジュールの歴史](/drafts/007/)
 - [宣言的 UI](/drafts/008/)
+- [仮想 DOM](/drafts/009/)
