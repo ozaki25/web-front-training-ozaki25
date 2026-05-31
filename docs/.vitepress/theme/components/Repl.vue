@@ -848,9 +848,8 @@ var module = { exports: exports };
 `
     : "";
   const html = `<!doctype html>
-<html><head><meta charset="utf-8"><style>${safeCss}</style></head>
+<html><head><meta charset="utf-8"><style>${safeCss}</style>${reactScripts}</head>
 <body>${code.HTML}
-${reactScripts}
 <script>
 (function(){
   var TARGET = ${targetOrigin};
