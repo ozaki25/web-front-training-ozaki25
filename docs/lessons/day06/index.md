@@ -180,9 +180,9 @@ URL を入力するだけで測定できる **[PageSpeed Insights](https://pages
 
 ## まとめ
 
-- 画像の書き方は**アクセシビリティ**と**Core Web Vitals**の両方に直結する
-- `alt` は画像の役割にあわせて書く。装飾画像は `alt=""`。迷ったら [alt ディシジョンツリー](https://www.w3.org/WAI/tutorials/images/decision-tree/ja)
-- **Core Web Vitals** は Google がユーザー体験を数値化した 3 指標（LCP / CLS / INP）
-- 画像が届く前に場所を確定させて CLS を防ぐ（`width` / `height` または CSS `aspect-ratio`）
-- `loading="lazy"` で画面外の画像を遅延読み込み（ファーストビューには付けない）
-- **Lighthouse** や PageSpeed Insights でアクセシビリティやパフォーマンスを確認できる
+- 画像の書き方はアクセシビリティと CWV の両方に直結する
+- `alt` は画像の役割にあわせて書く。装飾画像は `alt=""`
+- **Core Web Vitals** は LCP / CLS / INP の 3 指標
+- `width` / `height` や `aspect-ratio` で CLS を防ぐ
+- `loading="lazy"` で画面外を遅延読み込み。ファーストビューには付けない
+- Lighthouse や PageSpeed Insights で品質を確認できる

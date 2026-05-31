@@ -136,7 +136,7 @@ document.getElementById("btn").addEventListener("click", () => {
 
 ## まとめ
 
-- Web はブラウザとサーバーのやり取りで動いている
-- ブラウザが URL にアクセスすると、サーバーが HTML / CSS / JS を返し、ブラウザが画面を組み立てる
-- HTML は構造と意味、CSS は見た目、JavaScript は動きを担当する
-- ブラウザ側の領域をフロントエンドと呼ぶ
+- Web はブラウザとサーバーのやり取りで動く
+- URL → サーバーが HTML/CSS/JS を返す → ブラウザが画面を組み立てる
+- HTML は構造、CSS は見た目、JavaScript は動き
+- ブラウザ側の領域がフロントエンド
