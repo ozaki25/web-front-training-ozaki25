@@ -62,6 +62,8 @@ el.style.color = "";
 
 ```html
 <p id="output">こんにちは</p>
+<button id="btn-a">A</button>
+<button id="btn-b">B</button>
 
 <script>
 const el = document.querySelector("#output");
