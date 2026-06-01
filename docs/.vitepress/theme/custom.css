@@ -112,9 +112,7 @@
   .sidebar-expand-btn { display: block; }
 }
 .sidebar-collapsed .VPSidebar {
-  transform: translateX(-100%);
-  opacity: 0;
-  pointer-events: none;
+  display: none !important;
 }
 .sidebar-collapsed .VPDoc {
   padding-left: 0 !important;
@@ -123,9 +121,6 @@
   max-width: 100% !important;
 }
 @media (min-width: 960px) {
-  .VPSidebar {
-    transition: transform 0.2s, opacity 0.2s;
-  }
   .sidebar-collapsed .VPContent {
     padding-left: 0 !important;
   }
