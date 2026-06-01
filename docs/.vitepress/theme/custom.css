@@ -72,23 +72,22 @@
 /* --- サイドバートグル（PC） --- */
 .sidebar-toggle {
   display: none;
-  position: fixed;
-  bottom: 16px;
-  left: 16px;
-  z-index: 100;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  padding: 4px 8px;
   border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-2);
-  font-size: 18px;
+  font-size: 14px;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   line-height: 1;
+  margin-left: 8px;
+}
+.sidebar-toggle:hover {
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg-alt);
 }
 @media (min-width: 960px) {
-  .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
+  .sidebar-toggle { display: inline-flex; align-items: center; }
 }
 .sidebar-collapsed .VPSidebar {
   transform: translateX(-100%);
