@@ -68,7 +68,6 @@
       <div class="repl-tools">
         <button
           class="repl-tool"
-          aria-label="文字を小さく"
           title="文字を小さく"
           @click="setFontSize(fontSize - 1)"
         >
@@ -76,7 +75,6 @@
         </button>
         <button
           class="repl-tool"
-          aria-label="文字を大きく"
           title="文字を大きく"
           @click="setFontSize(fontSize + 1)"
         >
@@ -86,37 +84,34 @@
           class="repl-tool"
           :class="{ active: wrap }"
           :aria-pressed="wrap"
-          aria-label="折り返し"
           title="折り返し"
           @click="wrap = !wrap"
         >
-          ↵
+          折返
         </button>
         <button
           v-if="!isMobile"
           class="repl-tool"
           :class="{ active: fullscreen }"
           :aria-pressed="fullscreen"
-          :aria-label="fullscreen ? '通常表示に戻す' : '全画面表示'"
           :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
           @click="fullscreen = !fullscreen"
         >
-          ⛶
+          全画面
         </button>
         <button
           class="repl-tool"
-          :aria-label="formatting ? '整形中' : '整形'"
           :title="formatting ? '整形中…' : '整形 (Prettier)'"
           :disabled="formatting"
           @click="format"
         >
-          { }
+          整形
         </button>
       </div>
       <button class="repl-run" @click="run">
-        {{ isMobile ? "▶" : "▶ 実行" }}
+        {{ isMobile ? "▶ 実行" : "▶ 実行" }}
       </button>
-      <button class="repl-clear" @click="clear">✕</button>
+      <button class="repl-clear" title="クリア" @click="clear">クリア</button>
     </div>
     <div class="repl-body">
       <div
