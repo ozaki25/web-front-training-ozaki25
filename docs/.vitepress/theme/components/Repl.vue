@@ -146,7 +146,7 @@
           ref="frame"
           class="repl-preview"
           :style="{ flexGrow: previewRatio }"
-          sandbox="allow-scripts"
+          sandbox="allow-scripts allow-same-origin"
           title="プレビュー"
         ></iframe>
         <div
@@ -815,8 +815,8 @@ async function run() {
   while ((m = compRe.exec(code.TS))) compNames.push(m[1]);
   const renderCandidates = JSON.stringify([...compNames].reverse());
   const reactScripts = hasJSX
-    ? `<script src="https://cdn.jsdelivr.net/npm/react@19/umd/react.production.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom@19/umd/react-dom.production.min.js"><\/script>
+    ? `<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"><\/script>
 <script>
 var jsxRuntime = { jsx: function(t,p,k){return React.createElement(t,p)}, jsxs: function(t,p,k){return React.createElement(t,p)}, Fragment: React.Fragment };
 <\/script>`
@@ -848,9 +848,8 @@ var module = { exports: exports };
 `
     : "";
   const html = `<!doctype html>
-<html><head><meta charset="utf-8"><style>${safeCss}</style></head>
+<html><head><meta charset="utf-8"><style>${safeCss}</style>${reactScripts}</head>
 <body>${code.HTML}
-${reactScripts}
 <script>
 (function(){
   var TARGET = ${targetOrigin};
