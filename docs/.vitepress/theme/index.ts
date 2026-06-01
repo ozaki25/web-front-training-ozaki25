@@ -10,9 +10,30 @@ import { useData } from "vitepress";
 import Repl from "./components/Repl.vue";
 import "./custom.css";
 
-const SidebarToggle = {
+const collapsed = ref(false);
+
+const SidebarCollapseBtn = {
   setup() {
-    const collapsed = ref(false);
+    return () =>
+      h(
+        "button",
+        {
+          class: "sidebar-collapse-btn",
+          onClick: () => {
+            collapsed.value = true;
+            document.documentElement.classList.add("sidebar-collapsed");
+            localStorage.setItem("sidebar-collapsed", "true");
+          },
+          title: "サイドバーを閉じる",
+          "aria-label": "サイドバーを閉じる",
+        },
+        "«",
+      );
+  },
+};
+
+const SidebarExpandBtn = {
+  setup() {
     const { page } = useData();
     const hasSidebar = computed(() => {
       const path = page.value.relativePath;
@@ -25,24 +46,21 @@ const SidebarToggle = {
         document.documentElement.classList.add("sidebar-collapsed");
       }
     });
-    function toggle() {
-      collapsed.value = !collapsed.value;
-      document.documentElement.classList.toggle("sidebar-collapsed", collapsed.value);
-      localStorage.setItem("sidebar-collapsed", String(collapsed.value));
-    }
     return () =>
-      hasSidebar.value
+      hasSidebar.value && collapsed.value
         ? h(
             "button",
             {
-              class: "sidebar-toggle",
-              onClick: toggle,
-              title: collapsed.value ? "サイドバーを表示" : "サイドバーを非表示",
-              "aria-label": collapsed.value
-                ? "サイドバーを表示"
-                : "サイドバーを非表示",
+              class: "sidebar-expand-btn",
+              onClick: () => {
+                collapsed.value = false;
+                document.documentElement.classList.remove("sidebar-collapsed");
+                localStorage.setItem("sidebar-collapsed", "false");
+              },
+              title: "サイドバーを開く",
+              "aria-label": "サイドバーを開く",
             },
-            collapsed.value ? "☰" : "✕",
+            "»",
           )
         : null;
   },
@@ -52,8 +70,8 @@ export default {
   extends: DefaultTheme,
   Layout() {
     return h(DefaultTheme.Layout, null, {
-      "nav-bar-content-after": () => h(SidebarToggle),
-      "layout-bottom": () => h(Repl),
+      "sidebar-nav-before": () => h(SidebarCollapseBtn),
+      "layout-bottom": () => [h(Repl), h(SidebarExpandBtn)],
     });
   },
   enhanceApp({ app }: EnhanceAppContext) {
