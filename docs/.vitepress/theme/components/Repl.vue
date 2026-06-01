@@ -112,7 +112,7 @@
       </button>
       <div class="repl-toolbar-spacer"></div>
       <button class="repl-run" @click="run">▶ 実行</button>
-      <button class="repl-tool" data-tip="クリア" aria-label="クリア" @click="clear">✕</button>
+      <button class="repl-tool" aria-label="クリア" @click="clear">クリア</button>
     </div>
     <div class="repl-body">
       <div
