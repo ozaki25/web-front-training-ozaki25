@@ -282,6 +282,7 @@ function getTsEnv(): Promise<TsEnv> {
       allowJs: true,
       checkJs: false,
       noEmit: true,
+      jsx: ts.JsxEmit?.ReactJSX ?? 4,
       lib: ["esnext"],
     };
     const domStub = `/dom-stub.d.ts`;
@@ -345,8 +346,38 @@ declare var globalThis: any;
       }
     }
     libFiles[domStub] = domStubText;
+    const reactStub = `/react.d.ts`;
+    const reactStubText = `
+declare module "react" {
+  export function useState<T>(init: T | (() => T)): [T, (v: T | ((prev: T) => T)) => void];
+  export function useEffect(fn: () => void | (() => void), deps?: any[]): void;
+  export function useRef<T>(init: T): { current: T };
+  export function useMemo<T>(fn: () => T, deps: any[]): T;
+  export function useCallback<T extends (...args: any[]) => any>(fn: T, deps: any[]): T;
+  export function useContext<T>(ctx: any): T;
+  export function useReducer<S, A>(reducer: (state: S, action: A) => S, init: S): [S, (action: A) => void];
+  export function createContext<T>(defaultValue: T): any;
+  export function memo<T>(component: T): T;
+  export function forwardRef<T, P>(render: (props: P, ref: any) => any): any;
+  export function createElement(type: any, props?: any, ...children: any[]): any;
+  export type ReactNode = any;
+  export type FC<P = {}> = (props: P) => ReactNode;
+  export const Fragment: any;
+}
+declare module "react/jsx-runtime" {
+  export function jsx(type: any, props: any, key?: any): any;
+  export function jsxs(type: any, props: any, key?: any): any;
+  export const Fragment: any;
+}
+declare namespace JSX {
+  interface Element {}
+  interface IntrinsicElements { [tag: string]: any; }
+}
+`;
+    libFiles[reactStub] = reactStubText;
     const files: Record<string, { text: string; version: number }> = {
       [domStub]: { text: domStubText, version: 0 },
+      [reactStub]: { text: reactStubText, version: 0 },
       "/repl.ts": { text: "", version: 0 },
       "/repl.js": { text: "", version: 0 },
     };
@@ -525,7 +556,6 @@ async function ensureEditor() {
       if (tab.value !== "JS" && tab.value !== "TS") return [];
       const text = view.state.doc.toString();
       if (!text.trim()) return [];
-      const hasReact = /\bimport\b.*['"]react|<[A-Z]/.test(text);
       try {
         const env = await getTsEnv();
         const isTS = tab.value === "TS";
@@ -533,7 +563,7 @@ async function ensureEditor() {
         env.updateFile(fname, text);
         const ls = env.languageService;
         const syntactic = ls.getSyntacticDiagnostics(fname);
-        const semantic = hasReact ? [] : ls.getSemanticDiagnostics(fname);
+        const semantic = ls.getSemanticDiagnostics(fname);
         const diags = [...syntactic, ...semantic];
         const ts = env.__ts;
         const results = diags
