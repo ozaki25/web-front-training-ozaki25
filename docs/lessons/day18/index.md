@@ -46,35 +46,45 @@ el.textContent = "おはよう";
 
 ```html
 <p id="output">こんにちは</p>
-<button id="btn-a">A: テキスト変更</button>
-<button id="btn-b">B: 青くする</button>
-<button id="btn-c">C: 太字にする</button>
-<button id="btn-d">D: 全部リセット</button>
+<button id="btn-a">A</button>
+<button id="btn-b">B</button>
+<button id="btn-c">C</button>
+<button id="btn-d">D</button>
+<button id="btn-e">E</button>
 
 <script>
 const el = document.querySelector("#output");
 
 document.querySelector("#btn-a").addEventListener("click", () => {
   el.textContent = "変更されました";
+  el.style.color = "red";
 });
 
 document.querySelector("#btn-b").addEventListener("click", () => {
   el.style.color = "blue";
-});
-
-document.querySelector("#btn-c").addEventListener("click", () => {
   el.style.fontWeight = "bold";
 });
 
+document.querySelector("#btn-c").addEventListener("click", () => {
+  el.textContent = el.textContent + "！";
+  el.style.background = "yellow";
+});
+
 document.querySelector("#btn-d").addEventListener("click", () => {
-  el.textContent = "こんにちは";
-  el.style.color = "";
   el.style.fontWeight = "";
+  el.style.color = "";
+  el.style.fontSize = "24px";
+});
+
+document.querySelector("#btn-e").addEventListener("click", () => {
+  el.textContent = "こんにちは";
+  el.style.background = "";
+  el.style.fontSize = "";
 });
 </script>
 ```
 
-A → B → C と押すと「変更されました」が青い太字。D → B → C なら「こんにちは」が青い太字。A → D → B なら「こんにちは」が青。**押した順番で画面の見た目が変わり、コードのどこか 1 か所を見ても今の表示は分かりません。**
+A → C → B と押すと「変更されました！」が黄色背景の青太字。B → A → C → D なら「変更されました！」が黄色背景の 24px。E → C → C → B なら「こんにちは！！」が黄色背景の青太字。**5 つのボタンがテキスト・色・太字・背景・サイズをバラバラに書き換えるので、押した履歴を全部覚えていないと今の見た目が分かりません。**
 
 これが命令的の本質的なつらさです。画面の状態が「これまでの操作の積み重ね」としてしか存在しないため、コードが増えるほど「今この画面はどうなっているか」の把握が難しくなります。
 
