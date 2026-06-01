@@ -525,6 +525,7 @@ async function ensureEditor() {
       if (tab.value !== "JS" && tab.value !== "TS") return [];
       const text = view.state.doc.toString();
       if (!text.trim()) return [];
+      if (/\bimport\b.*['"]react|<[A-Z]/.test(text)) return [];
       try {
         const env = await getTsEnv();
         const isTS = tab.value === "TS";
