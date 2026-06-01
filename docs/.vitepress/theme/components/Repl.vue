@@ -378,6 +378,7 @@ declare namespace JSX {
     const files: Record<string, { text: string; version: number }> = {
       [domStub]: { text: domStubText, version: 0 },
       [reactStub]: { text: reactStubText, version: 0 },
+      "/repl.tsx": { text: "", version: 0 },
       "/repl.ts": { text: "", version: 0 },
       "/repl.js": { text: "", version: 0 },
     };
@@ -559,7 +560,8 @@ async function ensureEditor() {
       try {
         const env = await getTsEnv();
         const isTS = tab.value === "TS";
-        const fname = isTS ? "/repl.ts" : "/repl.js";
+        const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(text);
+        const fname = isTS ? (hasJSX ? "/repl.tsx" : "/repl.ts") : "/repl.js";
         env.updateFile(fname, text);
         const ls = env.languageService;
         const syntactic = ls.getSyntacticDiagnostics(fname);
