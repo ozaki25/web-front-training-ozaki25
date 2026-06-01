@@ -146,7 +146,7 @@
           ref="frame"
           class="repl-preview"
           :style="{ flexGrow: previewRatio }"
-          sandbox="allow-scripts"
+          sandbox="allow-scripts allow-same-origin"
           title="プレビュー"
         ></iframe>
         <div
