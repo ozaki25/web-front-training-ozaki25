@@ -64,54 +64,52 @@
       >
         {{ t }}
       </button>
-      <div class="repl-tab-spacer"></div>
-      <div class="repl-tools">
-        <button
-          class="repl-tool"
-          title="文字を小さく"
-          @click="setFontSize(fontSize - 1)"
-        >
-          A−
-        </button>
-        <button
-          class="repl-tool"
-          title="文字を大きく"
-          @click="setFontSize(fontSize + 1)"
-        >
-          A+
-        </button>
-        <button
-          class="repl-tool"
-          :class="{ active: wrap }"
-          :aria-pressed="wrap"
-          title="折り返し"
-          @click="wrap = !wrap"
-        >
-          折返
-        </button>
-        <button
-          v-if="!isMobile"
-          class="repl-tool"
-          :class="{ active: fullscreen }"
-          :aria-pressed="fullscreen"
-          :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
-          @click="fullscreen = !fullscreen"
-        >
-          全画面
-        </button>
-        <button
-          class="repl-tool"
-          :title="formatting ? '整形中…' : '整形 (Prettier)'"
-          :disabled="formatting"
-          @click="format"
-        >
-          整形
-        </button>
-      </div>
-      <button class="repl-run" @click="run">
-        {{ isMobile ? "▶ 実行" : "▶ 実行" }}
+    </div>
+    <div class="repl-toolbar">
+      <button
+        class="repl-tool"
+        title="文字を小さく"
+        @click="setFontSize(fontSize - 1)"
+      >
+        A−
       </button>
-      <button class="repl-clear" title="クリア" @click="clear">クリア</button>
+      <button
+        class="repl-tool"
+        title="文字を大きく"
+        @click="setFontSize(fontSize + 1)"
+      >
+        A+
+      </button>
+      <button
+        class="repl-tool"
+        :class="{ active: wrap }"
+        :aria-pressed="wrap"
+        title="折り返し"
+        @click="wrap = !wrap"
+      >
+        折返
+      </button>
+      <button
+        v-if="!isMobile"
+        class="repl-tool"
+        :class="{ active: fullscreen }"
+        :aria-pressed="fullscreen"
+        :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
+        @click="fullscreen = !fullscreen"
+      >
+        全画面
+      </button>
+      <button
+        class="repl-tool"
+        :title="formatting ? '整形中…' : '整形 (Prettier)'"
+        :disabled="formatting"
+        @click="format"
+      >
+        整形
+      </button>
+      <div class="repl-toolbar-spacer"></div>
+      <button class="repl-run" @click="run">▶ 実行</button>
+      <button class="repl-tool" title="クリア" @click="clear">クリア</button>
     </div>
     <div class="repl-body">
       <div
@@ -1083,18 +1081,22 @@ function startResize(e: PointerEvent) {
   color: var(--vp-c-brand-1);
   border-bottom-color: var(--vp-c-brand-1);
 }
-.repl-tab-spacer {
-  flex: 1;
-}
-.repl-tools {
+.repl-toolbar {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 0 4px;
-  border-left: 1px solid var(--vp-c-divider);
+  padding: 2px 4px;
+  background: var(--vp-c-bg-alt);
+  border-bottom: 1px solid var(--vp-c-divider);
+  flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.repl-toolbar-spacer {
+  flex: 1;
 }
 .repl-tool {
-  padding: 4px 6px;
+  padding: 4px 8px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -1102,10 +1104,11 @@ function startResize(e: PointerEvent) {
   color: var(--vp-c-text-3);
   border-radius: 3px;
   line-height: 1;
+  white-space: nowrap;
 }
 .repl-tool:hover {
   color: var(--vp-c-text-1);
-  background: var(--vp-c-bg-alt);
+  background: var(--vp-c-bg-soft);
 }
 .repl-tool.active {
   color: var(--vp-c-brand-1);
@@ -1116,28 +1119,17 @@ function startResize(e: PointerEvent) {
 }
 .repl-run {
   padding: 4px 10px;
-  margin: 4px 4px 4px 4px;
   background: var(--vp-c-brand-2);
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
 }
 .repl-run:hover {
   background: var(--vp-c-brand-3);
-}
-.repl-clear {
-  padding: 4px 8px;
-  margin: 4px 4px 4px 0;
-  background: transparent;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 11px;
-  color: var(--vp-c-text-3);
 }
 .repl-body {
   flex: 1;
@@ -1267,17 +1259,12 @@ function startResize(e: PointerEvent) {
     gap: 0;
   }
   .repl-tool {
-    padding: 6px 5px;
+    padding: 6px 6px;
     font-size: 11px;
-    min-width: 28px;
   }
   .repl-run {
-    font-size: 13px;
-    padding: 6px 10px;
-  }
-  .repl-clear {
     font-size: 12px;
-    padding: 6px 8px;
+    padding: 5px 10px;
   }
   .repl-body {
     flex-direction: column;
