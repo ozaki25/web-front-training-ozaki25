@@ -68,14 +68,14 @@
     <div class="repl-toolbar">
       <button
         class="repl-tool"
-        title="文字を小さく"
+        data-tip="文字を小さく"
         @click="setFontSize(fontSize - 1)"
       >
         A−
       </button>
       <button
         class="repl-tool"
-        title="文字を大きく"
+        data-tip="文字を大きく"
         @click="setFontSize(fontSize + 1)"
       >
         A+
@@ -84,32 +84,35 @@
         class="repl-tool"
         :class="{ active: wrap }"
         :aria-pressed="wrap"
-        title="折り返し"
+        :aria-label="wrap ? '折り返しOFF' : '折り返しON'"
+        data-tip="折り返し"
         @click="wrap = !wrap"
       >
-        折返
+        ↵
       </button>
       <button
         v-if="!isMobile"
         class="repl-tool"
         :class="{ active: fullscreen }"
         :aria-pressed="fullscreen"
-        :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
+        :aria-label="fullscreen ? '通常表示に戻す' : '全画面表示'"
+        :data-tip="fullscreen ? '通常に戻す' : '全画面'"
         @click="fullscreen = !fullscreen"
       >
-        全画面
+        ⛶
       </button>
       <button
         class="repl-tool"
-        :title="formatting ? '整形中…' : '整形 (Prettier)'"
+        :aria-label="formatting ? '整形中' : '整形'"
+        :data-tip="formatting ? '整形中…' : '整形'"
         :disabled="formatting"
         @click="format"
       >
-        整形
+        { }
       </button>
       <div class="repl-toolbar-spacer"></div>
       <button class="repl-run" @click="run">▶ 実行</button>
-      <button class="repl-tool" title="クリア" @click="clear">クリア</button>
+      <button class="repl-tool" data-tip="クリア" aria-label="クリア" @click="clear">✕</button>
     </div>
     <div class="repl-body">
       <div
@@ -716,6 +719,21 @@ onMounted(() => {
   }
   window.addEventListener("message", onMessage);
   window.addEventListener("beforeunload", saveNow);
+  // 長押しツールチップ（スマホ用）
+  let tipTimer: ReturnType<typeof setTimeout> | null = null;
+  document.addEventListener("pointerdown", (e) => {
+    const btn = (e.target as HTMLElement).closest?.("[data-tip]") as HTMLElement | null;
+    if (!btn) return;
+    tipTimer = setTimeout(() => { btn.classList.add("show-tip"); }, 500);
+  });
+  document.addEventListener("pointerup", () => {
+    if (tipTimer) { clearTimeout(tipTimer); tipTimer = null; }
+    document.querySelectorAll(".show-tip").forEach((el) => el.classList.remove("show-tip"));
+  });
+  document.addEventListener("pointercancel", () => {
+    if (tipTimer) { clearTimeout(tipTimer); tipTimer = null; }
+    document.querySelectorAll(".show-tip").forEach((el) => el.classList.remove("show-tip"));
+  });
   if (open.value) {
     nextTick(() => ensureEditor());
   }
@@ -1096,11 +1114,12 @@ function startResize(e: PointerEvent) {
   flex: 1;
 }
 .repl-tool {
+  position: relative;
   padding: 4px 8px;
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--vp-c-text-3);
   border-radius: 3px;
   line-height: 1;
@@ -1109,6 +1128,22 @@ function startResize(e: PointerEvent) {
 .repl-tool:hover {
   color: var(--vp-c-text-1);
   background: var(--vp-c-bg-soft);
+}
+.repl-tool[data-tip]:hover::after,
+.repl-tool[data-tip].show-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: var(--vp-c-text-1);
+  color: var(--vp-c-bg);
+  font-size: 11px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
 }
 .repl-tool.active {
   color: var(--vp-c-brand-1);
