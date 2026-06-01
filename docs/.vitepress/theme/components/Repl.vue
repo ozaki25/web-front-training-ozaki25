@@ -815,8 +815,8 @@ async function run() {
   while ((m = compRe.exec(code.TS))) compNames.push(m[1]);
   const renderCandidates = JSON.stringify([...compNames].reverse());
   const reactScripts = hasJSX
-    ? `<script src="https://cdn.jsdelivr.net/npm/react@19/umd/react.production.min.js"><\/script>
-<script src="https://cdn.jsdelivr.net/npm/react-dom@19/umd/react-dom.production.min.js"><\/script>
+    ? `<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"><\/script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"><\/script>
 <script>
 var jsxRuntime = { jsx: function(t,p,k){return React.createElement(t,p)}, jsxs: function(t,p,k){return React.createElement(t,p)}, Fragment: React.Fragment };
 <\/script>`
