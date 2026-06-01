@@ -671,6 +671,9 @@ function setFontSize(v: number) {
 }
 
 onMounted(() => {
+  mql = window.matchMedia("(max-width: 720px)");
+  onMql(mql);
+  mql.addEventListener("change", onMql);
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -702,9 +705,6 @@ onMounted(() => {
   }
   window.addEventListener("message", onMessage);
   window.addEventListener("beforeunload", saveNow);
-  mql = window.matchMedia("(max-width: 720px)");
-  onMql(mql);
-  mql.addEventListener("change", onMql);
   if (open.value) {
     nextTick(() => ensureEditor());
   }
