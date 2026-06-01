@@ -23,6 +23,7 @@
 - [Day 15: Web ページの届け方 — CSR から Cache Components まで](/lessons/day15/)
 - [Day 16: 参照とイミュータビリティ — なぜ直接変更してはいけないか](/lessons/day16/)
 - [Day 17: パッケージとバージョン — 他人のコードに乗っかるということ](/lessons/day17/)
+- [Day 18: 宣言的 UI — なぜ画面の書き換えを自分で書かないのか](/lessons/day18/)
 
 ## 候補（下書き）
 

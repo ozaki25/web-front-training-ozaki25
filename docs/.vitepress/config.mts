@@ -92,6 +92,10 @@ export default withPwa(
                   text: "Day 17: パッケージとバージョン",
                   link: "/lessons/day17/",
                 },
+                {
+                  text: "Day 18: 宣言的 UI",
+                  link: "/lessons/day18/",
+                },
               ],
             },
           ],
