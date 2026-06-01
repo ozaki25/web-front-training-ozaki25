@@ -58,62 +58,65 @@
       <button
         v-for="t in tabs"
         :key="t"
+        class="repl-tab"
         :class="{ active: tab === t }"
         @click="tab = t"
       >
         {{ t }}
       </button>
       <div class="repl-tab-spacer"></div>
-      <button
-        class="repl-icon"
-        aria-label="文字を小さく"
-        title="文字を小さく"
-        @click="setFontSize(fontSize - 1)"
-      >
-        A−
+      <div class="repl-tools">
+        <button
+          class="repl-tool"
+          aria-label="文字を小さく"
+          title="文字を小さく"
+          @click="setFontSize(fontSize - 1)"
+        >
+          A−
+        </button>
+        <button
+          class="repl-tool"
+          aria-label="文字を大きく"
+          title="文字を大きく"
+          @click="setFontSize(fontSize + 1)"
+        >
+          A+
+        </button>
+        <button
+          class="repl-tool"
+          :class="{ active: wrap }"
+          :aria-pressed="wrap"
+          aria-label="折り返し"
+          title="折り返し"
+          @click="wrap = !wrap"
+        >
+          ↵
+        </button>
+        <button
+          v-if="!isMobile"
+          class="repl-tool"
+          :class="{ active: fullscreen }"
+          :aria-pressed="fullscreen"
+          :aria-label="fullscreen ? '通常表示に戻す' : '全画面表示'"
+          :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
+          @click="fullscreen = !fullscreen"
+        >
+          ⛶
+        </button>
+        <button
+          class="repl-tool"
+          :aria-label="formatting ? '整形中' : '整形'"
+          :title="formatting ? '整形中…' : '整形 (Prettier)'"
+          :disabled="formatting"
+          @click="format"
+        >
+          { }
+        </button>
+      </div>
+      <button class="repl-run" @click="run">
+        {{ isMobile ? "▶" : "▶ 実行" }}
       </button>
-      <button
-        class="repl-icon"
-        aria-label="文字を大きく"
-        title="文字を大きく"
-        @click="setFontSize(fontSize + 1)"
-      >
-        A+
-      </button>
-      <button
-        class="repl-icon"
-        :class="{ active: wrap }"
-        :aria-pressed="wrap"
-        aria-label="折り返し"
-        title="折り返し"
-        @click="wrap = !wrap"
-      >
-        ↵
-      </button>
-      <button
-        v-if="!isMobile"
-        class="repl-icon"
-        :class="{ active: fullscreen }"
-        :aria-pressed="fullscreen"
-        :aria-label="fullscreen ? '通常表示に戻す' : '全画面表示'"
-        :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
-        @click="fullscreen = !fullscreen"
-      >
-        ⛶
-      </button>
-      <button
-        class="repl-icon"
-        :aria-label="formatting ? '整形中' : '整形'"
-        :title="formatting ? '整形中…' : '整形 (Prettier)'"
-        :disabled="formatting"
-        @click="format"
-      >
-        整形
-      </button>
-      <button class="repl-action repl-run" @click="run">
-        {{ isMobile ? "▶ 実行" : "▶ 実行 (Ctrl+Enter)" }}
-      </button>
-      <button class="repl-action" @click="clear">クリア</button>
+      <button class="repl-clear" @click="clear">✕</button>
     </div>
     <div class="repl-body">
       <div
@@ -1063,7 +1066,7 @@ function startResize(e: PointerEvent) {
 }
 .repl-tabs {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   border-bottom: 1px solid var(--vp-c-divider);
   background: var(--vp-c-bg-soft);
   flex-shrink: 0;
@@ -1071,34 +1074,75 @@ function startResize(e: PointerEvent) {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-.repl-tabs button {
+.repl-tab {
   padding: 8px 14px;
   background: transparent;
   border: none;
   cursor: pointer;
   font-size: 13px;
+  font-weight: 500;
   color: var(--vp-c-text-2);
   border-bottom: 2px solid transparent;
 }
-.repl-tabs > button.active:not(.repl-icon) {
+.repl-tab.active {
   color: var(--vp-c-brand-1);
   border-bottom-color: var(--vp-c-brand-1);
 }
 .repl-tab-spacer {
   flex: 1;
 }
-.repl-icon {
-  font-size: 13px !important;
-  padding: 8px 10px !important;
-  min-width: 36px;
-  color: var(--vp-c-text-2);
+.repl-tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+  border-left: 1px solid var(--vp-c-divider);
 }
-.repl-icon.active {
-  color: var(--vp-c-brand-1);
+.repl-tool {
+  padding: 4px 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--vp-c-text-3);
+  border-radius: 3px;
+  line-height: 1;
+}
+.repl-tool:hover {
+  color: var(--vp-c-text-1);
   background: var(--vp-c-bg-alt);
 }
-.repl-tabs .repl-action {
+.repl-tool.active {
+  color: var(--vp-c-brand-1);
+}
+.repl-tool:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.repl-run {
+  padding: 4px 10px;
+  margin: 4px 4px 4px 4px;
+  background: var(--vp-c-brand-2);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
   font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.repl-run:hover {
+  background: var(--vp-c-brand-3);
+}
+.repl-clear {
+  padding: 4px 8px;
+  margin: 4px 4px 4px 0;
+  background: transparent;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--vp-c-text-3);
 }
 .repl-body {
   flex: 1;
@@ -1218,17 +1262,20 @@ function startResize(e: PointerEvent) {
 }
 
 @media (max-width: 720px) {
-  .repl-tabs button {
-    padding: 12px 14px;
-    font-size: 14px;
+  .repl-tab {
+    padding: 10px 12px;
+    font-size: 13px;
   }
-  .repl-tabs .repl-action {
-    font-size: 14px;
-    padding: 12px 14px;
+  .repl-tools {
+    display: none;
   }
-  .repl-icon {
-    min-width: 44px;
-    padding: 12px 8px !important;
+  .repl-run {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  .repl-clear {
+    font-size: 12px;
+    padding: 6px 8px;
   }
   .repl-body {
     flex-direction: column;
