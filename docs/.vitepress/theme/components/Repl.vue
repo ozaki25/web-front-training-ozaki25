@@ -231,17 +231,13 @@ function onMql(e: MediaQueryListEvent | MediaQueryList) {
   isMobile.value = e.matches;
 }
 
-const placeholder = computed(() => {
-  switch (tab.value) {
-    case "HTML":
-      return "<h1>Hello</h1>";
-    case "CSS":
-      return "h1 { color: tomato; }";
-    case "TS":
-      return "const greet = (name: string) => `hi, ${name}`;\nconsole.log(greet('world'))";
-    case "TSX":
-      return 'import { useState } from "react";\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  return /* JSX here */;\n}';
-});
+const placeholders: Record<Tab, string> = {
+  HTML: "<h1>Hello</h1>",
+  CSS: "h1 { color: tomato; }",
+  TS: "const greet = (name: string) => `hi, ${name}`;\nconsole.log(greet('world'))",
+  TSX: 'import { useState } from "react";\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  return /* JSX */;\n}',
+};
+const placeholder = computed(() => placeholders[tab.value] ?? "");
 
 // --- CodeMirror lazy setup ---
 const formatting = ref(false);
