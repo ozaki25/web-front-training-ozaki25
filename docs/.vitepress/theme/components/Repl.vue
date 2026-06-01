@@ -192,11 +192,11 @@ import { useData } from "vitepress";
 const { isDark } = useData();
 
 const STORAGE_KEY = "wft-repl-v1";
-const tabs = ["HTML", "CSS", "JS", "TS"] as const;
+const tabs = ["HTML", "CSS", "TS", "TSX"] as const;
 type Tab = (typeof tabs)[number];
 
 const open = ref(false);
-const tab = ref<Tab>("JS");
+const tab = ref<Tab>("TS");
 const panelHeight = ref(380);
 const previewRatio = ref(0.6);
 const editorRatio = ref(0.5);
@@ -209,8 +209,8 @@ const editorReady = ref(false);
 const code = reactive<Record<Tab, string>>({
   HTML: "",
   CSS: "",
-  JS: "",
   TS: "",
+  TSX: "",
 });
 const editorContainer = ref<HTMLElement | null>(null);
 const frame = ref<HTMLIFrameElement | null>(null);
@@ -237,12 +237,10 @@ const placeholder = computed(() => {
       return "<h1>Hello</h1>";
     case "CSS":
       return "h1 { color: tomato; }";
-    case "JS":
-      return "console.log('hello')";
     case "TS":
       return "const greet = (name: string) => `hi, ${name}`;\nconsole.log(greet('world'))";
-  }
-  return "";
+    case "TSX":
+      return 'import { useState } from "react";\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  return /* JSX here */;\n}';
 });
 
 // --- CodeMirror lazy setup ---
@@ -421,17 +419,7 @@ declare namespace JSX {
 
 async function formatCode(source: string, lang: Tab): Promise<string> {
   const prettier = await import("prettier/standalone");
-  if (lang === "JS") {
-    const [babel, estree] = await Promise.all([
-      import("prettier/plugins/babel"),
-      import("prettier/plugins/estree"),
-    ]);
-    return prettier.format(source, {
-      parser: "babel",
-      plugins: [babel as any, estree as any],
-    });
-  }
-  if (lang === "TS") {
+  if (lang === "TS" || lang === "TSX") {
     const [typescriptPlugin, estree] = await Promise.all([
       import("prettier/plugins/typescript"),
       import("prettier/plugins/estree"),
@@ -505,7 +493,7 @@ async function ensureEditor() {
     const getLang = (t: Tab) => {
       if (t === "HTML") return html();
       if (t === "CSS") return cssLang();
-      if (t === "TS") return javascript({ typescript: true });
+      if (t === "TS" || t === "TSX") return javascript({ typescript: true, jsx: true });
       return javascript();
     };
     const fontTheme = (size: number) =>
@@ -554,14 +542,12 @@ async function ensureEditor() {
       });
 
     const tsLinter = async (view: any) => {
-      if (tab.value !== "JS" && tab.value !== "TS") return [];
+      if (tab.value !== "TS" && tab.value !== "TSX") return [];
       const text = view.state.doc.toString();
       if (!text.trim()) return [];
       try {
         const env = await getTsEnv();
-        const isTS = tab.value === "TS";
-        const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(text);
-        const fname = isTS ? (hasJSX ? "/repl.tsx" : "/repl.ts") : "/repl.js";
+        const fname = tab.value === "TSX" ? "/repl.tsx" : "/repl.ts";
         env.updateFile(fname, text);
         const ls = env.languageService;
         const syntactic = ls.getSyntacticDiagnostics(fname);
@@ -806,12 +792,11 @@ function onMessage(e: MessageEvent) {
   if (logs.value.length > 200) logs.value.splice(0, logs.value.length - 200);
 }
 
-async function transpileTS(src: string): Promise<string> {
+async function transpileTS(src: string, isTSX: boolean): Promise<string> {
   const { transform } = await import("sucrase");
-  const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(src) || src.includes("React");
   const hasImports = /\bimport\s/.test(src);
   const transforms: string[] = ["typescript"];
-  if (hasJSX) transforms.push("jsx");
+  if (isTSX) transforms.push("jsx");
   if (hasImports) transforms.push("imports");
   return transform(src, {
     transforms: transforms as any,
@@ -829,24 +814,34 @@ function escapeForScript(s: string) {
 
 async function run() {
   logs.value = [];
-  let js = code.JS || "";
-  if (code.TS.trim()) {
+  let js = "";
+  const tsSource = code.TS.trim() ? code.TS : "";
+  const tsxSource = code.TSX.trim() ? code.TSX : "";
+  if (tsSource) {
     try {
-      js += "\n;" + (await transpileTS(code.TS));
+      js += "\n;" + (await transpileTS(tsSource, false));
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       logs.value.push({ level: "error", text: "TS compile error: " + msg });
       return;
     }
   }
+  if (tsxSource) {
+    try {
+      js += "\n;" + (await transpileTS(tsxSource, true));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      logs.value.push({ level: "error", text: "TSX compile error: " + msg });
+      return;
+    }
+  }
   const safeCss = escapeForStyle(code.CSS || "");
   const safeJs = escapeForScript(js);
-  const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(code.TS) || /\bReact\b|\buseState\b|\bimport\b.*['"]react/.test(code.TS);
-  // ソースから大文字始まりのコンポーネント名を抽出（最後に定義されたものを優先）
+  const hasJSX = tsxSource.length > 0;
   const compNames: string[] = [];
   const compRe = /(?:function|const|class)\s+([A-Z]\w*)/g;
   let m: RegExpExecArray | null;
-  while ((m = compRe.exec(code.TS))) compNames.push(m[1]);
+  while ((m = compRe.exec(tsxSource))) compNames.push(m[1]);
   const renderCandidates = JSON.stringify([...compNames].reverse());
   const reactScripts = hasJSX
     ? `<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"><\/script>
@@ -906,8 +901,8 @@ ${jsxImportShim}${safeJs}${autoRender}
 function clear() {
   code.HTML = "";
   code.CSS = "";
-  code.JS = "";
   code.TS = "";
+  code.TSX = "";
   logs.value = [];
   if (frame.value) frame.value.srcdoc = "";
   if (cm) setCmDoc("");
