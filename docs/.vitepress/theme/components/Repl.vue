@@ -1280,6 +1280,7 @@ function startResize(e: PointerEvent) {
 
 .repl-panel--code .repl-output,
 .repl-panel--result .repl-tabs,
+.repl-panel--result .repl-toolbar,
 .repl-panel--result .repl-editor {
   display: none !important;
 }
@@ -1288,11 +1289,6 @@ function startResize(e: PointerEvent) {
   .repl-tab {
     padding: 10px 12px;
     font-size: 13px;
-  }
-  .repl-tools {
-    border-left: none;
-    padding: 0 2px;
-    gap: 0;
   }
   .repl-tool {
     padding: 12px 10px;
