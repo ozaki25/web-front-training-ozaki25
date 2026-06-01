@@ -42,33 +42,39 @@ el.textContent = "おはよう";
 
 ## 命令的の限界 — 今の画面が何を表示しているか分からない
 
-実際のアプリでは、クリック、タイマー、データ取得など、さまざまなタイミングで画面が書き換えられます。
+次のコードを REPL の HTML タブに貼って、ボタンをいろいろな順番で押してみてください。
 
 ```html
 <p id="output">こんにちは</p>
-<button id="btn-a">A</button>
-<button id="btn-b">B</button>
+<button id="btn-a">A: テキスト変更</button>
+<button id="btn-b">B: 青くする</button>
+<button id="btn-c">C: 太字にする</button>
+<button id="btn-d">D: 全部リセット</button>
 
 <script>
 const el = document.querySelector("#output");
 
 document.querySelector("#btn-a").addEventListener("click", () => {
-  el.textContent = "ボタン A が押された";
+  el.textContent = "変更されました";
 });
 
 document.querySelector("#btn-b").addEventListener("click", () => {
-  el.textContent = "ボタン B が押された";
   el.style.color = "blue";
 });
 
-setInterval(() => {
-  el.textContent = "3秒経ちました";
+document.querySelector("#btn-c").addEventListener("click", () => {
+  el.style.fontWeight = "bold";
+});
+
+document.querySelector("#btn-d").addEventListener("click", () => {
+  el.textContent = "こんにちは";
   el.style.color = "";
-}, 3000);
+  el.style.fontWeight = "";
+});
 </script>
 ```
 
-ボタン B を押すと文字が青くなりますが、3 秒ごとにタイマーが色をリセットします。ボタン A を押しても、次の 3 秒でまた上書きされます。**操作の履歴とタイミングによって画面が変わり、コードのどこか 1 か所を見ても今の表示は分かりません。**
+A → B → C と押すと「変更されました」が青い太字。D → B → C なら「こんにちは」が青い太字。A → D → B なら「こんにちは」が青。**押した順番で画面の見た目が変わり、コードのどこか 1 か所を見ても今の表示は分かりません。**
 
 これが命令的の本質的なつらさです。画面の状態が「これまでの操作の積み重ね」としてしか存在しないため、コードが増えるほど「今この画面はどうなっているか」の把握が難しくなります。
 
