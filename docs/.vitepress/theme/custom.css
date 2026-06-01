@@ -73,13 +73,13 @@
 .sidebar-collapse-btn {
   display: none;
   width: 100%;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border: none;
   background: transparent;
   color: var(--vp-c-text-3);
-  font-size: 16px;
+  font-size: 12px;
   cursor: pointer;
-  text-align: right;
+  text-align: left;
 }
 .sidebar-collapse-btn:hover {
   color: var(--vp-c-text-1);
@@ -91,27 +91,25 @@
 .sidebar-expand-btn {
   display: none;
   position: fixed;
-  top: 50%;
+  top: var(--vp-nav-height, 64px);
   left: 0;
-  transform: translateY(-50%);
   z-index: 100;
-  width: 20px;
-  height: 48px;
+  padding: 8px 12px;
   border: 1px solid var(--vp-c-divider);
   border-left: none;
   border-radius: 0 6px 6px 0;
   background: var(--vp-c-bg);
-  color: var(--vp-c-text-3);
-  font-size: 14px;
+  color: var(--vp-c-text-2);
+  font-size: 12px;
   cursor: pointer;
-  line-height: 1;
+  white-space: nowrap;
 }
 .sidebar-expand-btn:hover {
   color: var(--vp-c-text-1);
   background: var(--vp-c-bg-alt);
 }
 @media (min-width: 960px) {
-  .sidebar-expand-btn { display: flex; align-items: center; justify-content: center; }
+  .sidebar-expand-btn { display: block; }
 }
 .sidebar-collapsed .VPSidebar {
   transform: translateX(-100%);

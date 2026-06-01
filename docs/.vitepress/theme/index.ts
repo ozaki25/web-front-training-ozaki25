@@ -12,22 +12,25 @@ import "./custom.css";
 
 const collapsed = ref(false);
 
+function collapse() {
+  collapsed.value = true;
+  document.documentElement.classList.add("sidebar-collapsed");
+  localStorage.setItem("sidebar-collapsed", "true");
+}
+
+function expand() {
+  collapsed.value = false;
+  document.documentElement.classList.remove("sidebar-collapsed");
+  localStorage.setItem("sidebar-collapsed", "false");
+}
+
 const SidebarCollapseBtn = {
   setup() {
     return () =>
       h(
         "button",
-        {
-          class: "sidebar-collapse-btn",
-          onClick: () => {
-            collapsed.value = true;
-            document.documentElement.classList.add("sidebar-collapsed");
-            localStorage.setItem("sidebar-collapsed", "true");
-          },
-          title: "サイドバーを閉じる",
-          "aria-label": "サイドバーを閉じる",
-        },
-        "«",
+        { class: "sidebar-collapse-btn", onClick: collapse },
+        "◀ メニューを閉じる",
       );
   },
 };
@@ -50,17 +53,8 @@ const SidebarExpandBtn = {
       hasSidebar.value && collapsed.value
         ? h(
             "button",
-            {
-              class: "sidebar-expand-btn",
-              onClick: () => {
-                collapsed.value = false;
-                document.documentElement.classList.remove("sidebar-collapsed");
-                localStorage.setItem("sidebar-collapsed", "false");
-              },
-              title: "サイドバーを開く",
-              "aria-label": "サイドバーを開く",
-            },
-            "»",
+            { class: "sidebar-expand-btn", onClick: expand },
+            "▶ メニュー",
           )
         : null;
   },
