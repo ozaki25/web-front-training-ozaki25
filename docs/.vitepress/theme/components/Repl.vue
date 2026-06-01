@@ -1102,8 +1102,8 @@ function startResize(e: PointerEvent) {
 .repl-toolbar {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 2px 4px;
+  gap: 0;
+  padding: 0 4px;
   background: var(--vp-c-bg-alt);
   border-bottom: 1px solid var(--vp-c-divider);
   flex-shrink: 0;
@@ -1115,11 +1115,11 @@ function startResize(e: PointerEvent) {
 }
 .repl-tool {
   position: relative;
-  padding: 4px 8px;
+  padding: 10px 12px;
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--vp-c-text-3);
   border-radius: 3px;
   line-height: 1;
@@ -1153,15 +1153,16 @@ function startResize(e: PointerEvent) {
   cursor: not-allowed;
 }
 .repl-run {
-  padding: 4px 10px;
+  padding: 8px 14px;
   background: var(--vp-c-brand-2);
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
+  margin: 4px 0;
 }
 .repl-run:hover {
   background: var(--vp-c-brand-3);
@@ -1294,12 +1295,12 @@ function startResize(e: PointerEvent) {
     gap: 0;
   }
   .repl-tool {
-    padding: 6px 6px;
-    font-size: 11px;
+    padding: 12px 10px;
+    font-size: 14px;
   }
   .repl-run {
-    font-size: 12px;
-    padding: 5px 10px;
+    font-size: 14px;
+    padding: 10px 14px;
   }
   .repl-body {
     flex-direction: column;
