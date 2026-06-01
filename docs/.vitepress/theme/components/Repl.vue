@@ -525,7 +525,7 @@ async function ensureEditor() {
       if (tab.value !== "JS" && tab.value !== "TS") return [];
       const text = view.state.doc.toString();
       if (!text.trim()) return [];
-      if (/\bimport\b.*['"]react|<[A-Z]/.test(text)) return [];
+      const hasReact = /\bimport\b.*['"]react|<[A-Z]/.test(text);
       try {
         const env = await getTsEnv();
         const isTS = tab.value === "TS";
@@ -533,7 +533,7 @@ async function ensureEditor() {
         env.updateFile(fname, text);
         const ls = env.languageService;
         const syntactic = ls.getSyntacticDiagnostics(fname);
-        const semantic = ls.getSemanticDiagnostics(fname);
+        const semantic = hasReact ? [] : ls.getSemanticDiagnostics(fname);
         const diags = [...syntactic, ...semantic];
         const ts = env.__ts;
         const results = diags
