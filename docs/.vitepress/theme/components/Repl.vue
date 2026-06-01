@@ -817,31 +817,24 @@ async function run() {
   let js = "";
   const tsSource = code.TS.trim() ? code.TS : "";
   const tsxSource = code.TSX.trim() ? code.TSX : "";
-  if (tsSource) {
+  const useTSX = tsxSource.length > 0;
+  const scriptSource = useTSX ? tsxSource : tsSource;
+  if (scriptSource) {
     try {
-      js += "\n;" + (await transpileTS(tsSource, false));
+      js = await transpileTS(scriptSource, useTSX);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      logs.value.push({ level: "error", text: "TS compile error: " + msg });
-      return;
-    }
-  }
-  if (tsxSource) {
-    try {
-      js += "\n;" + (await transpileTS(tsxSource, true));
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      logs.value.push({ level: "error", text: "TSX compile error: " + msg });
+      logs.value.push({ level: "error", text: (useTSX ? "TSX" : "TS") + " compile error: " + msg });
       return;
     }
   }
   const safeCss = escapeForStyle(code.CSS || "");
   const safeJs = escapeForScript(js);
-  const hasJSX = tsxSource.length > 0;
+  const hasJSX = useTSX;
   const compNames: string[] = [];
   const compRe = /(?:function|const|class)\s+([A-Z]\w*)/g;
   let m: RegExpExecArray | null;
-  while ((m = compRe.exec(tsxSource))) compNames.push(m[1]);
+  while ((m = compRe.exec(scriptSource))) compNames.push(m[1]);
   const renderCandidates = JSON.stringify([...compNames].reverse());
   const reactScripts = hasJSX
     ? `<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"><\/script>
