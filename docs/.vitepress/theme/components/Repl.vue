@@ -1267,7 +1267,14 @@ function startResize(e: PointerEvent) {
     font-size: 13px;
   }
   .repl-tools {
-    display: none;
+    border-left: none;
+    padding: 0 2px;
+    gap: 0;
+  }
+  .repl-tool {
+    padding: 6px 5px;
+    font-size: 11px;
+    min-width: 28px;
   }
   .repl-run {
     font-size: 13px;
