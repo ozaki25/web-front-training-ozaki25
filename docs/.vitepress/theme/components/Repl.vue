@@ -146,7 +146,7 @@
           ref="frame"
           class="repl-preview"
           :style="{ flexGrow: previewRatio }"
-          sandbox="allow-scripts allow-same-origin"
+          sandbox="allow-scripts"
           title="プレビュー"
         ></iframe>
         <div
@@ -341,7 +341,7 @@ declare var globalThis: any;
           libFiles["/" + name] = await res.text();
         }),
       );
-      if (Object.keys(libFiles).length > 0) {
+      if (Object.keys(libFiles).length === libNames.length) {
         try { storage?.setItem(cacheKey, JSON.stringify(libFiles)); } catch {}
       }
     }
@@ -798,7 +798,9 @@ watch(
 
 function onMessage(e: MessageEvent) {
   if (!e.data || e.data.type !== "wft-repl-log") return;
-  logs.value.push({ level: e.data.level, text: e.data.text });
+  if (e.source !== frame.value?.contentWindow) return;
+  const text = typeof e.data.text === "string" ? e.data.text.slice(0, 5000) : "";
+  logs.value.push({ level: e.data.level, text });
   if (logs.value.length > 200) logs.value.splice(0, logs.value.length - 200);
 }
 
@@ -837,7 +839,6 @@ async function run() {
   }
   const safeCss = escapeForStyle(code.CSS || "");
   const safeJs = escapeForScript(js);
-  const targetOrigin = JSON.stringify(location.origin);
   const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(code.TS) || /\bReact\b|\buseState\b|\bimport\b.*['"]react/.test(code.TS);
   // ソースから大文字始まりのコンポーネント名を抽出（最後に定義されたものを優先）
   const compNames: string[] = [];
@@ -883,7 +884,7 @@ var module = { exports: exports };
 <body>${code.HTML}
 <script>
 (function(){
-  var TARGET = ${targetOrigin};
+  var TARGET = "*";
   function fmt(a){try{return typeof a==='string'?a:JSON.stringify(a,null,2)}catch{return String(a)}}
   function send(level, args){parent.postMessage({type:'wft-repl-log',level,text:args.map(fmt).join(' ')}, TARGET)}
   ['log','info','warn','error'].forEach(function(l){
