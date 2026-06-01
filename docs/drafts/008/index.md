@@ -42,23 +42,7 @@ el.textContent = "おはよう";
 
 ## 命令的の限界 — 今の画面が何を表示しているか分からない
 
-次のコードを見てください。`#output` には今、何が表示されていますか？
-
-```html
-<p id="output">こんにちは</p>
-
-<script>
-const el = document.querySelector("#output");
-
-el.textContent = "おはよう";
-el.textContent = el.textContent + "ございます";
-el.style.color = "red";
-el.textContent = "こんばんは";
-el.style.color = "";
-</script>
-```
-
-答えは「こんばんは」（色なし）です。しかしそれを知るには、上から順に操作を追いかけるしかありません。5 行の操作でこれです。実際のアプリでは、クリック、タイマー、データ取得など、さまざまなタイミングで画面が書き換えられます。
+実際のアプリでは、クリック、タイマー、データ取得など、さまざまなタイミングで画面が書き換えられます。
 
 ```html
 <p id="output">こんにちは</p>
