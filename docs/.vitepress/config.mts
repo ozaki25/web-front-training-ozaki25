@@ -27,7 +27,10 @@ export default withPwa(
         },
       },
       themeConfig: {
-        nav: [{ text: "ホーム", link: "/" }],
+        nav: [
+          { text: "ホーム", link: "/" },
+          { text: "候補", link: "/drafts/005/" },
+        ],
         sidebar: {
           "/lessons/": [
             {
@@ -93,6 +96,18 @@ export default withPwa(
                   text: "Day 18: 宣言的 UI",
                   link: "/lessons/day18/",
                 },
+              ],
+            },
+          ],
+          "/drafts/": [
+            {
+              text: "候補",
+              items: [
+                { text: "関数とコールバック", link: "/drafts/005/" },
+                { text: "Promise と async/await", link: "/drafts/006/" },
+                { text: "モジュールの歴史", link: "/drafts/007/" },
+                { text: "宣言的 UI", link: "/drafts/008/" },
+                { text: "仮想 DOM", link: "/drafts/009/" },
               ],
             },
           ],
