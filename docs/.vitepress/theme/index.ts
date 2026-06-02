@@ -1,4 +1,4 @@
-import { h, ref, onMounted, computed } from "vue";
+import { h } from "vue";
 import DefaultTheme from "vitepress/theme";
 import TwoslashFloatingVue from "@shikijs/vitepress-twoslash/client";
 import "@shikijs/vitepress-twoslash/style.css";
@@ -6,66 +6,14 @@ import { enhanceAppWithTabs } from "vitepress-plugin-tabs/client";
 import { inject } from "@vercel/analytics";
 import { injectSpeedInsights } from "@vercel/speed-insights";
 import type { EnhanceAppContext, Theme } from "vitepress";
-import { useData } from "vitepress";
 import Repl from "./components/Repl.vue";
 import "./custom.css";
-
-const collapsed = ref(false);
-
-function collapse() {
-  collapsed.value = true;
-  document.documentElement.classList.add("sidebar-collapsed");
-  localStorage.setItem("sidebar-collapsed", "true");
-}
-
-function expand() {
-  collapsed.value = false;
-  document.documentElement.classList.remove("sidebar-collapsed");
-  localStorage.setItem("sidebar-collapsed", "false");
-}
-
-const SidebarCollapseBtn = {
-  setup() {
-    return () =>
-      h(
-        "button",
-        { class: "sidebar-collapse-btn", onClick: collapse },
-        "◀ メニューを閉じる",
-      );
-  },
-};
-
-const SidebarExpandBtn = {
-  setup() {
-    const { page } = useData();
-    const hasSidebar = computed(() => {
-      const path = page.value.relativePath;
-      return path.startsWith("lessons/") || path.startsWith("drafts/");
-    });
-    onMounted(() => {
-      const saved = localStorage.getItem("sidebar-collapsed");
-      if (saved === "true") {
-        collapsed.value = true;
-        document.documentElement.classList.add("sidebar-collapsed");
-      }
-    });
-    return () =>
-      hasSidebar.value && collapsed.value
-        ? h(
-            "button",
-            { class: "sidebar-expand-btn", onClick: expand },
-            "▶ メニュー",
-          )
-        : null;
-  },
-};
 
 export default {
   extends: DefaultTheme,
   Layout() {
     return h(DefaultTheme.Layout, null, {
-      "sidebar-nav-before": () => h(SidebarCollapseBtn),
-      "layout-bottom": () => [h(Repl), h(SidebarExpandBtn)],
+      "layout-bottom": () => h(Repl),
     });
   },
   enhanceApp({ app }: EnhanceAppContext) {
