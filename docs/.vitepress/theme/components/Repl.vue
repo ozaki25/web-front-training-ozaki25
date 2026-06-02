@@ -58,62 +58,61 @@
       <button
         v-for="t in tabs"
         :key="t"
+        class="repl-tab"
         :class="{ active: tab === t }"
         @click="tab = t"
       >
         {{ t }}
       </button>
-      <div class="repl-tab-spacer"></div>
+    </div>
+    <div class="repl-toolbar">
       <button
-        class="repl-icon"
-        aria-label="文字を小さく"
-        title="文字を小さく"
+        class="repl-tool"
+        data-tip="文字を小さく"
         @click="setFontSize(fontSize - 1)"
       >
         A−
       </button>
       <button
-        class="repl-icon"
-        aria-label="文字を大きく"
-        title="文字を大きく"
+        class="repl-tool"
+        data-tip="文字を大きく"
         @click="setFontSize(fontSize + 1)"
       >
         A+
       </button>
       <button
-        class="repl-icon"
+        class="repl-tool"
         :class="{ active: wrap }"
         :aria-pressed="wrap"
-        aria-label="折り返し"
-        title="折り返し"
+        :aria-label="wrap ? '折り返しOFF' : '折り返しON'"
+        data-tip="折り返し"
         @click="wrap = !wrap"
       >
         ↵
       </button>
       <button
         v-if="!isMobile"
-        class="repl-icon"
+        class="repl-tool"
         :class="{ active: fullscreen }"
         :aria-pressed="fullscreen"
         :aria-label="fullscreen ? '通常表示に戻す' : '全画面表示'"
-        :title="fullscreen ? '通常表示に戻す' : '全画面表示'"
+        :data-tip="fullscreen ? '通常に戻す' : '全画面'"
         @click="fullscreen = !fullscreen"
       >
         ⛶
       </button>
       <button
-        class="repl-icon"
+        class="repl-tool"
         :aria-label="formatting ? '整形中' : '整形'"
-        :title="formatting ? '整形中…' : '整形 (Prettier)'"
+        :data-tip="formatting ? '整形中…' : '整形'"
         :disabled="formatting"
         @click="format"
       >
-        整形
+        { }
       </button>
-      <button class="repl-action repl-run" @click="run">
-        {{ isMobile ? "▶ 実行" : "▶ 実行 (Ctrl+Enter)" }}
-      </button>
-      <button class="repl-action" @click="clear">クリア</button>
+      <div class="repl-toolbar-spacer"></div>
+      <button class="repl-run" @click="run">▶ 実行</button>
+      <button class="repl-tool" aria-label="クリア" @click="clear">クリア</button>
     </div>
     <div class="repl-body">
       <div
@@ -146,7 +145,7 @@
           ref="frame"
           class="repl-preview"
           :style="{ flexGrow: previewRatio }"
-          sandbox="allow-scripts allow-same-origin"
+          sandbox="allow-scripts"
           title="プレビュー"
         ></iframe>
         <div
@@ -192,11 +191,11 @@ import { useData } from "vitepress";
 const { isDark } = useData();
 
 const STORAGE_KEY = "wft-repl-v1";
-const tabs = ["HTML", "CSS", "JS", "TS"] as const;
+const tabs = ["HTML", "CSS", "TS", "TSX"] as const;
 type Tab = (typeof tabs)[number];
 
 const open = ref(false);
-const tab = ref<Tab>("JS");
+const tab = ref<Tab>("TS");
 const panelHeight = ref(380);
 const previewRatio = ref(0.6);
 const editorRatio = ref(0.5);
@@ -209,8 +208,8 @@ const editorReady = ref(false);
 const code = reactive<Record<Tab, string>>({
   HTML: "",
   CSS: "",
-  JS: "",
   TS: "",
+  TSX: "",
 });
 const editorContainer = ref<HTMLElement | null>(null);
 const frame = ref<HTMLIFrameElement | null>(null);
@@ -231,19 +230,13 @@ function onMql(e: MediaQueryListEvent | MediaQueryList) {
   isMobile.value = e.matches;
 }
 
-const placeholder = computed(() => {
-  switch (tab.value) {
-    case "HTML":
-      return "<h1>Hello</h1>";
-    case "CSS":
-      return "h1 { color: tomato; }";
-    case "JS":
-      return "console.log('hello')";
-    case "TS":
-      return "const greet = (name: string) => `hi, ${name}`;\nconsole.log(greet('world'))";
-  }
-  return "";
-});
+const placeholders: Record<Tab, string> = {
+  HTML: "<h1>Hello</h1>",
+  CSS: "h1 { color: tomato; }",
+  TS: "const greet = (name: string) => `hi, ${name}`;\nconsole.log(greet('world'))",
+  TSX: 'import { useState } from "react";\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  return /* JSX */;\n}',
+};
+const placeholder = computed(() => placeholders[tab.value] ?? "");
 
 // --- CodeMirror lazy setup ---
 const formatting = ref(false);
@@ -282,6 +275,7 @@ function getTsEnv(): Promise<TsEnv> {
       allowJs: true,
       checkJs: false,
       noEmit: true,
+      jsx: ts.JsxEmit?.ReactJSX ?? 4,
       lib: ["esnext"],
     };
     const domStub = `/dom-stub.d.ts`;
@@ -340,13 +334,44 @@ declare var globalThis: any;
           libFiles["/" + name] = await res.text();
         }),
       );
-      if (Object.keys(libFiles).length > 0) {
+      if (Object.keys(libFiles).length === libNames.length) {
         try { storage?.setItem(cacheKey, JSON.stringify(libFiles)); } catch {}
       }
     }
     libFiles[domStub] = domStubText;
+    const reactStub = `/react.d.ts`;
+    const reactStubText = `
+declare module "react" {
+  export function useState<T>(init: T | (() => T)): [T, (v: T | ((prev: T) => T)) => void];
+  export function useEffect(fn: () => void | (() => void), deps?: any[]): void;
+  export function useRef<T>(init: T): { current: T };
+  export function useMemo<T>(fn: () => T, deps: any[]): T;
+  export function useCallback<T extends (...args: any[]) => any>(fn: T, deps: any[]): T;
+  export function useContext<T>(ctx: any): T;
+  export function useReducer<S, A>(reducer: (state: S, action: A) => S, init: S): [S, (action: A) => void];
+  export function createContext<T>(defaultValue: T): any;
+  export function memo<T>(component: T): T;
+  export function forwardRef<T, P>(render: (props: P, ref: any) => any): any;
+  export function createElement(type: any, props?: any, ...children: any[]): any;
+  export type ReactNode = any;
+  export type FC<P = {}> = (props: P) => ReactNode;
+  export const Fragment: any;
+}
+declare module "react/jsx-runtime" {
+  export function jsx(type: any, props: any, key?: any): any;
+  export function jsxs(type: any, props: any, key?: any): any;
+  export const Fragment: any;
+}
+declare namespace JSX {
+  interface Element {}
+  interface IntrinsicElements { [tag: string]: any; }
+}
+`;
+    libFiles[reactStub] = reactStubText;
     const files: Record<string, { text: string; version: number }> = {
       [domStub]: { text: domStubText, version: 0 },
+      [reactStub]: { text: reactStubText, version: 0 },
+      "/repl.tsx": { text: "", version: 0 },
       "/repl.ts": { text: "", version: 0 },
       "/repl.js": { text: "", version: 0 },
     };
@@ -389,17 +414,7 @@ declare var globalThis: any;
 
 async function formatCode(source: string, lang: Tab): Promise<string> {
   const prettier = await import("prettier/standalone");
-  if (lang === "JS") {
-    const [babel, estree] = await Promise.all([
-      import("prettier/plugins/babel"),
-      import("prettier/plugins/estree"),
-    ]);
-    return prettier.format(source, {
-      parser: "babel",
-      plugins: [babel as any, estree as any],
-    });
-  }
-  if (lang === "TS") {
+  if (lang === "TS" || lang === "TSX") {
     const [typescriptPlugin, estree] = await Promise.all([
       import("prettier/plugins/typescript"),
       import("prettier/plugins/estree"),
@@ -473,7 +488,7 @@ async function ensureEditor() {
     const getLang = (t: Tab) => {
       if (t === "HTML") return html();
       if (t === "CSS") return cssLang();
-      if (t === "TS") return javascript({ typescript: true });
+      if (t === "TS" || t === "TSX") return javascript({ typescript: true, jsx: true });
       return javascript();
     };
     const fontTheme = (size: number) =>
@@ -522,13 +537,12 @@ async function ensureEditor() {
       });
 
     const tsLinter = async (view: any) => {
-      if (tab.value !== "JS" && tab.value !== "TS") return [];
+      if (tab.value !== "TS" && tab.value !== "TSX") return [];
       const text = view.state.doc.toString();
       if (!text.trim()) return [];
       try {
         const env = await getTsEnv();
-        const isTS = tab.value === "TS";
-        const fname = isTS ? "/repl.ts" : "/repl.js";
+        const fname = tab.value === "TSX" ? "/repl.tsx" : "/repl.ts";
         env.updateFile(fname, text);
         const ls = env.languageService;
         const syntactic = ls.getSyntacticDiagnostics(fname);
@@ -671,6 +685,9 @@ function setFontSize(v: number) {
 }
 
 onMounted(() => {
+  mql = window.matchMedia("(max-width: 720px)");
+  onMql(mql);
+  mql.addEventListener("change", onMql);
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -702,9 +719,21 @@ onMounted(() => {
   }
   window.addEventListener("message", onMessage);
   window.addEventListener("beforeunload", saveNow);
-  mql = window.matchMedia("(max-width: 720px)");
-  onMql(mql);
-  mql.addEventListener("change", onMql);
+  // 長押しツールチップ（スマホ用）
+  let tipTimer: ReturnType<typeof setTimeout> | null = null;
+  document.addEventListener("pointerdown", (e) => {
+    const btn = (e.target as HTMLElement).closest?.("[data-tip]") as HTMLElement | null;
+    if (!btn) return;
+    tipTimer = setTimeout(() => { btn.classList.add("show-tip"); }, 500);
+  });
+  document.addEventListener("pointerup", () => {
+    if (tipTimer) { clearTimeout(tipTimer); tipTimer = null; }
+    document.querySelectorAll(".show-tip").forEach((el) => el.classList.remove("show-tip"));
+  });
+  document.addEventListener("pointercancel", () => {
+    if (tipTimer) { clearTimeout(tipTimer); tipTimer = null; }
+    document.querySelectorAll(".show-tip").forEach((el) => el.classList.remove("show-tip"));
+  });
   if (open.value) {
     nextTick(() => ensureEditor());
   }
@@ -767,17 +796,18 @@ watch(
 
 function onMessage(e: MessageEvent) {
   if (!e.data || e.data.type !== "wft-repl-log") return;
-  logs.value.push({ level: e.data.level, text: e.data.text });
+  if (e.source !== frame.value?.contentWindow) return;
+  const text = typeof e.data.text === "string" ? e.data.text.slice(0, 5000) : "";
+  logs.value.push({ level: e.data.level, text });
   if (logs.value.length > 200) logs.value.splice(0, logs.value.length - 200);
 }
 
-async function transpileTS(src: string): Promise<string> {
+async function transpileTS(src: string, isTSX: boolean): Promise<string> {
   const { transform } = await import("sucrase");
-  const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(src) || src.includes("React");
   const hasImports = /\bimport\s/.test(src);
   const transforms: string[] = ["typescript"];
-  if (hasJSX) transforms.push("jsx");
-  if (hasImports) transforms.push("imports");
+  if (isTSX) transforms.push("jsx");
+  if (hasImports || isTSX) transforms.push("imports");
   return transform(src, {
     transforms: transforms as any,
     jsxRuntime: "automatic",
@@ -794,25 +824,27 @@ function escapeForScript(s: string) {
 
 async function run() {
   logs.value = [];
-  let js = code.JS || "";
-  if (code.TS.trim()) {
+  let js = "";
+  const tsSource = code.TS.trim() ? code.TS : "";
+  const tsxSource = code.TSX.trim() ? code.TSX : "";
+  const useTSX = tsxSource.length > 0;
+  const scriptSource = useTSX ? tsxSource : tsSource;
+  if (scriptSource) {
     try {
-      js += "\n;" + (await transpileTS(code.TS));
+      js = await transpileTS(scriptSource, useTSX);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      logs.value.push({ level: "error", text: "TS compile error: " + msg });
+      logs.value.push({ level: "error", text: (useTSX ? "TSX" : "TS") + " compile error: " + msg });
       return;
     }
   }
   const safeCss = escapeForStyle(code.CSS || "");
   const safeJs = escapeForScript(js);
-  const targetOrigin = JSON.stringify(location.origin);
-  const hasJSX = /<[A-Z]|<[a-z]+[\s>]/.test(code.TS) || /\bReact\b|\buseState\b|\bimport\b.*['"]react/.test(code.TS);
-  // ソースから大文字始まりのコンポーネント名を抽出（最後に定義されたものを優先）
+  const hasJSX = useTSX;
   const compNames: string[] = [];
   const compRe = /(?:function|const|class)\s+([A-Z]\w*)/g;
   let m: RegExpExecArray | null;
-  while ((m = compRe.exec(code.TS))) compNames.push(m[1]);
+  while ((m = compRe.exec(scriptSource))) compNames.push(m[1]);
   const renderCandidates = JSON.stringify([...compNames].reverse());
   const reactScripts = hasJSX
     ? `<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"><\/script>
@@ -852,7 +884,7 @@ var module = { exports: exports };
 <body>${code.HTML}
 <script>
 (function(){
-  var TARGET = ${targetOrigin};
+  var TARGET = "*";
   function fmt(a){try{return typeof a==='string'?a:JSON.stringify(a,null,2)}catch{return String(a)}}
   function send(level, args){parent.postMessage({type:'wft-repl-log',level,text:args.map(fmt).join(' ')}, TARGET)}
   ['log','info','warn','error'].forEach(function(l){
@@ -872,8 +904,8 @@ ${jsxImportShim}${safeJs}${autoRender}
 function clear() {
   code.HTML = "";
   code.CSS = "";
-  code.JS = "";
   code.TS = "";
+  code.TSX = "";
   logs.value = [];
   if (frame.value) frame.value.srcdoc = "";
   if (cm) setCmDoc("");
@@ -1045,7 +1077,7 @@ function startResize(e: PointerEvent) {
 }
 .repl-tabs {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   border-bottom: 1px solid var(--vp-c-divider);
   background: var(--vp-c-bg-soft);
   flex-shrink: 0;
@@ -1053,34 +1085,87 @@ function startResize(e: PointerEvent) {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
-.repl-tabs button {
+.repl-tab {
   padding: 8px 14px;
   background: transparent;
   border: none;
   cursor: pointer;
   font-size: 13px;
+  font-weight: 500;
   color: var(--vp-c-text-2);
   border-bottom: 2px solid transparent;
 }
-.repl-tabs > button.active:not(.repl-icon) {
+.repl-tab.active {
   color: var(--vp-c-brand-1);
   border-bottom-color: var(--vp-c-brand-1);
 }
-.repl-tab-spacer {
+.repl-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 4px;
+  background: var(--vp-c-bg-alt);
+  border-bottom: 1px solid var(--vp-c-divider);
+  flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.repl-toolbar-spacer {
   flex: 1;
 }
-.repl-icon {
-  font-size: 13px !important;
-  padding: 8px 10px !important;
-  min-width: 36px;
-  color: var(--vp-c-text-2);
+.repl-tool {
+  position: relative;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--vp-c-text-3);
+  border-radius: 3px;
+  line-height: 1;
+  white-space: nowrap;
 }
-.repl-icon.active {
+.repl-tool:hover {
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg-soft);
+}
+.repl-tool[data-tip]:hover::after,
+.repl-tool[data-tip].show-tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: var(--vp-c-text-1);
+  color: var(--vp-c-bg);
+  font-size: 11px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+.repl-tool.active {
   color: var(--vp-c-brand-1);
-  background: var(--vp-c-bg-alt);
 }
-.repl-tabs .repl-action {
-  font-size: 12px;
+.repl-tool:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.repl-run {
+  padding: 8px 14px;
+  background: var(--vp-c-brand-2);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  margin: 4px 0;
+}
+.repl-run:hover {
+  background: var(--vp-c-brand-3);
 }
 .repl-body {
   flex: 1;
@@ -1195,22 +1280,23 @@ function startResize(e: PointerEvent) {
 
 .repl-panel--code .repl-output,
 .repl-panel--result .repl-tabs,
+.repl-panel--result .repl-toolbar,
 .repl-panel--result .repl-editor {
   display: none !important;
 }
 
 @media (max-width: 720px) {
-  .repl-tabs button {
-    padding: 12px 14px;
+  .repl-tab {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .repl-tool {
+    padding: 12px 10px;
     font-size: 14px;
   }
-  .repl-tabs .repl-action {
+  .repl-run {
     font-size: 14px;
-    padding: 12px 14px;
-  }
-  .repl-icon {
-    min-width: 44px;
-    padding: 12px 8px !important;
+    padding: 10px 14px;
   }
   .repl-body {
     flex-direction: column;
