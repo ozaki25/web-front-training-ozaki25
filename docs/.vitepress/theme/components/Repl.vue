@@ -807,7 +807,7 @@ async function transpileTS(src: string, isTSX: boolean): Promise<string> {
   const hasImports = /\bimport\s/.test(src);
   const transforms: string[] = ["typescript"];
   if (isTSX) transforms.push("jsx");
-  if (hasImports) transforms.push("imports");
+  if (hasImports || isTSX) transforms.push("imports");
   return transform(src, {
     transforms: transforms as any,
     jsxRuntime: "automatic",
