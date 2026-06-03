@@ -96,6 +96,10 @@ export default withPwa(
                   text: "Day 18: 宣言的 UI",
                   link: "/lessons/day18/",
                 },
+                {
+                  text: "Day 19: 仮想 DOM",
+                  link: "/lessons/day19/",
+                },
               ],
             },
           ],
