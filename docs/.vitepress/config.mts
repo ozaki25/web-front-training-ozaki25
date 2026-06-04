@@ -101,6 +101,10 @@ export default withPwa(
                   text: "Day 20: デザイントークン",
                   link: "/lessons/day20/",
                 },
+                {
+                  text: "Day 21: 制御と非制御コンポーネント",
+                  link: "/lessons/day21/",
+                },
               ],
             },
           ],
