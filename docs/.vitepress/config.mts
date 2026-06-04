@@ -97,6 +97,10 @@ export default withPwa(
                   text: "Day 19: 仮想 DOM",
                   link: "/lessons/day19/",
                 },
+                {
+                  text: "Day 20: デザイントークン",
+                  link: "/lessons/day20/",
+                },
               ],
             },
           ],
