@@ -111,6 +111,7 @@ export default withPwa(
                 { text: "Promise と async/await", link: "/drafts/006/" },
                 { text: "モジュールの歴史", link: "/drafts/007/" },
                 { text: "Storybook 駆動開発", link: "/drafts/010/" },
+                { text: "デザイントークン", link: "/drafts/011/" },
               ],
             },
           ],
