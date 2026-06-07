@@ -34,4 +34,4 @@
 - [モジュールの歴史](/drafts/007/)
 - [Storybook 駆動開発](/drafts/010/)
 - [制御と非制御コンポーネント](/drafts/012/)
-- [ハイドレーション](/drafts/013/)
+- [use client の正体](/drafts/013/)
