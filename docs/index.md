@@ -33,3 +33,5 @@
 - [Promise と async/await](/drafts/006/)
 - [モジュールの歴史](/drafts/007/)
 - [Storybook 駆動開発](/drafts/010/)
+- [制御と非制御コンポーネント](/drafts/012/)
+- [ハイドレーション](/drafts/013/)
