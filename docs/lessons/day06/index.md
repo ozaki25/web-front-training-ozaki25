@@ -2,10 +2,8 @@
 
 ## 今日のゴール
 
-- 画像の書き方はアクセシビリティと Core Web Vitals の両方に直結すると知る
-- alt は画像の役割にあわせて書くことを知る
-- Core Web Vitals（CWV）というユーザー体験の指標があることを知る
-- 画像が届く前に場所を確定させれば CLS を防げることを知る
+- 画像の書き方がアクセシビリティと Core Web Vitals に直結することを知る
+- alt の書き分けと、CLS を防ぐサイズ指定の仕組みを知る
 - `loading="lazy"` の使いどころを知る
 
 ## 画像の書き方は 2 つの観点に直結する
@@ -180,9 +178,6 @@ URL を入力するだけで測定できる **[PageSpeed Insights](https://pages
 
 ## まとめ
 
-- 画像の書き方はアクセシビリティと CWV の両方に直結する
-- `alt` は画像の役割にあわせて書く。装飾画像は `alt=""`
-- **Core Web Vitals** は LCP / CLS / INP の 3 指標
-- `width` / `height` や `aspect-ratio` で CLS を防ぐ
-- `loading="lazy"` で画面外を遅延読み込み。ファーストビューには付けない
-- Lighthouse や PageSpeed Insights で品質を確認できる
+- `alt` は画像の役割で書き分ける（情報画像は説明、装飾画像は `alt=""`）
+- **CWV** の CLS 対策は `width` / `height` や `aspect-ratio` でサイズを確定させること
+- `loading="lazy"` は画面外の遅延読み込み。ファーストビューには付けない
