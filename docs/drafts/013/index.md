@@ -1,171 +1,180 @@
-# 「use client」の正体
+# ハイドレーション
 
 ## 今日のゴール
 
-- App Router のコンポーネントは、既定ではサーバーで動くことを知る
-- state やクリックなどの「動き」を使うとき `"use client"` が要る理由を知る
-- なぜサーバーとクライアントに分けるのか、その狙いを知る
+- 「速く表示する」と「ちゃんと動く」が、本来は両立しにくいことを知る
+- その両立を支えている「ハイドレーション」という工程を知る
+- ハイドレーションのズレ（あの赤いエラー）がなぜ起きるか、どう向き合うかを知る
 
-## 見たことのある一行
+## 「速く出る」のに「動く」、当たり前の不思議
 
-AI が書いた Next.js のコードを見ると、ファイル（画面の部品＝コンポーネントを書いたファイル）の先頭に `"use client"` という一行が付いているものと、付いていないものがあります。
+あなたが AI と作った Next.js のページ。開いた瞬間に表示されて、しかもボタンもちゃんと動きます。当たり前に感じますが、この「速い表示」と「動き」の両立は、実は簡単ではありません。
 
-あるいは、こんなエラーに出くわしたことがあるかもしれません（実際は英語で出ます）。
+Web ページの作り方には、もともと両極端な 2 つのやり方があるからです。
 
-```
-useState は Client Component でしか使えません。
-ファイル（またはその親）の先頭に "use client" を付けてください。
-```
+**素の HTML だけのページ**
 
-言われるがまま `"use client"` を付けたら動いた。でも、この一行が何なのかは分からないまま。今日はその正体を見ます。
+- ブラウザは受け取った HTML をすぐ表示できる。**速い**
+- でも、ボタンを押しても何も起きない。JavaScript がないと動かない
 
-## 既定はサーバーで動く
+**全部 JavaScript で描くページ**
 
-App Router では、コンポーネントは何も付けなければ **サーバーコンポーネント** です。名前のとおり、サーバーで動きます。
+- ボタンもメニューも**動く**
+- でも、JavaScript を全部ダウンロードして実行し終わるまで画面は真っ白。開いた直後にスピナーがくるくる回って中身が出てこない、あの画面です。**遅い**
+
+| ページの作り方 | 表示 | 動き |
+|---|---|---|
+| 素の HTML だけ | 速い | ✗ |
+| 全部 JavaScript | 遅い（真っ白） | ○ |
+| **Next.js などで作ったページ** | **速い** | **○** |
+
+どちらも一長一短です。なのに、あなたの Next.js のページは両方を満たしている。この**両取り**を、どうやって実現しているのか。その答えが **ハイドレーション（hydration）** です。
+
+## 表示と動きを 2 段階に分ける
+
+種明かしはシンプルです。表示と動きを、2 段階に分けています。
 
 ```mermaid
 flowchart LR
-  C["コンポーネント<br>（サーバーで実行）"] --> H["HTML を作る"] --> B["ブラウザに届ける"]
-  style C fill:#dbeafe,color:#1e293b,stroke:#3b82f6
-  style H fill:#dcfce7,color:#1e293b,stroke:#22c55e
-  style B fill:#f1f5f9,color:#1e293b,stroke:#94a3b8
+  A["サーバーが<br>HTML を作る"] --> B["ブラウザが表示<br>（速い・でもまだ動かない）"]
+  B --> C["JavaScript が届く"]
+  C --> D["絵に命を吹き込む<br>（ハイドレーション）"]
+  D --> E["操作できる"]
+  style A fill:#dbeafe,color:#1e293b,stroke:#3b82f6
+  style B fill:#fef3c7,color:#1e293b,stroke:#f59e0b
+  style C fill:#f1f5f9,color:#1e293b,stroke:#94a3b8
+  style D fill:#dcfce7,color:#1e293b,stroke:#22c55e
+  style E fill:#dcfce7,color:#1e293b,stroke:#22c55e
 ```
 
-- 1 回のリクエストにつきサーバーで実行され、**HTML を作る**のが役目
-- サーバー側で動くので、データベースや外部 API からデータを取ってきて、その結果を埋め込んだ HTML を作れる
-- データベースや API キーに直接触れても、その中身はブラウザに漏れない
-- 作った HTML をブラウザに届けたら、その役目は終わり
+1. **サーバー**（あなたのブラウザとは別の場所にあるコンピュータ）が、本来ブラウザで動くはずのコードを先回りで実行して HTML を作り、届ける。ブラウザはそれをすぐ表示する（**速い**。でも、まだ動かない絵）
+2. あとから JavaScript が届いて、その絵を**動くようにする**
 
-つまりサーバーコンポーネントは「**表示を組み立てる係**」です。データを集めて並べる、という仕事が得意です。
+この 2 つ目の工程が **ハイドレーション**です。先に見た目だけ届けて待たせず、あとから動きを足す。これが両取りの正体です。
 
-## 動きが要るならクライアント
+## 絵に命を吹き込む
 
-一方で、サーバーには苦手なことがあります。**ユーザーの操作にその場で反応する**ことです。
+イメージは「**絵に命を吹き込む**」です。
 
-- `useState`（入力やカウントなどの値を覚えておく）
-- `onClick`（クリックに反応する）
-- `window` / `localStorage`（ブラウザの機能を使う）
+- サーバーから届く HTML は「**絵**」です。すぐ表示できるけれど、ボタンは押せません
+- そこへ JavaScript が届くと、ブラウザがその絵を動くようにします
 
-これらは「画面が表示されたあと、ユーザーの操作に合わせて値を変えたり反応したりする」もの。つまり、ブラウザの中で動き続ける必要があります。
+ここでひとつ疑問がわきます。すでに絵（HTML）は表示されているのに、ブラウザはあらためて何をしているのでしょうか。
 
-ところがサーバーコンポーネントは、HTML を作ったら役目が終わります。ずっと居座ってクリックを待つことはできません。
+理由はこうです。絵には「ここにボタンがある」とは描いてあっても、「**押したら何が起きるか**」までは載っていません。だから、それだけでは動かしようがない。
 
-そこで、操作に反応する部分は **ブラウザの中でも動かす**必要があります。それを宣言するのが `"use client"` です。ファイルの先頭に置くと、そのコンポーネントは **クライアントコンポーネント**（ブラウザでも動くコンポーネント）になります。
+そこでブラウザは、こう動きます。
 
-```tsx
-"use client"; // ← これがないと、下の useState でエラーになる
+1. 1 段階目でサーバーが実行したのと**同じコードをもう一度実行**し、「本来こうなるはず」という設計図（動きまで含めた、あるべき形）を組み立てる
+2. その設計図を、すでに表示されている絵（HTML）と突き合わせる
+3. ぴったり重なれば、絵に動き（クリックの反応など）を結びつける
 
-import { useState } from "react";
+ゼロから描き直さないのは、せっかく速く表示できている絵を**活かす**ためです。
 
-export default function Counter() {
-  const [count, setCount] = useState(0);
-  return <button onClick={() => setCount(count + 1)}>{count}</button>;
-}
-```
+ちなみに、ハイドレーション（hydration）は英語で「水分を与える」という意味です。乾いた絵に水を吸わせて生き返らせる。だから「命を吹き込む」と言えます。
 
-冒頭のエラーは、これを言っていたわけです。「`useState` を使うなら、このコンポーネントはクライアントだと宣言してね」と。
+### 触って確かめる
 
-### 「クライアント」は「ブラウザだけ」ではない
+下のミニ画面は、最初は「絵」の状態です。カウントボタンを押しても数は増えません。「JavaScript を届ける」を押すと、ハイドレーションが起きてボタンに命が吹き込まれます。
 
- ひとつ誤解しやすい点があります。`"use client"` は「**ブラウザだけ**で動く」という意味ではありません。
-
-- クライアントコンポーネントも、**初回の HTML はサーバーで作られます**
-- そのあと、ブラウザに届いてから「**動くようになる**」のです（表示済みの HTML をブラウザ側で操作できるようにするこの仕上げを、ハイドレーションと呼びます）
-
-だから正確には「ブラウザ**でも**動く」。最初の表示はサーバーが用意し、操作できる状態にする仕上げをブラウザが担う。いわば二人三脚です。
-
-### サーバーとクライアントの違い
-
-| | サーバーコンポーネント | クライアントコンポーネント |
-|---|---|---|
-| `"use client"` | 不要（既定） | 必要 |
-| `useState` / `onClick` | 使えない | 使える |
-| DB・ファイル・API キー | 直接触れる | 触れない（中身がブラウザに送られるため） |
-| 主な役目 | 表示を組み立てる | 操作に反応する |
-
-### どちらになるか、見分けてみる
-
-次のコンポーネント、`"use client"` が要るのはどれでしょうか。まず自分で考えてから開いてください。
-
-<div class="c13-quiz" id="c13-quiz">
-  <div class="c13-case">
-    <p class="c13-q">1. 記事のタイトルと本文を表示するだけ</p>
-    <button type="button" class="c13-qbtn" onclick="document.getElementById('c13-a1').hidden=false">答えを見る</button>
-    <p class="c13-answer" id="c13-a1" hidden>サーバーで OK（不要）。操作に反応しないので、HTML を作るだけで足ります。</p>
+<div class="c13-demo" id="c13-demo">
+  <div class="c13-screen">
+    <div class="c13-status" id="c13-status" aria-live="polite">状態: 絵（HTML）だけ</div>
+    <p class="c13-count">カウント: <span id="c13-count">0</span></p>
+    <button type="button" class="c13-counter" id="c13-counter" onclick="
+      if (document.getElementById('c13-hydrate').disabled) {
+        var el = document.getElementById('c13-count');
+        el.textContent = String(Number(el.textContent) + 1);
+      }
+    ">＋1する</button>
   </div>
-  <div class="c13-case">
-    <p class="c13-q">2. ボタンを押すとカウントが増える</p>
-    <button type="button" class="c13-qbtn" onclick="document.getElementById('c13-a2').hidden=false">答えを見る</button>
-    <p class="c13-answer" id="c13-a2" hidden>クライアント（必要）。`useState` と `onClick` を使うので `"use client"` が要ります。</p>
-  </div>
-  <div class="c13-case">
-    <p class="c13-q">3. データベースから記事一覧を取ってきて並べる</p>
-    <button type="button" class="c13-qbtn" onclick="document.getElementById('c13-a3').hidden=false">答えを見る</button>
-    <p class="c13-answer" id="c13-a3" hidden>サーバーで OK（不要）。むしろサーバーの得意分野。DB に直接触れて、結果の HTML だけ届けられます。</p>
-  </div>
+  <button type="button" class="c13-hydrate" id="c13-hydrate" onclick="
+    document.getElementById('c13-status').textContent = '状態: 命が吹き込まれた（押せます）';
+    this.disabled = true;
+    this.textContent = 'ハイドレーション完了';
+  ">JavaScript を届ける（ハイドレーション）</button>
+  <p class="c13-note">この「JavaScript が届くまでの一瞬」が、実際のページでボタンが効かない時間にあたります。</p>
 </div>
 
-## なぜ分けるのか
+## ズレると作り直しになる
 
-そもそも、なぜこんな区別があるのでしょうか。両極端を考えると分かります。
+設計図と HTML を突き合わせる、と言いました。ここに大事な約束があります。
 
-**もし全部クライアントにしたら**
+> **サーバーが作った HTML と、ブラウザが組み立てた設計図が、ぴったり一致していないといけない。**
 
-- 動かない表示部分まで含めて、コンポーネントの JavaScript を**全部ブラウザに送る**ことになる
-- ダウンロードも実行も増えて、重く、遅くなる
+ズレると、ブラウザはズレた箇所を含むかたまり（部品のまとまり）を捨てて、一から作り直します。ズレ方によっては、ページの広い範囲が作り直しになります。最終的には正しく動くことが多いものの、せっかく速く表示した画面が一瞬崩れたり、開発中はこんな赤いエラーが出たりします（実際は英語です）。
 
-**もし全部サーバーだけなら**
-
-- 表示は速いが、クリックも入力も**動かない**
-
-だから、両取りします。
-
-> **動かない部分はサーバーで済ませて HTML だけ送り（軽い・速い）、動きが要る部分だけ `"use client"` でクライアントにする。**
-
-`"use client"` は「**ここから先はブラウザでも動かす**」という境界線です。
-
-```mermaid
-flowchart TD
-  Page["Page（サーバー）"] --> Header["Header（サーバー）"]
-  Page --> Article["Article（サーバー）"]
-  Page --> Like["LikeButton（クライアント）<br>\"use client\""]
-  style Page fill:#dbeafe,color:#1e293b,stroke:#3b82f6
-  style Header fill:#dbeafe,color:#1e293b,stroke:#3b82f6
-  style Article fill:#dbeafe,color:#1e293b,stroke:#3b82f6
-  style Like fill:#fef3c7,color:#1e293b,stroke:#f59e0b
+```
+Hydration failed because the server rendered HTML
+didn't match the client.
 ```
 
-ここで大事なコツがあります。`"use client"` を付けると、**そのコンポーネントが読み込む子も、まとめてクライアント側になります**。だから境界は、動きが本当に要る末端（上の例なら「いいねボタン」だけ）に寄せるのがよい。大きく囲うほど、ブラウザに送る JavaScript が増えて重くなります。
+ズレる原因は、**サーバーとブラウザで結果が変わるもの**を使ったときです。
+
+| 使うと危ないもの | なぜズレるか |
+|---|---|
+| `new Date()` / `Date.now()` | サーバー側で作った時刻と、ブラウザで動く時刻が違う |
+| `Math.random()` | サーバーとブラウザで別々の乱数になる |
+| `window` / `localStorage` | サーバーには存在しない（ブラウザにしかない） |
+
+例えば「現在時刻」をそのまま表示すると、サーバー側で HTML を作ったときの時刻と、ブラウザがハイドレーションするときの時刻がズレて、不一致になります。
+
+### どう向き合うか
+
+避け方の方向性を知っておくと、AI への指示や原因の切り分けに役立ちます。
+
+- こうした値は、**表示されたあとブラウザ側で出す**のが定石（最初の HTML には含めない）
+- 「見えているのにエラーが出る」と気づけたら、AI に「これはハイドレーションのズレだから直して」と的確に頼める
+
+原因を言葉にできること。それが、このレッスンの一番の収穫です。
 
 ## まとめ
 
-- App Router の既定はサーバーコンポーネント（表示を組み立てる係）
-- state・クリック・ブラウザ機能を使うなら `"use client"`（クライアントコンポーネント）
-- `"use client"` は「ブラウザだけ」ではなく「ブラウザでも動く」
-- 分ける狙いは、軽さ（サーバー）と動き（クライアント）の両取り
-- 境界は動きが要る末端に寄せると軽い
+- 「速い表示」と「動く」は本来トレードオフ。その両取りの工夫がハイドレーション
+- 1 段階目でサーバーが HTML（絵）を届け、2 段階目でブラウザが動きを吹き込む
+- HTML には「押したら何が起きるか」が無いので、ブラウザは設計図を組み立てて突き合わせる
+- サーバーの HTML と設計図がズレると、作り直しになる
+- 時刻・乱数・`window` など、環境で変わるものがズレの原因
 
 <style>
-.c13-quiz {
+.c13-demo {
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  padding: 8px 16px;
+  padding: 16px;
   margin: 1.2em 0;
   background: #f8fafc;
   color: #1e293b;
 }
-.c13-case {
-  padding: 12px 0;
-  border-bottom: 1px solid #e2e8f0;
-}
-.c13-case:last-child { border-bottom: none; }
-.c13-q {
-  font-weight: 700;
+.c13-screen {
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
   color: #1e293b;
-  margin: 0 0 8px;
+  margin-bottom: 12px;
 }
-.c13-qbtn {
-  padding: 6px 14px;
+.c13-status {
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 8px;
+}
+.c13-count {
+  font-size: 15px;
+  color: #1e293b;
+  margin: 8px 0;
+}
+.c13-counter {
+  padding: 8px 16px;
+  font-size: 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #1e293b;
+  cursor: pointer;
+}
+.c13-hydrate {
+  padding: 8px 16px;
   font-size: 14px;
   border: none;
   border-radius: 6px;
@@ -173,14 +182,14 @@ flowchart TD
   color: #ffffff;
   cursor: pointer;
 }
-.c13-qbtn:hover { background: #2563eb; }
-.c13-answer {
-  margin: 10px 0 0;
-  padding: 10px 12px;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #1e293b;
-  border: 1px solid #cbd5e1;
-  font-size: 14px;
+.c13-hydrate:hover { background: #2563eb; }
+.c13-hydrate:disabled {
+  background: #22c55e;
+  cursor: default;
+}
+.c13-note {
+  font-size: 13px;
+  color: #475569;
+  margin: 12px 0 0;
 }
 </style>
