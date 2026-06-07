@@ -184,9 +184,6 @@ email=user@example.com&message=こんにちは
 
 ## まとめ
 
-- HTML だけでフォーム送信ができる。JavaScript は不要
-- `action` で送信先、`method` で送信方法を指定する
-- `name` がない入力欄は送信データに含まれない
-- `<button>` の `type` 省略は `submit` 扱い。送信目的でなければ `type="button"`
-- `<label>` の `for` と `<input>` の `id` を紐付けないと操作性が壊れる
-- `<fieldset>` と `<legend>` で入力欄をグループ化できる
+- フォーム送信は HTML だけで完結する（`action` / `method` / `name`）
+- `name` なしは送信されない。`<button>` の `type` 省略は `submit` 扱い
+- `<label>` の紐付けと `<fieldset>` のグループ化がアクセシビリティの基盤
