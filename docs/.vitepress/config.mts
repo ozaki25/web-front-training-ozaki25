@@ -105,6 +105,10 @@ export default withPwa(
                   text: "Day 21: 制御と非制御コンポーネント",
                   link: "/lessons/day21/",
                 },
+                {
+                  text: "Day 22: 文字数カウントの罠",
+                  link: "/lessons/day22/",
+                },
               ],
             },
           ],
