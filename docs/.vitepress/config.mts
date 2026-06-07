@@ -117,7 +117,7 @@ export default withPwa(
                 { text: "Storybook 駆動開発", link: "/drafts/010/" },
                 { text: "制御と非制御コンポーネント", link: "/drafts/012/" },
                 { text: "ハイドレーション", link: "/drafts/013/" },
-                { text: "文字コードと文字数の罠", link: "/drafts/014/" },
+                { text: "文字数カウントの罠", link: "/drafts/014/" },
               ],
             },
           ],
