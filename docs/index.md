@@ -33,6 +33,4 @@
 
 - [関数とコールバック](/drafts/005/)
 - [Promise と async/await](/drafts/006/)
-- [モジュールの歴史](/drafts/007/)
-- [Storybook 駆動開発](/drafts/010/)
 - [ハイドレーション](/drafts/013/)
