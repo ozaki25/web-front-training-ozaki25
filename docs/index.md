@@ -27,6 +27,7 @@
 - [Day 19: 仮想 DOM — React が画面を速く書き換える仕組み](/lessons/day19/)
 - [Day 20: デザイントークン — 色やサイズを「名前」で管理する](/lessons/day20/)
 - [Day 21: 制御と非制御コンポーネント — フォームの値は誰が持つ](/lessons/day21/)
+- [Day 22: 文字数カウントの罠 — `.length` は見た目の文字数ではない](/lessons/day22/)
 
 ## 候補（下書き）
 
@@ -34,6 +35,4 @@
 - [Promise と async/await](/drafts/006/)
 - [モジュールの歴史](/drafts/007/)
 - [Storybook 駆動開発](/drafts/010/)
-- [制御と非制御コンポーネント](/drafts/012/)
 - [ハイドレーション](/drafts/013/)
-- [文字数カウントの罠](/drafts/014/)
