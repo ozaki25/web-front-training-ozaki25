@@ -34,4 +34,5 @@
 - [関数とコールバック](/drafts/005/)
 - [Promise と async/await](/drafts/006/)
 - [ハイドレーション](/drafts/013/)
-- [React Compiler](/drafts/015/)
+- [再レンダリングと手動メモ化](/drafts/015/)
+- [React Compiler](/drafts/016/)
