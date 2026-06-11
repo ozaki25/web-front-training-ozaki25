@@ -122,6 +122,7 @@ export default withPwa(
                 { text: "関数とコールバック", link: "/drafts/005/" },
                 { text: "Promise と async/await", link: "/drafts/006/" },
                 { text: "ハイドレーション", link: "/drafts/013/" },
+                { text: "React Compiler", link: "/drafts/015/" },
               ],
             },
           ],
