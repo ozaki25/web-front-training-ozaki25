@@ -13,7 +13,7 @@
 | React | 19.2 系 | form actions, useActionState, useFormStatus, useOptimistic, use() API（useContext の代替）。forwardRef 非推奨（ref を通常の prop として渡せる）。19.2（2025/10）で useEffectEvent・`<Activity>`・View Transitions 対応・Suspense の一括表示が追加。RSC のセキュリティ修正が 19.x パッチで継続提供（19.0.1 / 19.1.2 / 19.2.1 等）。**React 20 は未リリース**（2026/06 時点。一部ブログの「React 20」記事は誤情報） |
 | React Compiler | 1.0 | React 19 に自動バンドルされない。`npm install -D babel-plugin-react-compiler`。Next.js では `next.config.ts` に `reactCompiler: true` を追加 |
 | TypeScript | 6 系（安定）/ 7 ベータ | satisfies 演算子、as const、const type parameters。**TypeScript 7 = Go 製ネイティブコンパイラ（tsgo）がベータ公開中**（2026/06 時点。約10倍高速・構文や型の書き方は不変）。6 系は移行ブリッジの位置づけ。「TS7 安定版リリース済み」と主張するブログは誤情報 |
-| Tailwind CSS | 4 | CSS ファースト設定。`@import "tailwindcss"`、`@theme` ブロック。`tailwind.config.js/ts` は不要。`@tailwindcss/postcss` を使用 |
+| Tailwind CSS | 4.3 | CSS ファースト設定。`@import "tailwindcss"`、`@theme` ブロック。`tailwind.config.js/ts` は不要。`@tailwindcss/postcss` を使用。4.1 でテキストシャドウ・マスク、4.2 で webpack プラグイン・論理プロパティ、4.3 が現行安定版 |
 | Vitest | 最新安定版 | Jest 互換 API。`vitest.config.ts` で設定 |
 | Testing Library | 最新安定版 | `@testing-library/react`, `@testing-library/user-event` |
 | Auth.js (NextAuth) | **v5（安定版）** | `auth()` 関数に統合（getServerSession 等を置換）。環境変数は `AUTH_*` プレフィックス。**プロジェクトは Better Auth 社に移管済みで同社が維持**。新規選定の主候補は Auth.js / Better Auth / Clerk |
