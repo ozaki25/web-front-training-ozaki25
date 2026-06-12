@@ -157,6 +157,7 @@ export default withPwa(
                 { text: "テストを読む目", link: "/drafts/047/" },
                 { text: "Testing Library の思想", link: "/drafts/048/" },
                 { text: "テストの置き場所", link: "/drafts/049/" },
+                { text: "XSS", link: "/drafts/050/" },
               ],
             },
           ],
