@@ -159,6 +159,7 @@ export default withPwa(
                 { text: "テストの置き場所", link: "/drafts/049/" },
                 { text: "XSS", link: "/drafts/050/" },
                 { text: "Cookie と認証", link: "/drafts/051/" },
+                { text: "CSRF と SameSite", link: "/drafts/052/" },
               ],
             },
           ],
