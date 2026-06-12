@@ -17,6 +17,11 @@
 | Vitest | 最新安定版 | Jest 互換 API。`vitest.config.ts` で設定 |
 | Testing Library | 最新安定版 | `@testing-library/react`, `@testing-library/user-event` |
 | Auth.js (NextAuth) | v5 beta | `npm install next-auth@beta`。正式安定版は未リリース。Better Auth チームへの移管が発表されている |
+| TanStack Query | v5 | `useQuery({ queryKey, queryFn })`。`isPending`（v4 の `isLoading` から改名）。戻り値は判別可能ユニオン |
+| Playwright | 最新安定版 | `getByRole` / `getByLabel` などロールベースのロケータが推奨。`expect(...).toBeVisible()` で自動待機 |
+| MSW | v2 | `http.get(...)` + `HttpResponse.json(...)`（v1 の `rest.get` / `res(ctx.json())` から API 刷新） |
+| Zod | 3.x | `z.object` / `safeParse`。クライアントとサーバーでスキーマ共有が定番 |
+| Zustand | v4/v5 | `create<T>((set) => ...)`。セレクタで購読粒度を制御 |
 
 ## Next.js の主要 API 変更（従来 → 現在）
 
