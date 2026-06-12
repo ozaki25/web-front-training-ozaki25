@@ -31,92 +31,133 @@
 
 ## 候補（下書き）
 
+### JS の基礎
+
 - [関数とコールバック](/drafts/005/)
 - [Promise](/drafts/006/)
 - [async/await](/drafts/086/)
-- [ハイドレーション](/drafts/013/)
-- [再レンダリングと手動メモ化](/drafts/015/)
-- [React Compiler](/drafts/016/)
 - [React コードを読むための JS 構文](/drafts/017/)
 - [配列操作と JSX のリスト](/drafts/018/)
+- [イベントループ](/drafts/029/)
+- [スコープとクロージャ](/drafts/025/)
+- [日付とタイムゾーンの罠](/drafts/085/)
+- [URL の解剖](/drafts/084/)
+
+### React の核
+
 - [JSX と props](/drafts/019/)
 - [JSX の正体](/drafts/020/)
 - [useState と画面更新](/drafts/021/)
 - [key の正体](/drafts/022/)
-- [Tailwind CSS の仕組み](/drafts/023/)
 - [useEffect と副作用](/drafts/024/)
-- [スコープとクロージャ](/drafts/025/)
+- [再レンダリングと手動メモ化](/drafts/015/)
+- [React Compiler](/drafts/016/)
 - [Context と use()](/drafts/026/)
 - [状態管理の世代史](/drafts/027/)
 - [カスタムフック](/drafts/028/)
-- [イベントループ](/drafts/029/)
+- [useRef](/drafts/088/)
+- [エラーバウンダリ](/drafts/083/)
 - [イベントの仕組み](/drafts/030/)
 - [データ取得ライブラリ](/drafts/031/)
-- [HTTP とステータスコード](/drafts/032/)
+
+### Next.js / App Router
+
+- [ハイドレーション](/drafts/013/)
 - [Server / Client Components](/drafts/033/)
 - [App Router のファイル規約](/drafts/034/)
 - [SC でのデータ取得](/drafts/035/)
-- [CORS](/drafts/036/)
+- [動的ルート](/drafts/093/)
 - [Server Actions とフォーム](/drafts/037/)
+- [フォームバリデーションの層](/drafts/095/)
 - [キャッシュ制御](/drafts/038/)
 - [Suspense と Streaming](/drafts/039/)
 - [SPA のページ遷移の正体](/drafts/040/)
+- [proxy.ts](/drafts/092/)
+- [環境変数](/drafts/065/)
+- [metadata と OGP](/drafts/094/)
+
+### Web 標準と通信
+
+- [HTTP とステータスコード](/drafts/032/)
+- [CORS](/drafts/036/)
 - [WebSocket と SSE](/drafts/041/)
+- [HTTP キャッシュと CDN](/drafts/060/)
+- [Service Worker](/drafts/079/)
+- [Web Storage](/drafts/096/)
+- [View Transitions](/drafts/100/)
+
+### CSS
+
+- [Tailwind CSS の仕組み](/drafts/023/)
+- [カスケードと詳細度](/drafts/076/)
+- [モダン CSS](/drafts/077/)
+- [ダークモードの仕組み](/drafts/078/)
+
+### アクセシビリティ
+
 - [スクリーンリーダーから見た Web](/drafts/042/)
 - [WAI-ARIA の正体](/drafts/043/)
 - [フォーカス管理](/drafts/044/)
 - [色のアクセシビリティ](/drafts/045/)
-- [E2E テスト](/drafts/046/)
-- [テストを読む目](/drafts/047/)
-- [Testing Library](/drafts/048/)
-- [テストのコスト構造](/drafts/049/)
+- [アクセシビリティ検査の原理](/drafts/089/)
+
+### セキュリティ
+
 - [XSS](/drafts/050/)
 - [Cookie と認証](/drafts/051/)
 - [CSRF と SameSite](/drafts/052/)
 - [OAuth と OIDC](/drafts/053/)
+- [パスキー](/drafts/087/)
 - [npm サプライチェーン](/drafts/054/)
-- [AI コーディングとの付き合い方](/drafts/055/)
-- [MCP](/drafts/056/)
-- [コンテキストウィンドウ](/drafts/057/)
+
+### テスト
+
+- [E2E テスト](/drafts/046/)
+- [テストを読む目](/drafts/047/)
+- [Testing Library](/drafts/048/)
+- [テストのコスト構造](/drafts/049/)
+- [モックと MSW](/drafts/090/)
+
+### パフォーマンスと観測
+
 - [Web Vitals](/drafts/058/)
 - [バンドルサイズ](/drafts/059/)
-- [HTTP キャッシュと CDN](/drafts/060/)
 - [next/image と next/font](/drafts/061/)
-- [npm run の正体](/drafts/062/)
-- [HMR](/drafts/063/)
-- [ビルドとデプロイ](/drafts/064/)
-- [環境変数](/drafts/065/)
-- [コンポーネントの責務分割](/drafts/066/)
-- [命名という設計](/drafts/067/)
-- [コロケーション](/drafts/068/)
+- [フロントエンドの可観測性](/drafts/082/)
+
+### 型
+
 - [TypeScript の型を読む](/drafts/069/)
 - [構造的型付け](/drafts/070/)
 - [型は実行時に消える](/drafts/071/)
+- [strict の仕組み](/drafts/099/)
+
+### 開発環境
+
+- [npm run の正体](/drafts/062/)
+- [HMR](/drafts/063/)
+- [ESM とバンドラー](/drafts/081/)
+- [ビルドとデプロイ](/drafts/064/)
+- [Git のデータモデル](/drafts/080/)
+- [DevTools](/drafts/091/)
+- [エラーの読み方](/drafts/097/)
+- [ESLint の仕組み](/drafts/098/)
+
+### 設計とコードの読み書き
+
+- [コンポーネントの責務分割](/drafts/066/)
+- [命名という設計](/drafts/067/)
+- [コロケーション](/drafts/068/)
+
+### UX・デザイン
+
 - [ダークパターン](/drafts/072/)
 - [UI デザインの法則](/drafts/073/)
 - [OOUI](/drafts/074/)
 - [デザインシステムの実装](/drafts/075/)
-- [カスケードと詳細度](/drafts/076/)
-- [モダン CSS](/drafts/077/)
-- [ダークモードの仕組み](/drafts/078/)
-- [Service Worker](/drafts/079/)
-- [Git のデータモデル](/drafts/080/)
-- [ESM とバンドラー](/drafts/081/)
-- [フロントエンドの可観測性](/drafts/082/)
-- [エラーバウンダリ](/drafts/083/)
-- [URL の解剖](/drafts/084/)
-- [日付とタイムゾーンの罠](/drafts/085/)
-- [パスキー](/drafts/087/)
-- [useRef](/drafts/088/)
-- [アクセシビリティ検査の原理](/drafts/089/)
-- [モックと MSW](/drafts/090/)
-- [DevTools](/drafts/091/)
-- [proxy.ts](/drafts/092/)
-- [動的ルート](/drafts/093/)
-- [metadata と OGP](/drafts/094/)
-- [フォームバリデーションの層](/drafts/095/)
-- [Web Storage](/drafts/096/)
-- [エラーの読み方](/drafts/097/)
-- [ESLint の仕組み](/drafts/098/)
-- [strict の仕組み](/drafts/099/)
-- [View Transitions](/drafts/100/)
+
+### AI との協働
+
+- [AI コーディングとの付き合い方](/drafts/055/)
+- [MCP](/drafts/056/)
+- [コンテキストウィンドウ](/drafts/057/)
