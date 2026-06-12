@@ -16,7 +16,7 @@
 | Tailwind CSS | 4 | CSS ファースト設定。`@import "tailwindcss"`、`@theme` ブロック。`tailwind.config.js/ts` は不要。`@tailwindcss/postcss` を使用 |
 | Vitest | 最新安定版 | Jest 互換 API。`vitest.config.ts` で設定 |
 | Testing Library | 最新安定版 | `@testing-library/react`, `@testing-library/user-event` |
-| Auth.js (NextAuth) | v5 beta | `npm install next-auth@beta`。正式安定版は未リリース。Better Auth チームへの移管が発表されている |
+| Auth.js (NextAuth) | **v5（安定版）** | `auth()` 関数に統合（getServerSession 等を置換）。環境変数は `AUTH_*` プレフィックス。**プロジェクトは Better Auth 社に移管済みで同社が維持**。新規選定の主候補は Auth.js / Better Auth / Clerk |
 | TanStack Query | v5 | `useQuery({ queryKey, queryFn })`。`isPending`（v4 の `isLoading` から改名）。戻り値は判別可能ユニオン |
 | Playwright | 最新安定版 | `getByRole` / `getByLabel` などロールベースのロケータが推奨。`expect(...).toBeVisible()` で自動待機 |
 | MSW | v2 | `http.get(...)` + `HttpResponse.json(...)`（v1 の `rest.get` / `res(ctx.json())` から API 刷新） |
