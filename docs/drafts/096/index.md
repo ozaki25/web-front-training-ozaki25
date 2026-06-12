@@ -42,6 +42,32 @@ const recent = JSON.parse(localStorage.getItem("recent") ?? "[]");
 
 API は localStorage と同じで、寿命だけが違います。**そのタブを閉じたら消える**ので、「複数ステップのフォームの途中状態」のような、その場限りの作業データに向いています。タブごとに独立しているのも特徴です（同じサイトを 2 タブで開くと別の引き出し）。
 
+### 触って確かめる
+
+2 つのカウンターは、どちらもボタンを押すたびに保存領域の値を +1 して表示します。**このページをリロードしてから、もう一度押してみてください**。localStorage 側は続きから増え（残っている）、sessionStorage もリロードでは残りますが、**新しいタブでこのページを開くと 0 からになります**（タブ限り）。
+
+<div class="c96-demo">
+  <div class="c96-box">
+    <p class="c96-name">localStorage</p>
+    <button type="button" class="c96-btn" onclick="
+      var v = Number(localStorage.getItem('c96-count') || 0) + 1;
+      localStorage.setItem('c96-count', String(v));
+      document.getElementById('c96-local').textContent = String(v);
+    ">+1 して保存</button>
+    <p class="c96-value">保存中の値: <span id="c96-local" aria-live="polite">?</span></p>
+  </div>
+  <div class="c96-box">
+    <p class="c96-name">sessionStorage</p>
+    <button type="button" class="c96-btn" onclick="
+      var v = Number(sessionStorage.getItem('c96-count') || 0) + 1;
+      sessionStorage.setItem('c96-count', String(v));
+      document.getElementById('c96-session').textContent = String(v);
+    ">+1 して保存</button>
+    <p class="c96-value">保存中の値: <span id="c96-session" aria-live="polite">?</span></p>
+  </div>
+  <p class="c96-note">「?」は未読み込みの印です。ボタンを押すと保存領域の現在値 +1 が表示されます。開発者ツールの Application タブで、実際に保存されている様子も見られます。</p>
+</div>
+
 ### Cookie — サーバーに届く唯一の置き場
 
 3 つの中で Cookie だけが、**リクエストのたびにサーバーへ自動で送られます**。サーバーが値を知る必要があるもの、つまり**ログインセッション**のための置き場です。容量が小さく、毎回の通信に乗るため、大きなデータには向きません。
@@ -112,3 +138,52 @@ export function ThemeLabel() {
 - 判断軸は「サーバーが知る必要があるか」と「いつまで残すか」
 - localStorage は XSS で全部読まれる。トークンや個人情報は置かない（HttpOnly Cookie へ）
 - localStorage はサーバーに存在しない。触るのは useEffect の中で
+
+<style>
+.c96-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 1.2em 0;
+  background: #f8fafc;
+  color: #1e293b;
+}
+.c96-box {
+  flex: 1 1 200px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+  color: #1e293b;
+}
+.c96-name {
+  font-weight: 700;
+  font-family: monospace;
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+.c96-btn {
+  padding: 8px 14px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #1e293b;
+  cursor: pointer;
+}
+.c96-btn:hover { background: #e2e8f0; }
+.c96-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.c96-value {
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+.c96-note {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: #475569;
+  margin: 4px 0 0;
+}
+</style>

@@ -268,3 +268,4 @@
 | 261 | drafts/077 | :has() の「触って確かめる」デモを追加（JS ゼロ・チェックで親カードが変わる）。c77- プレフィックス・focus-visible・ダークモード色指定を遵守。dist で実体レンダリングを確認 |
 | 262 | 085/092 | 後半レッスンのコールアウトパス。085 の Temporal 補足と 092 の旧名 middleware 補足を ::: tip に変換（086 の allSettled は本文の流れの一部のため平書きのまま維持）。ビルド確認 |
 | 263 | drafts/084 | URL 部品分解のリアルタイムデモを追加（new URL() で編集即反映、不正 URL のエラー処理付き）。c84- プレフィックス・aria-live・focus-visible・ダークモード色指定を遵守。dist で実体確認 |
+| 264 | drafts/096 | localStorage / sessionStorage の寿命差を実体験するデモを追加（+1 して保存 → リロード後に続きから増える）。c96- プレフィックス・aria-live・focus-visible・ダークモード対応を遵守。dist で実体確認 |
