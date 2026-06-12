@@ -152,6 +152,7 @@ export default withPwa(
                 { text: "スクリーンリーダーから見た Web", link: "/drafts/042/" },
                 { text: "WAI-ARIA の正体", link: "/drafts/043/" },
                 { text: "フォーカス管理", link: "/drafts/044/" },
+                { text: "色のアクセシビリティ", link: "/drafts/045/" },
               ],
             },
           ],
