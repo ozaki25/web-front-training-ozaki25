@@ -120,7 +120,8 @@ export default withPwa(
               text: "候補",
               items: [
                 { text: "関数とコールバック", link: "/drafts/005/" },
-                { text: "Promise と async/await", link: "/drafts/006/" },
+                { text: "Promise", link: "/drafts/006/" },
+                { text: "async/await", link: "/drafts/086/" },
                 { text: "ハイドレーション", link: "/drafts/013/" },
                 { text: "再レンダリングと手動メモ化", link: "/drafts/015/" },
                 { text: "React Compiler", link: "/drafts/016/" },

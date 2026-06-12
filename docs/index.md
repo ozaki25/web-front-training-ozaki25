@@ -32,7 +32,8 @@
 ## 候補（下書き）
 
 - [関数とコールバック](/drafts/005/)
-- [Promise と async/await](/drafts/006/)
+- [Promise](/drafts/006/)
+- [async/await](/drafts/086/)
 - [ハイドレーション](/drafts/013/)
 - [再レンダリングと手動メモ化](/drafts/015/)
 - [React Compiler](/drafts/016/)
