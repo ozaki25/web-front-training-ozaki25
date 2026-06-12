@@ -135,6 +135,7 @@ export default withPwa(
                 { text: "スコープとクロージャ", link: "/drafts/025/" },
                 { text: "Context と use()", link: "/drafts/026/" },
                 { text: "状態管理の世代史", link: "/drafts/027/" },
+                { text: "カスタムフック", link: "/drafts/028/" },
               ],
             },
           ],
