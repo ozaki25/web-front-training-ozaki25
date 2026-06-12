@@ -116,3 +116,5 @@
 - [metadata と OGP](/drafts/094/)
 - [フォームバリデーションの層](/drafts/095/)
 - [Web Storage](/drafts/096/)
+- [エラーの読み方](/drafts/097/)
+- [ESLint の仕組み](/drafts/098/)

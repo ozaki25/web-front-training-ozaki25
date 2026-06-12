@@ -204,6 +204,8 @@ export default withPwa(
                 { text: "metadata と OGP", link: "/drafts/094/" },
                 { text: "フォームバリデーションの層", link: "/drafts/095/" },
                 { text: "Web Storage", link: "/drafts/096/" },
+                { text: "エラーの読み方", link: "/drafts/097/" },
+                { text: "ESLint の仕組み", link: "/drafts/098/" },
               ],
             },
           ],
