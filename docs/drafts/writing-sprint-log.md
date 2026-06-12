@@ -284,3 +284,5 @@
 | 277 | 全体 | 図の無いレッスンを機械抽出（32本）。デモや表が図の役割を果たすものを除き、流れの理解に効く5本を選定 |
 | 278 | 015/032/051/052/054 | 仕組み図を追加: 015（再レンダリング連鎖の波及図）、032（4xx/5xx 切り分けフロー）、051（Set-Cookie → 自動添付 → 照合のシーケンス）、052（CSRF 攻撃のシーケンス）、054（依存の木と汚染の波及）。ビルド確認 |
 | 279 | tech-versions | 鮮度監査の継続（Web 検索）: Auth.js v5 は安定版化済み（beta 表記が古かった）、NextAuth は Better Auth 社への移管が完了済み。tech-versions を更新。レッスン 053/087 は版数主張なしで影響なし |
+| 280 | tech-versions | React の鮮度監査（Web 検索・公式裏取り）: 現行は 19.2 系（useEffectEvent / Activity / View Transitions / Suspense 一括表示）。RSC セキュリティ修正のパッチ系列を記録。**「React 20 リリース」と主張する一次ブログを検出 → react.dev / GitHub で否定を確認**（誤情報源の実例として記録） |
+| 281 | drafts/100 | View Transitions に React 19.2 統合の tip を追加（ブラウザ標準と React 対応の関係を一言で接続）。ビルド確認 |
