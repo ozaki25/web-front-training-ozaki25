@@ -159,6 +159,8 @@ function Panel({ children }: PanelProps) {
 表示が丸ごと変わる場合は、関数の早い段階で return します。
 
 ```tsx
+type Order = { id: number; title: string };
+
 function OrderList({ orders }: { orders: Order[] }) {
   if (orders.length === 0) {
     return <p>注文履歴はまだありません</p>;
