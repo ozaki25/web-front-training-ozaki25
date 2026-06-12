@@ -421,10 +421,7 @@ export default async function UserPage() {
 
 ## まとめ
 
-- JavaScript は<strong>シングルスレッド</strong>。だから非同期処理の仕組みが要る
-- <strong>コールバック</strong>は最古の書き方。連鎖するとコールバック地獄になる
-- <strong>Promise</strong> は結果を包むオブジェクト。状態は pending → fulfilled / rejected
-- <strong>async/await</strong> は Promise を同期処理のように読める書き方
+- <strong>Promise</strong> は非同期の結果を包むオブジェクト。pending → fulfilled / rejected
+- <strong>async/await</strong> は Promise を同期処理のように読める主流の書き方
 - 独立した処理は `Promise.all` で並列化。逐次 `await` は待ち時間の無駄
 - Promise には `await` か `.catch()` を付ける（付け忘れはエラーが消える）
-- Next.js の Server Components は `async` 関数として書ける

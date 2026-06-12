@@ -62,7 +62,7 @@ export async function Reviews({ productId }: { productId: string }) {
 
 `<Suspense>` で包むと、React は `Reviews` の準備を**待たずに**ページの残りを完成させ、その場所には fallback を置いておきます。`Reviews` のデータが揃ったら、fallback と差し替えます。
 
-実は既に見たことがあるはずです。App Router の `loading.tsx` は、**ページ全体を 1 つの Suspense で包んだもの**。`<Suspense>` を自分で書くのは、その境界をもっと細かく、部品単位で引く行為です。
+実は身近なところに既にあります。App Router の `loading.tsx` は、**ページ全体を 1 つの Suspense で包んだもの**です。`<Suspense>` を自分で書くのは、その境界をもっと細かく、部品単位で引く行為です。
 
 ## Streaming — HTML を少しずつ届ける
 
