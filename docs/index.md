@@ -52,3 +52,4 @@
 - [イベントの仕組み](/drafts/030/)
 - [データ取得ライブラリ](/drafts/031/)
 - [HTTP とステータスコード](/drafts/032/)
+- [Server / Client Components](/drafts/033/)

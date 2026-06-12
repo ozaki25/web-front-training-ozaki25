@@ -140,6 +140,7 @@ export default withPwa(
                 { text: "イベントの仕組み", link: "/drafts/030/" },
                 { text: "データ取得ライブラリ", link: "/drafts/031/" },
                 { text: "HTTP とステータスコード", link: "/drafts/032/" },
+                { text: "Server / Client Components", link: "/drafts/033/" },
               ],
             },
           ],
