@@ -108,3 +108,6 @@
 | 101 | drafts/050 | セキュリティブロック開始。N32（XSS）を執筆。核は「入力がコードに化ける」「React の自動エスケープ」「穴は dangerouslySetInnerHTML と href」 |
 | 102 | drafts/050 | レビュー1周目（技術）。React の javascript: URL 警告について補足を追加 |
 | 103 | drafts/050 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |
+| 104 | drafts/051 | B3（Cookie と認証）を執筆。核は「ステートレスと名札」「セッション vs JWT は無効化のしやすさが分岐点」「HttpOnly / localStorage に置かない」 |
+| 105 | drafts/051 | レビュー1周目。括弧の全半角不一致を修正。await cookies() は Next.js 15+ の仕様と整合 |
+| 106 | drafts/051 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |

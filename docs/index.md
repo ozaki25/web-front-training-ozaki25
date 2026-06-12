@@ -70,3 +70,4 @@
 - [Testing Library の思想](/drafts/048/)
 - [テストの置き場所](/drafts/049/)
 - [XSS](/drafts/050/)
+- [Cookie と認証](/drafts/051/)
