@@ -202,6 +202,8 @@ export default withPwa(
                 { text: "proxy.ts", link: "/drafts/092/" },
                 { text: "動的ルート", link: "/drafts/093/" },
                 { text: "metadata と OGP", link: "/drafts/094/" },
+                { text: "フォームバリデーションの層", link: "/drafts/095/" },
+                { text: "Web Storage", link: "/drafts/096/" },
               ],
             },
           ],

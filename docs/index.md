@@ -114,3 +114,5 @@
 - [proxy.ts](/drafts/092/)
 - [動的ルート](/drafts/093/)
 - [metadata と OGP](/drafts/094/)
+- [フォームバリデーションの層](/drafts/095/)
+- [Web Storage](/drafts/096/)
