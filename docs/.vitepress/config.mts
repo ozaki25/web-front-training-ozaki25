@@ -141,6 +141,7 @@ export default withPwa(
                 { text: "データ取得ライブラリ", link: "/drafts/031/" },
                 { text: "HTTP とステータスコード", link: "/drafts/032/" },
                 { text: "Server / Client Components", link: "/drafts/033/" },
+                { text: "App Router のファイル規約", link: "/drafts/034/" },
               ],
             },
           ],

@@ -55,3 +55,6 @@
 | 48 | drafts/033 | キュー22番（A8 SC/CC）を執筆。核は「なぜデフォルトがサーバーか」「use client は境界宣言で import に伝染」「境界は葉っぱに」「children で SC を挟める」 |
 | 49 | drafts/033 | レビュー1周目（技術）。layout.tsx の例が children を受けず規約違反だったため page.tsx の例に修正 |
 | 50 | drafts/033 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |
+| 51 | drafts/034 | キュー23番（A9 ファイル規約）を執筆。核は「フォルダ=URL」「page/layout/loading/error の重ね合わせ」「layout は再描画されない」 |
+| 52 | drafts/034 | レビュー1周目（技術）。error.tsx の CC 必須など規約を確認、修正なし |
+| 53 | drafts/034 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |
