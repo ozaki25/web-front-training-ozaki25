@@ -128,6 +128,7 @@ export default withPwa(
                 { text: "スコープとクロージャ", link: "/drafts/025/" },
                 { text: "日付とタイムゾーンの罠", link: "/drafts/085/" },
                 { text: "URL の解剖", link: "/drafts/084/" },
+                { text: "JSON", link: "/drafts/103/" },
               ],
             },
             {
