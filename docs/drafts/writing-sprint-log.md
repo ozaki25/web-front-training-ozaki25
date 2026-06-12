@@ -241,3 +241,7 @@
 | 234 | curriculum | 次点ブロック + 補完テーマ（079〜100）の完成状況を記録。総数89本・全未公開を明記 |
 | 235 | tech-versions/071/095 | **ユーザー指摘で Zod の版数誤りが発覚**。Web 検索で確認: 現行は v4 で、`z.string().email()` は非推奨（トップレベル `z.email()` へ）。tech-versions を v4 に修正し、071・095 のコード例を `z.email()` に更新。教訓: 訓練データの記憶でバージョンを書かない（CLAUDE.md の既存ルールの違反だった） |
 | 236 | tech-versions | 同じ轍の横展開検証。TanStack Query（v5 のまま・5.100.x）と MSW（v2 のまま・2.14.x）は Web 検索で正しいことを確認。Zustand の曖昧表記「v4/v5」を v5 に修正 |
+| 237 | 全体 | **鮮度監査（全89本対象）**。バージョン依存の記述を棚卸しし、Web 検索で裏取り。標準仕様ベースのレッスン（HTTP/CORS/CSS/DOM/Git/a11y 等）は陳腐化リスク低と分類 |
+| 238 | drafts/062 | **古い情報を検出・修正**: Next.js 16 では Turbopack が dev/build の既定（--turbopack フラグ不要）、`next lint` は削除済み（ESLint/Biome を直接実行）。scripts 例と lint 節を書き直し、tech-versions にも追記 |
+| 239 | drafts/085 | **古い情報を検出・修正**: Temporal は「登場しつつある」ではなく 2026/03 に Stage 4（ES2026）入りし Chrome 144 / Firefox 139 で出荷済み。現状に合わせて書き直し |
+| 240 | drafts/100 | View Transitions の対応状況を検証 → 記述は現状（Chrome/Safari 対応・Firefox 進行中）と一致しており修正不要。**鮮度監査完了**。教訓: 執筆時の Web 裏取りは tech-versions 掲載技術だけでなく、本文中のすべてのバージョン依存記述に適用する |

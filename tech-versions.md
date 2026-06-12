@@ -9,7 +9,7 @@
 
 | 技術 | バージョン | 主な変更点・注意事項 |
 |------|-----------|---------------------|
-| Next.js | 16 | App Router。`middleware.ts` → `proxy.ts`（export 関数名も `proxy`）。Node.js ランタイム（Edge ではない）。`cacheComponents: true` で "use cache" 有効化（`dynamicIO` は廃止）。`create-next-app` は `tailwind.config.ts` を生成しない |
+| Next.js | 16 | App Router。`middleware.ts` → `proxy.ts`（export 関数名も `proxy`）。Node.js ランタイム（Edge ではない）。`cacheComponents: true` で "use cache" 有効化（`dynamicIO` は廃止）。`create-next-app` は `tailwind.config.ts` を生成しない。**Turbopack が dev / build の既定**（`--turbopack` フラグ不要）。**`next lint` は削除**（ESLint / Biome を直接実行。scripts は `"lint": "eslint"` 形式） |
 | React | 19 | form actions, useActionState, useFormStatus, useOptimistic, use() API（useContext の代替）。forwardRef 非推奨（ref を通常の prop として渡せる） |
 | React Compiler | 1.0 | React 19 に自動バンドルされない。`npm install -D babel-plugin-react-compiler`。Next.js では `next.config.ts` に `reactCompiler: true` を追加 |
 | TypeScript | 5.x | satisfies 演算子、as const、const type parameters |
