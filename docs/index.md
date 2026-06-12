@@ -124,6 +124,7 @@
 - [Web Vitals](/drafts/058/)
 - [バンドルサイズ](/drafts/059/)
 - [next/image と next/font](/drafts/061/)
+- [レンダリングパイプライン](/drafts/102/)
 - [フロントエンドの可観測性](/drafts/082/)
 
 ### 型

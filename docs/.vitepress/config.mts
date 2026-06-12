@@ -226,6 +226,7 @@ export default withPwa(
                 { text: "Web Vitals", link: "/drafts/058/" },
                 { text: "バンドルサイズ", link: "/drafts/059/" },
                 { text: "next/image と next/font", link: "/drafts/061/" },
+                { text: "レンダリングパイプライン", link: "/drafts/102/" },
                 { text: "フロントエンドの可観測性", link: "/drafts/082/" },
               ],
             },
