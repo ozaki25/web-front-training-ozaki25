@@ -1,4 +1,4 @@
-# tsconfig と strict — 設定ファイルが守ってくれるもの
+# strict の仕組み — TypeScript はどこまで守ってくれるのか
 
 ## 今日のゴール
 

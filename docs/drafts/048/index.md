@@ -1,4 +1,4 @@
-# Testing Library の思想 — ユーザーが使うようにテストする
+# Testing Library — テストは画面の「どこ」を見ているのか
 
 ## 今日のゴール
 
