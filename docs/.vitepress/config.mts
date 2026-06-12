@@ -206,6 +206,8 @@ export default withPwa(
                 { text: "Web Storage", link: "/drafts/096/" },
                 { text: "エラーの読み方", link: "/drafts/097/" },
                 { text: "ESLint の仕組み", link: "/drafts/098/" },
+                { text: "tsconfig と strict", link: "/drafts/099/" },
+                { text: "View Transitions", link: "/drafts/100/" },
               ],
             },
           ],

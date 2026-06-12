@@ -118,3 +118,5 @@
 - [Web Storage](/drafts/096/)
 - [エラーの読み方](/drafts/097/)
 - [ESLint の仕組み](/drafts/098/)
+- [tsconfig と strict](/drafts/099/)
+- [View Transitions](/drafts/100/)

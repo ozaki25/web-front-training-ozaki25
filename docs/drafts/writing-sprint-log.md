@@ -230,3 +230,7 @@
 | 223 | drafts/097 | レビュー2周。修正なし |
 | 224 | drafts/098 | N47（ESLint の仕組み）を執筆。核は「AST = 構文の木」「ルール = 木のパターン照合」「構造は Lint・振る舞いはテスト」「eslint-disable は報知器の電池抜き」 |
 | 225 | drafts/098 | レビュー2周。英単語混入（enforcement）を修正。登録・ビルド確認 |
+| 226 | drafts/099 | N48（tsconfig と strict）を執筆。核は「strict は親スイッチ（null チェック・暗黙 any 禁止）」「strict: false は報知器外し」「@/ は paths のエイリアス」 |
+| 227 | drafts/099 | レビュー2周。修正なし |
+| 228 | drafts/100 | N19（View Transitions）を執筆。核は「前後のスナップショットを繋ぐ」「view-transition-name = 同一人物の宣言」「未対応は普通の遷移に戻るだけ」「prefers-reduced-motion の作法」 |
+| 229 | drafts/100 | レビュー2周。修正なし。登録・ビルド確認。**候補プールの執筆可能テーマをすべて消化**（残りは N56/N58/プロセス系。仕組み語りに乗らないため執筆見送りと判断） |
