@@ -128,6 +128,7 @@ export default withPwa(
                 { text: "配列操作と JSX のリスト", link: "/drafts/018/" },
                 { text: "JSX と props", link: "/drafts/019/" },
                 { text: "JSX の正体", link: "/drafts/020/" },
+                { text: "useState と画面更新", link: "/drafts/021/" },
               ],
             },
           ],
