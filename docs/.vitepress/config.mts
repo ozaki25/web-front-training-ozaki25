@@ -154,6 +154,7 @@ export default withPwa(
                 { text: "フォーカス管理", link: "/drafts/044/" },
                 { text: "色のアクセシビリティ", link: "/drafts/045/" },
                 { text: "E2E テスト", link: "/drafts/046/" },
+                { text: "テストを読む目", link: "/drafts/047/" },
               ],
             },
           ],
