@@ -150,6 +150,7 @@ export default withPwa(
                 { text: "SPA のページ遷移の正体", link: "/drafts/040/" },
                 { text: "WebSocket と SSE", link: "/drafts/041/" },
                 { text: "スクリーンリーダーから見た Web", link: "/drafts/042/" },
+                { text: "WAI-ARIA の正体", link: "/drafts/043/" },
               ],
             },
           ],
