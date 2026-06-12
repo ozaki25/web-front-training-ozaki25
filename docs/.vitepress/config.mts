@@ -137,6 +137,7 @@ export default withPwa(
                 { text: "状態管理の世代史", link: "/drafts/027/" },
                 { text: "カスタムフック", link: "/drafts/028/" },
                 { text: "イベントループ", link: "/drafts/029/" },
+                { text: "イベントの仕組み", link: "/drafts/030/" },
               ],
             },
           ],
