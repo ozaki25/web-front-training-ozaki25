@@ -129,6 +129,7 @@ export default withPwa(
                 { text: "JSX と props", link: "/drafts/019/" },
                 { text: "JSX の正体", link: "/drafts/020/" },
                 { text: "useState と画面更新", link: "/drafts/021/" },
+                { text: "key の正体", link: "/drafts/022/" },
               ],
             },
           ],

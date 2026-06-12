@@ -41,3 +41,4 @@
 - [JSX と props](/drafts/019/)
 - [JSX の正体](/drafts/020/)
 - [useState と画面更新](/drafts/021/)
+- [key の正体](/drafts/022/)
