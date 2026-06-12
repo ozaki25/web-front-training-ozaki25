@@ -124,6 +124,7 @@ export default withPwa(
                 { text: "ハイドレーション", link: "/drafts/013/" },
                 { text: "再レンダリングと手動メモ化", link: "/drafts/015/" },
                 { text: "React Compiler", link: "/drafts/016/" },
+                { text: "React コードを読むための JS 構文", link: "/drafts/017/" },
               ],
             },
           ],
