@@ -75,3 +75,5 @@
 - [OAuth と OIDC](/drafts/053/)
 - [npm サプライチェーン](/drafts/054/)
 - [AI コーディングとの付き合い方](/drafts/055/)
+- [MCP](/drafts/056/)
+- [コンテキストウィンドウ](/drafts/057/)

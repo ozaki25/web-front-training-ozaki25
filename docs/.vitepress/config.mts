@@ -163,6 +163,8 @@ export default withPwa(
                 { text: "OAuth と OIDC", link: "/drafts/053/" },
                 { text: "npm サプライチェーン", link: "/drafts/054/" },
                 { text: "AI コーディングとの付き合い方", link: "/drafts/055/" },
+                { text: "MCP", link: "/drafts/056/" },
+                { text: "コンテキストウィンドウ", link: "/drafts/057/" },
               ],
             },
           ],
