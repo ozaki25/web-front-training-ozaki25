@@ -29,6 +29,17 @@ Set-Cookie: session_id=abc123; HttpOnly; Secure
 Cookie: session_id=abc123
 ```
 
+```mermaid
+sequenceDiagram
+  participant B as ブラウザ
+  participant S as サーバー
+  B->>S: ログイン（ID とパスワード）
+  S->>B: Set-Cookie: session_id=abc123
+  Note over B: 名札を保存
+  B->>S: 以降のリクエスト（Cookie を自動添付）
+  S->>B: 「abc123 さんだ」と照合して応答
+```
+
 サーバーは毎回届く名札を見て「abc123 さんだ」と分かる。**記憶しているのはブラウザで、サーバーは毎回名札で照合しているだけ**。これがログイン状態の正体です。重要なのは「**自動で**添付される」こと。アプリのコードが fetch のたびに付けて回っているわけではありません。
 
 ## 名札の中身 — セッション方式と JWT 方式

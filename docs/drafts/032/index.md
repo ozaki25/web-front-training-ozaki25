@@ -83,6 +83,15 @@ Content-Type: application/json  ← ヘッダー
 
 「4xx ならこちらの送り方を直す、5xx ならサーバー側を調べる」。この切り分けが頭にあるだけで、エラー調査の最初の一歩が速くなります。
 
+```mermaid
+flowchart TD
+  A["API がエラーを返した"] --> B{"先頭の数字は？"}
+  B -- "4xx" --> C["こちら側を疑う<br>URL・パラメータ・認証・権限"]
+  B -- "5xx" --> D["サーバー側を疑う<br>ログ確認・バックエンドに連絡"]
+  style C fill:#fef3c7,color:#1e293b,stroke:#f59e0b
+  style D fill:#fecaca,color:#1e293b,stroke:#ef4444
+```
+
 ## fetch の落とし穴 — 404 はエラーじゃない？
 
 ステータスコードに関して、fetch には知らないと必ず踏む仕様があります。**404 や 500 が返っても、fetch は失敗扱いになりません**。
