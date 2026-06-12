@@ -70,3 +70,6 @@
 | 63 | drafts/038 | キュー27番（A12 キャッシュ制御）を執筆。"use cache"・cacheLife（時間）・cacheTag+revalidateTag（イベント）の使い分け。tech-versions.md 準拠 |
 | 64 | drafts/038 | レビュー1周目（技術）。tech-versions.md と全項目一致を確認、修正なし |
 | 65 | drafts/038 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |
+| 66 | drafts/039 | キュー28番（S4 Suspense と Streaming）を執筆。核は「全部待つ/スピナー地獄の第三の道」「境界 = 優先順位の宣言」「loading.tsx はページ全体版」 |
+| 67 | drafts/039 | レビュー1周目（技術）。修正なし |
+| 68 | drafts/039 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |

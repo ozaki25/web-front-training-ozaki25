@@ -58,3 +58,4 @@
 - [CORS](/drafts/036/)
 - [Server Actions とフォーム](/drafts/037/)
 - [キャッシュ制御](/drafts/038/)
+- [Suspense と Streaming](/drafts/039/)

@@ -146,6 +146,7 @@ export default withPwa(
                 { text: "CORS", link: "/drafts/036/" },
                 { text: "Server Actions とフォーム", link: "/drafts/037/" },
                 { text: "キャッシュ制御", link: "/drafts/038/" },
+                { text: "Suspense と Streaming", link: "/drafts/039/" },
               ],
             },
           ],
