@@ -23,6 +23,15 @@
 
 デザインシステムは、だいたい 3 つの層で構成されています。
 
+```mermaid
+flowchart TD
+  A["層 1: デザイントークン<br>（色・サイズの名前付きの値）"] --> B["層 2: コンポーネント<br>（トークンで組んだ部品）"]
+  B --> C["層 3: ドキュメント<br>（どの場面でどれを使うか）"]
+  style A fill:#dbeafe,color:#1e293b,stroke:#3b82f6
+  style B fill:#fef3c7,color:#1e293b,stroke:#f59e0b
+  style C fill:#dcfce7,color:#1e293b,stroke:#22c55e
+```
+
 ### 層 1: デザイントークン — 値に名前を付ける
 
 色、サイズ、余白、フォントなどの**最小の値に名前を付けたもの**です。
