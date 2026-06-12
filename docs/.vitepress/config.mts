@@ -126,6 +126,7 @@ export default withPwa(
                 { text: "React Compiler", link: "/drafts/016/" },
                 { text: "React コードを読むための JS 構文", link: "/drafts/017/" },
                 { text: "配列操作と JSX のリスト", link: "/drafts/018/" },
+                { text: "JSX と props", link: "/drafts/019/" },
               ],
             },
           ],

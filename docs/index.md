@@ -38,3 +38,4 @@
 - [React Compiler](/drafts/016/)
 - [React コードを読むための JS 構文](/drafts/017/)
 - [配列操作と JSX のリスト](/drafts/018/)
+- [JSX と props](/drafts/019/)
