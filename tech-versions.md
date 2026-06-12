@@ -20,8 +20,8 @@
 | TanStack Query | v5 | `useQuery({ queryKey, queryFn })`。`isPending`（v4 の `isLoading` から改名）。戻り値は判別可能ユニオン |
 | Playwright | 最新安定版 | `getByRole` / `getByLabel` などロールベースのロケータが推奨。`expect(...).toBeVisible()` で自動待機 |
 | MSW | v2 | `http.get(...)` + `HttpResponse.json(...)`（v1 の `rest.get` / `res(ctx.json())` から API 刷新） |
-| Zod | 3.x | `z.object` / `safeParse`。クライアントとサーバーでスキーマ共有が定番 |
-| Zustand | v4/v5 | `create<T>((set) => ...)`。セレクタで購読粒度を制御 |
+| Zod | **4** | `z.object` / `safeParse`。メール等の形式検証はトップレベル関数に昇格（`z.email()`、`z.url()`、`z.uuidv4()` 等）。`z.string().email()` の形は**非推奨**（次のメジャーで削除予定）。クライアントとサーバーでスキーマ共有が定番 |
+| Zustand | v5 | `create<T>((set) => ...)`。セレクタで購読粒度を制御 |
 
 ## Next.js の主要 API 変更（従来 → 現在）
 

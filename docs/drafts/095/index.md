@@ -57,7 +57,7 @@ HTML の標準検証で足りないのは、メッセージの出し方やタイ
 import { z } from "zod";
 
 export const signupSchema = z.object({
-  email: z.string().email("メールアドレスの形式が正しくありません"),
+  email: z.email("メールアドレスの形式が正しくありません"),
   password: z.string().min(8, "パスワードは 8 文字以上にしてください"),
 });
 ```

@@ -180,7 +180,7 @@ import { z } from "zod";
 
 const ContactSchema = z.object({
   name: z.string().min(1, "名前は必須です"),
-  email: z.string().email("メールアドレスの形式が正しくありません"),
+  email: z.email("メールアドレスの形式が正しくありません"),
 });
 
 export async function submitContact(formData: FormData) {
