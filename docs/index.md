@@ -57,3 +57,4 @@
 - [SC でのデータ取得](/drafts/035/)
 - [CORS](/drafts/036/)
 - [Server Actions とフォーム](/drafts/037/)
+- [キャッシュ制御](/drafts/038/)

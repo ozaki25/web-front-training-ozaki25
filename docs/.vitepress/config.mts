@@ -145,6 +145,7 @@ export default withPwa(
                 { text: "SC でのデータ取得", link: "/drafts/035/" },
                 { text: "CORS", link: "/drafts/036/" },
                 { text: "Server Actions とフォーム", link: "/drafts/037/" },
+                { text: "キャッシュ制御", link: "/drafts/038/" },
               ],
             },
           ],

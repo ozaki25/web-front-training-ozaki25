@@ -67,3 +67,6 @@
 | 60 | drafts/037 | キュー26番（A11 Server Actions）を執筆。"use server"・FormData（name 属性）・useActionState・「公開エンドポイント」の警告まで |
 | 61 | drafts/037 | レビュー1周目（技術）。useActionState のシグネチャ・revalidatePath を確認、修正なし |
 | 62 | drafts/037 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |
+| 63 | drafts/038 | キュー27番（A12 キャッシュ制御）を執筆。"use cache"・cacheLife（時間）・cacheTag+revalidateTag（イベント）の使い分け。tech-versions.md 準拠 |
+| 64 | drafts/038 | レビュー1周目（技術）。tech-versions.md と全項目一致を確認、修正なし |
+| 65 | drafts/038 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |
