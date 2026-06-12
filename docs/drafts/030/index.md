@@ -64,6 +64,34 @@ document.querySelector("ul").addEventListener("click", (e) => {
 
 バブリングの実用例が**イベント委譲**です。1000 行のリストの各行にハンドラを 1000 個付ける代わりに、親に 1 つ付けて `e.target` で「どの行か」を判定します。ハンドラの数が減るうえ、あとから行が追加されても付け直しが要りません。
 
+### 触って確かめる
+
+下のボタンを押すと、イベントが親へ昇っていく様子がログに出ます。チェックを入れると、中間の div が `stopPropagation()` で旅を止めます。
+
+<div class="c30-demo">
+  <div class="c30-outer" onclick="document.getElementById('c30-log').textContent += '→ 外側の div のハンドラが拾った\n'">
+    外側の div
+    <div class="c30-inner" onclick="
+      if (document.getElementById('c30-stop').checked) {
+        event.stopPropagation();
+        document.getElementById('c30-log').textContent += '→ 中間の div が拾った（stopPropagation で旅は終了）\n';
+      } else {
+        document.getElementById('c30-log').textContent += '→ 中間の div のハンドラが拾った\n';
+      }
+    ">
+      中間の div
+      <button type="button" class="c30-btn" onclick="document.getElementById('c30-log').textContent = 'クリック！ ボタン自身のハンドラが拾った\n'">ボタン</button>
+    </div>
+  </div>
+  <label class="c30-toggle">
+    <input type="checkbox" id="c30-stop" />
+    中間の div で stopPropagation() する
+  </label>
+  <pre class="c30-log" id="c30-log" aria-live="polite">（ボタンを押すと、イベントの旅がここに表示されます）</pre>
+</div>
+
+ボタンの**外側**（中間や外側の div の余白）をクリックすると、旅がその要素から始まることも確かめられます。
+
 ## 2 つの「止める」— preventDefault と stopPropagation
 
 イベントには「止める」操作が 2 種類あり、**止める対象がまったく違います**。
@@ -112,3 +140,65 @@ React の `onClick={...}` も、裏側ではこのイベントの仕組みで動
 - `e.target` は押された場所、`e.currentTarget` は拾った場所
 - `preventDefault` は既定の動作を、`stopPropagation` は旅を止める。別物
 - React の onClick はバブリング + 委譲 + 合成イベントでできている
+
+<style>
+.c30-demo {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 1.2em 0;
+  background: #f8fafc;
+  color: #1e293b;
+}
+.c30-outer {
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  padding: 16px;
+  background: #dbeafe;
+  color: #1e293b;
+  cursor: pointer;
+  font-size: 14px;
+}
+.c30-inner {
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 8px;
+  background: #fef3c7;
+  color: #1e293b;
+  cursor: pointer;
+}
+.c30-btn {
+  display: block;
+  margin-top: 8px;
+  padding: 8px 16px;
+  font-size: 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1e293b;
+  cursor: pointer;
+}
+.c30-btn:hover { background: #f1f5f9; }
+.c30-btn:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.c30-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 8px;
+  font-size: 14px;
+  color: #1e293b;
+  cursor: pointer;
+}
+.c30-log {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 13px;
+  min-height: 4.5em;
+  white-space: pre-wrap;
+  margin: 0;
+}
+</style>

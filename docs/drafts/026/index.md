@@ -81,7 +81,9 @@ function App({ user }: { user: User }) {
 }
 ```
 
-なお、以前の React では `<UserContext.Provider value={...}>` と書く必要がありました。AI が古いほうの書き方を出してくることもありますが、意味は同じです。
+::: tip AI が出してくる古い書き方
+以前の React では `<UserContext.Provider value={...}>` と書く必要がありました。AI が古いほうの書き方を出してくることもありますが、意味は同じです。
+:::
 
 ### 3. 深いところで読む
 

@@ -24,6 +24,19 @@
 
 ここでも `div` ボタンの問題が顔を出します。`<div onClick={...}>` はフォーカス可能ではないので、**Tab でたどり着く方法がそもそも無い**。キーボードの世界では、その機能は存在しないのと同じです。
 
+### 触って確かめる
+
+下の枠内の最初のボタンをクリックしてから、**Tab キー**を押して進んでみてください（戻るは Shift + Tab）。
+
+<div class="c44-demo">
+  <button type="button" class="c44-item">1. ボタン</button>
+  <a href="#c44-skip" class="c44-item c44-link">2. リンク</a>
+  <input type="text" class="c44-item" aria-label="3. 入力欄" placeholder="3. 入力欄" />
+  <div class="c44-item c44-fake" onclick="this.textContent='押せたけど、Tab では来られない…'">div 製ボタン</div>
+  <button type="button" class="c44-item" id="c44-skip">4. ボタン</button>
+  <p class="c44-note">フォーカスリング（青い枠）が 1 → 2 → 3 → 4 と移動し、<strong>div 製ボタンは飛ばされます</strong>。マウスでは押せるのに、キーボードでは存在しない部品です。</p>
+</div>
+
 ## 「いまどこ？」を消さない — outline の話
 
 フォーカスの現在地は、要素を囲む光る枠（**フォーカスリング**）で表示されます。ブラウザ標準では `outline` という CSS で描かれています。
@@ -107,3 +120,45 @@ Next.js はこのあたりをフレームワーク側でかなり面倒見てく
 - `outline: none` は現在地の喪失。消すなら `:focus-visible` で出し分ける
 - `tabindex` は 0 と -1 だけ使う。正の値は禁じ手
 - モーダルは「開いたら中へ・外に出さない・閉じたら元へ」。`<dialog>` なら大半が自動
+
+<style>
+.c44-demo {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 1.2em 0;
+  background: #f8fafc;
+  color: #1e293b;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.c44-item {
+  padding: 8px 14px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1e293b;
+}
+.c44-demo button.c44-item { cursor: pointer; }
+.c44-demo button.c44-item:hover { background: #f1f5f9; }
+.c44-link { text-decoration: underline; color: #1d4ed8; }
+.c44-fake {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  cursor: pointer;
+  user-select: none;
+}
+.c44-demo .c44-item:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+.c44-note {
+  flex-basis: 100%;
+  font-size: 13px;
+  color: #475569;
+  margin: 6px 0 0;
+}
+</style>
