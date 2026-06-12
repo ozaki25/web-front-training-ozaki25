@@ -139,6 +139,7 @@ export default withPwa(
                 { text: "イベントループ", link: "/drafts/029/" },
                 { text: "イベントの仕組み", link: "/drafts/030/" },
                 { text: "データ取得ライブラリ", link: "/drafts/031/" },
+                { text: "HTTP とステータスコード", link: "/drafts/032/" },
               ],
             },
           ],
