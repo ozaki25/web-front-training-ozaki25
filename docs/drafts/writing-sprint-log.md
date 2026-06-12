@@ -288,3 +288,4 @@
 | 281 | drafts/100 | View Transitions に React 19.2 統合の tip を追加（ブラウザ標準と React 対応の関係を一言で接続）。ビルド確認 |
 | 282 | drafts/025 | React 19.2 の useEffectEvent を stale closure の「3つ目の道具」として tip 追加（鮮度監査 280 の成果をレッスンに還元） |
 | 283 | drafts/086 | await の中断・再開をシーケンス図で可視化（言葉だけだった核心を図に） |
+| 284 | drafts/050 | XSS の攻撃フロー（投稿 → 埋め込み → 全閲覧者で実行 → Cookie 流出）をシーケンス図で可視化。047 は表が数直線の役割を果たしており図不要と判断 |
