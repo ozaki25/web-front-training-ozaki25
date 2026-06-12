@@ -56,3 +56,4 @@
 - [App Router のファイル規約](/drafts/034/)
 - [SC でのデータ取得](/drafts/035/)
 - [CORS](/drafts/036/)
+- [Server Actions とフォーム](/drafts/037/)

@@ -64,3 +64,6 @@
 | 57 | drafts/036 | キュー25番（B4 CORS）を執筆。核は「ブラウザだけの防御」「許可を出すのはサーバー」「SC の fetch なら構造的に起きない」 |
 | 58 | drafts/036 | レビュー1周目（技術）。攻撃シナリオが SameSite 既定値の現状と乖離しないよう補足を追加 |
 | 59 | drafts/036 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |
+| 60 | drafts/037 | キュー26番（A11 Server Actions）を執筆。"use server"・FormData（name 属性）・useActionState・「公開エンドポイント」の警告まで |
+| 61 | drafts/037 | レビュー1周目（技術）。useActionState のシグネチャ・revalidatePath を確認、修正なし |
+| 62 | drafts/037 | レビュー2周目（初心者視点）。問題なし。登録・ビルド確認 |

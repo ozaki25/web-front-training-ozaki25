@@ -144,6 +144,7 @@ export default withPwa(
                 { text: "App Router のファイル規約", link: "/drafts/034/" },
                 { text: "SC でのデータ取得", link: "/drafts/035/" },
                 { text: "CORS", link: "/drafts/036/" },
+                { text: "Server Actions とフォーム", link: "/drafts/037/" },
               ],
             },
           ],
