@@ -98,3 +98,5 @@
 - [カスケードと詳細度](/drafts/076/)
 - [モダン CSS](/drafts/077/)
 - [ダークモードの仕組み](/drafts/078/)
+- [Service Worker](/drafts/079/)
+- [Git のデータモデル](/drafts/080/)

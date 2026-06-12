@@ -186,6 +186,8 @@ export default withPwa(
                 { text: "カスケードと詳細度", link: "/drafts/076/" },
                 { text: "モダン CSS", link: "/drafts/077/" },
                 { text: "ダークモードの仕組み", link: "/drafts/078/" },
+                { text: "Service Worker", link: "/drafts/079/" },
+                { text: "Git のデータモデル", link: "/drafts/080/" },
               ],
             },
           ],
