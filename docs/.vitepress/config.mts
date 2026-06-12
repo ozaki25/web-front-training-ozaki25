@@ -188,6 +188,8 @@ export default withPwa(
                 { text: "ダークモードの仕組み", link: "/drafts/078/" },
                 { text: "Service Worker", link: "/drafts/079/" },
                 { text: "Git のデータモデル", link: "/drafts/080/" },
+                { text: "ESM とバンドラー", link: "/drafts/081/" },
+                { text: "フロントエンドの可観測性", link: "/drafts/082/" },
               ],
             },
           ],

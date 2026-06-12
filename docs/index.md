@@ -100,3 +100,5 @@
 - [ダークモードの仕組み](/drafts/078/)
 - [Service Worker](/drafts/079/)
 - [Git のデータモデル](/drafts/080/)
+- [ESM とバンドラー](/drafts/081/)
+- [フロントエンドの可観測性](/drafts/082/)
