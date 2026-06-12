@@ -44,3 +44,4 @@
 - [key の正体](/drafts/022/)
 - [Tailwind CSS の仕組み](/drafts/023/)
 - [useEffect と副作用](/drafts/024/)
+- [スコープとクロージャ](/drafts/025/)

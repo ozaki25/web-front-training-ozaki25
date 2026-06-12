@@ -132,6 +132,7 @@ export default withPwa(
                 { text: "key の正体", link: "/drafts/022/" },
                 { text: "Tailwind CSS の仕組み", link: "/drafts/023/" },
                 { text: "useEffect と副作用", link: "/drafts/024/" },
+                { text: "スコープとクロージャ", link: "/drafts/025/" },
               ],
             },
           ],
