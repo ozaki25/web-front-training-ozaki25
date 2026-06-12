@@ -286,3 +286,5 @@
 | 279 | tech-versions | 鮮度監査の継続（Web 検索）: Auth.js v5 は安定版化済み（beta 表記が古かった）、NextAuth は Better Auth 社への移管が完了済み。tech-versions を更新。レッスン 053/087 は版数主張なしで影響なし |
 | 280 | tech-versions | React の鮮度監査（Web 検索・公式裏取り）: 現行は 19.2 系（useEffectEvent / Activity / View Transitions / Suspense 一括表示）。RSC セキュリティ修正のパッチ系列を記録。**「React 20 リリース」と主張する一次ブログを検出 → react.dev / GitHub で否定を確認**（誤情報源の実例として記録） |
 | 281 | drafts/100 | View Transitions に React 19.2 統合の tip を追加（ブラウザ標準と React 対応の関係を一言で接続）。ビルド確認 |
+| 282 | drafts/025 | React 19.2 の useEffectEvent を stale closure の「3つ目の道具」として tip 追加（鮮度監査 280 の成果をレッスンに還元） |
+| 283 | drafts/086 | await の中断・再開をシーケンス図で可視化（言葉だけだった核心を図に） |

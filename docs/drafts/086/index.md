@@ -42,7 +42,21 @@ async function getProductName(userId) {
 
 `.then()` のチェーンで書いていた「ユーザー → 注文 → 商品」が、変数に代入しながら上から下へ進む、ただの手続きに見えます。
 
-大事なのは、`await` の行で**画面はフリーズしない**ことです。`await` に来ると関数の実行は**いったん中断**し、JavaScript はその間に他の仕事（クリックへの反応など）を進めます。結果が出ると、中断した場所から続きが再開されます。「待っているのに固まらない」のは、この中断と再開を `await` が裏でやってくれているからです。
+大事なのは、`await` の行で**画面はフリーズしない**ことです。`await` に来ると関数の実行は**いったん中断**し、JavaScript はその間に他の仕事（クリックへの反応など）を進めます。結果が出ると、中断した場所から続きが再開されます。
+
+```mermaid
+sequenceDiagram
+  participant F as async 関数
+  participant JS as JavaScript（他の仕事）
+  participant NW as 通信
+  F->>NW: await fetch(...) で依頼
+  Note over F: ここで中断
+  JS->>JS: クリック対応など他の仕事を進める
+  NW->>F: 結果が届く
+  Note over F: 中断した行から再開
+```
+
+「待っているのに固まらない」のは、この中断と再開を `await` が裏でやってくれているからです。
 
 ### エラー処理は try/catch
 
