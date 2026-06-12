@@ -72,3 +72,4 @@
 - [XSS](/drafts/050/)
 - [Cookie と認証](/drafts/051/)
 - [CSRF と SameSite](/drafts/052/)
+- [OAuth と OIDC](/drafts/053/)
