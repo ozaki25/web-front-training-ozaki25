@@ -68,3 +68,4 @@
 - [E2E テスト](/drafts/046/)
 - [テストを読む目](/drafts/047/)
 - [Testing Library の思想](/drafts/048/)
+- [テストの置き場所](/drafts/049/)
