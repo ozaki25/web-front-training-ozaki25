@@ -130,6 +130,7 @@ export default withPwa(
                 { text: "JSX の正体", link: "/drafts/020/" },
                 { text: "useState と画面更新", link: "/drafts/021/" },
                 { text: "key の正体", link: "/drafts/022/" },
+                { text: "Tailwind CSS の仕組み", link: "/drafts/023/" },
               ],
             },
           ],
