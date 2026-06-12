@@ -165,6 +165,7 @@ export default withPwa(
                 { text: "AI コーディングとの付き合い方", link: "/drafts/055/" },
                 { text: "MCP", link: "/drafts/056/" },
                 { text: "コンテキストウィンドウ", link: "/drafts/057/" },
+                { text: "Web Vitals", link: "/drafts/058/" },
               ],
             },
           ],
