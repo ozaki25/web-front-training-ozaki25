@@ -151,6 +151,7 @@ export default withPwa(
                 { text: "WebSocket と SSE", link: "/drafts/041/" },
                 { text: "スクリーンリーダーから見た Web", link: "/drafts/042/" },
                 { text: "WAI-ARIA の正体", link: "/drafts/043/" },
+                { text: "フォーカス管理", link: "/drafts/044/" },
               ],
             },
           ],

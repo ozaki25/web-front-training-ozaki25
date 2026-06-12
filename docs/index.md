@@ -63,3 +63,4 @@
 - [WebSocket と SSE](/drafts/041/)
 - [スクリーンリーダーから見た Web](/drafts/042/)
 - [WAI-ARIA の正体](/drafts/043/)
+- [フォーカス管理](/drafts/044/)
