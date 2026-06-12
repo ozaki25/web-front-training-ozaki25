@@ -98,6 +98,25 @@ console.log("D");
 
 「**同期 → Promise → setTimeout**」。AI に非同期処理のコードを書かせて「実行順が想定と違う」と感じたら、この 3 段の順番を思い出してください。`async/await` も裏側はこの仕組みで、`await` の行から先は「マイクロタスクとして後で実行される続き」に変換されています。
 
+### 触って確かめる
+
+いま読んだクイズのコードを、あなたのブラウザでその場で実行できます。書いた順は A → B → C → D ですが、さて。
+
+<div class="c29-demo">
+  <button type="button" class="c29-btn" onclick="
+    var log = document.getElementById('c29-log');
+    log.textContent = '';
+    var add = function (s) { log.textContent += s + '\n'; };
+    add('A（同期）');
+    setTimeout(function () { add('B（setTimeout 0ms = マクロタスク）'); }, 0);
+    Promise.resolve().then(function () { add('C（Promise.then = マイクロタスク）'); });
+    add('D（同期）');
+  ">このブラウザで実行する</button>
+  <pre class="c29-log" id="c29-log" aria-live="polite">（ボタンを押すと、実際の実行順がここに表示されます）</pre>
+</div>
+
+何度押しても A → D → C → B。これはたまたまではなく、イベントループの仕様どおりの順番です。
+
 ## この知識が効く場面
 
 - **画面が固まる**: 長時間スタックを占領する同期処理が犯人。「重い処理で UI がフリーズしている」と言葉にできれば、AI に分割や Web Worker（別スレッドで計算する仕組み）の検討を指示できる
@@ -110,3 +129,36 @@ console.log("D");
 - 待ち仕事はブラウザに外注し、完了後のコールバックがキューに並ぶ。回す係がイベントループ
 - `setTimeout(fn, 0)` は「いまの仕事が全部終わったら」
 - 実行順は 同期 → マイクロタスク（Promise） → マクロタスク（setTimeout）
+
+<style>
+.c29-demo {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  margin: 1.2em 0;
+  background: #f8fafc;
+  color: #1e293b;
+}
+.c29-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: #ffffff;
+  cursor: pointer;
+}
+.c29-btn:hover { background: #2563eb; }
+.c29-btn:focus-visible { outline: 2px solid #1d4ed8; outline-offset: 2px; }
+.c29-log {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 13px;
+  min-height: 5.5em;
+  white-space: pre-wrap;
+  margin: 12px 0 0;
+}
+</style>
