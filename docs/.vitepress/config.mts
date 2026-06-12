@@ -196,6 +196,8 @@ export default withPwa(
                 { text: "日付とタイムゾーンの罠", link: "/drafts/085/" },
                 { text: "パスキー", link: "/drafts/087/" },
                 { text: "useRef", link: "/drafts/088/" },
+                { text: "アクセシビリティの検査", link: "/drafts/089/" },
+                { text: "モックと MSW", link: "/drafts/090/" },
               ],
             },
           ],
