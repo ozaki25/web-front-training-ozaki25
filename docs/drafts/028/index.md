@@ -117,7 +117,20 @@ function Profile({ isAdmin }: { isAdmin: boolean }) {
 }
 ```
 
-理由は React の内部構造にあります。React は各コンポーネントの hook を**呼ばれた順番**で管理しています。「1 番目の useState はこの state、2 番目はこれ」という具合です。条件分岐で呼ばれたり呼ばれなかったりすると、**再レンダリングで順番がズレて、別の hook の state を取り違えます**。毎回同じ順番で全部呼ばれることが、仕組みの前提なのです。
+理由は React の内部構造にあります。React は各コンポーネントの hook を**呼ばれた順番**で管理しています。「1 番目の useState はこの state、2 番目はこれ」という具合です。条件分岐で呼ばれたり呼ばれなかったりすると、**再レンダリングで順番がズレて、別の hook の state を取り違えます**。
+
+```mermaid
+flowchart LR
+  subgraph 初回["初回の実行"]
+    A1["① useState（count）"] ~~~ A2["② useEffect"] ~~~ A3["③ useState（name）"]
+  end
+  subgraph 次回["条件で ② が消えた再実行"]
+    B1["① useState（count）"] ~~~ B3["② useState → ？<br>（useEffect のつもりで<br>name の state を返す）"]
+  end
+  style B3 fill:#fecaca,color:#1e293b,stroke:#ef4444
+```
+
+毎回同じ順番で全部呼ばれることが、仕組みの前提なのです。
 
 カスタムフックも中で hook を呼ぶので、同じルールに従います。
 
