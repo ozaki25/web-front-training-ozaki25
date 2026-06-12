@@ -149,6 +149,7 @@ export default withPwa(
                 { text: "Suspense と Streaming", link: "/drafts/039/" },
                 { text: "SPA のページ遷移の正体", link: "/drafts/040/" },
                 { text: "WebSocket と SSE", link: "/drafts/041/" },
+                { text: "スクリーンリーダーから見た Web", link: "/drafts/042/" },
               ],
             },
           ],
