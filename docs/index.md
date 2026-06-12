@@ -81,3 +81,7 @@
 - [バンドルサイズ](/drafts/059/)
 - [HTTP キャッシュと CDN](/drafts/060/)
 - [next/image と next/font](/drafts/061/)
+- [npm scripts](/drafts/062/)
+- [HMR](/drafts/063/)
+- [ビルドとデプロイ](/drafts/064/)
+- [環境変数](/drafts/065/)
