@@ -85,6 +85,7 @@
 - [Service Worker](/drafts/079/)
 - [Web Storage](/drafts/096/)
 - [View Transitions](/drafts/100/)
+- [REST と GraphQL](/drafts/101/)
 
 ### CSS
 

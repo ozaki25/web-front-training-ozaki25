@@ -177,6 +177,7 @@ export default withPwa(
                 { text: "Service Worker", link: "/drafts/079/" },
                 { text: "Web Storage", link: "/drafts/096/" },
                 { text: "View Transitions", link: "/drafts/100/" },
+                { text: "REST と GraphQL", link: "/drafts/101/" },
               ],
             },
             {
