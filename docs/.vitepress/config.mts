@@ -148,6 +148,7 @@ export default withPwa(
                 { text: "キャッシュ制御", link: "/drafts/038/" },
                 { text: "Suspense と Streaming", link: "/drafts/039/" },
                 { text: "SPA のページ遷移の正体", link: "/drafts/040/" },
+                { text: "WebSocket と SSE", link: "/drafts/041/" },
               ],
             },
           ],
