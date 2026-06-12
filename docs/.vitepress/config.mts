@@ -162,6 +162,7 @@ export default withPwa(
                 { text: "CSRF と SameSite", link: "/drafts/052/" },
                 { text: "OAuth と OIDC", link: "/drafts/053/" },
                 { text: "npm サプライチェーン", link: "/drafts/054/" },
+                { text: "AI コーディングとの付き合い方", link: "/drafts/055/" },
               ],
             },
           ],

@@ -74,3 +74,4 @@
 - [CSRF と SameSite](/drafts/052/)
 - [OAuth と OIDC](/drafts/053/)
 - [npm サプライチェーン](/drafts/054/)
+- [AI コーディングとの付き合い方](/drafts/055/)
