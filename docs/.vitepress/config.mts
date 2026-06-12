@@ -194,6 +194,8 @@ export default withPwa(
                 { text: "エラーバウンダリ", link: "/drafts/083/" },
                 { text: "URL の解剖", link: "/drafts/084/" },
                 { text: "日付とタイムゾーンの罠", link: "/drafts/085/" },
+                { text: "パスキー", link: "/drafts/087/" },
+                { text: "useRef", link: "/drafts/088/" },
               ],
             },
           ],
