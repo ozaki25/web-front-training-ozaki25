@@ -78,3 +78,4 @@
 - [MCP](/drafts/056/)
 - [コンテキストウィンドウ](/drafts/057/)
 - [Web Vitals](/drafts/058/)
+- [バンドルサイズ](/drafts/059/)

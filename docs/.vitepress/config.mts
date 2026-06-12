@@ -166,6 +166,7 @@ export default withPwa(
                 { text: "MCP", link: "/drafts/056/" },
                 { text: "コンテキストウィンドウ", link: "/drafts/057/" },
                 { text: "Web Vitals", link: "/drafts/058/" },
+                { text: "バンドルサイズ", link: "/drafts/059/" },
               ],
             },
           ],
