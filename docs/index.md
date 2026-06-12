@@ -79,3 +79,5 @@
 - [コンテキストウィンドウ](/drafts/057/)
 - [Web Vitals](/drafts/058/)
 - [バンドルサイズ](/drafts/059/)
+- [HTTP キャッシュと CDN](/drafts/060/)
+- [next/image と next/font](/drafts/061/)

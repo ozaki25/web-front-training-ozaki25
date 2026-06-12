@@ -167,6 +167,8 @@ export default withPwa(
                 { text: "コンテキストウィンドウ", link: "/drafts/057/" },
                 { text: "Web Vitals", link: "/drafts/058/" },
                 { text: "バンドルサイズ", link: "/drafts/059/" },
+                { text: "HTTP キャッシュと CDN", link: "/drafts/060/" },
+                { text: "next/image と next/font", link: "/drafts/061/" },
               ],
             },
           ],
