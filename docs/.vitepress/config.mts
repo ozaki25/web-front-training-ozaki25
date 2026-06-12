@@ -198,6 +198,8 @@ export default withPwa(
                 { text: "useRef", link: "/drafts/088/" },
                 { text: "アクセシビリティの検査", link: "/drafts/089/" },
                 { text: "モックと MSW", link: "/drafts/090/" },
+                { text: "DevTools の歩き方", link: "/drafts/091/" },
+                { text: "proxy.ts", link: "/drafts/092/" },
               ],
             },
           ],
