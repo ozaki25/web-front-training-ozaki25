@@ -31,7 +31,9 @@ flowchart LR
   style D fill:#dbeafe,color:#1e293b,stroke:#3b82f6
 ```
 
-なお、この機能は長らく `middleware.ts`（関数名 `middleware`）という名前でした。Next.js 16 で `proxy.ts`（関数名 `proxy`）に改名されています。AI は学習データの都合で旧名の `middleware.ts` を出してくることが多いので、「**いまは proxy.ts**」と覚えておくと、生成コードの古さに気づけます。
+::: tip 旧名は middleware.ts
+この機能は長らく `middleware.ts`（関数名 `middleware`）という名前でした。Next.js 16 で `proxy.ts`（関数名 `proxy`）に改名されています。AI は学習データの都合で旧名の `middleware.ts` を出してくることが多いので、「**いまは proxy.ts**」と覚えておくと、生成コードの古さに気づけます。
+:::
 
 ## 代表的な使い所 1 — ログインしていなければ入口で返す
 
