@@ -46,3 +46,4 @@
 - [useEffect と副作用](/drafts/024/)
 - [スコープとクロージャ](/drafts/025/)
 - [Context と use()](/drafts/026/)
+- [状態管理の世代史](/drafts/027/)

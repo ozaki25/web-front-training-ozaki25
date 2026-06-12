@@ -134,6 +134,7 @@ export default withPwa(
                 { text: "useEffect と副作用", link: "/drafts/024/" },
                 { text: "スコープとクロージャ", link: "/drafts/025/" },
                 { text: "Context と use()", link: "/drafts/026/" },
+                { text: "状態管理の世代史", link: "/drafts/027/" },
               ],
             },
           ],
