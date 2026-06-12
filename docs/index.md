@@ -55,3 +55,4 @@
 - [Server / Client Components](/drafts/033/)
 - [App Router のファイル規約](/drafts/034/)
 - [SC でのデータ取得](/drafts/035/)
+- [CORS](/drafts/036/)

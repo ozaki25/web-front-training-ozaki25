@@ -143,6 +143,7 @@ export default withPwa(
                 { text: "Server / Client Components", link: "/drafts/033/" },
                 { text: "App Router のファイル規約", link: "/drafts/034/" },
                 { text: "SC でのデータ取得", link: "/drafts/035/" },
+                { text: "CORS", link: "/drafts/036/" },
               ],
             },
           ],
