@@ -138,6 +138,7 @@ export default withPwa(
                 { text: "カスタムフック", link: "/drafts/028/" },
                 { text: "イベントループ", link: "/drafts/029/" },
                 { text: "イベントの仕組み", link: "/drafts/030/" },
+                { text: "データ取得ライブラリ", link: "/drafts/031/" },
               ],
             },
           ],
