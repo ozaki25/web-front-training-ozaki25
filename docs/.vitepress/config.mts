@@ -200,6 +200,8 @@ export default withPwa(
                 { text: "モックと MSW", link: "/drafts/090/" },
                 { text: "DevTools の歩き方", link: "/drafts/091/" },
                 { text: "proxy.ts", link: "/drafts/092/" },
+                { text: "動的ルート", link: "/drafts/093/" },
+                { text: "metadata と OGP", link: "/drafts/094/" },
               ],
             },
           ],

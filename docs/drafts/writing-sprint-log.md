@@ -218,3 +218,7 @@
 | 211 | drafts/091 | レビュー2周。修正なし |
 | 212 | drafts/092 | N12（proxy.ts）を執筆。tech-versions.md の Next.js 16 改名（middleware→proxy）を反映。核は「関所」「軽く保つ」「本当の認可はページ側」「AI の旧名出力に気づく」 |
 | 213 | drafts/092 | レビュー2周。修正なし。登録・ビルド確認 |
+| 214 | drafts/093 | N14（動的ルート）を執筆。核は「[id] = URL の変数化」「params は Promise・常に文字列・ユーザー入力」「notFound() と generateStaticParams」 |
+| 215 | drafts/093 | レビュー2周。修正なし |
+| 216 | drafts/094 | N11（metadata と OGP）を執筆。核は「カードの材料は head にある」「クローラーは JS を実行しない」「generateMetadata で動的生成」 |
+| 217 | drafts/094 | レビュー2周。修正なし。登録・ビルド確認 |
