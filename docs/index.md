@@ -59,3 +59,4 @@
 - [Server Actions とフォーム](/drafts/037/)
 - [キャッシュ制御](/drafts/038/)
 - [Suspense と Streaming](/drafts/039/)
+- [SPA のページ遷移の正体](/drafts/040/)
