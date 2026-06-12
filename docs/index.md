@@ -54,3 +54,4 @@
 - [HTTP とステータスコード](/drafts/032/)
 - [Server / Client Components](/drafts/033/)
 - [App Router のファイル規約](/drafts/034/)
+- [SC でのデータ取得](/drafts/035/)
