@@ -251,10 +251,11 @@ function ProductPage({ items }: { items: Product[] }) {
 
 入力欄に文字を打つと、**もたつき（キー入力に画面が追いつかない重さ）**を体感できます。「useMemo を使う」チェックを入れてもう一度打ってみてください。ソートがスキップされて軽くなるのが指で分かります。
 
-```tsx
-import { useState, useMemo } from "react";
+まず **useMemo なし版**を貼って実行し、入力欄に連続で文字を打ってみてください。1 万件のソートが毎回走るため、もたつきます。
 
-// 1万件のダミーデータ
+```tsx
+import { useState } from "react";
+
 const items = Array.from({ length: 10000 }, (_, i) => ({
   id: i,
   name: `商品${String(i).padStart(5, "0")}`,
@@ -263,51 +264,63 @@ const items = Array.from({ length: 10000 }, (_, i) => ({
 
 export default function App() {
   const [query, setQuery] = useState("");
-  const [useMemoFlag, setUseMemoFlag] = useState(false);
 
-  // useMemo なし: query が変わるたびにソートも毎回走る
-  const sortedWithout = items
-    .filter((item) => item.name.includes(query))
-    .sort((a, b) => a.price - b.price);
-
-  // useMemo あり: items が変わらない限りソートをスキップ
-  const sortedWith = useMemo(
-    () =>
-      items
-        .filter((item) => item.name.includes(query))
-        .sort((a, b) => a.price - b.price),
-    [query],
-  );
-
-  const sorted = useMemoFlag ? sortedWith : sortedWithout;
+  // query が変わるたびにソートも毎回走る（items は変わっていないのに）
+  const sorted = items.toSorted((a, b) => a.price - b.price);
+  const filtered = sorted.filter((item) => item.name.includes(query));
 
   return (
     <div style={{ fontFamily: "sans-serif", padding: 16 }}>
-      <label>
-        <input
-          type="checkbox"
-          checked={useMemoFlag}
-          onChange={(e) => setUseMemoFlag(e.target.checked)}
-        />{" "}
-        useMemo を使う
-      </label>
-      <div style={{ marginTop: 8 }}>
-        <input
-          placeholder="商品名で絞り込み（打つたびに重さが変わる）"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          style={{ width: "100%", padding: 8, fontSize: 14 }}
-        />
-      </div>
-      <p style={{ color: "#666", fontSize: 13 }}>
-        {sorted.length.toLocaleString()} 件表示 / useMemo{" "}
-        {useMemoFlag ? "ON ✅" : "OFF ❌"}
-      </p>
-      <ul style={{ height: 200, overflow: "auto", fontSize: 13, margin: 0, padding: "0 0 0 20px" }}>
-        {sorted.slice(0, 200).map((item) => (
-          <li key={item.id}>
-            {item.name}: ¥{item.price.toLocaleString()}
-          </li>
+      <input
+        placeholder="ここに連打してみる"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        style={{ width: "100%", padding: 8, fontSize: 16 }}
+      />
+      <p style={{ fontSize: 13, color: "#666" }}>{filtered.length} 件</p>
+      <ul style={{ height: 180, overflow: "auto", fontSize: 13 }}>
+        {filtered.slice(0, 100).map((item) => (
+          <li key={item.id}>{item.name}: ¥{item.price.toLocaleString()}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+次に、以下の **useMemo あり版**に貼り替えて再実行し、同じように打ってみてください。ソートがスキップされて軽くなるのが指で分かります。
+
+```tsx
+import { useState, useMemo } from "react";
+
+const items = Array.from({ length: 10000 }, (_, i) => ({
+  id: i,
+  name: `商品${String(i).padStart(5, "0")}`,
+  price: Math.floor(Math.random() * 10000),
+}));
+
+export default function App() {
+  const [query, setQuery] = useState("");
+
+  // items が変わったときだけソート。query の変化ではスキップされる
+  const sorted = useMemo(
+    () => items.toSorted((a, b) => a.price - b.price),
+    [items],
+  );
+  const filtered = sorted.filter((item) => item.name.includes(query));
+
+  return (
+    <div style={{ fontFamily: "sans-serif", padding: 16 }}>
+      <input
+        placeholder="ここに連打してみる"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        style={{ width: "100%", padding: 8, fontSize: 16 }}
+      />
+      <p style={{ fontSize: 13, color: "#666" }}>{filtered.length} 件（useMemo あり）</p>
+      <ul style={{ height: 180, overflow: "auto", fontSize: 13 }}>
+        {filtered.slice(0, 100).map((item) => (
+          <li key={item.id}>{item.name}: ¥{item.price.toLocaleString()}</li>
         ))}
       </ul>
     </div>
