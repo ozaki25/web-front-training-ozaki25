@@ -8,7 +8,7 @@
 
 ## 見た目が 1px も変わらない属性
 
-AI が生成した React のコードには、こういう属性が混ざっています。
+React のコードには、こういう属性が混ざっています。
 
 ```tsx
 <button aria-expanded={isOpen} aria-controls="filter-panel">
