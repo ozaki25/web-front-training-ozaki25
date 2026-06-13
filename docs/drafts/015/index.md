@@ -6,46 +6,13 @@
 - useMemo / useCallback / React.memo の役割の違いを知る
 - useCallback は React.memo とセットで効くという関係を知る
 
-## AI が書いたコードに並ぶ useMemo と useCallback
+## 入力するたびに、もたつく画面
 
-AI に React のコードを書かせると、こんなコードが返ってくることがあります。
+商品の検索画面で、入力欄に文字を打つたびに一覧がカクついたり、もたついたりする。そんな画面を使ったことはないでしょうか。
 
-```tsx
-import { useState, useMemo, useCallback } from "react";
+「a」と 1 文字打っただけなのに、なぜ画面全体が作り直されてしまうのか。そのもたつきの正体が **再レンダリング**で、それを抑えるための道具が **メモ化**（前回の計算結果を覚えておき、同じ入力なら再計算をスキップすること）です。
 
-type Product = { id: number; name: string; price: number };
-
-function ProductPage({ items }: { items: Product[] }) {
-  const [query, setQuery] = useState("");
-
-  const filtered = useMemo(
-    () => items.filter(item => item.name.includes(query)),
-    [items, query],
-  );
-
-  const handleReset = useCallback(() => setQuery(""), []);
-
-  return (
-    <>
-      <input
-        aria-label="商品名で絞り込み"
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-      />
-      <button onClick={handleReset}>クリア</button>
-      <ul>
-        {filtered.map(item => (
-          <li key={item.id}>{item.name}: ¥{item.price}</li>
-        ))}
-      </ul>
-    </>
-  );
-}
-```
-
-頼んでいないのに、`useMemo` や `useCallback` が当たり前のように差し込まれてきます。これらはすべて**メモ化**（前回の計算結果を覚えておき、同じ入力なら再計算をスキップすること）のための API です。AI が勝手に入れてくるくらい React では定番の道具ですが、何をしているのか説明できる人は意外と少ないものです。
-
-なぜメモ化が必要なのか。React の再レンダリングの仕組みに理由があります。
+今日のねらいは、メモ化を自分でスラスラ書けるようになることではありません。`useMemo` / `useCallback` / `React.memo` という 3 つの道具が「**効いているのか、効いていないのか**」を見抜ける目を持つことです。まずは、なぜメモ化が要るのかから順に見ていきます。
 
 ## 再レンダリングの連鎖
 
@@ -216,13 +183,48 @@ const handleSelect = useCallback((id: string) => {
 
 つまり `useCallback` は単体で再レンダリングを減らすものではなく、**`React.memo` とセットで初めて効果が出ます**。この関係を知らずに `useCallback` だけ書いても、何も速くなりません。
 
-## AI のコードを見る目
+## 「効いていない」メモ化を見抜く
 
-冒頭の AI のコードに戻ります。`handleReset` の `useCallback`、効いているでしょうか。
+ここで、よく見かける形のコードを 1 つ見てみます。
 
-渡す先はただの `<button>` 要素で、`memo` されたコンポーネントではありません。つまりこの `useCallback` は**効いていません**。AI はそれっぽくメモ化を書きますが、正しく効いているとは限らない。それを見抜けるのが、今日の知識です。
+```tsx
+import { useState, useMemo, useCallback } from "react";
 
-AI のコードにメモ化が出てきたら、この 3 つを疑ってみてください。
+type Product = { id: number; name: string; price: number };
+
+function ProductPage({ items }: { items: Product[] }) {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(
+    () => items.filter(item => item.name.includes(query)),
+    [items, query],
+  );
+
+  const handleReset = useCallback(() => setQuery(""), []);
+
+  return (
+    <>
+      <input
+        aria-label="商品名で絞り込み"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+      />
+      <button onClick={handleReset}>クリア</button>
+      <ul>
+        {filtered.map(item => (
+          <li key={item.id}>{item.name}: ¥{item.price}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+```
+
+`handleReset` の `useCallback`、効いているでしょうか。
+
+渡す先はただの `<button>` 要素で、`memo` されたコンポーネントではありません。つまりこの `useCallback` は**効いていません**。メモ化はそれっぽく書かれていても、正しく効いているとは限らない。それを見抜けるのが、今日の知識です。
+
+メモ化を見かけたら、この 3 つを疑ってみてください。
 
 - **依存配列は正しいか**: 入れ忘れがあると、古いデータが表示され続けるバグになる
 - **必要な場所に入っているか**: メモ化は書かなくても動くので、抜けていても見た目ではわからない
