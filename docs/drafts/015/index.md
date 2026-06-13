@@ -251,28 +251,39 @@ function ProductPage({ items }: { items: Product[] }) {
 
 入力欄に文字を打つと、**もたつき（キー入力に画面が追いつかない重さ）**を体感できます。「useMemo を使う」チェックを入れてもう一度打ってみてください。ソートがスキップされて軽くなるのが指で分かります。
 
-まず **useMemo なし版**を貼って実行し、入力欄に連続で文字を打ってみてください。1 万件のソートが毎回走るため、もたつきます。
+まず **useMemo なし版**を貼って実行し、入力欄に文字を打ってみてください。**1文字ごとに明らかなもたつき**を感じるはずです。
 
 ```tsx
 import { useState } from "react";
 
-const items = Array.from({ length: 10000 }, (_, i) => ({
+const items = Array.from({ length: 500 }, (_, i) => ({
   id: i,
-  name: `商品${String(i).padStart(5, "0")}`,
+  name: `商品${String(i).padStart(4, "0")}`,
   price: Math.floor(Math.random() * 10000),
 }));
+
+// わざと重い処理（実際のアプリでは複雑な集計やデータ加工がこれに相当する）
+function heavySort(list) {
+  const copy = [...list];
+  for (let i = 0; i < copy.length; i++) {
+    for (let j = 0; j < 5000; j++) {
+      Math.sqrt(j * copy[i].price);
+    }
+  }
+  return copy.sort((a, b) => a.price - b.price);
+}
 
 export default function App() {
   const [query, setQuery] = useState("");
 
-  // query が変わるたびにソートも毎回走る（items は変わっていないのに）
-  const sorted = items.toSorted((a, b) => a.price - b.price);
+  // query が変わるたびに heavySort も毎回走る
+  const sorted = heavySort(items);
   const filtered = sorted.filter((item) => item.name.includes(query));
 
   return (
     <div style={{ fontFamily: "sans-serif", padding: 16 }}>
       <input
-        placeholder="ここに連打してみる"
+        placeholder="ここに打ってみる（重い）"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         style={{ width: "100%", padding: 8, fontSize: 16 }}
@@ -288,31 +299,38 @@ export default function App() {
 }
 ```
 
-次に、以下の **useMemo あり版**に貼り替えて再実行し、同じように打ってみてください。ソートがスキップされて軽くなるのが指で分かります。
+次に **useMemo あり版**に貼り替えて再実行し、同じように打ってください。重い処理がスキップされて**入力が一瞬で反映される**のが分かります。
 
 ```tsx
 import { useState, useMemo } from "react";
 
-const items = Array.from({ length: 10000 }, (_, i) => ({
+const items = Array.from({ length: 500 }, (_, i) => ({
   id: i,
-  name: `商品${String(i).padStart(5, "0")}`,
+  name: `商品${String(i).padStart(4, "0")}`,
   price: Math.floor(Math.random() * 10000),
 }));
+
+function heavySort(list) {
+  const copy = [...list];
+  for (let i = 0; i < copy.length; i++) {
+    for (let j = 0; j < 5000; j++) {
+      Math.sqrt(j * copy[i].price);
+    }
+  }
+  return copy.sort((a, b) => a.price - b.price);
+}
 
 export default function App() {
   const [query, setQuery] = useState("");
 
-  // items が変わったときだけソート。query の変化ではスキップされる
-  const sorted = useMemo(
-    () => items.toSorted((a, b) => a.price - b.price),
-    [items],
-  );
+  // items が変わったときだけ重い処理を実行。query の変化ではスキップ
+  const sorted = useMemo(() => heavySort(items), [items]);
   const filtered = sorted.filter((item) => item.name.includes(query));
 
   return (
     <div style={{ fontFamily: "sans-serif", padding: 16 }}>
       <input
-        placeholder="ここに連打してみる"
+        placeholder="ここに打ってみる（軽い）"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         style={{ width: "100%", padding: 8, fontSize: 16 }}
