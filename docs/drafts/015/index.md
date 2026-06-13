@@ -10,49 +10,7 @@
 
 商品の検索画面で、入力欄に文字を打つたびに一覧がカクついたり、もたついたりする。そんな画面を使ったことはないでしょうか。
 
-「a」と 1 文字打っただけなのに、なぜ画面全体が作り直されてしまうのか。そのもたつきの正体が **再レンダリング**で、それを抑えるための道具が **メモ化** です。
-
-### メモ化とは何か
-
-メモ化は、一言で言うと「**前と同じ材料なら、計算し直さずに前の答えをそのまま返す**」仕組みです。
-
-ポイントは「**何の材料の話か**」です。商品ページで考えます。
-
-画面には「検索欄」と「価格順に並んだ商品一覧」があります。このとき、ページの中では 2 つの仕事が起きています。
-
-| 仕事 | 材料 |
-|------|------|
-| 商品を価格順に**ソートする** | 商品データ（`items`） |
-| 検索に合う商品を**絞り込む** | 検索文字（`query`） |
-
-ユーザーが検索欄に「a」と打つと、`query` が変わります。React はコンポーネント関数を丸ごと再実行するので、**ソートも絞り込みも、両方やり直し**になります。
-
-でもよく考えると、**ソートの材料（商品データ）は変わっていません**。変わったのは検索文字だけ。なのにソートまで毎回やり直すのは無駄です。
-
-**メモ化なし**:
-
-1. 「a」と打つ → ソート **する**（重い）+ 絞り込み する
-2. 「ab」と打つ → ソート **またする**（重い。商品データは変わっていないのに）+ 絞り込み する
-3. 「abc」と打つ → ソート **またまたする**（重い）+ 絞り込み する
-
-**メモ化あり**:
-
-1. 「a」と打つ → ソート する（初回は計算）→ **結果を覚えておく** + 絞り込み する
-2. 「ab」と打つ → ソートの材料（商品データ）変わった？ → **変わってない → 前の結果をそのまま返す**（速い）+ 絞り込み する
-3. 「abc」と打つ → **またそのまま返す**（速い）+ 絞り込み する
-
-```mermaid
-flowchart TD
-  A["state が変わって再レンダリング"] --> B{"この計算の材料は\n前回と変わった？"}
-  B -- "変わっていない" --> C["前の答えを返す\n（計算しない = 速い）"]
-  B -- "変わった" --> D["計算し直す\n答えを覚え直す"]
-  style C fill:#dcfce7,color:#1e293b,stroke:#22c55e
-  style D fill:#fef3c7,color:#1e293b,stroke:#f59e0b
-```
-
-つまりメモ化は、「**無関係な state の変化に巻き込まれて、関係ない計算まで毎回やり直されるのを防ぐ**」仕組みです。React の API でこれをやるのが `useMemo` / `useCallback` / `React.memo` です。
-
-今日のねらいは、メモ化を自分でスラスラ書けるようになることではありません。この 3 つの道具が「**効いているのか、効いていないのか**」を見抜ける目を持つことです。まずは、なぜメモ化が要るのかから順に見ていきます。
+「a」と 1 文字打っただけなのに、なぜ画面全体が作り直されてしまうのか。原因から順に見ていきます。
 
 ## 再レンダリングの連鎖
 
@@ -77,7 +35,7 @@ function App() {
 
 `count` が変わると `App` が再レンダリングされます。問題は `<HeavyList />`。`count` とは無関係なのに、親である `App` が再レンダリングされるたびに一緒に再レンダリングされます。
 
-親が再レンダリングされると、子も全部再レンダリングされる。これが**再レンダリングの連鎖**です。
+**親が再レンダリングされると、子も全部再レンダリングされる**。これが**再レンダリングの連鎖**です。
 
 ```mermaid
 flowchart TD
@@ -90,11 +48,9 @@ flowchart TD
 
 なお、React には「画面の変わった部分だけを最小限更新する」仕組みがあるため、最終的な画面の書き換え自体は軽く済みます。それでも、コンポーネント関数の再実行と「どこが変わったか」の計算にはコストがかかります。コンポーネントが多く、中の処理が重いほど、この無駄は積み上がります。
 
-## 不要な再計算の 2 つの場面
+## 無駄が起きる 2 つの場面
 
-再レンダリングの連鎖で無駄が起きる代表的な場面は 2 つです。
-
-### 重い計算の繰り返し
+### 場面 1: 重い計算の繰り返し
 
 ```tsx
 import { useState } from "react";
@@ -124,13 +80,176 @@ function ProductPage({ items }: { items: Product[] }) {
 }
 ```
 
-入力欄に 1 文字打つたびに `query` が変わって再レンダリングされ、変わっていない `items` のソートまで毎回実行されます。商品が数千件あれば、1 文字打つたびに数千件のソートです。
+入力欄に 1 文字打つたびに `query` が変わって再レンダリングが起き、関数の中の**すべての処理が再実行**されます。ソートの材料（`items`）は変わっていないのに、ソートまで毎回やり直しです。商品が数千件あれば、1 文字打つたびに数千件のソートです。
 
-### REPL で体感する — useMemo の有無で入力の重さが変わる
+### 場面 2: 無関係な子コンポーネントの再レンダリング
 
-画面下の REPL を開き、**TSX** タブに以下を貼って ▶ 実行してください。1 万件の商品を入力のたびにフィルタ+ソートしています。
+先ほどの `App` の例がこれです。`count` が変わっただけなのに、無関係な `<HeavyList />` まで再レンダリングされます。
 
-入力欄に文字を打つと、**もたつき（キー入力に画面が追いつかない重さ）**を体感できます。その後、「useMemo を使う」チェックを入れてもう一度打ってみてください。ソートがスキップされて軽くなるのが指で分かります。
+この 2 つの無駄を解決するのが**メモ化**です。
+
+## メモ化 — 前と同じなら、やり直さない
+
+メモ化は、一言で言うと「**前と同じ材料なら、計算し直さずに前の答えをそのまま返す**」仕組みです。
+
+場面 1 で言えば、ソートの材料は `items` だけです。`query` が変わっても `items` が変わっていないなら、**ソートの答えは前と同じ**。だったら計算し直す必要はありません。
+
+```mermaid
+flowchart TD
+  A["state が変わって再レンダリング"] --> B{"この計算の材料は\n前回と変わった？"}
+  B -- "変わっていない" --> C["前の答えを返す\n（計算しない = 速い）"]
+  B -- "変わった" --> D["計算し直す\n答えを覚え直す"]
+  style C fill:#dcfce7,color:#1e293b,stroke:#22c55e
+  style D fill:#fef3c7,color:#1e293b,stroke:#f59e0b
+```
+
+React はこの仕組みを 3 つの API で提供しています。
+
+| API | 何をメモ化するか | やること |
+|-----|----------------|---------|
+| `useMemo` | **計算結果** | 依存配列が変わらなければ前回の値を返す |
+| `useCallback` | **関数** | 依存配列が変わらなければ前回の関数を返す |
+| `React.memo` | **コンポーネント** | props が変わらなければ再レンダリングをスキップ |
+
+表の中の **props** は、親から子コンポーネントに渡される値のことです。
+
+## useMemo: 重い計算をキャッシュ
+
+第 2 引数の配列（**依存配列**）に「この値が変わったら再計算する」という条件を指定します。先ほどのソートの例なら、こう変わります。
+
+```tsx
+// items が変わったときだけソートし直す。query の変化では再計算しない
+const sorted = useMemo(
+  () => items.toSorted((a, b) => a.price - b.price),
+  [items],
+);
+```
+
+これで入力欄に文字を打っても、ソートは再実行されなくなります。
+
+## React.memo: 子の再レンダリングをスキップ
+
+コンポーネントを `memo` で包むと、親が再レンダリングされても「props が前回と同じなら、自分の再レンダリングをスキップする」ようになります。
+
+```tsx
+import { useState, memo } from "react";
+
+// props の items が前回と同じなら再レンダリングしない
+const HeavyList = memo(function HeavyList({ items }: { items: string[] }) {
+  return (
+    <ul>
+      {items.map(item => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+});
+
+function App({ items }: { items: string[] }) {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      <p>{count}</p>
+      <HeavyList items={items} />
+    </div>
+  );
+}
+```
+
+これで `count` が変わっても `HeavyList` は再レンダリングされなくなります。
+
+## useCallback: React.memo を関数で壊さないため
+
+`React.memo` には落とし穴があります。props に関数を渡すと、メモ化が効かなくなるのです。
+
+```tsx
+function App({ items }: { items: string[] }) {
+  const [count, setCount] = useState(0);
+
+  // 再レンダリングのたびに「新しい関数」が作られる
+  const handleSelect = (id: string) => {
+    console.log(id);
+  };
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      <HeavyList items={items} onSelect={handleSelect} />
+    </div>
+  );
+}
+```
+
+（`HeavyList` は先ほどの `memo` 版に、`onSelect` という関数の props を追加したものとします）
+
+JavaScript では、関数は作るたびに別のオブジェクトになります。中身が同じでも `前回の handleSelect === 今回の handleSelect` は `false` です。`React.memo` は props を前回と比較して判断するので、「props が変わった」と見なされ、メモ化が無効になります。
+
+これを防ぐのが `useCallback` です。依存配列が変わらない限り、前回と同じ関数を返し続けます。
+
+```tsx
+const handleSelect = useCallback((id: string) => {
+  console.log(id);
+}, []);
+```
+
+つまり `useCallback` は単体で再レンダリングを減らすものではなく、**`React.memo` とセットで初めて効果が出ます**。この関係を知らずに `useCallback` だけ書いても、何も速くなりません。
+
+## 「効いていない」メモ化を見抜く
+
+ここまでの知識で、メモ化を見抜く目が持てます。よく見かける形のコードを 1 つ見てみます。
+
+```tsx
+import { useState, useMemo, useCallback } from "react";
+
+type Product = { id: number; name: string; price: number };
+
+function ProductPage({ items }: { items: Product[] }) {
+  const [query, setQuery] = useState("");
+
+  const filtered = useMemo(
+    () => items.filter(item => item.name.includes(query)),
+    [items, query],
+  );
+
+  const handleReset = useCallback(() => setQuery(""), []);
+
+  return (
+    <>
+      <input
+        aria-label="商品名で絞り込み"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+      />
+      <button onClick={handleReset}>クリア</button>
+      <ul>
+        {filtered.map(item => (
+          <li key={item.id}>{item.name}: ¥{item.price}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+```
+
+`handleReset` の `useCallback`、効いているでしょうか。
+
+渡す先はただの `<button>` 要素で、`memo` されたコンポーネントではありません。つまりこの `useCallback` は**効いていません**。メモ化はそれっぽく書かれていても、正しく効いているとは限らない。それを見抜けるのが、今日の知識です。
+
+メモ化を見かけたら、この 3 つを疑ってみてください。
+
+- **依存配列は正しいか**: 入れ忘れがあると、古いデータが表示され続けるバグになる
+- **必要な場所に入っているか**: メモ化は書かなくても動くので、抜けていても見た目ではわからない
+- **組み合わせは正しいか**: `useCallback` は `React.memo` とセットでないと無意味
+
+完璧なメモ化を自分で書ける必要はありません。「これ、効いてる？」と疑える目があるだけで十分です。
+
+## REPL で体感する
+
+画面下の REPL を開き、**TSX** タブに以下を貼って ▶ 実行してください。1 万件の商品を入力のたびにソートしています。
+
+入力欄に文字を打つと、**もたつき（キー入力に画面が追いつかない重さ）**を体感できます。「useMemo を使う」チェックを入れてもう一度打ってみてください。ソートがスキップされて軽くなるのが指で分かります。
 
 ```tsx
 import { useState, useMemo } from "react";
@@ -146,7 +265,6 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [useMemoFlag, setUseMemoFlag] = useState(false);
 
-  // --- ここが本題 ---
   // useMemo なし: query が変わるたびにソートも毎回走る
   const sortedWithout = items
     .filter((item) => item.name.includes(query))
@@ -196,152 +314,6 @@ export default function App() {
   );
 }
 ```
-
-### 無関係な子コンポーネントの再レンダリング
-
-先ほどの `App` の例がこれです。`count` が変わっただけなのに、無関係な `<HeavyList />` まで再レンダリングされます。
-
-## 手動メモ化の 3 つの API
-
-React はこの無駄を抑えるために、3 つのメモ化 API を用意しています。表の中の **props** は、親から子コンポーネントに渡される値のことです。
-
-| API | 用途 | やること |
-|-----|------|---------|
-| `useMemo` | 計算結果のキャッシュ | 依存配列が変わらなければ前回の値を返す |
-| `useCallback` | 関数のキャッシュ | 依存配列が変わらなければ前回の関数を返す |
-| `React.memo` | コンポーネントのキャッシュ | props が変わらなければ再レンダリングをスキップ |
-
-### useMemo: 重い計算をキャッシュ
-
-第 2 引数の配列（**依存配列**）に「この値が変わったら再計算する」という条件を指定します。先ほどのソートの例なら、こう変わります。
-
-```tsx
-// items が変わったときだけソートし直す。query の変化では再計算しない
-const sorted = useMemo(
-  () => items.toSorted((a, b) => a.price - b.price),
-  [items],
-);
-```
-
-これで入力欄に文字を打っても、ソートは再実行されなくなります。
-
-### React.memo: 子の再レンダリングをスキップ
-
-コンポーネントを `memo` で包むと、親が再レンダリングされても「props が前回と同じなら、自分の再レンダリングをスキップする」ようになります。
-
-```tsx
-import { useState, memo } from "react";
-
-// props の items が前回と同じなら再レンダリングしない
-const HeavyList = memo(function HeavyList({ items }: { items: string[] }) {
-  return (
-    <ul>
-      {items.map(item => (
-        <li key={item}>{item}</li>
-      ))}
-    </ul>
-  );
-});
-
-function App({ items }: { items: string[] }) {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div>
-      <button onClick={() => setCount(count + 1)}>+1</button>
-      <p>{count}</p>
-      <HeavyList items={items} />
-    </div>
-  );
-}
-```
-
-これで `count` が変わっても `HeavyList` は再レンダリングされなくなります。
-
-### useCallback: React.memo を関数で壊さないため
-
-`React.memo` には落とし穴があります。props に関数を渡すと、メモ化が効かなくなるのです。
-
-```tsx
-function App({ items }: { items: string[] }) {
-  const [count, setCount] = useState(0);
-
-  // 再レンダリングのたびに「新しい関数」が作られる
-  const handleSelect = (id: string) => {
-    console.log(id);
-  };
-
-  return (
-    <div>
-      <button onClick={() => setCount(count + 1)}>+1</button>
-      <HeavyList items={items} onSelect={handleSelect} />
-    </div>
-  );
-}
-```
-
-（`HeavyList` は先ほどの `memo` 版に、`onSelect` という関数の props を追加したものとします）
-
-JavaScript では、関数は作るたびに別のオブジェクトになります。中身が同じでも `前回の handleSelect === 今回の handleSelect` は `false` です。`React.memo` は props を前回と比較して判断するので、「props が変わった」と見なされ、メモ化が無効になります。
-
-これを防ぐのが `useCallback` です。依存配列が変わらない限り、前回と同じ関数を返し続けます。
-
-```tsx
-const handleSelect = useCallback((id: string) => {
-  console.log(id);
-}, []);
-```
-
-つまり `useCallback` は単体で再レンダリングを減らすものではなく、**`React.memo` とセットで初めて効果が出ます**。この関係を知らずに `useCallback` だけ書いても、何も速くなりません。
-
-## 「効いていない」メモ化を見抜く
-
-ここで、よく見かける形のコードを 1 つ見てみます。
-
-```tsx
-import { useState, useMemo, useCallback } from "react";
-
-type Product = { id: number; name: string; price: number };
-
-function ProductPage({ items }: { items: Product[] }) {
-  const [query, setQuery] = useState("");
-
-  const filtered = useMemo(
-    () => items.filter(item => item.name.includes(query)),
-    [items, query],
-  );
-
-  const handleReset = useCallback(() => setQuery(""), []);
-
-  return (
-    <>
-      <input
-        aria-label="商品名で絞り込み"
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-      />
-      <button onClick={handleReset}>クリア</button>
-      <ul>
-        {filtered.map(item => (
-          <li key={item.id}>{item.name}: ¥{item.price}</li>
-        ))}
-      </ul>
-    </>
-  );
-}
-```
-
-`handleReset` の `useCallback`、効いているでしょうか。
-
-渡す先はただの `<button>` 要素で、`memo` されたコンポーネントではありません。つまりこの `useCallback` は**効いていません**。メモ化はそれっぽく書かれていても、正しく効いているとは限らない。それを見抜けるのが、今日の知識です。
-
-メモ化を見かけたら、この 3 つを疑ってみてください。
-
-- **依存配列は正しいか**: 入れ忘れがあると、古いデータが表示され続けるバグになる
-- **必要な場所に入っているか**: メモ化は書かなくても動くので、抜けていても見た目ではわからない
-- **組み合わせは正しいか**: `useCallback` は `React.memo` とセットでないと無意味
-
-完璧なメモ化を自分で書ける必要はありません。「これ、効いてる？」と疑える目があるだけで、AI への指示も成果物の見方も変わります。
 
 ## まとめ
 
