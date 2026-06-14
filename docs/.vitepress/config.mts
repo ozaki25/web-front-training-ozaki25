@@ -109,6 +109,10 @@ export default withPwa(
                   text: "Day 22: 文字数カウントの罠",
                   link: "/lessons/day22/",
                 },
+                {
+                  text: "Day 23: 再レンダリングと手動メモ化",
+                  link: "/lessons/day23/",
+                },
               ],
             },
           ],
