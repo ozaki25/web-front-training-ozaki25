@@ -113,6 +113,10 @@ export default withPwa(
                   text: "Day 23: 再レンダリングと手動メモ化",
                   link: "/lessons/day23/",
                 },
+                {
+                  text: "Day 24: React Compiler",
+                  link: "/lessons/day24/",
+                },
               ],
             },
           ],
