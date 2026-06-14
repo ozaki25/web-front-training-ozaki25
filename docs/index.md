@@ -70,7 +70,7 @@
 - [SC でのデータ取得](/drafts/035/)
 - [動的ルート](/drafts/093/)
 - [Server Actions とフォーム](/drafts/037/)
-- [フォームバリデーションの層](/drafts/095/)
+- [フォームバリデーション](/drafts/095/)
 - [キャッシュ制御](/drafts/038/)
 - [Suspense と Streaming](/drafts/039/)
 - [SPA のページ遷移の正体](/drafts/040/)

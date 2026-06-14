@@ -163,7 +163,7 @@ export default withPwa(
                 { text: "SC でのデータ取得", link: "/drafts/035/" },
                 { text: "動的ルート", link: "/drafts/093/" },
                 { text: "Server Actions とフォーム", link: "/drafts/037/" },
-                { text: "フォームバリデーションの層", link: "/drafts/095/" },
+                { text: "フォームバリデーション", link: "/drafts/095/" },
                 { text: "キャッシュ制御", link: "/drafts/038/" },
                 { text: "Suspense と Streaming", link: "/drafts/039/" },
                 { text: "SPA のページ遷移の正体", link: "/drafts/040/" },
