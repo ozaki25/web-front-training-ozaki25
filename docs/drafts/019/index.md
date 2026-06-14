@@ -172,7 +172,7 @@ function OrderList({ orders }: { orders: Order[] }) {
 
 ### && の罠 — 0 が画面に出る
 
-`&&` には有名な落とし穴があります。
+`&&` には有名な罠があります。
 
 ```tsx
 {cartCount && <p>カートに {cartCount} 点あります</p>}

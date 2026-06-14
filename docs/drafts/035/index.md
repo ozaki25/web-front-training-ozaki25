@@ -95,7 +95,7 @@ export default async function ProductPage({
 
 検索条件などの `?sort=price` は、同様に `searchParams` で受け取ります。AI が古い書き方（await なしで `params.id`）を出してきたら、現在は Promise になっていることを思い出してください。
 
-## 落とし穴 — 取得の「直列待ち」
+## 直列待ちに注意
 
 await は書いた順に**待ち行列**を作ります。無関係な取得を縦に並べると、時間が足し算になります。
 

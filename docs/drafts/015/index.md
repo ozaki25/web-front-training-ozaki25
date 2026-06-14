@@ -164,7 +164,7 @@ function App({ items }: { items: string[] }) {
 
 ## useCallback: React.memo を関数で壊さないため
 
-`React.memo` には落とし穴があります。props に関数を渡すと、メモ化が効かなくなるのです。
+`React.memo` には注意点があります。props に関数を渡すと、メモ化が効かなくなるのです。
 
 ```tsx
 function App({ items }: { items: string[] }) {

@@ -109,7 +109,7 @@ export default function TodoList() {
   <p class="c09-note">各行の key に注目。ID は項目に固定なので増えた行の key だけが新しく、その 1 行だけ光る。番号は位置に振られるので全行の key がズレ、全行が光る（= 本物の DOM を書き換えた行）。</p>
 </div>
 
-::: warning key にインデックスを使う落とし穴
+::: warning key にインデックスを使う問題
 AI が生成したコードで `key={index}`（配列の番号を key にする）を見かけることがあります。
 
 ```tsx

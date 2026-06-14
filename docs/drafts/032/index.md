@@ -92,7 +92,7 @@ flowchart TD
   style D fill:#fecaca,color:#1e293b,stroke:#ef4444
 ```
 
-## fetch の落とし穴 — 404 はエラーじゃない？
+## fetch の盲点 — 404 はエラーじゃない？
 
 ステータスコードに関して、fetch には知らないと必ず踏む仕様があります。**404 や 500 が返っても、fetch は失敗扱いになりません**。
 
