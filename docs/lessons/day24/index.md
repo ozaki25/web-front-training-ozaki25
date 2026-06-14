@@ -141,6 +141,10 @@ export default nextConfig;
 
 段階的に導入したい場合は、設定を `{ compilationMode: "annotation" }` にすると、関数の先頭に `"use memo"` という目印（ディレクティブ）を書いたコンポーネントだけがコンパイル対象になります。
 
+::: info 補足: なぜ Babel プラグインなのか（2026 年 6 月時点）
+React Compiler は現在 Babel プラグインとして提供されていますが、Rust への移植が進んでおり、将来は SWC ネイティブで動く予定です。Next.js では対象ファイルだけに適用する最適化が入っているため、ビルド速度への影響は抑えられています。
+:::
+
 ### 既存コードとの互換性
 
 - 既存の `useMemo` / `useCallback` / `React.memo` はそのまま残してよい
