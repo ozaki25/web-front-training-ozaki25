@@ -330,14 +330,16 @@ export default withPwa(
         workbox: {
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           globPatterns: ["**/*.{js,css,woff2,png,svg,ico,webp,json}"],
+          navigateFallback: null,
           runtimeCaching: [
             {
               urlPattern: ({ request }) => request.mode === "navigate",
               handler: "NetworkFirst",
               options: {
+                cacheName: "wft-html",
                 networkTimeoutSeconds: 5,
-                cacheName: "pages",
-                expiration: { maxAgeSeconds: 7 * 24 * 60 * 60 },
+                expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
+                cacheableResponse: { statuses: [0, 200] },
               },
             },
           ],
