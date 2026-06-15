@@ -37,6 +37,27 @@ flowchart TD
   style C fill:#fef3c7,color:#1e293b,stroke:#f59e0b
 ```
 
+実際にパーサが出力する AST は、こんな JSON です。
+
+```json
+{
+  "type": "VariableDeclaration",
+  "kind": "const",
+  "declarations": [{
+    "type": "VariableDeclarator",
+    "id": { "type": "Identifier", "name": "total" },
+    "init": {
+      "type": "BinaryExpression",
+      "operator": "*",
+      "left": { "type": "Identifier", "name": "price" },
+      "right": { "type": "Literal", "value": 2 }
+    }
+  }]
+}
+```
+
+全部読む必要はありません。`"type": "VariableDeclaration"` や `"name": "price"` が目に入れば十分です。コードの各部分が `type` と値のペアで構造化されていて、ツールはこの構造をたどって処理しています。
+
 文字列のままでは見えなかった「これは変数宣言」「これは掛け算」「price は変数の参照」という**意味の構造**が、木の形で機械に見えるようになります。
 
 この木があれば、ツールはコードを実行しなくても構造を理解できます。
