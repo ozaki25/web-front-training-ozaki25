@@ -254,7 +254,7 @@ export default withPwa(
                 { text: "Git のデータモデル", link: "/drafts/080/" },
                 { text: "DevTools", link: "/drafts/091/" },
                 { text: "エラーの読み方", link: "/drafts/097/" },
-                { text: "ESLint の仕組み", link: "/drafts/098/" },
+                { text: "ツールがコードを読む仕組み", link: "/drafts/098/" },
               ],
             },
             {
