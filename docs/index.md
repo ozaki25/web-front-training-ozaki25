@@ -29,6 +29,7 @@
 - [Day 21: 制御と非制御コンポーネント — フォームの値は誰が持つ](/lessons/day21/)
 - [Day 22: 文字数カウントの罠 — `.length` は見た目の文字数ではない](/lessons/day22/)
 - [Day 23: 再レンダリングと手動メモ化 — useMemo / useCallback / React.memo](/lessons/day23/)
+- [Day 24: React Compiler — 手動メモ化からの解放](/lessons/day24/)
 
 ## 候補（下書き）
 
