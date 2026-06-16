@@ -27,7 +27,7 @@ TypeError: Cannot read properties of undefined (reading 'name')
 | **説明** | `Cannot read properties of undefined (reading 'name')` | 何が起きたか |
 | **スタックトレース** | `at ...` の行の列 | **どこで**起きたか |
 
-## 部品 1・2 — 種類と説明は定型文
+## 種類と説明は定型文
 
 エラーの種類は数えるほどしかなく、頻出はこの 3 つです。
 
@@ -39,7 +39,7 @@ TypeError: Cannot read properties of undefined (reading 'name')
 
 説明文も定型です。最頻出の `Cannot read properties of undefined (reading 'name')` は、「**undefined になっている何かの `.name` を読もうとした**」と訳せます。つまり `xxx.name` の **xxx が undefined** だった。「name が無い」のではなく「**name の手前が無い**」と読むのがコツです。データがまだ届いていない、API の形が想定と違う、配列が空だった、が三大原因です。
 
-## 部品 3 — スタックトレースは「呼び出しの足跡」
+## スタックトレースは「呼び出しの足跡」
 
 `at ...` の行の列が**スタックトレース**です。これは「エラーが起きた瞬間、**どの関数がどの関数を呼んでいる途中だったか**」の記録で、読み方には明確なルールがあります。
 
