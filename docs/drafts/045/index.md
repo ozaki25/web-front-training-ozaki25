@@ -12,14 +12,60 @@
 
 特定の色の組み合わせが区別しにくい**色覚多様性**は、日本では男性の約 5%（20 人に 1 人）にみられます。学校の 1 クラスに 1 人いる計算で、まったく珍しくありません。
 
-なぜ人によって見え方が違うのか。それを理解するには、目が色を感じる仕組みを知る必要があります。
+なぜ人によって見え方が違うのか。それを理解するには、光と目の仕組みを少しだけ知る必要があります。
 
-## 目が色を感じる仕組み
+## 色は光の波長で決まる
 
-人間の目の網膜には、色を感じる細胞（**錐体**）が 3 種類あります。それぞれ反応する光の波長が違います。
+光は波長によって色が変わります。人間の目が感じ取れる範囲（**可視光線**）は約 380nm〜780nm で、短い方が青紫、長い方が赤です。
 
-| 錐体 | 反応する光 | 別名 |
-|------|-----------|------|
+<figure class="c45-fig">
+<svg class="c45-visible" viewBox="0 0 640 90" role="img" aria-label="可視光線の波長と色の対応。380nmが紫、450nmが青、520nmが緑、580nmが黄、620nmが橙、700nmが赤">
+  <rect width="640" height="90" fill="#f8fafc" rx="6"/>
+  <defs>
+    <linearGradient id="c45-vis-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7b00ff"/>
+      <stop offset="15%" stop-color="#0044ff"/>
+      <stop offset="35%" stop-color="#00ccaa"/>
+      <stop offset="50%" stop-color="#44dd00"/>
+      <stop offset="65%" stop-color="#ffdd00"/>
+      <stop offset="80%" stop-color="#ff8800"/>
+      <stop offset="100%" stop-color="#ff0000"/>
+    </linearGradient>
+  </defs>
+  <rect x="40" y="14" width="560" height="30" rx="4" fill="url(#c45-vis-grad)"/>
+  <g font-family="sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">
+    <text x="40" y="62">380</text>
+    <text x="124" y="62">450</text>
+    <text x="236" y="62">520</text>
+    <text x="320" y="62">580</text>
+    <text x="404" y="62">620</text>
+    <text x="600" y="62">700</text>
+    <text x="320" y="82" fill="#64748b" font-size="12">波長 (nm)</text>
+  </g>
+  <g font-family="sans-serif" font-size="10" fill="#1e293b" text-anchor="middle">
+    <text x="40" y="10">紫</text>
+    <text x="124" y="10">青</text>
+    <text x="236" y="10">緑</text>
+    <text x="320" y="10">黄</text>
+    <text x="404" y="10">橙</text>
+    <text x="600" y="10">赤</text>
+  </g>
+</svg>
+</figure>
+
+虹の色順と同じです。リンゴが赤く見えるのは、赤の波長を反射して他を吸収しているからです。
+
+## 目が光を色に変える仕組み
+
+光が目に入ると、奥にある**網膜**に届きます。網膜には 2 種類の感光細胞があります。
+
+- **錐体**（すいたい）: 明るい場所で働き、**色を識別**する
+- **桿体**（かんたい）: 暗い場所で働き、**明暗だけ**を感じる
+
+色を見分けるのは錐体の仕事です。錐体には 3 種類あり、それぞれ反応する波長が違います。
+
+| 錐体 | 反応する波長 | 別名 |
+|------|------------|------|
 | L 錐体 | 長い波長（赤〜黄） | 赤錐体 |
 | M 錐体 | 中間の波長（緑） | 緑錐体 |
 | S 錐体 | 短い波長（青） | 青錐体 |
@@ -89,5 +135,6 @@ S 錐体の遺伝子は X 染色体ではなく**7 番染色体**にあります
 
 <style>
 .c45-fig { margin: 16px 0; text-align: center; }
+.c45-visible { width: 100%; max-width: 600px; height: auto; }
 .c45-spectrum { width: 100%; max-width: 700px; height: auto; }
 </style>
