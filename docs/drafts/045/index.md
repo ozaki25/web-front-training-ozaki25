@@ -153,6 +153,54 @@
 | **D 型**（2 型） | M 錐体（緑） | 赤と緑、緑と茶 | 約 3.5% |
 | **T 型**（3 型） | S 錐体（青） | 青と緑、黄と白 | まれ |
 
+表だけではどの色同士が混同するかイメージしにくいので、色相環で見てみます。黄を上にして置くと、**左右の同じ高さにある色が P 型・D 型には似て見えます**。
+
+<figure class="c45-fig">
+<svg class="c45-wheel" viewBox="0 0 480 520" role="img" aria-label="P型・D型で混同しやすい色を色相環で示した図。黄を上にして、左右の同じ高さにある色が区別しにくい">
+  <rect width="480" height="520" fill="#f8fafc" rx="8"/>
+  <text x="240" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">P 型・D 型で混同しやすい色</text>
+  <text x="240" y="48" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">黄を上にして、左右の同じ高さにある色が区別しにくい</text>
+  <circle cx="240" cy="130" r="22" fill="#eab308" stroke="#a16207" stroke-width="1.5"/>
+  <text x="240" y="135" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄</text>
+  <circle cx="305" cy="147" r="22" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
+  <text x="305" y="152" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700">黄緑</text>
+  <circle cx="353" cy="195" r="22" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
+  <text x="353" y="200" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">緑</text>
+  <circle cx="370" cy="260" r="22" fill="#0d9488" stroke="#115e59" stroke-width="1.5"/>
+  <text x="370" y="265" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#ffffff" font-weight="700">青緑</text>
+  <circle cx="353" cy="325" r="22" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="353" y="330" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">青</text>
+  <circle cx="305" cy="373" r="22" fill="#7c3aed" stroke="#4c1d95" stroke-width="1.5"/>
+  <text x="305" y="378" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#ffffff" font-weight="700">青紫</text>
+  <circle cx="240" cy="390" r="22" fill="#9333ea" stroke="#581c87" stroke-width="1.5"/>
+  <text x="240" y="395" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">紫</text>
+  <circle cx="175" cy="373" r="22" fill="#db2777" stroke="#831843" stroke-width="1.5"/>
+  <text x="175" y="378" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#ffffff" font-weight="700">赤紫</text>
+  <circle cx="127" cy="325" r="22" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
+  <text x="127" y="330" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">赤</text>
+  <circle cx="110" cy="260" r="22" fill="#ea580c" stroke="#9a3412" stroke-width="1.5"/>
+  <text x="110" y="265" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#ffffff" font-weight="700">赤橙</text>
+  <circle cx="127" cy="195" r="22" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="127" y="200" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">橙</text>
+  <circle cx="175" cy="147" r="22" fill="#facc15" stroke="#a16207" stroke-width="1.5"/>
+  <text x="175" y="152" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700">黄橙</text>
+  <!-- 混同色線 -->
+  <line x1="149" y1="195" x2="331" y2="195" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+  <line x1="132" y1="260" x2="348" y2="260" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+  <line x1="149" y1="325" x2="331" y2="325" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+  <line x1="197" y1="373" x2="283" y2="373" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+  <line x1="197" y1="147" x2="283" y2="147" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+  <text x="445" y="197" font-family="sans-serif" font-size="10" fill="#b91c1c" font-weight="700">混同</text>
+  <text x="445" y="262" font-family="sans-serif" font-size="10" fill="#b91c1c" font-weight="700">混同</text>
+  <text x="445" y="327" font-family="sans-serif" font-size="10" fill="#b91c1c" font-weight="700">混同</text>
+  <text x="240" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">▲ 区別できる方向</text>
+  <text x="240" y="418" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">▼ 区別できる方向</text>
+  <text x="240" y="460" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">破線で結ばれた左右の色が似て見える</text>
+  <text x="240" y="480" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">上下（黄↔紫）方向の色の違いは区別できる</text>
+  <text x="240" y="500" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">T 型はこれを 90° 回転した方向（上下）が混同する</text>
+</svg>
+</figure>
+
 ### なぜ赤緑系（P 型・D 型）が多いか
 
 感度曲線の形がその答えです。L 錐体と M 錐体はピークが近く、担当する波長の範囲が大きく重なっています。どちらか一方が弱くなると、重なっている領域の色（赤〜緑）を区別する手がかりが失われます。
@@ -179,5 +227,6 @@ S 錐体の遺伝子は X 染色体ではなく**7 番染色体**にあります
 .c45-fig { margin: 16px 0; text-align: center; }
 .c45-visible { width: 100%; max-width: 600px; height: auto; }
 .c45-eye { width: 100%; max-width: 560px; height: auto; }
+.c45-wheel { width: 100%; max-width: 480px; height: auto; }
 .c45-spectrum { width: 100%; max-width: 700px; height: auto; }
 </style>
