@@ -193,8 +193,8 @@
   <text x="445" y="197" font-family="sans-serif" font-size="10" fill="#b91c1c" font-weight="700">混同</text>
   <text x="445" y="262" font-family="sans-serif" font-size="10" fill="#b91c1c" font-weight="700">混同</text>
   <text x="445" y="327" font-family="sans-serif" font-size="10" fill="#b91c1c" font-weight="700">混同</text>
-  <text x="240" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">▲ 区別できる方向</text>
-  <text x="240" y="418" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">▼ 区別できる方向</text>
+  <text x="240" y="90" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">▲ 区別できる方向</text>
+  <text x="240" y="436" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">▼ 区別できる方向</text>
   <text x="240" y="460" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">破線で結ばれた左右の色が似て見える</text>
   <text x="240" y="480" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">上下（黄↔紫）方向の色の違いは区別できる</text>
   <text x="240" y="500" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">T 型はこれを 90° 回転した方向（上下）が混同する</text>
