@@ -83,6 +83,116 @@ flowchart TD
 
 それぞれが独自に AST をパースしていて、同じコードを何度も木に変換する無駄がありました。設定ファイルも `.eslintrc` / `.prettierrc` / `babel.config.js` / `webpack.config.js` と散らばります。
 
+<figure class="d098-fig">
+<svg class="d098-svg" viewBox="0 0 520 370" role="img" aria-label="従来はツールごとに毎回パースしていたが、新世代は1回パースして使い回す対比図">
+  <!-- 従来 -->
+  <text x="260" y="20" class="d098-title">従来: ツールごとに毎回パース</text>
+  <rect x="10" y="35" width="100" height="130" rx="8" class="d098-src"/>
+  <text x="60" y="80" class="d098-src-label">ソース</text>
+  <text x="60" y="100" class="d098-src-label">コード</text>
+  <!-- 4本の矢印とパース -->
+  <line x1="110" y1="60" x2="200" y2="45" class="d098-arrow"/>
+  <line x1="110" y1="80" x2="200" y2="75" class="d098-arrow"/>
+  <line x1="110" y1="105" x2="200" y2="105" class="d098-arrow"/>
+  <line x1="110" y1="130" x2="200" y2="135" class="d098-arrow"/>
+  <text x="155" y="38" class="d098-parse">パース</text>
+  <text x="155" y="68" class="d098-parse">パース</text>
+  <text x="155" y="100" class="d098-parse">パース</text>
+  <text x="155" y="132" class="d098-parse">パース</text>
+  <!-- AST x4 -->
+  <rect x="200" y="30" width="60" height="26" rx="4" class="d098-ast"/>
+  <text x="230" y="48" class="d098-ast-label">AST</text>
+  <rect x="200" y="62" width="60" height="26" rx="4" class="d098-ast"/>
+  <text x="230" y="80" class="d098-ast-label">AST</text>
+  <rect x="200" y="94" width="60" height="26" rx="4" class="d098-ast"/>
+  <text x="230" y="112" class="d098-ast-label">AST</text>
+  <rect x="200" y="126" width="60" height="26" rx="4" class="d098-ast"/>
+  <text x="230" y="144" class="d098-ast-label">AST</text>
+  <!-- 矢印 → ツール -->
+  <line x1="260" y1="43" x2="310" y2="43" class="d098-arrow"/>
+  <line x1="260" y1="75" x2="310" y2="75" class="d098-arrow"/>
+  <line x1="260" y1="107" x2="310" y2="107" class="d098-arrow"/>
+  <line x1="260" y1="139" x2="310" y2="139" class="d098-arrow"/>
+  <!-- ツール名 -->
+  <rect x="310" y="30" width="100" height="26" rx="4" class="d098-tool"/>
+  <text x="360" y="48" class="d098-tool-label">ESLint 検査</text>
+  <rect x="310" y="62" width="100" height="26" rx="4" class="d098-tool"/>
+  <text x="360" y="80" class="d098-tool-label">Prettier 整形</text>
+  <rect x="310" y="94" width="100" height="26" rx="4" class="d098-tool"/>
+  <text x="360" y="112" class="d098-tool-label">Babel 変換</text>
+  <rect x="310" y="126" width="100" height="26" rx="4" class="d098-tool"/>
+  <text x="360" y="144" class="d098-tool-label">Webpack バンドル</text>
+  <!-- ×4 強調 -->
+  <text x="460" y="100" class="d098-count">×4</text>
+
+  <!-- 区切り線 -->
+  <line x1="20" y1="190" x2="500" y2="190" class="d098-divider"/>
+
+  <!-- 新世代 -->
+  <text x="260" y="215" class="d098-title-new">新世代: 1 回パースして使い回す</text>
+  <rect x="10" y="235" width="100" height="100" rx="8" class="d098-src"/>
+  <text x="60" y="275" class="d098-src-label">ソース</text>
+  <text x="60" y="295" class="d098-src-label">コード</text>
+  <!-- 1本の矢印 -->
+  <line x1="110" y1="285" x2="175" y2="285" class="d098-arrow-new"/>
+  <text x="142" y="275" class="d098-parse-new">パース</text>
+  <!-- AST 1つ（大きめ） -->
+  <rect x="175" y="260" width="70" height="50" rx="8" class="d098-ast-new"/>
+  <text x="210" y="290" class="d098-ast-label-new">AST</text>
+  <!-- 4本の矢印 -->
+  <line x1="245" y1="272" x2="310" y2="248" class="d098-arrow-new"/>
+  <line x1="245" y1="280" x2="310" y2="278" class="d098-arrow-new"/>
+  <line x1="245" y1="290" x2="310" y2="308" class="d098-arrow-new"/>
+  <line x1="245" y1="298" x2="310" y2="338" class="d098-arrow-new"/>
+  <!-- ツール名 -->
+  <rect x="310" y="235" width="100" height="26" rx="4" class="d098-tool-new"/>
+  <text x="360" y="253" class="d098-tool-label-new">Lint 検査</text>
+  <rect x="310" y="265" width="100" height="26" rx="4" class="d098-tool-new"/>
+  <text x="360" y="283" class="d098-tool-label-new">整形</text>
+  <rect x="310" y="295" width="100" height="26" rx="4" class="d098-tool-new"/>
+  <text x="360" y="313" class="d098-tool-label-new">変換</text>
+  <rect x="310" y="325" width="100" height="26" rx="4" class="d098-tool-new"/>
+  <text x="360" y="343" class="d098-tool-label-new">バンドル</text>
+  <!-- ×1 強調 -->
+  <text x="460" y="295" class="d098-count-new">×1</text>
+</svg>
+</figure>
+
+<style>
+.d098-fig { margin: 16px 0; text-align: center; }
+.d098-svg { width: 100%; max-width: 540px; height: auto; }
+.d098-title { font-size: 13px; font-weight: bold; fill: #92400e; text-anchor: middle; }
+.d098-title-new { font-size: 13px; font-weight: bold; fill: #166534; text-anchor: middle; }
+.d098-src { fill: #f1f5f9; stroke: #94a3b8; }
+.d098-src-label { font-size: 13px; fill: #475569; text-anchor: middle; font-weight: bold; }
+.d098-arrow { stroke: #f59e0b; stroke-width: 1.5; marker-end: url(#d098-head); }
+.d098-arrow-new { stroke: #22c55e; stroke-width: 2; marker-end: url(#d098-head-new); }
+.d098-parse { font-size: 10px; fill: #92400e; text-anchor: middle; }
+.d098-parse-new { font-size: 11px; fill: #166534; text-anchor: middle; font-weight: bold; }
+.d098-ast { fill: #fef3c7; stroke: #f59e0b; }
+.d098-ast-label { font-size: 11px; fill: #92400e; text-anchor: middle; font-weight: bold; }
+.d098-ast-new { fill: #dcfce7; stroke: #22c55e; stroke-width: 2; }
+.d098-ast-label-new { font-size: 14px; fill: #166534; text-anchor: middle; font-weight: bold; }
+.d098-tool { fill: #fecaca; stroke: #ef4444; }
+.d098-tool-label { font-size: 11px; fill: #991b1b; text-anchor: middle; }
+.d098-tool-new { fill: #dbeafe; stroke: #3b82f6; }
+.d098-tool-label-new { font-size: 11px; fill: #1e40af; text-anchor: middle; }
+.d098-count { font-size: 28px; fill: #ef4444; font-weight: bold; text-anchor: middle; }
+.d098-count-new { font-size: 28px; fill: #22c55e; font-weight: bold; text-anchor: middle; }
+.d098-divider { stroke: #e2e8f0; stroke-width: 1; stroke-dasharray: 6 4; }
+</style>
+
+<svg style="position:absolute;width:0;height:0">
+  <defs>
+    <marker id="d098-head" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#f59e0b" stroke-width="1.2"/>
+    </marker>
+    <marker id="d098-head-new" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#22c55e" stroke-width="1.2"/>
+    </marker>
+  </defs>
+</svg>
+
 今、このバラバラな状態が **Rust 製の高速パーサを共有する** 形で統合に向かっています。
 
 - **Biome**: Lint と整形を 1 つのツールに統合。1 回のパースで検査と整形を両方やる
