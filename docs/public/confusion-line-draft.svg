@@ -1,68 +1,85 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 460" role="img">
-  <rect width="520" height="460" fill="#f8fafc" rx="8"/>
-  <text x="260" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">混同色線（P 型）</text>
-  <text x="260" y="48" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">色度図の上で、同じ線上にある色が似て見える</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 520" role="img">
+  <rect width="480" height="520" fill="#f8fafc" rx="8"/>
+  <text x="240" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">P 型・D 型で混同しやすい色（色相環）</text>
+  <text x="240" y="48" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">黄を上にして、左右の同じ高さにある色が区別しにくい</text>
 
-  <defs>
-    <!-- 馬蹄形の中を色で塗るためのグラデーション群 -->
-    <radialGradient id="cg-center" cx="40%" cy="45%" r="55%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <clipPath id="horseshoe-clip">
-      <path d="M100,390 C60,310 55,230 70,175 C85,120 115,85 160,72 C220,55 320,58 360,115 C410,165 440,230 445,300 Z"/>
-    </clipPath>
-  </defs>
+  <!-- 色相環（12色、黄が上） -->
+  <!-- 半径130, 中心(240, 260) -->
+  <!-- 黄=上(0°), 時計回りに30°ずつ -->
 
-  <!-- 馬蹄形の色塗り（色度図を模した多色背景） -->
-  <g clip-path="url(#horseshoe-clip)">
-    <!-- 上部: 青〜緑 -->
-    <rect x="50" y="55" width="120" height="120" fill="#0044cc" opacity="0.8"/>
-    <rect x="100" y="55" width="100" height="80" fill="#0088aa" opacity="0.8"/>
-    <rect x="140" y="55" width="80" height="60" fill="#00cc66" opacity="0.9"/>
-    <rect x="200" y="55" width="60" height="80" fill="#22dd22" opacity="0.8"/>
-    <!-- 中部: 緑〜黄 -->
-    <rect x="50" y="160" width="100" height="100" fill="#0066dd" opacity="0.7"/>
-    <rect x="130" y="130" width="120" height="100" fill="#44cc44" opacity="0.6"/>
-    <rect x="230" y="100" width="100" height="100" fill="#88dd00" opacity="0.7"/>
-    <rect x="300" y="120" width="100" height="100" fill="#cccc00" opacity="0.7"/>
-    <!-- 下部: 赤〜マゼンタ -->
-    <rect x="50" y="260" width="80" height="130" fill="#4400cc" opacity="0.7"/>
-    <rect x="100" y="280" width="100" height="110" fill="#8800aa" opacity="0.6"/>
-    <rect x="180" y="280" width="100" height="110" fill="#cc0066" opacity="0.6"/>
-    <rect x="260" y="240" width="100" height="100" fill="#ee4400" opacity="0.7"/>
-    <rect x="340" y="200" width="100" height="100" fill="#dd6600" opacity="0.6"/>
-    <rect x="380" y="260" width="80" height="80" fill="#cc3300" opacity="0.7"/>
-    <!-- 中央は白っぽく -->
-    <circle cx="200" cy="240" r="80" fill="url(#cg-center)"/>
-  </g>
+  <!-- 色の円 r=22 -->
+  <!-- 0° 黄 (240, 130) -->
+  <circle cx="240" cy="130" r="22" fill="#eab308" stroke="#a16207" stroke-width="1.5"/>
+  <text x="240" y="135" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄</text>
 
-  <!-- 馬蹄形の輪郭 -->
-  <path d="M100,390 C60,310 55,230 70,175 C85,120 115,85 160,72 C220,55 320,58 360,115 C410,165 440,230 445,300 Z"
-        fill="none" stroke="#475569" stroke-width="1.5"/>
+  <!-- 30° 黄緑 (305, 145) -->
+  <circle cx="305" cy="147" r="22" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
+  <text x="305" y="152" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700">黄緑</text>
 
-  <!-- 白色点 -->
-  <circle cx="210" cy="235" r="5" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
-  <text x="225" y="245" font-family="sans-serif" font-size="10" fill="#475569">白</text>
+  <!-- 60° 緑 (353, 195) -->
+  <circle cx="353" cy="195" r="22" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
+  <text x="353" y="200" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">緑</text>
 
-  <!-- 収束点（P型：赤の外側） -->
-  <circle cx="460" cy="285" r="5" fill="#ef4444" stroke="#991b1b" stroke-width="1.5"/>
-  <text x="476" y="280" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">収束点</text>
+  <!-- 90° 青緑 (370, 260) -->
+  <circle cx="370" cy="260" r="22" fill="#0d9488" stroke="#115e59" stroke-width="1.5"/>
+  <text x="370" y="265" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#ffffff" font-weight="700">青緑</text>
 
-  <!-- 混同色線 -->
-  <line x1="120" y1="110" x2="460" y2="285" stroke="#1e293b" stroke-width="1.8" stroke-dasharray="6 3"/>
-  <line x1="90" y1="220" x2="460" y2="285" stroke="#1e293b" stroke-width="1.8" stroke-dasharray="6 3"/>
-  <line x1="100" y1="330" x2="460" y2="285" stroke="#1e293b" stroke-width="1.8" stroke-dasharray="6 3"/>
-  <line x1="200" y1="380" x2="460" y2="285" stroke="#1e293b" stroke-width="1.8" stroke-dasharray="6 3"/>
+  <!-- 120° 青 (353, 325) -->
+  <circle cx="353" cy="325" r="22" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="353" y="330" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">青</text>
 
-  <!-- 色ラベル（馬蹄形の外側） -->
-  <text x="130" y="68" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">緑</text>
-  <text x="60" y="170" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">青</text>
-  <text x="65" y="350" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">紫</text>
-  <text x="400" y="140" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">黄</text>
-  <text x="450" y="250" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">赤</text>
+  <!-- 150° 青紫 (305, 373) -->
+  <circle cx="305" cy="373" r="22" fill="#7c3aed" stroke="#4c1d95" stroke-width="1.5"/>
+  <text x="305" y="378" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#ffffff" font-weight="700">青紫</text>
 
-  <!-- 説明 -->
-  <text x="260" y="420" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">同じ破線の上にある色は、P 型には似た色に見える</text>
-  <text x="260" y="440" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">すべての線が 1 点（収束点）に向かって伸びている</text>
+  <!-- 180° 紫 (240, 390) -->
+  <circle cx="240" cy="390" r="22" fill="#9333ea" stroke="#581c87" stroke-width="1.5"/>
+  <text x="240" y="395" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">紫</text>
+
+  <!-- 210° 赤紫 (175, 373) -->
+  <circle cx="175" cy="373" r="22" fill="#db2777" stroke="#831843" stroke-width="1.5"/>
+  <text x="175" y="378" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#ffffff" font-weight="700">赤紫</text>
+
+  <!-- 240° 赤 (127, 325) -->
+  <circle cx="127" cy="325" r="22" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
+  <text x="127" y="330" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">赤</text>
+
+  <!-- 270° 赤橙 (110, 260) -->
+  <circle cx="110" cy="260" r="22" fill="#ea580c" stroke="#9a3412" stroke-width="1.5"/>
+  <text x="110" y="265" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#ffffff" font-weight="700">赤橙</text>
+
+  <!-- 300° 橙 (127, 195) -->
+  <circle cx="127" cy="195" r="22" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="127" y="200" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">橙</text>
+
+  <!-- 330° 黄橙 (175, 147) -->
+  <circle cx="175" cy="147" r="22" fill="#facc15" stroke="#a16207" stroke-width="1.5"/>
+  <text x="175" y="152" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700">黄橙</text>
+
+  <!-- 混同色線（横線、同じ高さを結ぶ） -->
+  <!-- 橙 ↔ 黄緑 -->
+  <line x1="149" y1="195" x2="331" y2="195" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+  <!-- 赤橙 ↔ 青緑 -->
+  <line x1="132" y1="260" x2="348" y2="260" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+  <!-- 赤 ↔ 青 -->
+  <line x1="149" y1="325" x2="331" y2="325" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+  <!-- 赤紫 ↔ 青紫 -->
+  <line x1="197" y1="373" x2="283" y2="373" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+  <!-- 黄橙 ↔ 黄緑 -->
+  <line x1="197" y1="147" x2="283" y2="147" stroke="#1e293b" stroke-width="2" stroke-dasharray="6 3"/>
+
+  <!-- 「区別しにくい」ラベル -->
+  <text x="445" y="195" font-family="sans-serif" font-size="10" fill="#b91c1c" font-weight="700">混同</text>
+  <text x="445" y="260" font-family="sans-serif" font-size="10" fill="#b91c1c" font-weight="700">混同</text>
+  <text x="445" y="325" font-family="sans-serif" font-size="10" fill="#b91c1c" font-weight="700">混同</text>
+
+  <!-- 上下の軸ラベル -->
+  <text x="240" y="112" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">▲ 区別できる方向（青-黄）</text>
+  <text x="240" y="418" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">▼ 区別できる方向（青-黄）</text>
+  <text x="62" y="262" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ef4444" transform="rotate(-90 62 262)">← 潰れる方向（赤-緑）→</text>
+
+  <!-- 下部説明 -->
+  <text x="240" y="460" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">破線で結ばれた左右の色が、P 型・D 型には似て見える</text>
+  <text x="240" y="480" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">上下（黄↔紫）方向の色の違いは区別できる</text>
+  <text x="240" y="500" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">T 型はこの図を 90° 回転させた方向（上下）が潰れる</text>
 </svg>
