@@ -57,7 +57,49 @@
 
 ## 目が光を色に変える仕組み
 
-光が目に入ると、奥にある**網膜**に届きます。網膜には 2 種類の感光細胞があります。
+光は目の表面（角膜）から入り、水晶体でピントを合わされ、奥の**網膜**に像を結びます。
+
+<figure class="c45-fig">
+<svg class="c45-eye" viewBox="0 0 600 280" role="img" aria-label="目の断面図。光が角膜から入り、水晶体を通って網膜に届く。網膜に錐体と桿体がある">
+  <rect width="600" height="280" fill="#f8fafc" rx="8"/>
+  <!-- 光の矢印 -->
+  <g stroke="#d97706" stroke-width="2">
+    <line x1="30" y1="110" x2="148" y2="132"/>
+    <line x1="30" y1="170" x2="148" y2="148"/>
+  </g>
+  <text x="40" y="98" font-family="sans-serif" font-size="13" fill="#92400e" font-weight="700">光</text>
+  <!-- 眼球 -->
+  <circle cx="300" cy="140" r="120" fill="#eff6ff" stroke="#475569" stroke-width="2"/>
+  <!-- 網膜（後ろ半分を強調） -->
+  <path d="M300,20 A120 120 0 0 1 300,260" fill="none" stroke="#ec4899" stroke-width="5" stroke-opacity="0.6"/>
+  <!-- 角膜 -->
+  <path d="M180,110 A50 50 0 0 0 180,170" fill="#dbeafe" stroke="#475569" stroke-width="2"/>
+  <!-- 虹彩 -->
+  <line x1="188" y1="102" x2="200" y2="122" stroke="#475569" stroke-width="4"/>
+  <line x1="188" y1="178" x2="200" y2="158" stroke="#475569" stroke-width="4"/>
+  <!-- 水晶体 -->
+  <ellipse cx="210" cy="140" rx="16" ry="32" fill="#bfdbfe" stroke="#2563eb" stroke-width="2"/>
+  <!-- 黄斑 -->
+  <circle cx="418" cy="140" r="7" fill="#eab308"/>
+  <!-- 視神経 -->
+  <path d="M415,165 C445,200 460,220 480,235" fill="none" stroke="#a78bfa" stroke-width="6" stroke-linecap="round"/>
+  <!-- ラベル -->
+  <g font-family="sans-serif" font-size="12" fill="#1e293b">
+    <line x1="170" y1="80" x2="182" y2="112" stroke="#94a3b8" stroke-width="1"/>
+    <text x="170" y="74" text-anchor="middle">角膜</text>
+    <line x1="210" y1="76" x2="210" y2="106" stroke="#94a3b8" stroke-width="1"/>
+    <text x="210" y="70" text-anchor="middle">水晶体</text>
+    <text x="305" y="144" text-anchor="middle" fill="#64748b" font-size="11">硝子体</text>
+    <line x1="460" y1="90" x2="422" y2="132" stroke="#94a3b8" stroke-width="1"/>
+    <text x="478" y="84" text-anchor="middle" font-size="13" fill="#1e293b" font-weight="700">網膜</text>
+    <text x="478" y="100" text-anchor="middle" font-size="11" fill="#64748b">（錐体・桿体）</text>
+    <line x1="510" y1="245" x2="478" y2="233" stroke="#94a3b8" stroke-width="1"/>
+    <text x="540" y="250" text-anchor="middle" fill="#7c3aed">視神経 → 脳へ</text>
+  </g>
+</svg>
+</figure>
+
+網膜には 2 種類の感光細胞があります。
 
 - **錐体**（すいたい）: 明るい場所で働き、**色を識別**する
 - **桿体**（かんたい）: 暗い場所で働き、**明暗だけ**を感じる
@@ -136,5 +178,6 @@ S 錐体の遺伝子は X 染色体ではなく**7 番染色体**にあります
 <style>
 .c45-fig { margin: 16px 0; text-align: center; }
 .c45-visible { width: 100%; max-width: 600px; height: auto; }
+.c45-eye { width: 100%; max-width: 560px; height: auto; }
 .c45-spectrum { width: 100%; max-width: 700px; height: auto; }
 </style>
