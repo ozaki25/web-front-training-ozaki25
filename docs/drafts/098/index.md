@@ -159,36 +159,36 @@ flowchart TD
 </figure>
 
 <style>
-.d098-fig { margin: 16px 0; text-align: center; }
+.d098-fig { margin: 16px 0; text-align: center; background: #f8fafc; border-radius: 8px; padding: 12px; }
 .d098-svg { width: 100%; max-width: 540px; height: auto; }
 .d098-title { font-size: 13px; font-weight: bold; fill: #92400e; text-anchor: middle; }
 .d098-title-new { font-size: 13px; font-weight: bold; fill: #166534; text-anchor: middle; }
-.d098-src { fill: #f1f5f9; stroke: #94a3b8; }
-.d098-src-label { font-size: 13px; fill: #475569; text-anchor: middle; font-weight: bold; }
-.d098-arrow { stroke: #f59e0b; stroke-width: 1.5; marker-end: url(#d098-head); }
-.d098-arrow-new { stroke: #22c55e; stroke-width: 2; marker-end: url(#d098-head-new); }
+.d098-src { fill: #e2e8f0; stroke: #64748b; }
+.d098-src-label { font-size: 13px; fill: #1e293b; text-anchor: middle; font-weight: bold; }
+.d098-arrow { stroke: #d97706; stroke-width: 1.5; marker-end: url(#d098-head); }
+.d098-arrow-new { stroke: #16a34a; stroke-width: 2; marker-end: url(#d098-head-new); }
 .d098-parse { font-size: 10px; fill: #92400e; text-anchor: middle; }
 .d098-parse-new { font-size: 11px; fill: #166534; text-anchor: middle; font-weight: bold; }
-.d098-ast { fill: #fef3c7; stroke: #f59e0b; }
-.d098-ast-label { font-size: 11px; fill: #92400e; text-anchor: middle; font-weight: bold; }
-.d098-ast-new { fill: #dcfce7; stroke: #22c55e; stroke-width: 2; }
-.d098-ast-label-new { font-size: 14px; fill: #166534; text-anchor: middle; font-weight: bold; }
-.d098-tool { fill: #fecaca; stroke: #ef4444; }
-.d098-tool-label { font-size: 11px; fill: #991b1b; text-anchor: middle; }
-.d098-tool-new { fill: #dbeafe; stroke: #3b82f6; }
-.d098-tool-label-new { font-size: 11px; fill: #1e40af; text-anchor: middle; }
-.d098-count { font-size: 28px; fill: #ef4444; font-weight: bold; text-anchor: middle; }
-.d098-count-new { font-size: 28px; fill: #22c55e; font-weight: bold; text-anchor: middle; }
-.d098-divider { stroke: #e2e8f0; stroke-width: 1; stroke-dasharray: 6 4; }
+.d098-ast { fill: #fef3c7; stroke: #d97706; }
+.d098-ast-label { font-size: 11px; fill: #78350f; text-anchor: middle; font-weight: bold; }
+.d098-ast-new { fill: #bbf7d0; stroke: #16a34a; stroke-width: 2; }
+.d098-ast-label-new { font-size: 14px; fill: #14532d; text-anchor: middle; font-weight: bold; }
+.d098-tool { fill: #fecaca; stroke: #dc2626; }
+.d098-tool-label { font-size: 11px; fill: #7f1d1d; text-anchor: middle; }
+.d098-tool-new { fill: #bfdbfe; stroke: #2563eb; }
+.d098-tool-label-new { font-size: 11px; fill: #1e3a5f; text-anchor: middle; }
+.d098-count { font-size: 28px; fill: #dc2626; font-weight: bold; text-anchor: middle; }
+.d098-count-new { font-size: 28px; fill: #16a34a; font-weight: bold; text-anchor: middle; }
+.d098-divider { stroke: #cbd5e1; stroke-width: 1; stroke-dasharray: 6 4; }
 </style>
 
 <svg style="position:absolute;width:0;height:0">
   <defs>
     <marker id="d098-head" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#f59e0b" stroke-width="1.2"/>
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#d97706" stroke-width="1.2"/>
     </marker>
     <marker id="d098-head-new" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#22c55e" stroke-width="1.2"/>
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#16a34a" stroke-width="1.2"/>
     </marker>
   </defs>
 </svg>
