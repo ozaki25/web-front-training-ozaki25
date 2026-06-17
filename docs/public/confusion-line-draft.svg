@@ -1,72 +1,73 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" role="img">
-  <rect width="640" height="520" fill="#f8fafc" rx="8"/>
-  <text x="320" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">混同色線（P 型・D 型）</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 400" role="img">
+  <rect width="700" height="400" fill="#f8fafc" rx="8"/>
+  <text x="350" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">色覚タイプと「潰れる軸」</text>
 
-  <!-- P型側 -->
-  <text x="160" y="58" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">P 型</text>
+  <!-- 通常 -->
+  <text x="120" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">通常</text>
+  <line x1="40" y1="200" x2="200" y2="200" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="120" y1="280" x2="120" y2="120" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="208" y="196" font-family="sans-serif" font-size="11" fill="#dc2626" font-weight="700">赤</text>
+  <text x="26" y="204" font-family="sans-serif" font-size="11" fill="#16a34a" font-weight="700">緑</text>
+  <text x="126" y="114" font-family="sans-serif" font-size="11" fill="#2563eb" font-weight="700">青</text>
+  <text x="126" y="296" font-family="sans-serif" font-size="11" fill="#ca8a04" font-weight="700">黄</text>
+  <circle cx="170" cy="155" r="9" fill="#dc2626"/>
+  <circle cx="70" cy="155" r="9" fill="#16a34a"/>
+  <circle cx="120" cy="140" r="9" fill="#2563eb"/>
+  <circle cx="120" cy="260" r="9" fill="#eab308"/>
+  <circle cx="170" cy="245" r="9" fill="#f97316"/>
+  <circle cx="70" cy="245" r="9" fill="#84cc16"/>
+  <circle cx="70" cy="155" r="9" fill="#16a34a"/>
+  <circle cx="170" cy="155" r="9" fill="#dc2626"/>
+  <text x="120" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">2 軸で色を区別できる</text>
 
-  <!-- 馬蹄形（P型） -->
-  <path d="M80,380 C50,300 55,220 75,170 C95,120 120,90 160,78 C220,60 300,65 330,120 C370,160 390,220 395,280 Z"
-        fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <!-- P型/D型 -->
+  <text x="370" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">P 型 / D 型</text>
+  <line x1="290" y1="200" x2="450" y2="200" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 3" opacity="0.35"/>
+  <line x1="370" y1="280" x2="370" y2="120" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="458" y="196" font-family="sans-serif" font-size="11" fill="#dc2626" opacity="0.35">赤</text>
+  <text x="276" y="204" font-family="sans-serif" font-size="11" fill="#16a34a" opacity="0.35">緑</text>
+  <text x="376" y="114" font-family="sans-serif" font-size="11" fill="#2563eb" font-weight="700">青</text>
+  <text x="376" y="296" font-family="sans-serif" font-size="11" fill="#ca8a04" font-weight="700">黄</text>
+  <!-- 赤と緑が中央に潰れる -->
+  <circle cx="374" cy="155" r="9" fill="#8b7a2e"/>
+  <circle cx="366" cy="158" r="9" fill="#8b8432"/>
+  <circle cx="370" cy="140" r="9" fill="#2563eb"/>
+  <circle cx="370" cy="260" r="9" fill="#eab308"/>
+  <circle cx="374" cy="245" r="9" fill="#9a8a30"/>
+  <circle cx="366" cy="248" r="9" fill="#8a9030"/>
+  <!-- ×マーク -->
+  <g transform="translate(370,200)">
+    <line x1="-10" y1="-10" x2="10" y2="10" stroke="#ef4444" stroke-width="3"/>
+    <line x1="10" y1="-10" x2="-10" y2="10" stroke="#ef4444" stroke-width="3"/>
+  </g>
+  <text x="370" y="224" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ef4444" font-weight="700">赤-緑 軸が潰れる</text>
+  <text x="370" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#b91c1c" font-weight="700">赤と緑が同じ位置に集まる</text>
+  <text x="370" y="348" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">青-黄 の区別は残る</text>
 
-  <!-- 収束点（P型：赤の外側） -->
-  <circle cx="400" cy="265" r="5" fill="#ef4444" stroke="#991b1b" stroke-width="1.5"/>
-  <text x="420" y="260" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">収束点</text>
+  <!-- T型 -->
+  <text x="600" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">T 型</text>
+  <line x1="520" y1="200" x2="680" y2="200" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="600" y1="280" x2="600" y2="120" stroke="#2563eb" stroke-width="2" stroke-dasharray="5 3" opacity="0.35"/>
+  <text x="688" y="196" font-family="sans-serif" font-size="11" fill="#dc2626" font-weight="700">赤</text>
+  <text x="506" y="204" font-family="sans-serif" font-size="11" fill="#16a34a" font-weight="700">緑</text>
+  <text x="606" y="114" font-family="sans-serif" font-size="11" fill="#2563eb" opacity="0.35">青</text>
+  <text x="606" y="296" font-family="sans-serif" font-size="11" fill="#ca8a04" opacity="0.35">黄</text>
+  <!-- 青と黄が中央に潰れる -->
+  <circle cx="650" cy="200" r="9" fill="#dc2626"/>
+  <circle cx="550" cy="200" r="9" fill="#16a34a"/>
+  <circle cx="604" cy="198" r="9" fill="#4a90a0"/>
+  <circle cx="596" cy="202" r="9" fill="#c0b050"/>
+  <circle cx="650" cy="197" r="9" fill="#dc2626"/>
+  <circle cx="550" cy="203" r="9" fill="#16a34a"/>
+  <!-- ×マーク -->
+  <g transform="translate(600,160)">
+    <line x1="-10" y1="-10" x2="10" y2="10" stroke="#ef4444" stroke-width="3"/>
+    <line x1="10" y1="-10" x2="-10" y2="10" stroke="#ef4444" stroke-width="3"/>
+  </g>
+  <text x="600" y="150" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ef4444" font-weight="700">青-黄 軸が潰れる</text>
+  <text x="600" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#b91c1c" font-weight="700">青と黄が同じ位置に集まる</text>
+  <text x="600" y="348" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">赤-緑 の区別は残る</text>
 
-  <!-- 混同色線（P型） -->
-  <line x1="100" y1="140" x2="400" y2="265" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 3"/>
-  <line x1="80" y1="280" x2="400" y2="265" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 3"/>
-  <line x1="130" y1="350" x2="400" y2="265" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5 3"/>
-
-  <!-- 色見本（P型の混同色線上） -->
-  <circle cx="130" cy="158" r="10" fill="#22a722" stroke="#475569" stroke-width="1"/>
-  <circle cx="260" cy="210" r="10" fill="#b45309" stroke="#475569" stroke-width="1"/>
-  <circle cx="370" cy="260" r="10" fill="#e60000" stroke="#475569" stroke-width="1"/>
-
-  <text x="130" y="145" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b">緑</text>
-  <text x="260" y="197" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b">茶</text>
-  <text x="370" y="247" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b">赤</text>
-
-  <!-- 白点（P型） -->
-  <circle cx="210" cy="240" r="5" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
-  <text x="210" y="256" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#64748b">白</text>
-
-  <text x="160" y="420" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#b91c1c" font-weight="700">同じ線上の色が似て見える</text>
-  <text x="160" y="438" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">線が赤の外側に収束</text>
-
-  <!-- D型側 -->
-  <text x="480" y="58" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">D 型</text>
-
-  <!-- 馬蹄形（D型） -->
-  <path d="M400,380 C370,300 375,220 395,170 C415,120 440,90 480,78 C540,60 620,65 650,120 C690,160 710,220 715,280 Z"
-        fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5" transform="translate(-80,0)"/>
-
-  <!-- 収束点（D型：緑寄り） -->
-  <circle cx="680" cy="170" r="5" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
-  <text x="690" y="162" font-family="sans-serif" font-size="10" fill="#166534" font-weight="700">収束点</text>
-
-  <!-- 混同色線（D型） -->
-  <line x1="360" y1="350" x2="680" y2="170" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 3"/>
-  <line x1="340" y1="280" x2="680" y2="170" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 3"/>
-  <line x1="380" y1="150" x2="680" y2="170" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="5 3"/>
-
-  <!-- 色見本（D型の混同色線上） -->
-  <circle cx="400" cy="168" r="10" fill="#22a722" stroke="#475569" stroke-width="1"/>
-  <circle cx="520" cy="185" r="10" fill="#b45309" stroke="#475569" stroke-width="1"/>
-  <circle cx="640" cy="172" r="10" fill="#e60000" stroke="#475569" stroke-width="1"/>
-
-  <text x="400" y="155" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b">緑</text>
-  <text x="520" y="172" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b">茶</text>
-  <text x="640" y="159" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b">赤</text>
-
-  <!-- 白点（D型） -->
-  <circle cx="480" cy="240" r="5" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>
-  <text x="480" y="256" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#64748b">白</text>
-
-  <text x="480" y="420" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#166534" font-weight="700">同じ線上の色が似て見える</text>
-  <text x="480" y="438" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">線が緑寄りに収束</text>
-
-  <!-- 下部の説明 -->
-  <text x="320" y="480" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">馬蹄形 = 色度図（人間が見える色を 2 次元に並べた地図）</text>
-  <text x="320" y="500" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">収束点の位置が違うため、P 型と D 型で混同する色の組み合わせが微妙に異なる</text>
+  <!-- 下部 -->
+  <text x="350" y="386" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">脳は「赤-緑」と「青-黄」の 2 軸で色を処理する。どちらが潰れるかで混同する色が決まる</text>
 </svg>
