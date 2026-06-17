@@ -75,13 +75,13 @@ flowchart TD
 
 一方、**実行しないと分からないこと**（この計算結果は正しいか、API は本当に動くか）は AST ベースのツールの守備範囲外です。構造の問題はツール、振る舞いの問題はテスト、という分担になっています。
 
-## バラバラだったツールの統合
+## バラバラだったツールの統合と高速化
 
 従来の JavaScript 開発では、ツールがバラバラでした。
 
 - Lint は ESLint、整形は Prettier、コンパイルは Babel、バンドルは Webpack
 
-それぞれが独自に AST をパースしていて、同じコードを何度も木に変換する無駄がありました。設定ファイルも `.eslintrc` / `.prettierrc` / `babel.config.js` / `webpack.config.js` と散らばります。
+それぞれが独自に AST をパースしていて、同じコードを何度も木に変換する無駄がありました。設定ファイルも `.eslintrc` / `.prettierrc` / `babel.config.js` / `webpack.config.js` と散らばります。従来と新世代の違いを図にするとこうなります。
 
 <figure class="d098-fig">
 <svg class="d098-svg" viewBox="0 0 520 370" role="img" aria-label="従来はツールごとに毎回パースしていたが、新世代は1回パースして使い回す対比図">
@@ -208,7 +208,7 @@ flowchart TD
 |---|---|---|
 | Lint | ESLint | Biome, oxlint |
 | 整形 | Prettier | Biome |
-| コンパイル | Babel | SWC, oxc-transform |
+| コンパイル | Babel | SWC, OXC |
 | バンドル | Webpack | Turbopack, Rolldown |
 
 ツールの名前は入れ替わっていきますが、**AST という共通言語は変わりません**。むしろ「同じパーサ、同じ AST を使い回す」方向に進んでいるので、個々のツール名を覚えるより AST の仕組みを知っておく方が長持ちします。
@@ -217,4 +217,4 @@ flowchart TD
 
 - Lint・コンパイラ・フォーマッタ・バンドラは、すべてコードを AST（構文の木）にしてから処理する
 - 検査・変換・整形・削除と目的は違うが、コードを実行せず構造で判断する点は共通
-- ツール名は世代交代しても AST は変わらない。パーサ共有で統合が進んでいる
+- ツール名は世代交代しても AST は変わらない。パーサ共有による統合と Rust による高速化が同時に進んでいる
