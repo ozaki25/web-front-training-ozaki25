@@ -1,73 +1,68 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 400" role="img">
-  <rect width="700" height="400" fill="#f8fafc" rx="8"/>
-  <text x="350" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">色覚タイプと「潰れる軸」</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 480" role="img">
+  <rect width="700" height="480" fill="#f8fafc" rx="8"/>
+  <text x="350" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">混同色線 — 同じ線上の色が似て見える</text>
 
-  <!-- 通常 -->
-  <text x="120" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">通常</text>
-  <line x1="40" y1="200" x2="200" y2="200" stroke="#94a3b8" stroke-width="1.5"/>
-  <line x1="120" y1="280" x2="120" y2="120" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="208" y="196" font-family="sans-serif" font-size="11" fill="#dc2626" font-weight="700">赤</text>
-  <text x="26" y="204" font-family="sans-serif" font-size="11" fill="#16a34a" font-weight="700">緑</text>
-  <text x="126" y="114" font-family="sans-serif" font-size="11" fill="#2563eb" font-weight="700">青</text>
-  <text x="126" y="296" font-family="sans-serif" font-size="11" fill="#ca8a04" font-weight="700">黄</text>
-  <circle cx="170" cy="155" r="9" fill="#dc2626"/>
-  <circle cx="70" cy="155" r="9" fill="#16a34a"/>
-  <circle cx="120" cy="140" r="9" fill="#2563eb"/>
-  <circle cx="120" cy="260" r="9" fill="#eab308"/>
-  <circle cx="170" cy="245" r="9" fill="#f97316"/>
-  <circle cx="70" cy="245" r="9" fill="#84cc16"/>
-  <circle cx="70" cy="155" r="9" fill="#16a34a"/>
-  <circle cx="170" cy="155" r="9" fill="#dc2626"/>
-  <text x="120" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">2 軸で色を区別できる</text>
+  <!-- ===== P型 / D型 ===== -->
+  <text x="50" y="68" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e293b">P 型 / D 型（赤-緑 軸が潰れる）</text>
 
-  <!-- P型/D型 -->
-  <text x="370" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">P 型 / D 型</text>
-  <line x1="290" y1="200" x2="450" y2="200" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 3" opacity="0.35"/>
-  <line x1="370" y1="280" x2="370" y2="120" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="458" y="196" font-family="sans-serif" font-size="11" fill="#dc2626" opacity="0.35">赤</text>
-  <text x="276" y="204" font-family="sans-serif" font-size="11" fill="#16a34a" opacity="0.35">緑</text>
-  <text x="376" y="114" font-family="sans-serif" font-size="11" fill="#2563eb" font-weight="700">青</text>
-  <text x="376" y="296" font-family="sans-serif" font-size="11" fill="#ca8a04" font-weight="700">黄</text>
-  <!-- 赤と緑が中央に潰れる -->
-  <circle cx="374" cy="155" r="9" fill="#8b7a2e"/>
-  <circle cx="366" cy="158" r="9" fill="#8b8432"/>
-  <circle cx="370" cy="140" r="9" fill="#2563eb"/>
-  <circle cx="370" cy="260" r="9" fill="#eab308"/>
-  <circle cx="374" cy="245" r="9" fill="#9a8a30"/>
-  <circle cx="366" cy="248" r="9" fill="#8a9030"/>
-  <!-- ×マーク -->
-  <g transform="translate(370,200)">
-    <line x1="-10" y1="-10" x2="10" y2="10" stroke="#ef4444" stroke-width="3"/>
-    <line x1="10" y1="-10" x2="-10" y2="10" stroke="#ef4444" stroke-width="3"/>
-  </g>
-  <text x="370" y="224" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ef4444" font-weight="700">赤-緑 軸が潰れる</text>
-  <text x="370" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#b91c1c" font-weight="700">赤と緑が同じ位置に集まる</text>
-  <text x="370" y="348" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">青-黄 の区別は残る</text>
+  <!-- 線1: 赤 — 茶 — 緑 -->
+  <line x1="80" y1="110" x2="440" y2="110" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4"/>
+  <rect x="80" y="92" width="50" height="36" rx="6" fill="#dc2626"/>
+  <text x="105" y="115" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#ffffff" font-weight="700">赤</text>
+  <rect x="215" y="92" width="50" height="36" rx="6" fill="#92400e"/>
+  <text x="240" y="115" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#ffffff" font-weight="700">茶</text>
+  <rect x="350" y="92" width="50" height="36" rx="6" fill="#16a34a"/>
+  <text x="375" y="115" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#ffffff" font-weight="700">緑</text>
+  <text x="480" y="114" font-family="sans-serif" font-size="11" fill="#b91c1c" font-weight="700">← 似て見える</text>
 
-  <!-- T型 -->
-  <text x="600" y="62" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">T 型</text>
-  <line x1="520" y1="200" x2="680" y2="200" stroke="#94a3b8" stroke-width="1.5"/>
-  <line x1="600" y1="280" x2="600" y2="120" stroke="#2563eb" stroke-width="2" stroke-dasharray="5 3" opacity="0.35"/>
-  <text x="688" y="196" font-family="sans-serif" font-size="11" fill="#dc2626" font-weight="700">赤</text>
-  <text x="506" y="204" font-family="sans-serif" font-size="11" fill="#16a34a" font-weight="700">緑</text>
-  <text x="606" y="114" font-family="sans-serif" font-size="11" fill="#2563eb" opacity="0.35">青</text>
-  <text x="606" y="296" font-family="sans-serif" font-size="11" fill="#ca8a04" opacity="0.35">黄</text>
-  <!-- 青と黄が中央に潰れる -->
-  <circle cx="650" cy="200" r="9" fill="#dc2626"/>
-  <circle cx="550" cy="200" r="9" fill="#16a34a"/>
-  <circle cx="604" cy="198" r="9" fill="#4a90a0"/>
-  <circle cx="596" cy="202" r="9" fill="#c0b050"/>
-  <circle cx="650" cy="197" r="9" fill="#dc2626"/>
-  <circle cx="550" cy="203" r="9" fill="#16a34a"/>
-  <!-- ×マーク -->
-  <g transform="translate(600,160)">
-    <line x1="-10" y1="-10" x2="10" y2="10" stroke="#ef4444" stroke-width="3"/>
-    <line x1="10" y1="-10" x2="-10" y2="10" stroke="#ef4444" stroke-width="3"/>
-  </g>
-  <text x="600" y="150" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ef4444" font-weight="700">青-黄 軸が潰れる</text>
-  <text x="600" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#b91c1c" font-weight="700">青と黄が同じ位置に集まる</text>
-  <text x="600" y="348" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">赤-緑 の区別は残る</text>
+  <!-- 線2: 橙 — 黄緑 -->
+  <line x1="80" y1="170" x2="340" y2="170" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4"/>
+  <rect x="80" y="152" width="50" height="36" rx="6" fill="#f97316"/>
+  <text x="105" y="175" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#ffffff" font-weight="700">橙</text>
+  <rect x="250" y="152" width="50" height="36" rx="6" fill="#84cc16"/>
+  <text x="275" y="175" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">黄緑</text>
+  <text x="380" y="174" font-family="sans-serif" font-size="11" fill="#b91c1c" font-weight="700">← 似て見える</text>
 
-  <!-- 下部 -->
-  <text x="350" y="386" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">脳は「赤-緑」と「青-黄」の 2 軸で色を処理する。どちらが潰れるかで混同する色が決まる</text>
+  <!-- 線3: ピンク — 灰 — 水色 -->
+  <line x1="80" y1="230" x2="440" y2="230" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4"/>
+  <rect x="80" y="212" width="50" height="36" rx="6" fill="#ec4899"/>
+  <text x="105" y="235" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="700">ピンク</text>
+  <rect x="215" y="212" width="50" height="36" rx="6" fill="#9ca3af"/>
+  <text x="240" y="235" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#ffffff" font-weight="700">灰</text>
+  <rect x="350" y="212" width="50" height="36" rx="6" fill="#67e8f9"/>
+  <text x="375" y="235" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">水色</text>
+  <text x="480" y="234" font-family="sans-serif" font-size="11" fill="#b91c1c" font-weight="700">← 似て見える</text>
+
+  <!-- 区別できる方向 -->
+  <text x="580" y="170" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2563eb" font-weight="700">青-黄 方向は</text>
+  <text x="580" y="186" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2563eb" font-weight="700">区別できる</text>
+
+  <!-- 区切り線 -->
+  <line x1="30" y1="280" x2="670" y2="280" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4 4"/>
+
+  <!-- ===== T型 ===== -->
+  <text x="50" y="318" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e293b">T 型（青-黄 軸が潰れる）</text>
+
+  <!-- 線1: 青 — 緑 -->
+  <line x1="80" y1="360" x2="340" y2="360" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 4"/>
+  <rect x="80" y="342" width="50" height="36" rx="6" fill="#2563eb"/>
+  <text x="105" y="365" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#ffffff" font-weight="700">青</text>
+  <rect x="250" y="342" width="50" height="36" rx="6" fill="#16a34a"/>
+  <text x="275" y="365" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#ffffff" font-weight="700">緑</text>
+  <text x="380" y="364" font-family="sans-serif" font-size="11" fill="#1e40af" font-weight="700">← 似て見える</text>
+
+  <!-- 線2: 黄 — 白 -->
+  <line x1="80" y1="420" x2="340" y2="420" stroke="#2563eb" stroke-width="2" stroke-dasharray="6 4"/>
+  <rect x="80" y="402" width="50" height="36" rx="6" fill="#eab308"/>
+  <text x="105" y="425" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">黄</text>
+  <rect x="250" y="402" width="50" height="36" rx="6" fill="#f5f5f4" stroke="#d4d4d4" stroke-width="1"/>
+  <text x="275" y="425" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">白</text>
+  <text x="380" y="424" font-family="sans-serif" font-size="11" fill="#1e40af" font-weight="700">← 似て見える</text>
+
+  <!-- 区別できる方向 -->
+  <text x="580" y="390" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#dc2626" font-weight="700">赤-緑 方向は</text>
+  <text x="580" y="406" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#dc2626" font-weight="700">区別できる</text>
+
+  <!-- 下部の説明 -->
+  <text x="350" y="468" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">脳は「赤-緑」と「青-黄」の 2 軸で色を処理する。どちらが潰れるかで混同する色が決まる</text>
 </svg>
