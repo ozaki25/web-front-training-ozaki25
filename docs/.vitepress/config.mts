@@ -7,7 +7,7 @@ import { tabsMarkdownPlugin } from "vitepress-plugin-tabs";
 export default withPwa(
   withMermaid(
     defineConfig({
-      title: "Web Front-end Training (Draft)",
+      title: "Web Front-end Training",
       description: "Web フロントエンド研修コンテンツ",
       lang: "ja",
       head: [
@@ -312,7 +312,7 @@ export default withPwa(
         registerType: "autoUpdate",
         manifest: {
           name: "Web Front-end Training",
-          short_name: "WFT",
+          short_name: "WFT Draft",
           description: "Web フロントエンド研修コンテンツ",
           theme_color: "#064e3b",
           background_color: "#ffffff",
