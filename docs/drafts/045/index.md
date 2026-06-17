@@ -19,8 +19,8 @@
 光は波長によって色が変わります。人間の目が感じ取れる範囲（**可視光線**）は約 380nm〜780nm で、短い方が青紫、長い方が赤です。
 
 <figure class="c45-fig">
-<svg class="c45-visible" viewBox="0 0 640 90" role="img" aria-label="可視光線の波長と色の対応。380nmが紫、450nmが青、520nmが緑、580nmが黄、620nmが橙、700nmが赤">
-  <rect width="640" height="90" fill="#f8fafc" rx="6"/>
+<svg class="c45-visible" viewBox="0 0 640 105" role="img" aria-label="可視光線の波長と色の対応。380nmが紫、450nmが青、520nmが緑、580nmが黄、620nmが橙、700nmが赤">
+  <rect width="640" height="105" fill="#f8fafc" rx="6"/>
   <defs>
     <linearGradient id="c45-vis-grad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#7b00ff"/>
@@ -32,23 +32,23 @@
       <stop offset="100%" stop-color="#ff0000"/>
     </linearGradient>
   </defs>
-  <rect x="40" y="14" width="560" height="30" rx="4" fill="url(#c45-vis-grad)"/>
-  <g font-family="sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">
-    <text x="40" y="62">380</text>
-    <text x="124" y="62">450</text>
-    <text x="236" y="62">520</text>
-    <text x="320" y="62">580</text>
-    <text x="404" y="62">620</text>
-    <text x="600" y="62">700</text>
-    <text x="320" y="82" fill="#64748b" font-size="12">波長 (nm)</text>
-  </g>
   <g font-family="sans-serif" font-size="10" fill="#1e293b" text-anchor="middle">
-    <text x="40" y="10">紫</text>
-    <text x="124" y="10">青</text>
-    <text x="236" y="10">緑</text>
-    <text x="320" y="10">黄</text>
-    <text x="404" y="10">橙</text>
-    <text x="600" y="10">赤</text>
+    <text x="40" y="22">紫</text>
+    <text x="124" y="22">青</text>
+    <text x="236" y="22">緑</text>
+    <text x="320" y="22">黄</text>
+    <text x="404" y="22">橙</text>
+    <text x="600" y="22">赤</text>
+  </g>
+  <rect x="40" y="30" width="560" height="30" rx="4" fill="url(#c45-vis-grad)"/>
+  <g font-family="sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">
+    <text x="40" y="78">380</text>
+    <text x="124" y="78">450</text>
+    <text x="236" y="78">520</text>
+    <text x="320" y="78">580</text>
+    <text x="404" y="78">620</text>
+    <text x="600" y="78">700</text>
+    <text x="320" y="98" fill="#64748b" font-size="12">波長 (nm)</text>
   </g>
 </svg>
 </figure>
