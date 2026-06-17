@@ -101,8 +101,29 @@
 
 網膜には 2 種類の感光細胞があります。
 
-- **錐体**（すいたい）: 明るい場所で働き、**色を識別**する
-- **桿体**（かんたい）: 暗い場所で働き、**明暗だけ**を感じる
+<figure class="c45-fig">
+<svg class="c45-cells" viewBox="0 0 520 160" role="img" aria-label="桿体は1種類で明暗だけ、錐体は3種類で色を識別する対比図">
+  <rect width="520" height="160" fill="#f8fafc" rx="8"/>
+  <!-- 桿体 -->
+  <text x="130" y="24" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">桿体（かんたい）</text>
+  <rect x="100" y="38" width="60" height="50" rx="6" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+  <text x="130" y="68" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="700">1 種類</text>
+  <text x="130" y="110" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">暗い場所で働く</text>
+  <text x="130" y="128" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">→ 明暗だけ</text>
+  <text x="130" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">色は分からない</text>
+  <!-- 錐体 -->
+  <text x="390" y="24" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">錐体（すいたい）</text>
+  <rect x="300" y="38" width="50" height="50" rx="6" fill="#d62728" stroke="#991b1b" stroke-width="1.5"/>
+  <text x="325" y="68" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">L</text>
+  <rect x="365" y="38" width="50" height="50" rx="6" fill="#2ca02c" stroke="#166534" stroke-width="1.5"/>
+  <text x="390" y="68" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">M</text>
+  <rect x="430" y="38" width="50" height="50" rx="6" fill="#1f6fd6" stroke="#1e3a8a" stroke-width="1.5"/>
+  <text x="455" y="68" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">S</text>
+  <text x="390" y="110" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">明るい場所で働く</text>
+  <text x="390" y="128" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">→ 差を取って色を識別</text>
+  <text x="390" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">3 種類あるから引き算できる</text>
+</svg>
+</figure>
 
 色を見分けるのは錐体の仕事です。錐体には 3 種類あり、それぞれ反応する波長が違います。
 
@@ -153,11 +174,63 @@
 | **青-黄** | S の信号 − (L + M) の信号 | 青寄りか黄寄りか |
 | **明暗** | L + M + S の合計 | 明るいか暗いか |
 
-L と M の**差**が大きければ「赤っぽい」か「緑っぽい」が分かります。S と L+M の**差**が大きければ「青っぽい」か「黄っぽい」が分かります。明暗は合計で感じ取ります。桿体が 1 種類で明暗しか分からないのと同じ原理です。
+赤い光が来たときと緑の光が来たときで、信号がどう変わるか見てみます。
 
-つまり色覚は「赤-緑」「青-黄」「明暗」の 3 つの情報で成り立っています。暗い場所で色が分かりにくくなるのは、錐体の感度が落ちて桿体に切り替わり、明暗の 1 チャンネルだけになるからです。
+<figure class="c45-fig">
+<svg class="c45-signal" viewBox="0 0 560 320" role="img" aria-label="赤い光と緑の光で錐体の信号と引き算の結果がどう変わるかの対比図。通常はL-Mの差が大きいが、P型ではLが弱く差が消える">
+  <rect width="560" height="320" fill="#f8fafc" rx="8"/>
+  <!-- 通常・赤い光 -->
+  <text x="95" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">通常 × 赤い光</text>
+  <!-- バー -->
+  <rect x="40" y="60" width="30" height="100" rx="3" fill="#d62728" opacity="0.8"/>
+  <text x="55" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">L</text>
+  <text x="55" y="55" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">強</text>
+  <rect x="80" y="120" width="30" height="40" rx="3" fill="#2ca02c" opacity="0.8"/>
+  <text x="95" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">M</text>
+  <text x="95" y="115" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#166534" font-weight="700">弱</text>
+  <rect x="120" y="135" width="30" height="25" rx="3" fill="#1f6fd6" opacity="0.8"/>
+  <text x="135" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">S</text>
+  <!-- 結果 -->
+  <text x="95" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b">L − M = <tspan font-weight="700" fill="#dc2626">大きい差</tspan></text>
+  <text x="95" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">→「赤」と判別</text>
 
-感度曲線を振り返ると、**L 錐体と M 錐体のピークが非常に近い**ことが分かります。L か M のどちらかが弱くなると、赤-緑チャンネルの差が出なくなり、「赤寄りか緑寄りか」が判別できなくなります。これが P 型・D 型で赤と緑が似て見える理由です。
+  <!-- 通常・緑の光 -->
+  <text x="275" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">通常 × 緑の光</text>
+  <rect x="220" y="120" width="30" height="40" rx="3" fill="#d62728" opacity="0.8"/>
+  <text x="235" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">L</text>
+  <text x="235" y="115" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">弱</text>
+  <rect x="260" y="60" width="30" height="100" rx="3" fill="#2ca02c" opacity="0.8"/>
+  <text x="275" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">M</text>
+  <text x="275" y="55" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#166534" font-weight="700">強</text>
+  <rect x="300" y="130" width="30" height="30" rx="3" fill="#1f6fd6" opacity="0.8"/>
+  <text x="315" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">S</text>
+  <!-- 結果 -->
+  <text x="275" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b">L − M = <tspan font-weight="700" fill="#16a34a">大きい差（逆向き）</tspan></text>
+  <text x="275" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">→「緑」と判別</text>
+
+  <!-- P型・赤い光 -->
+  <text x="460" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">P 型 × 赤い光</text>
+  <rect x="405" y="120" width="30" height="40" rx="3" fill="#d62728" opacity="0.3"/>
+  <text x="420" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#94a3b8">L</text>
+  <text x="420" y="115" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#94a3b8">弱い</text>
+  <rect x="445" y="120" width="30" height="40" rx="3" fill="#2ca02c" opacity="0.8"/>
+  <text x="460" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">M</text>
+  <rect x="485" y="135" width="30" height="25" rx="3" fill="#1f6fd6" opacity="0.8"/>
+  <text x="500" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">S</text>
+  <!-- 結果 -->
+  <text x="460" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b">L − M = <tspan font-weight="700" fill="#ef4444">差がない</tspan></text>
+  <text x="460" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ef4444" font-weight="700">→ 赤か緑か分からない</text>
+
+  <!-- 下部説明 -->
+  <text x="280" y="260" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">通常は L と M の棒の高さが違うから差が取れる</text>
+  <text x="280" y="280" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#b91c1c" font-weight="700">P 型は L が弱いから棒が揃い、差が消える</text>
+  <text x="280" y="305" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">D 型は M が弱い場合で、同じく差が消える</text>
+</svg>
+</figure>
+
+通常は L と M の信号に差があるから「赤か緑か」が分かります。P 型では L 錐体が弱いので信号が揃ってしまい、差が出ない。差が出なければ赤も緑も同じに見えます。
+
+暗い場所で色が分かりにくくなるのも同じ原理です。錐体の感度が落ちて桿体に切り替わると、信号が 1 種類になり、引き算ができなくなります。
 
 ## P 型・D 型・T 型
 
@@ -236,7 +309,9 @@ P 型（L 錐体が弱い）と D 型（M 錐体が弱い）で混同する色�
 <style>
 .c45-fig { margin: 16px 0; text-align: center; }
 .c45-visible { width: 100%; max-width: 600px; height: auto; }
+.c45-cells { width: 100%; max-width: 520px; height: auto; }
 .c45-eye { width: 100%; max-width: 560px; height: auto; }
+.c45-signal { width: 100%; max-width: 560px; height: auto; }
 .c45-wheel { width: 100%; max-width: 480px; height: auto; }
 .c45-spectrum { width: 100%; max-width: 700px; height: auto; }
 </style>
