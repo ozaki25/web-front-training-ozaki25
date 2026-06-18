@@ -30,7 +30,7 @@
       <stop offset="100%" stop-color="#ff0000"/>
     </linearGradient>
   </defs>
-  <g font-family="sans-serif" font-size="10" fill="#1e293b" text-anchor="middle">
+  <g font-family="sans-serif" font-size="13" fill="#1e293b" text-anchor="middle">
     <text x="40" y="22">紫</text>
     <text x="124" y="22">青</text>
     <text x="236" y="22">緑</text>
@@ -39,14 +39,14 @@
     <text x="600" y="22">赤</text>
   </g>
   <rect x="40" y="30" width="560" height="30" rx="4" fill="url(#c45-vis-grad)"/>
-  <g font-family="sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">
+  <g font-family="sans-serif" font-size="13" fill="#1e293b" text-anchor="middle">
     <text x="40" y="78">380</text>
     <text x="124" y="78">450</text>
     <text x="236" y="78">520</text>
     <text x="320" y="78">580</text>
     <text x="404" y="78">620</text>
     <text x="600" y="78">700</text>
-    <text x="320" y="98" fill="#475569" font-size="12">波長 (nm)</text>
+    <text x="320" y="98" fill="#475569" font-size="13">波長 (nm)</text>
   </g>
 </svg>
 </figure>
@@ -82,15 +82,15 @@
   <!-- 視神経 -->
   <path d="M415,165 C445,200 460,220 480,235" fill="none" stroke="#a78bfa" stroke-width="6" stroke-linecap="round"/>
   <!-- ラベル -->
-  <g font-family="sans-serif" font-size="12" fill="#1e293b">
+  <g font-family="sans-serif" font-size="13" fill="#1e293b">
     <line x1="170" y1="80" x2="182" y2="112" stroke="#94a3b8" stroke-width="1"/>
     <text x="170" y="74" text-anchor="middle">角膜</text>
     <line x1="210" y1="76" x2="210" y2="106" stroke="#94a3b8" stroke-width="1"/>
     <text x="210" y="70" text-anchor="middle">水晶体</text>
-    <text x="305" y="144" text-anchor="middle" fill="#475569" font-size="11">硝子体</text>
+    <text x="305" y="144" text-anchor="middle" fill="#475569" font-size="13">硝子体</text>
     <line x1="460" y1="90" x2="422" y2="132" stroke="#94a3b8" stroke-width="1"/>
     <text x="478" y="84" text-anchor="middle" font-size="13" fill="#1e293b" font-weight="700">網膜</text>
-    <text x="478" y="100" text-anchor="middle" font-size="11" fill="#475569">（錐体・桿体）</text>
+    <text x="478" y="100" text-anchor="middle" font-size="13" fill="#475569">（錐体・桿体）</text>
     <line x1="510" y1="245" x2="478" y2="233" stroke="#94a3b8" stroke-width="1"/>
     <text x="540" y="250" text-anchor="middle" fill="#7c3aed">視神経 → 脳へ</text>
   </g>
@@ -105,21 +105,21 @@
   <!-- 桿体 -->
   <text x="130" y="24" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">桿体（かんたい）</text>
   <rect x="100" y="38" width="60" height="50" rx="6" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
-  <text x="130" y="68" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="700">1 種類</text>
-  <text x="130" y="110" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">暗い場所で働く</text>
-  <text x="130" y="128" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">→ 明暗だけ</text>
-  <text x="130" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">色は分からない</text>
+  <text x="130" y="68" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#ffffff" font-weight="700">1 種類</text>
+  <text x="130" y="110" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">暗い場所で働く</text>
+  <text x="130" y="128" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">→ 明暗だけ</text>
+  <text x="130" y="148" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">色は分からない</text>
   <!-- 錐体 -->
   <text x="390" y="24" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">錐体（すいたい）</text>
   <rect x="300" y="38" width="50" height="50" rx="6" fill="#d62728" stroke="#991b1b" stroke-width="1.5"/>
-  <text x="325" y="68" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">L</text>
+  <text x="325" y="68" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#ffffff" font-weight="700">L</text>
   <rect x="365" y="38" width="50" height="50" rx="6" fill="#2ca02c" stroke="#166534" stroke-width="1.5"/>
-  <text x="390" y="68" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">M</text>
+  <text x="390" y="68" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#ffffff" font-weight="700">M</text>
   <rect x="430" y="38" width="50" height="50" rx="6" fill="#1f6fd6" stroke="#1e3a8a" stroke-width="1.5"/>
-  <text x="455" y="68" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ffffff" font-weight="700">S</text>
-  <text x="390" y="110" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">明るい場所で働く</text>
-  <text x="390" y="128" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">→ 差を取って色を識別</text>
-  <text x="390" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">3 種類あるから引き算できる</text>
+  <text x="455" y="68" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#ffffff" font-weight="700">S</text>
+  <text x="390" y="110" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">明るい場所で働く</text>
+  <text x="390" y="128" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">→ 差を取って色を識別</text>
+  <text x="390" y="148" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">3 種類あるから引き算できる</text>
 </svg>
 </figure>
 
@@ -141,13 +141,13 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <text x="380" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">3 種の錐体の感度曲線</text>
   <line x1="70" y1="270" x2="720" y2="270" stroke="#475569" stroke-width="1.5"/>
   <line x1="70" y1="50" x2="70" y2="270" stroke="#475569" stroke-width="1.5"/>
-  <text x="38" y="160" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#475569" transform="rotate(-90 38 160)">感度</text>
-  <g font-family="sans-serif" font-size="11" fill="#1e293b" text-anchor="middle">
+  <text x="38" y="160" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569" transform="rotate(-90 38 160)">感度</text>
+  <g font-family="sans-serif" font-size="13" fill="#1e293b" text-anchor="middle">
     <line x1="114" y1="270" x2="114" y2="276" stroke="#475569"/><text x="114" y="290">400</text>
     <line x1="310" y1="270" x2="310" y2="276" stroke="#475569"/><text x="310" y="290">500</text>
     <line x1="506" y1="270" x2="506" y2="276" stroke="#475569"/><text x="506" y="290">600</text>
     <line x1="700" y1="270" x2="700" y2="276" stroke="#475569"/><text x="700" y="290">700</text>
-    <text x="390" y="310" font-size="12" fill="#475569">波長 (nm)</text>
+    <text x="390" y="310" font-size="13" fill="#475569">波長 (nm)</text>
   </g>
   <path d="M70,270 C105,270 125,75 152,70 C179,75 220,270 275,270 Z" fill="#1f6fd6" fill-opacity="0.18" stroke="#1f6fd6" stroke-width="2.5"/>
   <path d="M240,270 C305,268 350,68 385,64 C424,68 495,268 570,270 Z" fill="#2ca02c" fill-opacity="0.18" stroke="#2ca02c" stroke-width="2.5"/>
@@ -180,51 +180,51 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
 <svg class="c45-signal" viewBox="0 0 560 320" role="img" aria-label="赤い光と緑の光で錐体の信号と引き算の結果がどう変わるかの対比図。通常はL-Mの差が大きいが、P型ではLが弱く差が消える">
   <rect width="560" height="320" fill="#f8fafc" rx="8"/>
   <!-- 通常・赤い光 -->
-  <text x="95" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">通常 × 赤い光</text>
+  <text x="95" y="22" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">通常 × 赤い光</text>
   <!-- バー -->
   <rect x="40" y="60" width="30" height="100" rx="3" fill="#d62728" opacity="0.8"/>
-  <text x="55" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">L</text>
-  <text x="55" y="55" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">強</text>
+  <text x="55" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">L</text>
+  <text x="55" y="55" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700">強</text>
   <rect x="80" y="120" width="30" height="40" rx="3" fill="#2ca02c" opacity="0.8"/>
-  <text x="95" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">M</text>
-  <text x="95" y="115" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#166534" font-weight="700">弱</text>
+  <text x="95" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">M</text>
+  <text x="95" y="115" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#166534" font-weight="700">弱</text>
   <rect x="120" y="135" width="30" height="25" rx="3" fill="#1f6fd6" opacity="0.8"/>
-  <text x="135" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">S</text>
+  <text x="135" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">S</text>
   <!-- 結果 -->
-  <text x="95" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b">L − M = <tspan font-weight="700" fill="#dc2626">大きい差</tspan></text>
-  <text x="95" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">→「赤」と判別</text>
+  <text x="95" y="200" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">L − M = <tspan font-weight="700" fill="#dc2626">大きい差</tspan></text>
+  <text x="95" y="218" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">→「赤」と判別</text>
 
   <!-- 通常・緑の光 -->
-  <text x="275" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">通常 × 緑の光</text>
+  <text x="275" y="22" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">通常 × 緑の光</text>
   <rect x="220" y="120" width="30" height="40" rx="3" fill="#d62728" opacity="0.8"/>
-  <text x="235" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">L</text>
-  <text x="235" y="115" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">弱</text>
+  <text x="235" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">L</text>
+  <text x="235" y="115" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700">弱</text>
   <rect x="260" y="60" width="30" height="100" rx="3" fill="#2ca02c" opacity="0.8"/>
-  <text x="275" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">M</text>
-  <text x="275" y="55" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#166534" font-weight="700">強</text>
+  <text x="275" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">M</text>
+  <text x="275" y="55" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#166534" font-weight="700">強</text>
   <rect x="300" y="130" width="30" height="30" rx="3" fill="#1f6fd6" opacity="0.8"/>
-  <text x="315" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">S</text>
+  <text x="315" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">S</text>
   <!-- 結果 -->
-  <text x="275" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b">L − M = <tspan font-weight="700" fill="#16a34a">大きい差（逆向き）</tspan></text>
-  <text x="275" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b" font-weight="700">→「緑」と判別</text>
+  <text x="275" y="200" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">L − M = <tspan font-weight="700" fill="#16a34a">大きい差（逆向き）</tspan></text>
+  <text x="275" y="218" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">→「緑」と判別</text>
 
   <!-- P型・赤い光 -->
-  <text x="460" y="22" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">P 型 × 赤い光</text>
+  <text x="460" y="22" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">P 型 × 赤い光</text>
   <rect x="405" y="120" width="30" height="40" rx="3" fill="#d62728" opacity="0.3"/>
-  <text x="420" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#94a3b8">L</text>
-  <text x="420" y="115" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#94a3b8">弱い</text>
+  <text x="420" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#94a3b8">L</text>
+  <text x="420" y="115" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#94a3b8">弱い</text>
   <rect x="445" y="120" width="30" height="40" rx="3" fill="#2ca02c" opacity="0.8"/>
-  <text x="460" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">M</text>
+  <text x="460" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">M</text>
   <rect x="485" y="135" width="30" height="25" rx="3" fill="#1f6fd6" opacity="0.8"/>
-  <text x="500" y="175" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">S</text>
+  <text x="500" y="175" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">S</text>
   <!-- 結果 -->
-  <text x="460" y="200" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#1e293b">L − M = <tspan font-weight="700" fill="#ef4444">差がない</tspan></text>
-  <text x="460" y="218" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ef4444" font-weight="700">→ 赤か緑か分からない</text>
+  <text x="460" y="200" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b">L − M = <tspan font-weight="700" fill="#ef4444">差がない</tspan></text>
+  <text x="460" y="218" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#ef4444" font-weight="700">→ 赤か緑か分からない</text>
 
   <!-- 下部説明 -->
-  <text x="280" y="260" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">通常は L と M の棒の高さが違うから差が取れる</text>
-  <text x="280" y="280" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#b91c1c" font-weight="700">P 型は L が弱いから棒が揃い、差が消える</text>
-  <text x="280" y="305" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">D 型は M が弱い場合で、同じく差が消える</text>
+  <text x="280" y="260" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">通常は L と M の棒の高さが違うから差が取れる</text>
+  <text x="280" y="280" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#b91c1c" font-weight="700">P 型は L が弱いから棒が揃い、差が消える</text>
+  <text x="280" y="305" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">D 型は M が弱い場合で、同じく差が消える</text>
 </svg>
 </figure>
 
@@ -255,103 +255,103 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <!-- ===== 通常（正円） ===== -->
   <!-- 中心(160, 240), r=100 -->
   <text x="160" y="30" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">通常</text>
-  <text x="160" y="50" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">2 軸とも機能</text>
+  <text x="160" y="50" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">2 軸とも機能</text>
 
   <circle cx="160" cy="240" r="115" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 4"/>
   <circle cx="160" cy="240" r="8" fill="#a1a1aa" stroke="#71717a" stroke-width="1.5"/>
 
   <circle cx="160" cy="140" r="17" fill="#eab308" stroke="#a16207" stroke-width="1.5"/>
-  <text x="160" y="124" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄</text>
+  <text x="160" y="117" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">黄</text>
   <circle cx="231" cy="169" r="17" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
-  <text x="253" y="164" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄緑</text>
+  <text x="258" y="160" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">黄緑</text>
   <circle cx="260" cy="240" r="17" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
-  <text x="282" y="244" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">緑</text>
+  <text x="287" y="244" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">緑</text>
   <circle cx="231" cy="311" r="17" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.5"/>
-  <text x="253" y="318" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青</text>
+  <text x="258" y="320" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">青</text>
   <circle cx="160" cy="340" r="17" fill="#6d28d9" stroke="#4c1d95" stroke-width="1.5"/>
-  <text x="160" y="364" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青紫</text>
+  <text x="160" y="370" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">青紫</text>
   <circle cx="89" cy="311" r="17" fill="#db2777" stroke="#831843" stroke-width="1.5"/>
-  <text x="67" y="318" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700" text-anchor="end">赤紫</text>
+  <text x="62" y="320" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700" text-anchor="end">赤紫</text>
   <circle cx="60" cy="240" r="17" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
-  <text x="38" y="244" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700" text-anchor="end">赤</text>
+  <text x="33" y="244" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700" text-anchor="end">赤</text>
   <circle cx="89" cy="169" r="17" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
-  <text x="67" y="164" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700" text-anchor="end">橙</text>
+  <text x="62" y="160" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700" text-anchor="end">橙</text>
 
   <line x1="80" y1="240" x2="240" y2="240" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 4"/>
   <line x1="108" y1="169" x2="212" y2="169" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5 4"/>
-  <text x="160" y="400" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">赤と緑が向かい合う</text>
-  <text x="160" y="416" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">（同じ高さ）</text>
+  <text x="160" y="400" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">赤と緑が向かい合う</text>
+  <text x="160" y="416" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">（同じ高さ）</text>
 
   <!-- ===== P/D型（縦長楕円） ===== -->
   <!-- 中心(440, 240) -->
   <text x="440" y="30" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">P 型 / D 型</text>
-  <text x="440" y="50" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#dc2626">赤-緑 が潰れて中央に近づく</text>
+  <text x="440" y="50" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#dc2626">赤-緑 が潰れて中央に近づく</text>
 
   <ellipse cx="440" cy="240" rx="65" ry="118" fill="none" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="6 4"/>
   <line x1="440" y1="130" x2="440" y2="350" stroke="#d4d4d8" stroke-width="3" stroke-opacity="0.7"/>
   <circle cx="440" cy="240" r="8" fill="#a1a1aa" stroke="#71717a" stroke-width="1.5"/>
 
   <circle cx="440" cy="140" r="17" fill="#eab308" stroke="#a16207" stroke-width="1.5"/>
-  <text x="440" y="124" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄</text>
+  <text x="440" y="117" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">黄</text>
   <circle cx="467" cy="169" r="17" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
-  <text x="490" y="164" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄緑</text>
+  <text x="495" y="160" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">黄緑</text>
   <circle cx="475" cy="240" r="17" fill="#6b8a5a" stroke="#52634a" stroke-width="1.5"/>
-  <text x="498" y="236" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">緑→灰</text>
+  <text x="503" y="236" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">緑→灰</text>
   <circle cx="467" cy="311" r="17" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.5"/>
-  <text x="490" y="318" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青</text>
+  <text x="495" y="320" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">青</text>
   <circle cx="440" cy="340" r="17" fill="#6d28d9" stroke="#4c1d95" stroke-width="1.5"/>
-  <text x="440" y="364" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青紫</text>
+  <text x="440" y="370" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">青紫</text>
   <circle cx="413" cy="311" r="17" fill="#9a4070" stroke="#831843" stroke-width="1.5"/>
-  <text x="390" y="318" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700" text-anchor="end">赤紫</text>
+  <text x="385" y="320" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700" text-anchor="end">赤紫</text>
   <circle cx="405" cy="240" r="17" fill="#2a1010" stroke="#7f1d1d" stroke-width="1.5"/>
-  <text x="382" y="236" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700" text-anchor="end">赤→黒</text>
+  <text x="377" y="236" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700" text-anchor="end">赤→黒</text>
   <circle cx="413" cy="169" r="17" fill="#8a7a5a" stroke="#6b6040" stroke-width="1.5"/>
-  <text x="390" y="164" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700" text-anchor="end">橙→灰</text>
+  <text x="385" y="160" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700" text-anchor="end">橙→灰</text>
 
   <line x1="410" y1="240" x2="470" y2="240" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"/>
   <line x1="418" y1="169" x2="462" y2="169" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"/>
-  <text x="510" y="244" font-family="sans-serif" font-size="9" fill="#991b1b" font-weight="700">← 区別できない</text>
+  <text x="510" y="244" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700">← 区別できない</text>
 
-  <text x="440" y="400" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">赤と緑が中央に寄り</text>
-  <text x="440" y="416" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">どちらも灰〜黒に近づく</text>
+  <text x="440" y="400" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700">赤と緑が中央に寄り</text>
+  <text x="440" y="416" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700">どちらも灰〜黒に近づく</text>
 
   <!-- ===== T型（横長楕円） ===== -->
   <!-- 中心(810, 240), rx=140, ry=80 で縦にも余裕を持たせる -->
   <text x="810" y="30" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">T 型</text>
-  <text x="810" y="50" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2563eb">青-黄 が潰れて中央に近づく</text>
+  <text x="810" y="50" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#2563eb">青-黄 が潰れて中央に近づく</text>
 
   <ellipse cx="810" cy="240" rx="160" ry="95" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6 4"/>
   <line x1="660" y1="240" x2="960" y2="240" stroke="#d4d4d8" stroke-width="3" stroke-opacity="0.7"/>
   <circle cx="810" cy="240" r="8" fill="#a1a1aa" stroke="#71717a" stroke-width="1.5"/>
 
   <circle cx="810" cy="160" r="17" fill="#b8a860" stroke="#8a7a40" stroke-width="1.5"/>
-  <text x="810" y="140" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄→灰</text>
+  <text x="810" y="135" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">黄→灰</text>
   <circle cx="910" cy="183" r="17" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
-  <text x="910" y="166" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄緑</text>
+  <text x="910" y="160" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">黄緑</text>
   <circle cx="950" cy="240" r="17" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
-  <text x="975" y="244" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">緑</text>
+  <text x="980" y="244" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">緑</text>
   <circle cx="910" cy="297" r="17" fill="#5a6a9a" stroke="#3a4a7a" stroke-width="1.5"/>
-  <text x="910" y="321" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青→灰</text>
+  <text x="910" y="326" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">青→灰</text>
   <circle cx="810" cy="315" r="17" fill="#7a5a8a" stroke="#5a3a6a" stroke-width="1.5"/>
-  <text x="810" y="339" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青紫→灰</text>
+  <text x="810" y="345" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">青紫→灰</text>
   <circle cx="710" cy="295" r="17" fill="#db2777" stroke="#831843" stroke-width="1.5"/>
-  <text x="710" y="319" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">赤紫</text>
+  <text x="710" y="326" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">赤紫</text>
   <circle cx="670" cy="240" r="17" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
-  <text x="645" y="244" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700" text-anchor="end">赤</text>
+  <text x="640" y="244" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700" text-anchor="end">赤</text>
   <circle cx="710" cy="185" r="17" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
-  <text x="710" y="168" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">橙</text>
+  <text x="710" y="162" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">橙</text>
 
   <line x1="810" y1="170" x2="810" y2="310" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5 3"/>
   <line x1="910" y1="190" x2="910" y2="290" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5 3"/>
-  <text x="810" y="355" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#2563eb" font-weight="700">↕ 上下の色が区別できない</text>
+  <text x="810" y="355" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#2563eb" font-weight="700">↕ 上下の色が区別できない</text>
 
-  <text x="810" y="400" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e40af" font-weight="700">黄と青紫が中央に寄り</text>
-  <text x="810" y="416" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e40af" font-weight="700">どちらも灰に近づく</text>
+  <text x="810" y="400" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e40af" font-weight="700">黄と青紫が中央に寄り</text>
+  <text x="810" y="416" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e40af" font-weight="700">どちらも灰に近づく</text>
 
   <!-- 下部共通説明 -->
   <line x1="30" y1="440" x2="1030" y2="440" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="530" y="465" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">色相環の中央は無彩色（グレー）。潰れた方向の色は中央に吸い寄せられ、彩度が落ちる</text>
-  <text x="530" y="487" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">P 型では L 錐体が弱いため赤い光の明るさ自体が落ち、赤は黒に近づく</text>
+  <text x="530" y="465" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">色相環の中央は無彩色（グレー）。潰れた方向の色は中央に吸い寄せられ、彩度が落ちる</text>
+  <text x="530" y="487" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">P 型では L 錐体が弱いため赤い光の明るさ自体が落ち、赤は黒に近づく</text>
 </svg>
 </figure>
 
@@ -388,24 +388,24 @@ P 型（L 錐体が弱い）と D 型（M 錐体が弱い）で混同する色�
   <rect width="520" height="250" fill="#f8fafc" rx="8"/>
   <text x="260" y="28" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e293b">要注意の組み合わせ</text>
   <!-- 色相の混同 -->
-  <text x="40" y="62" font-family="sans-serif" font-size="10" fill="#475569" font-weight="700">色相の混同</text>
+  <text x="40" y="62" font-family="sans-serif" font-size="13" fill="#475569" font-weight="700">色相の混同</text>
   <circle cx="65" cy="85" r="18" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
   <circle cx="115" cy="85" r="18" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
-  <text x="155" y="90" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">赤と緑</text>
+  <text x="155" y="90" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">赤と緑</text>
   <circle cx="310" cy="85" r="18" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
   <circle cx="360" cy="85" r="18" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
-  <text x="400" y="90" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">橙と黄緑</text>
+  <text x="400" y="90" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">橙と黄緑</text>
   <!-- 彩度の混同 -->
-  <text x="40" y="132" font-family="sans-serif" font-size="10" fill="#475569" font-weight="700">彩度の混同</text>
+  <text x="40" y="132" font-family="sans-serif" font-size="13" fill="#475569" font-weight="700">彩度の混同</text>
   <circle cx="65" cy="155" r="18" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
   <circle cx="115" cy="155" r="18" fill="#78350f" stroke="#451a03" stroke-width="1.5"/>
-  <text x="155" y="160" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">赤と茶</text>
+  <text x="155" y="160" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">赤と茶</text>
   <circle cx="310" cy="155" r="18" fill="#f472b6" stroke="#db2777" stroke-width="1.5"/>
   <circle cx="360" cy="155" r="18" fill="#9ca3af" stroke="#6b7280" stroke-width="1.5"/>
-  <text x="400" y="160" font-family="sans-serif" font-size="12" fill="#1e293b" font-weight="700">ピンクと灰</text>
+  <text x="400" y="160" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">ピンクと灰</text>
   <!-- 注記 -->
-  <text x="260" y="190" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#991b1b" font-weight="700">上段: 色相環で同じ高さの組み合わせ（色相の混同）</text>
-  <text x="260" y="210" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#991b1b" font-weight="700">下段: 彩度が低いことで起きる混同</text>
+  <text x="260" y="190" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700">上段: 色相環で同じ高さの組み合わせ（色相の混同）</text>
+  <text x="260" y="210" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700">下段: 彩度が低いことで起きる混同</text>
 </svg>
 </figure>
 
