@@ -121,6 +121,14 @@ export default withPwa(
                   text: "Day 25: ツールがコードを読む仕組み",
                   link: "/lessons/day25/",
                 },
+                {
+                  text: "Day 26: XSS",
+                  link: "/lessons/day26/",
+                },
+                {
+                  text: "Day 27: 色のアクセシビリティ",
+                  link: "/lessons/day27/",
+                },
               ],
             },
           ],
