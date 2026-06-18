@@ -151,7 +151,7 @@ saveUser(user);
 
 Promise を返す関数を呼ぶときは、原則 `await` するか `.then().catch()` を付ける。AI のコードでも「関数呼び出しの行に await が無い」は見つけやすいチェックポイントです。
 
-## 正体 — Promise の構文糖衣
+## async/await は Promise の構文糖衣
 
 async/await は Promise を**置き換える**ものではなく、Promise の上に乗った**構文糖衣**（シンタックスシュガー: 機能は同じだが読みやすく書ける別記法）です。
 

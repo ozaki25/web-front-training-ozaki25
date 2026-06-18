@@ -51,9 +51,9 @@
 ### React の核
 
 - [JSX と props](/drafts/019/)
-- [JSX の正体](/drafts/020/)
+- [JSX の仕組み](/drafts/020/)
 - [useState と画面更新](/drafts/021/)
-- [key の正体](/drafts/022/)
+- [key の役割](/drafts/022/)
 - [useEffect と副作用](/drafts/024/)
 - [再レンダリングと手動メモ化](/drafts/015/)
 - [React Compiler](/drafts/016/)
@@ -76,7 +76,7 @@
 - [フォームバリデーション](/drafts/095/)
 - [キャッシュ制御](/drafts/038/)
 - [Suspense と Streaming](/drafts/039/)
-- [SPA のページ遷移の正体](/drafts/040/)
+- [SPA のページ遷移の仕組み](/drafts/040/)
 - [proxy.ts](/drafts/092/)
 - [環境変数](/drafts/065/)
 - [metadata と OGP](/drafts/094/)
@@ -102,7 +102,7 @@
 ### アクセシビリティ
 
 - [スクリーンリーダーから見た Web](/drafts/042/)
-- [WAI-ARIA の正体](/drafts/043/)
+- [WAI-ARIA の仕組み](/drafts/043/)
 - [フォーカス管理](/drafts/044/)
 - [色のアクセシビリティ](/drafts/045/)
 - [アクセシビリティ検査の原理](/drafts/089/)
@@ -141,7 +141,7 @@
 
 ### 開発環境
 
-- [npm run の正体](/drafts/062/)
+- [npm run の仕組み](/drafts/062/)
 - [HMR](/drafts/063/)
 - [ESM とバンドラー](/drafts/081/)
 - [ビルドとデプロイ](/drafts/064/)

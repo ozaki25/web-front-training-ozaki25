@@ -41,7 +41,7 @@ flowchart LR
   style W fill:#fef3c7,color:#1e293b,stroke:#f59e0b
 ```
 
-## 「忘れる」の正体
+## 「忘れる」仕組み
 
 AI に記憶はありません。あるのは窓だけです。
 

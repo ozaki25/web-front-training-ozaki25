@@ -151,9 +151,9 @@ export default withPwa(
               text: "React の核",
               items: [
                 { text: "JSX と props", link: "/drafts/019/" },
-                { text: "JSX の正体", link: "/drafts/020/" },
+                { text: "JSX の仕組み", link: "/drafts/020/" },
                 { text: "useState と画面更新", link: "/drafts/021/" },
-                { text: "key の正体", link: "/drafts/022/" },
+                { text: "key の役割", link: "/drafts/022/" },
                 { text: "useEffect と副作用", link: "/drafts/024/" },
                 { text: "再レンダリングと手動メモ化", link: "/drafts/015/" },
                 { text: "React Compiler", link: "/drafts/016/" },
@@ -178,7 +178,7 @@ export default withPwa(
                 { text: "フォームバリデーション", link: "/drafts/095/" },
                 { text: "キャッシュ制御", link: "/drafts/038/" },
                 { text: "Suspense と Streaming", link: "/drafts/039/" },
-                { text: "SPA のページ遷移の正体", link: "/drafts/040/" },
+                { text: "SPA のページ遷移の仕組み", link: "/drafts/040/" },
                 { text: "proxy.ts", link: "/drafts/092/" },
                 { text: "環境変数", link: "/drafts/065/" },
                 { text: "metadata と OGP", link: "/drafts/094/" },
@@ -210,7 +210,7 @@ export default withPwa(
               text: "アクセシビリティ",
               items: [
                 { text: "スクリーンリーダーから見た Web", link: "/drafts/042/" },
-                { text: "WAI-ARIA の正体", link: "/drafts/043/" },
+                { text: "WAI-ARIA の仕組み", link: "/drafts/043/" },
                 { text: "フォーカス管理", link: "/drafts/044/" },
                 { text: "色のアクセシビリティ", link: "/drafts/045/" },
                 { text: "アクセシビリティ検査の原理", link: "/drafts/089/" },
@@ -259,7 +259,7 @@ export default withPwa(
             {
               text: "開発環境",
               items: [
-                { text: "npm run の正体", link: "/drafts/062/" },
+                { text: "npm run の仕組み", link: "/drafts/062/" },
                 { text: "HMR", link: "/drafts/063/" },
                 { text: "ESM とバンドラー", link: "/drafts/081/" },
                 { text: "ビルドとデプロイ", link: "/drafts/064/" },

@@ -53,7 +53,7 @@ flowchart LR
 
 初回アクセスでは**まだ割り込めません**。Service Worker が効くのは 2 回目以降のアクセスからです。これは「ページを開いてから登録する」という順番の制約です。
 
-## PWA の正体
+## PWA の構成要素
 
 ホーム画面にアプリを追加する「**PWA**（Progressive Web App）」は、Service Worker を軸にした仕組みの集合体です。
 

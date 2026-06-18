@@ -1,4 +1,4 @@
-# npm run の正体 — 毎日打つ dev と build は何をしているのか
+# npm run の仕組み — 毎日打つ dev と build は何をしているのか
 
 ## 今日のゴール
 
