@@ -304,34 +304,34 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <text x="440" y="416" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">どちらも灰〜黒に近づく</text>
 
   <!-- ===== T型（横長楕円） ===== -->
-  <!-- 中心(810, 240), 横長なので広くスペースを取る -->
+  <!-- 中心(810, 240), rx=140, ry=80 で縦にも余裕を持たせる -->
   <text x="810" y="30" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">T 型</text>
   <text x="810" y="50" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2563eb">青-黄 が潰れて中央に近づく</text>
 
-  <ellipse cx="810" cy="240" rx="140" ry="55" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <ellipse cx="810" cy="240" rx="140" ry="80" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6 4"/>
   <line x1="660" y1="240" x2="960" y2="240" stroke="#d4d4d8" stroke-width="3" stroke-opacity="0.7"/>
   <circle cx="810" cy="240" r="8" fill="#a1a1aa" stroke="#71717a" stroke-width="1.5"/>
 
-  <circle cx="810" cy="190" r="17" fill="#b8a860" stroke="#8a7a40" stroke-width="1.5"/>
-  <text x="810" y="174" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄→灰</text>
-  <circle cx="905" cy="207" r="17" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
-  <text x="905" y="191" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄緑</text>
+  <circle cx="810" cy="165" r="17" fill="#b8a860" stroke="#8a7a40" stroke-width="1.5"/>
+  <text x="810" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄→灰</text>
+  <circle cx="910" cy="185" r="17" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
+  <text x="910" y="168" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">黄緑</text>
   <circle cx="950" cy="240" r="17" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
-  <text x="950" y="224" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">緑</text>
-  <circle cx="905" cy="273" r="17" fill="#5a6a9a" stroke="#3a4a7a" stroke-width="1.5"/>
-  <text x="905" y="297" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青→灰</text>
-  <circle cx="810" cy="290" r="17" fill="#7a5a8a" stroke="#5a3a6a" stroke-width="1.5"/>
-  <text x="810" y="314" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青紫→灰</text>
-  <circle cx="715" cy="273" r="17" fill="#db2777" stroke="#831843" stroke-width="1.5"/>
-  <text x="715" y="297" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">赤紫</text>
+  <text x="975" y="244" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">緑</text>
+  <circle cx="910" cy="295" r="17" fill="#5a6a9a" stroke="#3a4a7a" stroke-width="1.5"/>
+  <text x="910" y="319" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青→灰</text>
+  <circle cx="810" cy="315" r="17" fill="#7a5a8a" stroke="#5a3a6a" stroke-width="1.5"/>
+  <text x="810" y="339" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">青紫→灰</text>
+  <circle cx="710" cy="295" r="17" fill="#db2777" stroke="#831843" stroke-width="1.5"/>
+  <text x="710" y="319" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">赤紫</text>
   <circle cx="670" cy="240" r="17" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
-  <text x="670" y="224" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">赤</text>
-  <circle cx="715" cy="207" r="17" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
-  <text x="715" y="191" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">橙</text>
+  <text x="645" y="244" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700" text-anchor="end">赤</text>
+  <circle cx="710" cy="185" r="17" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="710" y="168" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b" font-weight="700">橙</text>
 
-  <line x1="810" y1="195" x2="810" y2="285" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5 3"/>
-  <line x1="905" y1="212" x2="905" y2="268" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5 3"/>
-  <text x="833" y="195" font-family="sans-serif" font-size="9" fill="#2563eb" font-weight="700">↕ 区別できない</text>
+  <line x1="810" y1="170" x2="810" y2="310" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5 3"/>
+  <line x1="910" y1="190" x2="910" y2="290" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5 3"/>
+  <text x="840" y="244" font-family="sans-serif" font-size="9" fill="#2563eb" font-weight="700">↕ 区別できない</text>
 
   <text x="810" y="400" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e40af" font-weight="700">黄と青紫が中央に寄り</text>
   <text x="810" y="416" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e40af" font-weight="700">どちらも灰に近づく</text>
