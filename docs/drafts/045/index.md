@@ -245,14 +245,14 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <text x="130" y="46" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">2 軸とも機能</text>
   <!-- 中央グレー -->
   <circle cx="130" cy="220" r="12" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/>
-  <text x="130" y="224" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#fff" font-weight="700">灰</text>
+  <text x="130" y="224" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#1e293b" font-weight="700">灰</text>
   <!-- 8色を円に配置 中心(130,220) r=110 -->
   <circle cx="130" cy="110" r="18" fill="#eab308" stroke="#a16207" stroke-width="1.5"/>
   <text x="130" y="115" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700">黄</text>
   <circle cx="208" cy="142" r="18" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
   <text x="208" y="147" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">黄緑</text>
   <circle cx="240" cy="220" r="18" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
-  <text x="240" y="225" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="700">緑</text>
+  <text x="240" y="208" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700">緑</text>
   <circle cx="208" cy="298" r="18" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.5"/>
   <text x="208" y="303" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="700">青</text>
   <circle cx="130" cy="330" r="18" fill="#9333ea" stroke="#581c87" stroke-width="1.5"/>
@@ -260,7 +260,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <circle cx="52" cy="298" r="18" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
   <text x="52" y="303" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="700">赤</text>
   <circle cx="20" cy="220" r="18" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
-  <text x="20" y="225" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="700">橙</text>
+  <text x="20" y="225" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700">橙</text>
   <circle cx="52" cy="142" r="18" fill="#facc15" stroke="#a16207" stroke-width="1.5"/>
   <text x="52" y="147" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">黄橙</text>
   <!-- 軸ラベル -->
@@ -274,7 +274,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <line x1="390" y1="100" x2="390" y2="340" stroke="#9ca3af" stroke-width="3" stroke-opacity="0.4"/>
   <circle cx="390" cy="120" r="8" fill="#d4d4d4" stroke="#9ca3af" stroke-width="1"/>
   <circle cx="390" cy="220" r="12" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/>
-  <text x="390" y="224" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#fff" font-weight="700">灰</text>
+  <text x="390" y="224" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#1e293b" font-weight="700">灰</text>
   <circle cx="390" cy="320" r="8" fill="#525252" stroke="#404040" stroke-width="1"/>
   <!-- 色が中央に寄る（横方向が潰れる） -->
   <circle cx="390" cy="110" r="18" fill="#eab308" stroke="#a16207" stroke-width="1.5"/>
@@ -282,15 +282,15 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <circle cx="418" cy="142" r="16" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
   <text x="418" y="147" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">黄緑</text>
   <circle cx="425" cy="220" r="16" fill="#6b8a5a" stroke="#475569" stroke-width="1.5"/>
-  <text x="425" y="225" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#fff" font-weight="700">緑→灰</text>
+  <text x="448" y="213" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">緑→灰</text>
   <circle cx="418" cy="298" r="18" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.5"/>
   <text x="418" y="303" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="700">青</text>
   <circle cx="390" cy="330" r="18" fill="#9333ea" stroke="#581c87" stroke-width="1.5"/>
   <text x="390" y="335" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="700">紫</text>
   <circle cx="362" cy="298" r="16" fill="#3a1515" stroke="#991b1b" stroke-width="1.5"/>
-  <text x="362" y="303" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#fca5a5" font-weight="700">赤→黒</text>
+  <text x="340" y="310" font-family="sans-serif" font-size="8" fill="#991b1b" font-weight="700" text-anchor="end">赤→黒</text>
   <circle cx="355" cy="220" r="16" fill="#8a7a5a" stroke="#475569" stroke-width="1.5"/>
-  <text x="355" y="225" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#fff" font-weight="700">橙→灰</text>
+  <text x="332" y="213" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700" text-anchor="end">橙→灰</text>
   <circle cx="362" cy="142" r="16" fill="#facc15" stroke="#a16207" stroke-width="1.5"/>
   <text x="362" y="147" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">黄橙</text>
   <!-- 混同の矢印 -->
@@ -309,22 +309,22 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <!-- 中央グレー軸（横に伸ばす） -->
   <line x1="540" y1="220" x2="760" y2="220" stroke="#9ca3af" stroke-width="3" stroke-opacity="0.4"/>
   <circle cx="650" cy="220" r="12" fill="#9ca3af" stroke="#6b7280" stroke-width="1"/>
-  <text x="650" y="224" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#fff" font-weight="700">灰</text>
+  <text x="650" y="224" text-anchor="middle" font-family="sans-serif" font-size="7" fill="#1e293b" font-weight="700">灰</text>
   <!-- 色が中央に寄る（縦方向が潰れる） -->
   <circle cx="650" cy="195" r="16" fill="#b8a860" stroke="#a16207" stroke-width="1.5"/>
   <text x="650" y="200" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">黄→灰</text>
   <circle cx="710" cy="200" r="16" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
   <text x="710" y="205" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">黄緑</text>
   <circle cx="760" cy="220" r="18" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
-  <text x="760" y="225" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="700">緑</text>
+  <text x="760" y="208" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700">緑</text>
   <circle cx="710" cy="240" r="16" fill="#5a6a9a" stroke="#1e3a8a" stroke-width="1.5"/>
-  <text x="710" y="245" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#fff" font-weight="700">青→灰</text>
+  <text x="733" y="252" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">青→灰</text>
   <circle cx="650" cy="245" r="16" fill="#7a5a8a" stroke="#581c87" stroke-width="1.5"/>
-  <text x="650" y="250" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#fff" font-weight="700">紫→灰</text>
+  <text x="650" y="270" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">紫→灰</text>
   <circle cx="590" cy="240" r="18" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
-  <text x="590" y="245" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="700">赤</text>
+  <text x="590" y="268" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700">赤</text>
   <circle cx="540" cy="220" r="18" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
-  <text x="540" y="225" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#fff" font-weight="700">橙</text>
+  <text x="518" y="224" font-family="sans-serif" font-size="9" fill="#1e293b" font-weight="700" text-anchor="end">橙</text>
   <circle cx="590" cy="200" r="16" fill="#facc15" stroke="#a16207" stroke-width="1.5"/>
   <text x="590" y="205" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#1e293b" font-weight="700">黄橙</text>
   <!-- 混同の矢印 -->
