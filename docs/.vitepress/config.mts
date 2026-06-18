@@ -122,8 +122,12 @@ export default withPwa(
                   link: "/lessons/day25/",
                 },
                 {
-                  text: "Day 26: XSS",
+                  text: "Day 26: 色のアクセシビリティ",
                   link: "/lessons/day26/",
+                },
+                {
+                  text: "Day 27: XSS",
+                  link: "/lessons/day27/",
                 },
               ],
             },
