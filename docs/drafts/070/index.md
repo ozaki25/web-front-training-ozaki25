@@ -31,11 +31,11 @@ const employee: Employee = { name: "田中", age: 25, department: "開発部" };
 greet(employee); // エラーにならない
 ```
 
-`greet` は `User` 型を要求していますが、`Employee` 型のオブジェクトを渡してもエラーになりません。`Employee` と `User` は別の型なのに、なぜ通るのでしょうか。
+`greet` は `User` 型を要求していますが、`Employee` 型のオブジェクトを渡してもエラーになりません。`Employee` と `User` は別の型なのに通る理由は、TypeScript の型の判断基準にあります。
 
 ## 構造的型付け — 形が合えば OK
 
-TypeScript は型の互換性を**名前ではなく形（プロパティの構造）**で判断します。これを**構造的型付け**（structural typing）と呼びます。
+TypeScript は型の互換性を**名前ではなく形**（プロパティの構造）で判断します。これを**構造的型付け**（structural typing）と呼びます。
 
 `greet` が求めているのは `User` という名前の型ではなく、「`name: string` と `age: number` を持つオブジェクト」です。`Employee` はその条件を満たしているので、型として互換性があると判断されます。
 
