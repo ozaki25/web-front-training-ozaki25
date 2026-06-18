@@ -245,7 +245,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <text x="160" y="30" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">通常</text>
   <text x="160" y="50" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">2 軸とも機能</text>
 
-  <circle cx="160" cy="240" r="100" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <circle cx="160" cy="240" r="115" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="6 4"/>
   <circle cx="160" cy="240" r="8" fill="#a1a1aa" stroke="#71717a" stroke-width="1.5"/>
 
   <circle cx="160" cy="140" r="17" fill="#eab308" stroke="#a16207" stroke-width="1.5"/>
@@ -275,7 +275,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <text x="440" y="30" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">P 型 / D 型</text>
   <text x="440" y="50" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#dc2626">赤-緑 が潰れて中央に近づく</text>
 
-  <ellipse cx="440" cy="240" rx="40" ry="100" fill="none" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <ellipse cx="440" cy="240" rx="55" ry="115" fill="none" stroke="#fca5a5" stroke-width="1.5" stroke-dasharray="6 4"/>
   <line x1="440" y1="130" x2="440" y2="350" stroke="#d4d4d8" stroke-width="3" stroke-opacity="0.7"/>
   <circle cx="440" cy="240" r="8" fill="#a1a1aa" stroke="#71717a" stroke-width="1.5"/>
 
@@ -308,7 +308,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <text x="810" y="30" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">T 型</text>
   <text x="810" y="50" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#2563eb">青-黄 が潰れて中央に近づく</text>
 
-  <ellipse cx="810" cy="240" rx="140" ry="80" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <ellipse cx="810" cy="240" rx="160" ry="95" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6 4"/>
   <line x1="660" y1="240" x2="960" y2="240" stroke="#d4d4d8" stroke-width="3" stroke-opacity="0.7"/>
   <circle cx="810" cy="240" r="8" fill="#a1a1aa" stroke="#71717a" stroke-width="1.5"/>
 
