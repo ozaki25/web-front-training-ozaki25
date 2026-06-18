@@ -298,7 +298,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
 
   <line x1="410" y1="240" x2="470" y2="240" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"/>
   <line x1="418" y1="169" x2="462" y2="169" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"/>
-  <text x="510" y="244" font-family="sans-serif" font-size="9" fill="#ef4444" font-weight="700">← 区別できない</text>
+  <text x="510" y="244" font-family="sans-serif" font-size="9" fill="#991b1b" font-weight="700">← 区別できない</text>
 
   <text x="440" y="400" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">赤と緑が中央に寄り</text>
   <text x="440" y="416" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#991b1b" font-weight="700">どちらも灰〜黒に近づく</text>
