@@ -177,32 +177,42 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
 色相環で見ると、赤-緑チャンネルと青-黄チャンネルがどの色の区別を担当しているかが分かります。
 
 <figure class="c45-fig">
-<svg class="c45-simple-wheel" viewBox="0 0 420 420" role="img" aria-label="赤を上にした色相環。縦軸が赤-緑チャンネル、横軸が青-黄チャンネルに対応する">
-  <rect width="420" height="420" fill="#f8fafc" rx="8"/>
-  <!-- 軸線 中心(200, 190) -->
-  <line x1="200" y1="55" x2="200" y2="325" stroke="#d4d4d8" stroke-width="2" stroke-dasharray="6 4"/>
-  <line x1="65" y1="190" x2="335" y2="190" stroke="#d4d4d8" stroke-width="2" stroke-dasharray="6 4"/>
-  <!-- 軸ラベル -->
-  <text x="200" y="28" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700">↕ 赤-緑 チャンネル（L − M）</text>
-  <text x="200" y="370" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e40af" font-weight="700">← 青-黄 チャンネル（S −(L+M)）→</text>
-  <!-- 8色: 赤=上, 橙=右上, 黄=右, 黄緑=右下, 緑=下, 青緑=左下, 青=左, 紫=左上 -->
-  <!-- 中心(200, 190), r=115 -->
-  <circle cx="200" cy="75" r="20" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
-  <text x="200" y="55" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">赤</text>
-  <circle cx="281" cy="109" r="20" fill="#f97316" stroke="#c2410c" stroke-width="1.5"/>
-  <text x="308" y="102" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">橙</text>
-  <circle cx="315" cy="190" r="20" fill="#eab308" stroke="#a16207" stroke-width="1.5"/>
-  <text x="342" y="194" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">黄</text>
-  <circle cx="281" cy="271" r="20" fill="#84cc16" stroke="#4d7c0f" stroke-width="1.5"/>
-  <text x="308" y="280" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">黄緑</text>
-  <circle cx="200" cy="305" r="20" fill="#16a34a" stroke="#166534" stroke-width="1.5"/>
-  <text x="200" y="335" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700">緑</text>
-  <circle cx="119" cy="271" r="20" fill="#0d9488" stroke="#115e59" stroke-width="1.5"/>
-  <text x="92" y="280" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700" text-anchor="end">青緑</text>
-  <circle cx="85" cy="190" r="20" fill="#2563eb" stroke="#1e3a8a" stroke-width="1.5"/>
-  <text x="58" y="194" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700" text-anchor="end">青</text>
-  <circle cx="119" cy="109" r="20" fill="#7c3aed" stroke="#4c1d95" stroke-width="1.5"/>
-  <text x="92" y="102" font-family="sans-serif" font-size="13" fill="#1e293b" font-weight="700" text-anchor="end">紫</text>
+<svg class="c45-simple-wheel" viewBox="0 0 420 460" role="img" aria-label="赤を上にした色相環。縦軸が赤-緑チャンネル、横軸が青-黄チャンネルに対応する">
+  <rect width="420" height="460" fill="#f8fafc" rx="8"/>
+  <g transform="translate(210,210)">
+    <path d="M0,-120 A120,120 0 0,1 31,-115.9 L19.4,-72.4 A75,75 0 0,0 0,-75 Z" fill="#ff0000"/>
+    <path d="M31,-115.9 A120,120 0 0,1 60,-103.9 L37.5,-64.9 A75,75 0 0,0 19.4,-72.4 Z" fill="#ff2000"/>
+    <path d="M60,-103.9 A120,120 0 0,1 84.8,-84.8 L53,-53 A75,75 0 0,0 37.5,-64.9 Z" fill="#ff4400"/>
+    <path d="M84.8,-84.8 A120,120 0 0,1 103.9,-60 L64.9,-37.5 A75,75 0 0,0 53,-53 Z" fill="#ff6600"/>
+    <path d="M103.9,-60 A120,120 0 0,1 115.9,-31 L72.4,-19.4 A75,75 0 0,0 64.9,-37.5 Z" fill="#ff8800"/>
+    <path d="M115.9,-31 A120,120 0 0,1 120,0 L75,0 A75,75 0 0,0 72.4,-19.4 Z" fill="#ffbb00"/>
+    <path d="M120,0 A120,120 0 0,1 115.9,31 L72.4,19.4 A75,75 0 0,0 75,0 Z" fill="#ffee00"/>
+    <path d="M115.9,31 A120,120 0 0,1 103.9,60 L64.9,37.5 A75,75 0 0,0 72.4,19.4 Z" fill="#ccff00"/>
+    <path d="M103.9,60 A120,120 0 0,1 84.8,84.8 L53,53 A75,75 0 0,0 64.9,37.5 Z" fill="#88ee00"/>
+    <path d="M84.8,84.8 A120,120 0 0,1 60,103.9 L37.5,64.9 A75,75 0 0,0 53,53 Z" fill="#44cc00"/>
+    <path d="M60,103.9 A120,120 0 0,1 31,115.9 L19.4,72.4 A75,75 0 0,0 37.5,64.9 Z" fill="#00bb22"/>
+    <path d="M31,115.9 A120,120 0 0,1 0,120 L0,75 A75,75 0 0,0 19.4,72.4 Z" fill="#00aa44"/>
+    <path d="M0,120 A120,120 0 0,1 -31,115.9 L-19.4,72.4 A75,75 0 0,0 0,75 Z" fill="#009966"/>
+    <path d="M-31,115.9 A120,120 0 0,1 -60,103.9 L-37.5,64.9 A75,75 0 0,0 -19.4,72.4 Z" fill="#008888"/>
+    <path d="M-60,103.9 A120,120 0 0,1 -84.8,84.8 L-53,53 A75,75 0 0,0 -37.5,64.9 Z" fill="#0077aa"/>
+    <path d="M-84.8,84.8 A120,120 0 0,1 -103.9,60 L-64.9,37.5 A75,75 0 0,0 -53,53 Z" fill="#0055cc"/>
+    <path d="M-103.9,60 A120,120 0 0,1 -115.9,31 L-72.4,19.4 A75,75 0 0,0 -64.9,37.5 Z" fill="#0033ee"/>
+    <path d="M-115.9,31 A120,120 0 0,1 -120,0 L-75,0 A75,75 0 0,0 -72.4,19.4 Z" fill="#2200ff"/>
+    <path d="M-120,0 A120,120 0 0,1 -115.9,-31 L-72.4,-19.4 A75,75 0 0,0 -75,0 Z" fill="#4400ee"/>
+    <path d="M-115.9,-31 A120,120 0 0,1 -103.9,-60 L-64.9,-37.5 A75,75 0 0,0 -72.4,-19.4 Z" fill="#6600cc"/>
+    <path d="M-103.9,-60 A120,120 0 0,1 -84.8,-84.8 L-53,-53 A75,75 0 0,0 -64.9,-37.5 Z" fill="#8800aa"/>
+    <path d="M-84.8,-84.8 A120,120 0 0,1 -60,-103.9 L-37.5,-64.9 A75,75 0 0,0 -53,-53 Z" fill="#aa0088"/>
+    <path d="M-60,-103.9 A120,120 0 0,1 -31,-115.9 L-19.4,-72.4 A75,75 0 0,0 -37.5,-64.9 Z" fill="#cc0066"/>
+    <path d="M-31,-115.9 A120,120 0 0,1 0,-120 L0,-75 A75,75 0 0,0 -19.4,-72.4 Z" fill="#ee0033"/>
+  </g>
+  <line x1="210" y1="50" x2="210" y2="370" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.4"/>
+  <line x1="50" y1="210" x2="370" y2="210" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.4"/>
+  <text x="210" y="38" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e293b" font-weight="700">赤</text>
+  <text x="210" y="395" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e293b" font-weight="700">緑</text>
+  <text x="38" y="214" text-anchor="end" font-family="sans-serif" font-size="15" fill="#1e293b" font-weight="700">青</text>
+  <text x="382" y="214" font-family="sans-serif" font-size="15" fill="#1e293b" font-weight="700">黄</text>
+  <text x="210" y="22" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#991b1b" font-weight="700">↕ 赤-緑 チャンネル（L − M）</text>
+  <text x="210" y="445" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#1e40af" font-weight="700">← 青-黄 チャンネル（S −(L+M)）→</text>
 </svg>
 </figure>
 
