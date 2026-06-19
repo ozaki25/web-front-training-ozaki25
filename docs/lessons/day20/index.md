@@ -369,7 +369,7 @@ body {
 
 配属先のプロジェクトで使う Tailwind CSS は、デザイントークンの考え方を別の形で実現しています。
 
-### Tailwind のクラス名の裏側
+### Tailwind のクラス名の仕組み
 
 ```html
 <button class="bg-blue-500 text-white rounded-lg p-4">
