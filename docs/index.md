@@ -75,7 +75,7 @@
 - [Server Actions とフォーム](/drafts/037/)
 - [フォームバリデーション](/drafts/095/)
 - [キャッシュ制御](/drafts/038/)
-- [キャッシュと再検証](/drafts/105/)
+- [データキャッシュ](/drafts/105/)
 - [Request Memoization](/drafts/104/)
 - [Suspense と Streaming](/drafts/039/)
 - [SPA のページ遷移の仕組み](/drafts/040/)

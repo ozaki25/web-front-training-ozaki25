@@ -177,7 +177,7 @@ export default withPwa(
                 { text: "Server Actions とフォーム", link: "/drafts/037/" },
                 { text: "フォームバリデーション", link: "/drafts/095/" },
                 { text: "キャッシュ制御", link: "/drafts/038/" },
-                { text: "キャッシュと再検証", link: "/drafts/105/" },
+                { text: "データキャッシュ", link: "/drafts/105/" },
                 { text: "Request Memoization", link: "/drafts/104/" },
                 { text: "Suspense と Streaming", link: "/drafts/039/" },
                 { text: "SPA のページ遷移の仕組み", link: "/drafts/040/" },
