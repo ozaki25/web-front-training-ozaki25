@@ -32,3 +32,4 @@
 - [Day 24: React Compiler — 手動メモ化からの解放](/lessons/day24/)
 - [Day 25: ツールがコードを読む仕組み — AST という共通言語](/lessons/day25/)
 - [Day 26: 色のアクセシビリティ — 自分の見え方が全員の見え方ではない](/lessons/day26/)
+- [Day 27: XSS — 入力欄に書いた文字がコードになる](/lessons/day27/)
