@@ -221,8 +221,8 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
 赤い光が来たときと緑の光が来たときで、信号がどう変わるか見てみます。
 
 <figure class="c45-fig">
-<svg class="c45-ellipse" viewBox="0 0 1060 500" role="img" aria-label="通常の色相環（正円）、P/D型（縦が潰れた楕円）、T型（横が潰れた楕円）の比較図">
-  <rect width="1060" height="500" fill="#f8fafc" rx="8"/>
+<svg class="c45-ellipse" viewBox="0 0 1060 530" role="img" aria-label="通常の色相環（正円）、P/D型（縦が潰れた楕円）、T型（横が潰れた楕円）の比較図">
+  <rect width="1060" height="530" fill="#f8fafc" rx="8"/>
 
   <!-- ===== 通常（正円） ===== -->
   <text x="160" y="30" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">通常</text>
@@ -279,7 +279,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
 
   <line x1="440" y1="197" x2="440" y2="283" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"/>
   <line x1="521" y1="215" x2="521" y2="265" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"/>
-  <text x="470" y="248" font-family="sans-serif" font-size="15" fill="#991b1b" font-weight="700">↑↓ 区別できない</text>
+  <text x="565" y="172" font-family="sans-serif" font-size="15" fill="#991b1b" font-weight="700">← 区別できない</text>
 
   <text x="440" y="400" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#991b1b" font-weight="700">赤と緑が中央に寄り</text>
   <text x="440" y="416" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#991b1b" font-weight="700">どちらも灰〜黒に近づく</text>
@@ -311,15 +311,15 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
 
   <line x1="755" y1="240" x2="865" y2="240" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5 3"/>
   <line x1="773" y1="321" x2="847" y2="321" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="5 3"/>
-  <text x="810" y="260" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#2563eb" font-weight="700">↔ 左右の色が区別できない</text>
+  <text x="810" y="278" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#2563eb" font-weight="700">↔ 区別できない</text>
 
-  <text x="810" y="400" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e40af" font-weight="700">黄と青紫が中央に寄り</text>
-  <text x="810" y="416" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e40af" font-weight="700">どちらも灰に近づく</text>
+  <text x="810" y="410" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e40af" font-weight="700">黄と青紫が中央に寄り</text>
+  <text x="810" y="426" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e40af" font-weight="700">どちらも灰に近づく</text>
 
   <!-- 下部共通説明 -->
-  <line x1="30" y1="440" x2="1030" y2="440" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="530" y="465" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e293b" font-weight="700">色相環の中央は無彩色（グレー）。潰れた方向の色は中央に吸い寄せられ、彩度が落ちる</text>
-  <text x="530" y="487" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e293b">P 型では L 錐体が弱いため赤い光の明るさ自体が落ち、赤は黒に近づく</text>
+  <line x1="30" y1="455" x2="1030" y2="455" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="530" y="478" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e293b" font-weight="700">色相環の中央は無彩色（グレー）。潰れた方向の色は中央に吸い寄せられ、彩度が落ちる</text>
+  <text x="530" y="500" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#1e293b">P 型では L 錐体が弱いため赤い光の明るさ自体が落ち、赤は黒に近づく</text>
 </svg>
 </figure>
 
