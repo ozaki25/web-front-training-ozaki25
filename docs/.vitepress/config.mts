@@ -128,6 +128,10 @@ export default withPwa(
                   text: "Day 26: 色のアクセシビリティ",
                   link: "/lessons/day26/",
                 },
+                {
+                  text: "Day 27: XSS",
+                  link: "/lessons/day27/",
+                },
               ],
             },
           ],
@@ -223,7 +227,6 @@ export default withPwa(
             {
               text: "セキュリティ",
               items: [
-                { text: "XSS", link: "/drafts/050/" },
                 { text: "Cookie と認証", link: "/drafts/051/" },
                 { text: "CSRF と SameSite", link: "/drafts/052/" },
                 { text: "OAuth と OIDC", link: "/drafts/053/" },
