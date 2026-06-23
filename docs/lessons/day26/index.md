@@ -279,7 +279,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
 
   <line x1="440" y1="197" x2="440" y2="283" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"/>
   <line x1="521" y1="215" x2="521" y2="265" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"/>
-  <text x="565" y="172" font-family="sans-serif" font-size="15" fill="#991b1b" font-weight="700">← 区別できない</text>
+  <text x="568" y="150" font-family="sans-serif" font-size="15" fill="#991b1b" font-weight="700">← 区別できない</text>
 
   <text x="440" y="400" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#991b1b" font-weight="700">赤と緑が中央に寄り</text>
   <text x="440" y="416" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#991b1b" font-weight="700">どちらも灰〜黒に近づく</text>
@@ -289,7 +289,8 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <text x="810" y="50" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#2563eb">青-黄（横）が潰れて中央に近づく</text>
 
   <ellipse cx="810" cy="240" rx="60" ry="115" fill="none" stroke="#93c5fd" stroke-width="1.5" stroke-dasharray="6 4"/>
-  <line x1="810" y1="130" x2="810" y2="350" stroke="#d4d4d8" stroke-width="3" stroke-opacity="0.7"/>
+  <line x1="810" y1="130" x2="810" y2="262" stroke="#d4d4d8" stroke-width="3" stroke-opacity="0.7"/>
+  <line x1="810" y1="294" x2="810" y2="350" stroke="#d4d4d8" stroke-width="3" stroke-opacity="0.7"/>
   <circle cx="810" cy="240" r="8" fill="#a1a1aa" stroke="#71717a" stroke-width="1.5"/>
 
   <circle cx="810" cy="125" r="17" fill="#dc2626" stroke="#991b1b" stroke-width="1.5"/>
