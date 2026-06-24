@@ -35,6 +35,17 @@
 | `React.memo` / `useMemo` / `useCallback` | React Compiler で自動化 | 手動での使用は基本不要に |
 | `forwardRef` | ref を通常の prop として受け取り | React 19 で非推奨 |
 
+## キャッシュ系レッスンのモデル方針（決定事項）
+
+Next.js 16 のキャッシュには2つのモデルがある。
+
+- **従来モデル**（`cacheComponents: false`、現状の既定）: `fetch` のオプション（`revalidate` / `force-cache` / `tags`）、`unstable_cache`、4キャッシュ（Request Memoization / Data Cache / Full Route Cache / Router Cache）。Next.js 15 で `fetch` の既定が `no-store` に変更済み
+- **新モデル**（`cacheComponents: true`、opt-in）: `"use cache"` / `cacheLife` / `cacheTag`。今後の本流だが現状は opt-in
+
+**研修のキャッシュ詳細レッスン（データキャッシュ / Full Route Cache / Router Cache / Request Memoization）は従来モデルで書く。** 配属先の方針（cacheComponents 無効）に合わせるため。新モデル（`"use cache"`）を扱う場合は別レッスンとして切り出す。
+
+この方針は意図的なもの。従来モデルのレッスンを「新モデルに直す」修正をしないこと。Day 15（概要レッスン）が新モデルに触れているが、詳細レッスンとは役割が別。
+
 ## 確認手順
 
 レッスンで技術を扱う際は、以下の手順で最新情報を確認する:
