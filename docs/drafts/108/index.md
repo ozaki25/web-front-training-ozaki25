@@ -28,7 +28,9 @@ export default nextConfig;
 - Next.js チームは「Our Journey with Caching」というブログ記事で、従来モデルの暗黙的なキャッシュを設計上の失敗と振り返っている
 - 公式ドキュメントでも従来モデルは「Caching (Previous Model)」と改名され、新モデルへの移行が推奨されている
 
-ただし従来モデルの削除時期は決まっておらず、既存プロジェクトの多くはまだ従来モデルで動いています。AI が生成するコードもどちらのモデルで書かれているか混在するため、両方のコードを読めることが今の時点では必要です。
+ただし従来モデルの削除時期は決まっておらず、既存プロジェクトの多くはまだ従来モデルで動いています。AI が生成するコードも、どちらのモデルで書かれているかが混在します。
+
+今の時点では、両方のコードを読めることが必要です。
 
 ## 従来モデルの考え方
 
@@ -49,7 +51,9 @@ export default nextConfig;
 | **Full Route Cache** | データで組み立てた HTML | サーバー（永続） |
 | **Router Cache** | 画面遷移用の表示データ | ブラウザ |
 
-上から下へ加工の段階が進み、上流が古ければ下流も古くなる連鎖の関係です。`revalidatePath` / `revalidateTag` は Data Cache を捨て、それに連動して Full Route Cache と Router Cache も最新化されます。Request Memoization は 1 リクエストで消えるため、再検証の対象にはなりません。
+上から下へ加工の段階が進み、上流が古ければ下流も古くなる連鎖の関係です。`revalidatePath` / `revalidateTag` は Data Cache を捨て、それに連動して Full Route Cache と Router Cache も最新化されます。
+
+Request Memoization は 1 リクエストで消えるため、再検証の対象にはなりません。
 
 ## 新モデルの考え方
 
@@ -283,7 +287,9 @@ export const getProducts = unstable_cache(
 );
 ```
 
-`unstable_cache` は名前のとおり不安定な API で、関数を包むラッパーです。キャッシュキーの指定や `tags` / `revalidate` の設定が、`fetch` のオプションとは別の書き方になります。
+`unstable_cache` は関数を丸ごと包んでキャッシュする API です。キャッシュキーや `tags` / `revalidate` を、`fetch` のオプションとは別の書き方で指定します。
+
+名前に付く `unstable_` は「動作が不安定」という意味ではなく、「今後 API が変わるかもしれない」という Next.js の印です。新モデルの `"use cache"` がこの置き換え先にあたります。
 
 **新モデル: "use cache" を書くだけ**
 
@@ -347,7 +353,7 @@ flowchart TD
 モデルが変わっても、変わらずに動いている仕組みが 2 つあります。
 
 - **Request Memoization**: 1 回の描画の中で同じ `fetch` が重複しないようにまとめる仕組み。`fetch` は自動、それ以外は React の `cache()` で手動。どちらのモデルでも同じ
-- **Router Cache**: ブラウザ側で画面遷移を速くするための控え。レイアウトや先読みした内容を保持する。どちらのモデルでも同じ
+- **Router Cache**: ブラウザ側で画面遷移を速くするための保持データ。レイアウトや先読みした内容を持っておく。どちらのモデルでも同じ
 
 これらはリクエスト間のキャッシュとは別の仕組みなので、モデルの選択に影響されません。
 
