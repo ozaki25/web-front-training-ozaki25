@@ -40,6 +40,17 @@ export default nextConfig;
 
 キャッシュの単位は **fetch の呼び出し**です。「この fetch の結果を何秒間使い回す」「この fetch の結果にタグを付けて、あとから捨てる」という制御をします。
 
+従来モデルでは、キャッシュが段階ごとに 4 つに分かれています。
+
+| キャッシュ | 何を保存するか | どこにあるか |
+|-----------|--------------|------------|
+| **Request Memoization** | 同じ `fetch` の重複を 1 回にまとめた結果 | サーバー（1 リクエスト限り） |
+| **Data Cache** | `fetch` で取得したデータ | サーバー（永続） |
+| **Full Route Cache** | データで組み立てた HTML | サーバー（永続） |
+| **Router Cache** | 画面遷移用の表示データ | ブラウザ |
+
+上から下へ加工の段階が進み、上流が古ければ下流も古くなる連鎖の関係です。`revalidatePath` / `revalidateTag` は Data Cache を捨て、それに連動して Full Route Cache と Router Cache も最新化されます。Request Memoization は 1 リクエストで消えるため、再検証の対象にはなりません。
+
 ## 新モデルの考え方
 
 新モデル（`cacheComponents: true`）は、`"use cache"` ディレクティブ（目印の宣言）でキャッシュを制御します。
