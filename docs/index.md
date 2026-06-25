@@ -56,9 +56,7 @@
 - [021: useState と画面更新](/drafts/021/)
 - [022: key の役割](/drafts/022/)
 - [024: useEffect と副作用](/drafts/024/)
-- [015: 再レンダリングと手動メモ化](/drafts/015/)
-- [016: React Compiler](/drafts/016/)
-- [Context と use() (drafts/026)](/drafts/026/)
+- [026: Context と use()](/drafts/026/)
 - [027: 状態管理の世代史](/drafts/027/)
 - [028: カスタムフック](/drafts/028/)
 - [088: useRef](/drafts/088/)
@@ -75,11 +73,13 @@
 - [093: 動的ルート](/drafts/093/)
 - [037: Server Actions とフォーム](/drafts/037/)
 - [095: フォームバリデーション](/drafts/095/)
-- [038: キャッシュ制御](/drafts/038/)
-- [105: データキャッシュ](/drafts/105/)
-- [106: Full Route Cache](/drafts/106/)
-- [107: Router Cache](/drafts/107/)
-- [104: Request Memoization](/drafts/104/)
+- キャッシュ
+  - [038: キャッシュ制御（概要）](/drafts/038/)
+  - [105: キャッシュ — データキャッシュ](/drafts/105/)
+  - [106: キャッシュ — Full Route Cache](/drafts/106/)
+  - [107: キャッシュ — Router Cache](/drafts/107/)
+  - [104: キャッシュ — Request Memoization](/drafts/104/)
+  - [108: キャッシュ — キャッシュモデルの比較](/drafts/108/)
 - [039: Suspense と Streaming](/drafts/039/)
 - [040: SPA のページ遷移の仕組み](/drafts/040/)
 - [092: proxy.ts](/drafts/092/)
@@ -109,7 +109,6 @@
 - [042: スクリーンリーダーから見た Web](/drafts/042/)
 - [043: WAI-ARIA の仕組み](/drafts/043/)
 - [044: フォーカス管理](/drafts/044/)
-- [045: 色のアクセシビリティ](/drafts/045/)
 - [089: アクセシビリティ検査の原理](/drafts/089/)
 
 ### セキュリティ
@@ -152,7 +151,6 @@
 - [080: Git のデータモデル](/drafts/080/)
 - [091: DevTools](/drafts/091/)
 - [097: エラーの読み方](/drafts/097/)
-- [098: ツールがコードを読む仕組み](/drafts/098/)
 
 ### 設計とコードの読み書き
 
