@@ -75,11 +75,11 @@
 - [095: フォームバリデーション](/drafts/095/)
 - [038: キャッシュ制御](/drafts/038/)
 - キャッシュ
+  - [108: キャッシュ — 全体像（4つの場所と2つのモデル）](/drafts/108/)
   - [105: キャッシュ — データキャッシュ](/drafts/105/)
   - [106: キャッシュ — Full Route Cache](/drafts/106/)
   - [107: キャッシュ — Router Cache](/drafts/107/)
   - [104: キャッシュ — Request Memoization](/drafts/104/)
-  - [108: キャッシュ — キャッシュモデルの比較](/drafts/108/)
 - [039: Suspense と Streaming](/drafts/039/)
 - [040: SPA のページ遷移の仕組み](/drafts/040/)
 - [092: proxy.ts](/drafts/092/)
