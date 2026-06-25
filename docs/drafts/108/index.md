@@ -38,7 +38,7 @@ export default nextConfig;
 
 - `fetch` にオプションを渡してキャッシュの有無や鮮度を指定する
 - `fetch` を使わないデータ取得（ORM（データベース操作ライブラリ）など）は `unstable_cache` で包む
-- Next.js 14 では `fetch` がデフォルトでキャッシュされていたが、15 以降はデフォルトがキャッシュなし（`no-store` 相当）に変更された
+- Next.js 14 では `fetch` がデフォルトでキャッシュされていたが、15 以降はデフォルトでキャッシュされなくなった
 
 キャッシュの単位は **fetch の呼び出し**です。「この fetch の結果を何秒間使い回す」「この fetch の結果にタグを付けて、あとから捨てる」という制御をします。
 
@@ -229,12 +229,11 @@ export async function updatePrice(formData: FormData) {
 
 ### キャッシュなしの場合
 
-**従来モデル: 何もしない**
+キャッシュしないときは、両モデルとも**何も指定しない**だけです。コードは同じになります。
 
 ```tsx
-// app/dashboard/page.tsx（従来モデル）
+// app/dashboard/page.tsx
 export default async function DashboardPage() {
-  // fetch にキャッシュ指定がなければ、毎回取りに行く（15 以降の既定）
   const res = await fetch("https://api.example.com/dashboard");
   if (!res.ok) throw new Error("取得に失敗しました");
   const data = await res.json();
@@ -243,26 +242,10 @@ export default async function DashboardPage() {
 }
 ```
 
-Next.js 15 以降、`fetch` はデフォルトでキャッシュされません。何も指定しなければ毎回最新を取りに行きます。
+結果は同じですが、そこに至る経緯が違います。
 
-**新モデル: 何もしない**
-
-```tsx
-// app/dashboard/page.tsx（新モデル）
-export default async function DashboardPage() {
-  // "use cache" がなければキャッシュされない
-  const res = await fetch("https://api.example.com/dashboard");
-  if (!res.ok) throw new Error("取得に失敗しました");
-  const data = await res.json();
-
-  return <Dashboard data={data} />;
-}
-```
-
-どちらのモデルも「何もしなければキャッシュされない」という点は同じです。ただし、到達するまでの経緯が違います。
-
-- 従来モデルは、元々デフォルトでキャッシュされていた（Next.js 14）のを、15 で変更して「デフォルトでキャッシュしない」にした
-- 新モデルは、最初から「`"use cache"` を書かなければキャッシュしない」設計
+- 従来モデル: 元々デフォルトでキャッシュされていた（Next.js 14）のを、15 で「デフォルトでキャッシュしない」に変更した
+- 新モデル: 最初から「`"use cache"` を書かなければキャッシュしない」設計
 
 ## fetch 以外のデータ取得
 
@@ -279,7 +262,7 @@ export const getProducts = unstable_cache(
   async () => {
     return db.product.findMany();
   },
-  ["products"],              // キャッシュキー
+  ["products"],              // キャッシュキー（結果を区別する名前）
   {
     tags: ["products"],      // タグ
     revalidate: 3600,        // 1 時間
