@@ -178,7 +178,7 @@ export default withPwa(
                 { text: "動的ルート", link: "/drafts/093/" },
                 { text: "Server Actions とフォーム", link: "/drafts/037/" },
                 { text: "フォームバリデーション", link: "/drafts/095/" },
-                { text: "キャッシュ — 制御（概要）", link: "/drafts/038/" },
+                { text: "キャッシュ制御", link: "/drafts/038/" },
                 { text: "キャッシュ — データキャッシュ", link: "/drafts/105/" },
                 { text: "キャッシュ — Full Route Cache", link: "/drafts/106/" },
                 { text: "キャッシュ — Router Cache", link: "/drafts/107/" },
