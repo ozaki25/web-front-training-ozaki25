@@ -7,7 +7,7 @@
 - その判断を表す語彙（use cache / cacheLife / cacheTag / Suspense）を読める
 
 ::: info このレッスンの前提（新モデル）
-ここで扱うのは `next.config.ts` に `cacheComponents: true` を書いて有効にする新モデルです（有効化は任意で、現在の既定は無効）。従来モデルのキャッシュを先に知っていると対比しやすくなります。
+ここで扱うのは `next.config.ts` に `cacheComponents: true` を書いて有効にする新モデルです（有効化は任意）。従来モデルのキャッシュを先に知っていると対比しやすくなります。
 :::
 
 ## 従来モデルで困っていたこと

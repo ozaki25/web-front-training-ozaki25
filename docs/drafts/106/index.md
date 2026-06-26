@@ -7,7 +7,7 @@
 - `no-store` と動的化の関係を知り、再検証で作り直せることを知る
 
 ::: info このレッスンの前提（従来モデル）
-ここで扱うのは**従来モデル**、`next.config.ts` で `cacheComponents` を有効にしていない、現在の既定の状態での Full Route Cache です。`fetch` は既定ではキャッシュされず、指定なしの `fetch` があるページは動的になります。`cacheComponents: true` の**新モデル**では、ページ全体を自動で静的化する判断はなくなり、`"use cache"` で明示する形に変わります（別レッスンで扱います）。
+ここで扱うのは**従来モデル**、`next.config.ts` で `cacheComponents` を有効にしていない状態での Full Route Cache です。`fetch` は既定ではキャッシュされず、指定なしの `fetch` があるページは動的になります。`cacheComponents: true` の**新モデル**では、ページ全体を自動で静的化する判断はなくなり、`"use cache"` で明示する形に変わります（別レッスンで扱います）。
 :::
 
 ## ページの HTML はどう作られるか

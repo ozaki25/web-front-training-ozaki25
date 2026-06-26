@@ -7,7 +7,7 @@
 - 再検証でキャッシュを捨てると、次のアクセスで取り直されると知る
 
 ::: info このレッスンの前提（従来モデル）
-ここで扱うのは**従来モデル**、`next.config.ts` で `cacheComponents` を有効にしていない、現在の既定の状態でのデータキャッシュです。`fetch` のオプションでキャッシュを制御します。`cacheComponents: true` の**新モデル**では、ここで出てくる `fetch` オプションや後述の `unstable_cache` は `"use cache"` 1 つに置き換わります（別レッスンで扱います）。
+ここで扱うのは**従来モデル**、`next.config.ts` で `cacheComponents` を有効にしていない状態でのデータキャッシュです。`fetch` のオプションでキャッシュを制御します。`cacheComponents: true` の**新モデル**では、ここで出てくる `fetch` オプションや後述の `unstable_cache` は `"use cache"` 1 つに置き換わります（別レッスンで扱います）。
 :::
 
 ## 毎回データを取りに行くページ
