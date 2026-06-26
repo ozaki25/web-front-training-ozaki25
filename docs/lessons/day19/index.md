@@ -110,7 +110,7 @@ export default function TodoList() {
 </div>
 
 ::: warning key にインデックスを使う落とし穴
-AI が生成したコードで `key={index}`（配列の番号を key にする）を見かけることがあります。
+AI は `key={index}`（配列の番号を key にする）というコードを書いてくることがあります。
 
 ```tsx
 {todos.map((todo, index) => (
