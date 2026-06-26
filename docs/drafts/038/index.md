@@ -6,8 +6,8 @@
 - 関数・コンポーネント・ファイルに書け、データも描画結果もキャッシュできると知る
 - 鮮度の宣言（cacheLife）と無効化（cacheTag ＋ updateTag / revalidateTag）の組み立てを知る
 
-::: info このレッスンの前提（Next.js 16・新モデル）
-ここで扱うのは**新モデル**、`next.config.ts` に `cacheComponents: true` を書いて有効にする書き方です（Next.js 16 では opt-in）。有効にしていない既定の状態（従来モデル）では `fetch` のオプションや `unstable_cache` を使います。本文では従来モデルと対比しながら進めます。
+::: info このレッスンの前提（新モデル）
+ここで扱うのは**新モデル**、`next.config.ts` に `cacheComponents: true` を書いて有効にする書き方です（有効化は任意で、現在の既定は無効）。有効にしていない既定の状態（従来モデル）では `fetch` のオプションや `unstable_cache` を使います。本文では従来モデルと対比しながら進めます。
 :::
 
 ## 速いページにはキャッシュが要る
