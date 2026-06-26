@@ -129,6 +129,10 @@ export default withPwa(
                   text: "Day 27: XSS",
                   link: "/lessons/day27/",
                 },
+                {
+                  text: "Day 28: キャッシュの全体像",
+                  link: "/lessons/day28/",
+                },
               ],
             },
           ],
