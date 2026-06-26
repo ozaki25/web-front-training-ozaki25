@@ -3,7 +3,7 @@
 レッスン作成時に参照する、各技術の最新バージョンと API の記録。
 **レッスン作成・修正のたびに、該当する技術の公式ドキュメントまたは Web 検索で最新情報を確認し、このファイルを更新すること。**
 
-> 最終確認日: 2026-04-05
+> 最終確認日: 2026-06-26
 
 ## フレームワーク・ライブラリ
 
@@ -30,7 +30,8 @@
 | `middleware.ts` / `export function middleware` | `proxy.ts` / `export function proxy` | Node.js ランタイムで動作 |
 | `experimental.dynamicIO` | `cacheComponents: true` | experimental ではなくなった |
 | `unstable_cache` | `"use cache"` ディレクティブ | ファイル/コンポーネント/関数レベルで適用可能 |
-| `fetch` の `next.revalidate` | `cacheLife()` / `cacheTag()` | "use cache" と組み合わせて使用 |
+| `fetch` の `next.revalidate` | `cacheLife()` / `cacheTag()` | "use cache" と組み合わせて使用。import は `next/cache`（`unstable_` 接頭辞は不要に） |
+| `revalidateTag(tag)`（1 引数） | `revalidateTag(tag, profile)` / `updateTag(tag)` | 新モデルでは `revalidateTag` は第 2 引数に cacheLife プロファイル（`"max"` 推奨）が必須（SWR）。1 引数形は非推奨で型エラー。`updateTag(tag)` は即時無効化（read-your-own-writes・Server Action 専用）。従来モデルの `revalidateTag(tag)` 1 引数は引き続き有効 |
 | `useContext(Ctx)` | `use(Ctx)` も可 | React 19 の新 API。条件分岐内でも使える |
 | `React.memo` / `useMemo` / `useCallback` | React Compiler で自動化 | 手動での使用は基本不要に |
 | `forwardRef` | ref を通常の prop として受け取り | React 19 で非推奨 |
