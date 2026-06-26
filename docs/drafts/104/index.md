@@ -38,7 +38,7 @@ async function Avatar() {
 }
 ```
 
-`getUser()` が 3 回呼ばれています。素朴に実装すれば、**1 つの画面を描くだけで同じ問い合わせが 3 回**サーバーやデータベースに飛ぶことになります。
+`getUser()` が 3 回呼ばれています。素朴に実装すれば、**1 つの画面を描くだけで同じ問い合わせが 3 回**取得元に飛ぶことになります。
 
 ## バケツリレーを避けると重複が生まれる
 
@@ -96,15 +96,18 @@ flowchart TD
 
 ## fetch 以外は cache() で包む
 
-自動でまとまるのは `fetch` だけです。データベースに直接アクセスする ORM や、専用クライアントを使う取得は、`fetch` を経由しないので**自動メモ化が効きません**。
+自動でまとまるのは `fetch` だけです。たとえば Redis などの専用クライアントを使う取得は、`fetch` を経由しないので**自動メモ化が効きません**。ログインユーザーの情報を Redis に置いていて、そこから読むケースを考えます。
 
 ```ts
 // lib/user.ts
-import { db } from "@/lib/db";
+import { Redis } from "ioredis";
 
-// fetch を使わないので、このままだと呼ぶたびに DB へ問い合わせる
-export async function getUser() {
-  return db.user.findUnique({ where: { id: currentUserId() } });
+const redis = new Redis();
+
+// fetch を使わないので、このままだと呼ぶたびに Redis へ問い合わせる
+export async function getUser(id: string) {
+  const data = await redis.get(`user:${id}`);
+  return data ? JSON.parse(data) : null;
 }
 ```
 
@@ -115,22 +118,25 @@ export async function getUser() {
 ```ts
 // lib/user.ts
 import { cache } from "react";
-import { db } from "@/lib/db";
+import { Redis } from "ioredis";
+
+const redis = new Redis();
 
 // cache() で包むと、同じ引数の呼び出しは 1 回にまとまる
 export const getUser = cache(async (id: string) => {
-  return db.user.findUnique({ where: { id } });
+  const data = await redis.get(`user:${id}`);
+  return data ? JSON.parse(data) : null;
 });
 ```
 
-これで `getUser(userId)` を各コンポーネントが何度呼んでも、1 回の描画では DB への問い合わせは 1 回です。
+これで `getUser(userId)` を各コンポーネントが何度呼んでも、1 回の描画では Redis への問い合わせは 1 回です。
 
 `fetch` の自動メモ化と、`cache()` による手動の重複排除は、**やっていることが同じ**（1 回の描画で重複を消す）です。違いは、Next.js が勝手にやってくれるか、自分で包むかだけです。
 
 | 取得の手段 | 重複排除のしかた |
 |-----------|-----------------|
 | `fetch`（GET / HEAD） | 自動。何も書かなくてよい |
-| ORM・DB クライアント・その他 | `cache()` で関数を包む |
+| Redis などの専用クライアント | `cache()` で関数を包む |
 
 ## cache() と "use cache" は別物
 
