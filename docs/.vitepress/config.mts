@@ -132,6 +132,10 @@ export default withPwa(
                   text: "Day 27: XSS",
                   link: "/lessons/day27/",
                 },
+                {
+                  text: "Day 28: キャッシュの全体像",
+                  link: "/lessons/day28/",
+                },
               ],
             },
           ],
@@ -179,7 +183,6 @@ export default withPwa(
                 { text: "Server Actions とフォーム", link: "/drafts/037/" },
                 { text: "フォームバリデーション", link: "/drafts/095/" },
                 { text: "キャッシュ制御", link: "/drafts/038/" },
-                { text: "キャッシュ — 全体像", link: "/drafts/108/" },
                 { text: "キャッシュ — データキャッシュ", link: "/drafts/105/" },
                 { text: "キャッシュ — Full Route Cache", link: "/drafts/106/" },
                 { text: "キャッシュ — Router Cache", link: "/drafts/107/" },
