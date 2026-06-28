@@ -1,4 +1,4 @@
-# Request Memoization — 1 回の描画で同じ取得を何度も走らせない仕組み
+# Day 29: Request Memoization — 1 回の描画で同じ取得を何度も走らせない仕組み
 
 ## 今日のゴール
 

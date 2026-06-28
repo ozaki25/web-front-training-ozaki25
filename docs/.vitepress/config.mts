@@ -136,6 +136,10 @@ export default withPwa(
                   text: "Day 28: キャッシュの全体像",
                   link: "/lessons/day28/",
                 },
+                {
+                  text: "Day 29: Request Memoization",
+                  link: "/lessons/day29/",
+                },
               ],
             },
           ],
@@ -185,7 +189,6 @@ export default withPwa(
                 { text: "キャッシュ — データキャッシュ（旧）", link: "/drafts/105/" },
                 { text: "キャッシュ — Full Route Cache（旧）", link: "/drafts/106/" },
                 { text: "キャッシュ — Router Cache（共通）", link: "/drafts/107/" },
-                { text: "キャッシュ — Request Memoization（共通）", link: "/drafts/104/" },
                 { text: "キャッシュ — use cache（新）", link: "/drafts/038/" },
                 { text: "Suspense と Streaming", link: "/drafts/039/" },
                 { text: "SPA のページ遷移の仕組み", link: "/drafts/040/" },
