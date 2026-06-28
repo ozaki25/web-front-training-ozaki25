@@ -135,21 +135,32 @@ if [[ "$COMMAND" =~ git\ commit ]]; then
   fi
 
   # --- Markdown 太字の描画チェック ---
-  # 全角閉じ括弧の直後の ** は VitePress (markdown-it) で太字が閉じない
-  # 例: **目次（アウトライン）**を → アスタリスクがそのまま表示される
-  # 注: LC_ALL=C.UTF-8 を指定しないと grep -P がバイト単位で動作し、
-  # 日本語文字の末尾バイトが全角括弧の一部と誤マッチする
+  # markdown-it は全角約物（（）「」など）に隣接した ** を強調として開閉しないため、
+  # 太字にならず ** がそのまま表示される崩れがある。
+  # 実際に markdown-it でレンダリングして ** が残る行を検出する（check-bold.js）。
+  # node / markdown-it が無い環境では、簡易な正規表現にフォールバックする。
+  ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
   staged_md=$(echo "$STAGED" | grep '\.md$' || true)
   if [ -n "$staged_md" ]; then
     broken_bold=""
-    for f in $staged_md; do
-      issues=$(git show ":$f" 2>/dev/null | LC_ALL=C.UTF-8 grep -Pn '[）」】〉》]\*\*[^ *]' || true)
-      if [ -n "$issues" ]; then
-        broken_bold="${broken_bold}${f}:\n${issues}\n"
-      fi
-    done
+    if command -v node >/dev/null 2>&1 && [ -d "$ROOT/node_modules/markdown-it" ] && [ -f "$ROOT/.claude/hooks/check-bold.js" ]; then
+      for f in $staged_md; do
+        out=$(git show ":$f" 2>/dev/null | node "$ROOT/.claude/hooks/check-bold.js" 2>/dev/null || true)
+        if [ -n "$out" ]; then
+          broken_bold="${broken_bold}${f}:\n${out}\n"
+        fi
+      done
+    else
+      # フォールバック: 全角閉じ括弧の直後の **（LC_ALL=C.UTF-8 でバイト誤マッチを防ぐ）
+      for f in $staged_md; do
+        issues=$(git show ":$f" 2>/dev/null | LC_ALL=C.UTF-8 grep -Pn '[）」】〉》]\*\*[^ *]' || true)
+        if [ -n "$issues" ]; then
+          broken_bold="${broken_bold}${f}:\n${issues}\n"
+        fi
+      done
+    fi
     if [ -n "$broken_bold" ]; then
-      block "Markdown 太字の描画不具合: 全角閉じ括弧の直後の ** は太字として描画されません。太字の範囲を変更してください（例: **目次（アウトライン）** → **目次**（アウトライン））。\n${broken_bold}"
+      block "Markdown 太字の描画不具合: 全角約物に隣接した ** は太字として描画されません。約物を ** の外に出してください（例: **目次（アウトライン）** → **目次**（アウトライン））。\n${broken_bold}"
     fi
   fi
 
