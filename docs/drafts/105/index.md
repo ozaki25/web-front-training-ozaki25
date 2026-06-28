@@ -117,16 +117,36 @@ export async function updatePrice(formData: FormData) {
 >
 > 名前のとおり `unstable_` が付いた古い API で、新モデルではこの役割も `"use cache"` に統合されました。`unstable_cache` を使ったコードを見たら、従来モデル向けの書き方です。
 
+::: details unstable_cache の実装例
+取得関数を `unstable_cache` に渡します。第 2 引数はキャッシュを識別するキー、第 3 引数で鮮度（`revalidate`）とタグ（`tags`）を指定します。
+
+```ts
+// lib/products.ts
+import { unstable_cache } from "next/cache";
+import { db } from "@/lib/db";
+
+export const getProducts = unstable_cache(
+  async () => {
+    return db.product.findMany();
+  },
+  ["products"], // キャッシュを識別するキー
+  { revalidate: 3600, tags: ["products"] }, // 鮮度とタグ
+);
+```
+
+`fetch` のときと同じく、更新側で `revalidateTag("products")` を呼べば消せます。`fetch` のオプションが「取得処理を `unstable_cache` に渡す形」に変わっただけで、保存と再検証のしくみは同じです。
+:::
+
 ## 書き方ごとの違い
 
 `fetch` にどう書くかで、鮮度と速さがどう変わるかを並べます。行は「キャッシュあり/なし」という状態ではなく、実際にコードに書く指定です。
 
-| `fetch` の書き方 | 動き | 鮮度 | 速さ |
+| `fetch` の書き方 | 動き | データの新しさ（最大でどれくらい古いか） | 速さ |
 |------|------|------|------|
-| 指定なし `fetch(url)` | 毎回 API を叩く | 常に最新 | 遅い・負荷大 |
-| `next: { revalidate: 秒数 }` | 結果を保存し、指定時間で取り直す | 時間で古びる | 速い |
-| `cache: "force-cache"` | 消すまで保存した結果を使い回す | 消すまで固定 | 速い |
-| `next: { tags }` ＋ `revalidateTag` | 変更時に消して取り直す | 変えた直後に最新へ | 速い |
+| 指定なし `fetch(url)` | 毎回 API を叩く | 古くならない | 遅い・負荷大 |
+| `next: { revalidate: 秒数 }` | 結果を保存し、指定時間で取り直す | 最大で指定時間ぶん古い | 速い |
+| `cache: "force-cache"` | 消すまで保存した結果を使い回す | 消すまでずっと古いまま | 速い |
+| `next: { tags }` ＋ `revalidateTag` | 変更時に消して取り直す | 変更すればすぐ最新 | 速い |
 
 下 3 つはどれも「保存して使い回す」点は同じで、いつ消すか（時間・手動・変更時）が違うだけです。「速さ」と「新しさ」は引っ張り合いなので、キャッシュで速くした分を、再検証で「変わったときだけ最新に戻す」のが基本の組み立てです。
 
