@@ -28,14 +28,14 @@ git checkout -b publish/dayXX origin/main
 
 ### 2. draft から該当コンテンツを取り出す
 
-`draft` ブランチから該当下書きのレッスンファイルをコピーし、`docs/lessons/dayXX/` として配置します。
+`draft` ブランチから該当下書きの中身を、`docs/lessons/dayXX/index.md` として書き出します。
 
 ```bash
-git checkout origin/draft -- docs/drafts/<ID>/index.md
 mkdir -p docs/lessons/dayXX
-mv docs/drafts/<ID>/index.md docs/lessons/dayXX/index.md
-rm -rf docs/drafts/
+git show origin/draft:docs/drafts/<ID>/index.md > docs/lessons/dayXX/index.md
 ```
+
+> **`git checkout origin/draft -- docs/drafts/<ID>/index.md` を使わないこと。** これは `docs/drafts/<ID>/index.md` を**インデックスにステージしたまま**にするため、後で `mv` / `rm` しても下書きファイルがコミットに紛れ込む（main に `docs/drafts/` を持ち込んでしまう）。`git show … >` は中身を書き出すだけでステージしないので、この事故が起きない。コミット前に必ず `git status` で `docs/drafts/` が含まれていないことを確認する。
 
 ### 3. タイトルの更新
 
