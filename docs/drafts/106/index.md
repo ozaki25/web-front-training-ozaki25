@@ -106,11 +106,11 @@ export async function updateCompany(formData: FormData) {
     body: formData,
   });
 
-  revalidatePath("/about"); // /about の保存済み HTML を捨てる
+  revalidatePath("/about"); // /about の保存済み HTML を消す
 }
 ```
 
-`revalidatePath("/about")` で、保存していた `/about` の HTML が捨てられます。次に誰かが `/about` を開いたとき、レンダリングし直され、新しい HTML が保存し直されます。
+`revalidatePath("/about")` で、保存していた `/about` の HTML が消されます。次に誰かが `/about` を開いたとき、レンダリングし直され、新しい HTML が保存し直されます。
 
 ## page と layout — どこまで作り直すか
 
