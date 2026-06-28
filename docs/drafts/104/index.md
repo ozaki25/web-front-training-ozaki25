@@ -146,7 +146,7 @@ export const getUser = cache(async (id: string) => {
 
 ## cache() と "use cache" は別物
 
-ここで混同しやすい注意点があります。名前のよく似た 2 つのキャッシュは、**目的も寿命も全く別**です。
+名前のよく似た 2 つのキャッシュは、**目的も寿命も全く別**です。
 
 | | React の `cache()` | Next.js の `"use cache"` |
 |---|---|---|
