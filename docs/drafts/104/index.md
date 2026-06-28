@@ -7,7 +7,7 @@
 - 重複排除（cache）と使い回し（"use cache"）が別物だと区別できる
 
 ::: info このレッスンの前提
-Request Memoization は 1 リクエスト内の重複をまとめる仕組みで、`cacheComponents` の従来モデル・新モデルどちらでも共通です。ここで使う React の `cache()` は安定版の API です（名前の似た `unstable_cache` は別物で、従来モデルのデータキャッシュ用の古い API）。
+Request Memoization は `cacheComponents` の従来モデル・新モデルどちらでも共通の仕組みです。
 :::
 
 ## あちこちで同じデータが要る
@@ -100,7 +100,7 @@ flowchart TD
 
 ## fetch 以外は cache() で包む
 
-自動でまとまるのは `fetch` だけです。たとえば Redis などの専用クライアントを使う取得は、`fetch` を経由しないので**自動メモ化が効きません**。
+自動でまとまるのは `fetch` だけです。たとえば Redis や gRPC などの専用クライアントを使う取得は、`fetch` を経由しないので**自動メモ化が効きません**。
 
 ログインユーザーの情報を Redis に置いていて、そこから読むケースを考えます。
 
@@ -142,7 +142,7 @@ export const getUser = cache(async (id: string) => {
 | 取得の手段 | 重複排除のしかた |
 |-----------|-----------------|
 | `fetch`（GET / HEAD） | 自動。何も書かなくてよい |
-| Redis などの専用クライアント | `cache()` で関数を包む |
+| Redis・gRPC などの専用クライアント | `cache()` で関数を包む |
 
 ## cache() と "use cache" は別物
 
