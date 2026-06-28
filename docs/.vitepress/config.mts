@@ -133,6 +133,10 @@ export default withPwa(
                   text: "Day 28: キャッシュの全体像",
                   link: "/lessons/day28/",
                 },
+                {
+                  text: "Day 29: Request Memoization",
+                  link: "/lessons/day29/",
+                },
               ],
             },
           ],

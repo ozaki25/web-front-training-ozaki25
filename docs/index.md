@@ -34,3 +34,4 @@
 - [Day 26: 色のアクセシビリティ — 自分の見え方が全員の見え方ではない](/lessons/day26/)
 - [Day 27: XSS — 入力欄に書いた文字がコードになる](/lessons/day27/)
 - [Day 28: キャッシュの全体像 — 4 種類のキャッシュと 2 つのモデル](/lessons/day28/)
+- [Day 29: Request Memoization — 1 回の描画で同じ取得を何度も走らせない仕組み](/lessons/day29/)
