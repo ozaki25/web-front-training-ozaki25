@@ -66,7 +66,7 @@ export async function getProducts() {
 
 `"use cache"` は `"use client"` や `"use server"` と同じ形のディレクティブ（先頭に書く目印）です。関数に書けば**戻り値**が、コンポーネントに書けば**描画結果**がキャッシュされます。
 
-従来は取得手段ごとに道具が分かれていましたが（`fetch` のオプション、`unstable_cache`、自動静的化）、この 1 つに統一されました。
+従来は取得手段ごとに書き方が分かれていましたが（`fetch` のオプション、`unstable_cache`、自動静的化）、この 1 つに統一されました。
 
 ### 2. どれくらい新鮮であるべきか
 
@@ -83,7 +83,7 @@ export async function getProducts() {
 
 ### 3. 変わったとき誰が捨てるか
 
-`cacheTag` で名札を付けておき、データを変えた側から捨てます。
+`cacheTag` でタグを付けておき、データを変えた側から捨てます。
 
 ```ts
 import { cacheLife, cacheTag } from "next/cache";
@@ -91,7 +91,7 @@ import { cacheLife, cacheTag } from "next/cache";
 export async function getProducts() {
   "use cache";
   cacheLife("hours");
-  cacheTag("products"); // 名札を付ける
+  cacheTag("products"); // タグを付ける
   // ...
 }
 ```

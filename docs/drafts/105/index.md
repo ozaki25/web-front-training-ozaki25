@@ -77,19 +77,19 @@ flowchart LR
 
 ## 再検証 — 変えた瞬間に捨てる
 
-時間切れを待たず、**データを変えた側からキャッシュを捨てて取り直させる**のが**再検証**（revalidation）です。まず取得側のキャッシュに名札（タグ）を付けます。
+時間切れを待たず、**データを変えた側からキャッシュを捨てて取り直させる**のが**再検証**（revalidation）です。まず取得側のキャッシュにタグを付けます。
 
 ```tsx
 async function getProducts() {
   const res = await fetch("https://api.example.com/products", {
-    next: { tags: ["products"] }, // この結果に「products」という名札を付ける
+    next: { tags: ["products"] }, // この結果に「products」というタグを付ける
   });
   if (!res.ok) throw new Error("取得に失敗しました");
   return res.json();
 }
 ```
 
-価格を更新する処理（Server Action、サーバー側で動く関数）の中で、その名札のキャッシュを捨てます。
+価格を更新する処理（Server Action、サーバー側で動く関数）の中で、そのタグのキャッシュを捨てます。
 
 ```ts
 // app/admin/actions.ts
@@ -103,15 +103,15 @@ export async function updatePrice(formData: FormData) {
     body: formData,
   });
 
-  revalidateTag("products"); // 名札「products」のキャッシュを捨てる
+  revalidateTag("products"); // タグ「products」のキャッシュを捨てる
 }
 ```
 
-`revalidateTag("products")` で、その名札の付いたキャッシュが捨てられます。次にそのデータが必要になったとき、`getProducts()` が実行し直され、新しい価格で保存し直されます。
+`revalidateTag("products")` で、そのタグの付いたキャッシュが捨てられます。次にそのデータが必要になったとき、`getProducts()` が実行し直され、新しい価格で保存し直されます。
 
 時間切れを待つ必要はありません。
 
-名札ではなくパスで捨てる `revalidatePath("/products")` もあります。「このページのキャッシュをまとめて捨てたい」ときに使い、タグの設計が不要な分、手軽です。
+タグではなくパスで捨てる `revalidatePath("/products")` もあります。「このページのキャッシュをまとめて捨てたい」ときに使い、タグの設計が不要な分、手軽です。
 
 > `fetch` を使わず、データベースから直接取得する場合は、`fetch` のオプションが使えません。従来モデルでは取得処理を `unstable_cache` で包んでキャッシュします（役割は同じで、保存と再検証ができます）。
 >
