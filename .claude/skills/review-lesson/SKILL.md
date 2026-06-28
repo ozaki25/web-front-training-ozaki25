@@ -99,10 +99,11 @@ argument-hint: <レッスンのパスまたはID（例: drafts/105 / day26）>
 - デモの CSS クラス名・id・name にファイル固有プレフィックス（レッスンは `day{NN}-`、下書きは対応する接頭辞）が付いているか。汎用名を裸で使っていないか
 - Mermaid のノードに明るい `fill` を使う場合、`color:#1e293b` を併記して文字が見えるか
 
-### I. ビルド
+### I. ビルド・描画
 
 - `npm run docs:build` が通るか
 - 図（Mermaid）が壊れず、長い行・表が横スクロールで破綻していないか
+- **太字 `**` が素通りしていないか**。markdown-it は全角約物（（）「」など）に隣接した `**` を太字にしないため、目視では気づけない。対象ファイルを `node .claude/hooks/check-bold.js` に流し（`cat docs/drafts/XXX/index.md | node .claude/hooks/check-bold.js`）、出力が空であることを確認する。崩れたら約物を `**` の外に出す（例: `**目次（一覧）**` → `**目次**（一覧）`）
 
 ## 出力フォーマット
 
