@@ -113,7 +113,7 @@ export async function updatePrice(formData: FormData) {
 
 タグではなくパスで消す `revalidatePath("/products")` もあります。「このページのキャッシュをまとめて消したい」ときに使い、タグの設計が不要な分、手軽です。
 
-> `fetch` を使わず、データベースから直接取得する場合は、`fetch` のオプションが使えません。従来モデルでは取得処理を `unstable_cache` で包んでキャッシュします（役割は同じで、保存と再検証ができます）。
+> `fetch` を通らない取得（データベース直結の ORM、Redis、gRPC など）では、`fetch` のオプションが使えません。従来モデルでは取得処理を `unstable_cache` に渡してキャッシュします（役割は同じで、保存と再検証ができます）。
 >
 > 名前のとおり `unstable_` が付いた古い API で、新モデルではこの役割も `"use cache"` に統合されました。`unstable_cache` を使ったコードを見たら、従来モデル向けの書き方です。
 
