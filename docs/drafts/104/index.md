@@ -3,14 +3,14 @@
 ## 今日のゴール
 
 - 1 つの画面の中で同じ取得が何度も走る状況があると知る
-- Next.js が `fetch` を自動でまとめ、`fetch` 以外は `cache()` で包むと知る
+- Next.js が `fetch` を自動でまとめ、`fetch` 以外は `cache()` に渡すと知る
 - 重複排除（cache）と使い回し（"use cache"）が別物だと区別できる
 
 ::: info このレッスンの前提
 Request Memoization は `cacheComponents` の従来モデル・新モデルどちらでも共通の仕組みです。
 :::
 
-## あちこちで同じデータが要る
+## 同じデータを複数の場所で使う
 
 App Router の画面は、レイアウト・ページ・その中の複数のコンポーネントが組み合わさってできています。問題は、それぞれが**同じデータを独立して必要とする**ことがある点です。
 
@@ -44,7 +44,7 @@ async function Avatar() {
 
 `getUser()` が 3 回呼ばれています。素朴に実装すれば、**1 つの画面を描くだけで同じ問い合わせが 3 回**取得元に飛ぶことになります。
 
-## バケツリレーを避けると重複が生まれる
+## バケツリレーと重複
 
 「だったら 1 回だけ取って props で渡せばいい」と思うかもしれません。それが昔ながらの解決策、**バケツリレー**（一番上で取得して、子へ props（親から子に渡す値）で順に渡す）です。
 
@@ -98,7 +98,7 @@ flowchart TD
 
 普段どおり `fetch` を書くだけで、重複は勝手に消えます。
 
-## fetch 以外は cache() で包む
+## fetch 以外は cache() でまとめる
 
 自動でまとまるのは `fetch` だけです。たとえば Redis や gRPC などの専用クライアントを使う取得は、`fetch` を経由しないので**自動メモ化が効きません**。
 
@@ -117,7 +117,7 @@ export async function getUser(id: string) {
 }
 ```
 
-ここで使うのが React の **`cache()`** 関数です。取得関数を `cache()` で包むと、`fetch` と同じ重複排除が手に入ります。
+ここで使うのが React の **`cache()`** 関数です。取得関数を `cache()` に渡すと、`fetch` と同じように重複がまとまります。
 
 同じ引数で呼ばれた 2 回目以降は、実際の問い合わせをせずに結果を共有します。
 
@@ -128,7 +128,7 @@ import { Redis } from "ioredis";
 
 const redis = new Redis();
 
-// cache() で包むと、同じ引数の呼び出しは 1 回にまとまる
+// cache() に渡すと、同じ引数の呼び出しは 1 回にまとまる
 export const getUser = cache(async (id: string) => {
   const data = await redis.get(`user:${id}`);
   return data ? JSON.parse(data) : null;
@@ -137,12 +137,12 @@ export const getUser = cache(async (id: string) => {
 
 これで `getUser(userId)` を各コンポーネントが何度呼んでも、1 回の描画では Redis への問い合わせは 1 回です。
 
-`fetch` の自動メモ化と、`cache()` による手動の重複排除は、**やっていることが同じ**（1 回の描画で重複を消す）です。違いは、Next.js が勝手にやってくれるか、自分で包むかだけです。
+`fetch` の自動メモ化と、`cache()` による手動の重複排除は、**やっていることが同じ**（1 回の描画で重複を消す）です。違いは、Next.js が勝手にやってくれるか、自分で `cache()` に渡すかだけです。
 
 | 取得の手段 | 重複排除のしかた |
 |-----------|-----------------|
 | `fetch`（GET / HEAD） | 自動。何も書かなくてよい |
-| Redis・gRPC などの専用クライアント | `cache()` で関数を包む |
+| Redis・gRPC などの専用クライアント | `cache()` に関数を渡す |
 
 ## cache() と "use cache" は別物
 
@@ -162,7 +162,7 @@ export const getUser = cache(async (id: string) => {
 
 名前が似ているせいで AI も人間も取り違えますが、**重複排除なら `cache()`、使い回しなら `"use cache"`** と覚えておけば区別できます。
 
-## 鮮度の話には絡まない
+## 鮮度とは無関係
 
 Request Memoization でよくある誤解が「これもキャッシュなら、古いデータが出続けるのでは」というものです。ですが、**Request Memoization は鮮度の問題に一切絡みません**。
 
