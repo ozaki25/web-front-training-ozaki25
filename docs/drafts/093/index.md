@@ -57,7 +57,7 @@ export default async function ProductPage({ params }: Props) {
 
 ## 存在しない id への備え — notFound()
 
-`/products/99999` のような存在しない商品にアクセスされたら、エラー画面ではなく **404（見つかりません）**を返すのが正しい応答です。
+`/products/99999` のような存在しない商品にアクセスされたら、エラー画面ではなく **404**（見つかりません）を返すのが正しい応答です。
 
 ```tsx
 import { notFound } from "next/navigation";
@@ -79,7 +79,7 @@ export default async function ProductPage({ params }: Props) {
 
 ## 事前生成 — generateStaticParams
 
-動的ルートは標準では「アクセスされたときに作る」動きですが、**「id の一覧は前もって分かっている」**場合があります。ブログの全記事、定番商品など。
+動的ルートは標準では「アクセスされたときに作る」動きですが、「**id の一覧は前もって分かっている**」場合があります。ブログの全記事、定番商品など。
 
 `generateStaticParams` を export すると、**ビルド時にその一覧分のページを先に作って**おけます。
 
