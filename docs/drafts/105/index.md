@@ -6,8 +6,8 @@
 - `fetch` のオプションでキャッシュを宣言することを知る
 - 再検証でキャッシュを消すと、次のアクセスで取り直されると知る
 
-::: info このレッスンの前提（従来モデル）
-ここで扱うのは**従来モデル**、`next.config.ts` で `cacheComponents` を有効にしていない状態でのデータキャッシュです。`fetch` のオプションでキャッシュを制御します。`cacheComponents: true` の**新モデル**では、ここで出てくる `fetch` オプションや後述の `unstable_cache` は `"use cache"` 1 つに置き換わります（別レッスンで扱います）。
+::: info このレッスンは従来モデル
+`cacheComponents` を有効にしていない従来モデルの書き方です。新モデル（`cacheComponents: true`）では `"use cache"` に置き換わります（別レッスンで扱います）。
 :::
 
 ## 毎回データを取りに行くページ
@@ -33,14 +33,29 @@ export default async function ProductsPage() {
 
 Next.js は `fetch` を拡張していて、キャッシュの指定を**オプションで宣言**できます。`fetch` はデフォルトではキャッシュされないので、キャッシュしたいときに明示します。
 
+先ほどのページから取得部分を `lib/products.ts` に切り出し、そこにキャッシュの指定を足します。
+
 ```tsx
-async function getProducts() {
+// lib/products.ts
+export async function getProducts() {
   // 1 時間は保存した結果を使い回す
   const res = await fetch("https://api.example.com/products", {
     next: { revalidate: 3600 },
   });
   if (!res.ok) throw new Error("取得に失敗しました");
   return res.json();
+}
+```
+
+ページ側は、この `getProducts()` を呼ぶだけになります。
+
+```tsx
+// app/products/page.tsx
+import { getProducts } from "@/lib/products";
+
+export default async function ProductsPage() {
+  const products = await getProducts();
+  return <ProductList products={products} />;
 }
 ```
 
@@ -84,7 +99,8 @@ flowchart LR
 時間切れを待たず、**データを変えた側からキャッシュを消して取り直させる**のが**再検証**（revalidation）です。まず取得側のキャッシュにタグを付けます。
 
 ```tsx
-async function getProducts() {
+// lib/products.ts
+export async function getProducts() {
   const res = await fetch("https://api.example.com/products", {
     next: { tags: ["products"] }, // この結果に「products」というタグを付ける
   });
