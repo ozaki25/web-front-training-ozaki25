@@ -161,3 +161,4 @@ export const getProducts = unstable_cache(
 - データキャッシュは取得結果のスナップショットをサーバーに保存する仕組み
 - `fetch` のオプション（`revalidate` / `force-cache` / `tags`）でキャッシュを宣言する
 - `revalidateTag` / `revalidatePath` で変えた瞬間に消し、速さと新しさを両立する
+- 全ユーザーで共有されるので、個人向けデータはキャッシュしない
