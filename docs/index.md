@@ -36,3 +36,4 @@
 - [Day 28: キャッシュの全体像 — 4 種類のキャッシュと 2 つのモデル](/lessons/day28/)
 - [Day 29: Request Memoization — 1 回の描画で同じ取得を何度も走らせない仕組み](/lessons/day29/)
 - [Day 30: データキャッシュ — 取得したデータを使い回す](/lessons/day30/)
+- [Day 31: Full Route Cache — 組み立てた HTML を使い回す](/lessons/day31/)

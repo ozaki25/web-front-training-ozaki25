@@ -141,6 +141,10 @@ export default withPwa(
                   text: "Day 30: データキャッシュ",
                   link: "/lessons/day30/",
                 },
+                {
+                  text: "Day 31: Full Route Cache",
+                  link: "/lessons/day31/",
+                },
               ],
             },
           ],
