@@ -85,6 +85,8 @@ async function getProducts() {
 
 ```tsx
 // 新モデル: 関数の先頭で "use cache" を宣言する
+import { cacheLife } from "next/cache";
+
 async function getProducts() {
   "use cache";
   cacheLife("hours"); // 鮮度は「時間」単位
