@@ -96,16 +96,25 @@ export async function updateCompany(formData: FormData) {
 
 `revalidatePath("/about")` で、保存していた `/about` の HTML が消されます。次に誰かが `/about` を開いたとき、レンダリングし直され、新しい HTML が保存し直されます。
 
+図にすると、`revalidatePath` がするのは Full Route Cache という保存場所から `/about` の HTML を消すことだけです。新しい HTML は次のアクセスのときに作られて、また同じ場所に保存されます。
+
 ```mermaid
 flowchart LR
-  A["データを更新"] --> B["revalidatePath を呼ぶ"]
-  B --> C["保存済みの HTML を消す"]
-  C --> D["次のアクセスで<br>作り直して保存"]
-  style C fill:#fecaca,color:#1e293b,stroke:#ef4444
-  style D fill:#dcfce7,color:#1e293b,stroke:#22c55e
+  subgraph s1["Full Route Cache"]
+    O["/about の HTML<br/>（古い）"]
+  end
+  subgraph s2["Full Route Cache"]
+    E["空<br/>（消された）"]
+  end
+  subgraph s3["Full Route Cache"]
+    N["/about の HTML<br/>（作り直して保存）"]
+  end
+  s1 -->|"revalidatePath('/about')<br/>で消す"| s2
+  s2 -->|次のアクセスで再生成| s3
+  style O fill:#fecaca,color:#1e293b,stroke:#ef4444
+  style E fill:#f1f5f9,color:#1e293b,stroke:#94a3b8
+  style N fill:#dcfce7,color:#1e293b,stroke:#22c55e
 ```
-
-データに付けたタグで消す `revalidateTag` でも、そのタグを使っているページの HTML が同じように作り直されます。同じデータが複数のページに出ているときは、こちらでまとめて新しくできます。
 
 ## page と layout — どこまで作り直すか
 
