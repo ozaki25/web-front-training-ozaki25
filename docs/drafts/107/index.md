@@ -90,7 +90,7 @@ export default async function RootLayout({
 
 ## 再検証はブラウザの保持データにも効く
 
-キャッシュを消して取り直させることを**再検証**（revalidation）と呼びます。サーバー側のキャッシュを消す `revalidatePath` は、**ブラウザの Router Cache にも「その保持データは古い」と伝えます**。
+キャッシュを消して取り直させることを**再検証**（revalidation）と呼びます。サーバー側のキャッシュを消す `revalidatePath` は、**Server Action から呼ぶと、ブラウザの Router Cache にも「その保持データは古い」と伝えます**。
 
 Server Action（サーバー側で動く関数）でデータを更新し、`revalidatePath` を呼ぶと、サーバーのキャッシュとブラウザの保持データがまとめて新しくなります。
 
