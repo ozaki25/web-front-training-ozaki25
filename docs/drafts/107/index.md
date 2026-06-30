@@ -41,19 +41,15 @@ App Router では、ページ固有の中身は `page.tsx` に、ヘッダーや
 
 ```mermaid
 flowchart LR
-    subgraph s1["商品一覧の画面"]
-        direction TB
-        A["共有レイアウト<br/>ヘッダー・カート 🛒"]:::keep
-        B["ページ本体<br/>商品一覧"]:::fresh
+    subgraph L1["共有レイアウト（保持）　ヘッダー・カート 🛒"]
+        P1["ページ本体<br/>商品一覧"]:::fresh
     end
-    subgraph s2["商品詳細へ遷移したあと"]
-        direction TB
-        C["共有レイアウト<br/>ヘッダー・カート 🛒"]:::keep
-        D["ページ本体<br/>商品詳細"]:::fresh
+    subgraph L2["共有レイアウト（保持）　ヘッダー・カート 🛒"]
+        P2["ページ本体<br/>商品詳細"]:::fresh
     end
-    A ==>|そのまま再利用| C
-    B ==>|捨てて取り直す| D
-    classDef keep fill:#dcfce7,color:#1e293b,stroke:#16a34a
+    L1 ==>|商品詳細へ遷移| L2
+    style L1 fill:#dcfce7,color:#1e293b,stroke:#16a34a
+    style L2 fill:#dcfce7,color:#1e293b,stroke:#16a34a
     classDef fresh fill:#fee2e2,color:#1e293b,stroke:#dc2626
 ```
 
