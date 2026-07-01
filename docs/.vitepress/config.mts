@@ -194,7 +194,6 @@ export default withPwa(
                 { text: "動的ルート", link: "/drafts/093/" },
                 { text: "Server Actions とフォーム", link: "/drafts/037/" },
                 { text: "フォームバリデーション", link: "/drafts/095/" },
-                { text: "キャッシュ — Full Route Cache（旧）", link: "/drafts/106/" },
                 { text: "キャッシュ — Router Cache（共通）", link: "/drafts/107/" },
                 { text: "キャッシュ — use cache（新）", link: "/drafts/038/" },
                 { text: "Suspense と Streaming", link: "/drafts/039/" },
