@@ -10,21 +10,17 @@
 取得側は従来モデル（`cacheComponents` 無効、`fetch` の `next.tags` でタグ付け）で書いています。新モデルでは取得側が `"use cache"` と `cacheTag` に変わりますが、無効化の API（`revalidateTag` / `updateTag` / `revalidatePath` / `router.refresh`）はどちらのモデルでも共通です。
 :::
 
-## 3 つのキャッシュ
+## revalidate が関わる 3 つのキャッシュ
 
-Next.js には保存場所の違うキャッシュがいくつもあります。revalidate の話をするうえで関わるのは次の 3 つです。
+revalidate で作り直す対象は、次の 3 つのキャッシュです。
 
 | キャッシュ | 置き場所 | 何を保存するか |
 |----------|---------|--------------|
-| Data Cache | サーバー | `fetch` などで取ったデータの結果 |
-| Full Route Cache | サーバー | レンダリングして組み立てたルートの HTML |
-| Router Cache | ブラウザ | 画面遷移を速くするための表示の保持 |
+| Data Cache | サーバー | `fetch` などで取ったデータ |
+| Full Route Cache | サーバー | 組み立てたルートの HTML |
+| Router Cache | ブラウザ | 画面遷移用に保持した表示 |
 
-データを取って、それでルートの HTML を組み立てて、ブラウザがそれを保持する。上から順に積み重なっています。
-
-もう 1 つ Request Memoization という仕組みもありますが、これは 1 回のリクエストの中で同じ `fetch` を 1 回にまとめるだけのものです。リクエストが終われば消えるので、revalidate で作り直す対象には入りません。
-
-データを更新したのに画面が古いままなのは、このどれかに古い保存が残っているからです。`revalidateTag` / `revalidatePath` / `router.refresh` は、それぞれ違う場所を起点にして、この保存を作り直します。
+データを取り、その結果でルートの HTML を組み立て、ブラウザがそれを保持する、と上から積み重なっています。更新したのに画面が古いのは、このどこかに古い保存が残っているからです。`revalidateTag` / `revalidatePath` / `router.refresh` は、それぞれ違う場所を起点に、この保存を作り直します。
 
 ## revalidateTag — データ起点
 
@@ -32,20 +28,13 @@ Next.js には保存場所の違うキャッシュがいくつもあります。
 
 まず、`fetch` でデータを取るときにタグを付けておきます。
 
-```tsx
-// app/products/page.tsx
-export default async function ProductsPage() {
+```ts
+// lib/products.ts
+export async function getProducts() {
   const res = await fetch("https://api.example.com/products", {
-    next: { tags: ["products"] },
+    next: { tags: ["products"] }, // 「products」タグを付ける
   });
-  const products = await res.json();
-  return (
-    <ul>
-      {products.map((p) => (
-        <li key={p.id}>{p.name}</li>
-      ))}
-    </ul>
-  );
+  return res.json();
 }
 ```
 
@@ -115,26 +104,7 @@ export async function updateCompany(formData: FormData) {
 
 `revalidateTag` がデータを目印にして複数ページを横断するのに対し、`revalidatePath` は「このパスを丸ごと作り直す」と指定するイメージです。どのデータが絡んでいるかを気にせず、ページ単位で更新したいときに向きます。
 
-### page と layout
-
-`revalidatePath` には第 2 引数があります。
-
-```ts
-revalidatePath(path: string, type?: "page" | "layout"): void
-```
-
-| 指定 | 作り直す範囲 |
-|------|------------|
-| `"page"`（リテラルなパスでは省略可） | そのページだけ |
-| `"layout"` | そのレイアウトと配下の全ページ |
-
-ヘッダーのように全ページ共通の表示を更新したいときは `"layout"` を使います。
-
-```ts
-revalidatePath("/", "layout"); // ルートレイアウト配下すべて
-```
-
-> パスに `/blog/[slug]` のような動的な部分を含むときは、第 2 引数が必須です。実際の値ではなくルートの形を渡すため、ページ単位かレイアウト単位かを Next.js が判断できないからです。
+第 2 引数で範囲を選べます。`revalidatePath("/about")` はそのページだけ、`revalidatePath("/", "layout")` はそのレイアウトを共有する配下の全ページをまとめて無効化します。動的セグメント（`/blog/[slug]`）を渡すときは第 2 引数が必須です。
 
 ## router.refresh — ブラウザ起点
 
