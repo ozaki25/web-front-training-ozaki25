@@ -39,19 +39,49 @@ App Router では、ページ固有の中身は `page.tsx` に、ヘッダーや
 
 別のページへ遷移したとき、何が再利用され、何が取り直されるかを図にすると次のようになります。
 
-```mermaid
-flowchart LR
-    subgraph L1["共有レイアウト（保持）　ヘッダー・カート 🛒"]
-        P1["ページ本体<br/>商品一覧"]:::fresh
-    end
-    subgraph L2["共有レイアウト（保持）　ヘッダー・カート 🛒"]
-        P2["ページ本体<br/>商品詳細"]:::fresh
-    end
-    L1 ==>|商品詳細へ遷移| L2
-    style L1 fill:#dcfce7,color:#1e293b,stroke:#16a34a
-    style L2 fill:#dcfce7,color:#1e293b,stroke:#16a34a
-    classDef fresh fill:#fee2e2,color:#1e293b,stroke:#dc2626
-```
+<svg viewBox="0 0 560 240" role="img" aria-label="商品一覧から商品詳細へ遷移する図。共有レイアウトのヘッダー（緑）は両方の画面で同じまま保持されて再利用され、ページ本体（赤）だけが商品一覧から商品詳細へ取り直される" style="width:100%;height:auto;max-width:560px;display:block;margin:16px auto;">
+  <defs>
+    <clipPath id="day32-rc-c1"><rect x="40" y="36" width="190" height="150" rx="8"/></clipPath>
+    <clipPath id="day32-rc-c2"><rect x="330" y="36" width="190" height="150" rx="8"/></clipPath>
+    <marker id="day32-rc-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+  </defs>
+
+  <rect x="0" y="0" width="560" height="240" rx="10" fill="#f8fafc"/>
+
+  <text x="135" y="26" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">遷移前：商品一覧</text>
+  <g clip-path="url(#day32-rc-c1)">
+    <rect x="40" y="36" width="190" height="150" fill="#ffffff"/>
+    <rect x="40" y="36" width="190" height="54" fill="#dcfce7"/>
+    <rect x="40" y="90" width="190" height="3" fill="#16a34a"/>
+    <rect x="40" y="93" width="190" height="93" fill="#fee2e2"/>
+  </g>
+  <rect x="40" y="36" width="190" height="150" rx="8" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="135" y="64" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e293b">🛒 カート 3</text>
+  <text x="135" y="81" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ヘッダー（共有レイアウト）</text>
+  <text x="135" y="134" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#1e293b">商品一覧</text>
+  <text x="135" y="157" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ページ本体</text>
+
+  <line x1="238" y1="111" x2="320" y2="111" stroke="#64748b" stroke-width="2" marker-end="url(#day32-rc-arrow)"/>
+  <text x="279" y="103" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">遷移</text>
+
+  <text x="425" y="26" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#475569">遷移後：商品詳細</text>
+  <g clip-path="url(#day32-rc-c2)">
+    <rect x="330" y="36" width="190" height="150" fill="#ffffff"/>
+    <rect x="330" y="36" width="190" height="54" fill="#dcfce7"/>
+    <rect x="330" y="90" width="190" height="3" fill="#16a34a"/>
+    <rect x="330" y="93" width="190" height="93" fill="#fee2e2"/>
+  </g>
+  <rect x="330" y="36" width="190" height="150" rx="8" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="425" y="64" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e293b">🛒 カート 3</text>
+  <text x="425" y="81" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ヘッダー（共有レイアウト）</text>
+  <text x="425" y="134" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#1e293b">商品詳細</text>
+  <text x="425" y="157" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ページ本体</text>
+
+  <rect x="110" y="212" width="13" height="13" rx="3" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="129" y="223" font-family="sans-serif" font-size="12" fill="#1e293b">保持（遷移しても再利用）</text>
+  <rect x="330" y="212" width="13" height="13" rx="3" fill="#fee2e2" stroke="#dc2626"/>
+  <text x="349" y="223" font-family="sans-serif" font-size="12" fill="#1e293b">毎回取り直す</text>
+</svg>
 
 緑のレイアウトは遷移してもそのまま使い回され、赤のページ本体は捨てて取り直されます。だから遷移は速い一方、レイアウトに置いたデータは古いまま残ることがあります。
 
