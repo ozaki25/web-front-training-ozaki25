@@ -20,7 +20,7 @@ revalidate で作り直す対象は、次の 3 つのキャッシュです。
 | Full Route Cache | サーバー | 組み立てたルートの HTML |
 | Router Cache | ブラウザ | 画面遷移用に保持した表示 |
 
-データを取り、その結果でルートの HTML を組み立て、ブラウザがそれを保持する、と上から積み重なっています。更新したのに画面が古いのは、このどこかに古い保存が残っているからです。`revalidateTag` / `revalidatePath` / `router.refresh` は、それぞれ違う場所を起点に、この保存を作り直します。
+データを取り、その結果でルートの HTML を組み立て、ブラウザがそれを保持する。この 3 つは上から順に積み重なっています。更新したのに画面が古いのは、このどこかに古い保存が残っているからです。`revalidateTag` / `revalidatePath` / `router.refresh` は、それぞれ違う場所を起点に、この保存を作り直します。
 
 ## revalidateTag — データ起点
 
@@ -102,7 +102,7 @@ export async function updateCompany(formData: FormData) {
 
 起点は指定したパスです。`/about` の Full Route Cache と、そのページで使っていた Data Cache がまとめて無効になります。次に `/about` を開いたとき、データを取り直してレンダリングし直し、新しい HTML が保存されます。ブラウザ側の Router Cache にも「`/about` の保持は古い」と伝わるので、遷移で表示し直したときも新しくなります。
 
-`revalidateTag` がデータを目印にして複数ページを横断するのに対し、`revalidatePath` は「このパスを丸ごと作り直す」と指定するイメージです。どのデータが絡んでいるかを気にせず、ページ単位で更新したいときに向きます。
+`revalidateTag` がデータを目印にして複数ページを横断するのに対し、`revalidatePath` は「このパスを丸ごと作り直す」という指定です。どのデータが絡んでいるかを気にせず、ページ単位で更新したいときに向きます。
 
 第 2 引数で範囲を選べます。`revalidatePath("/about")` はそのページだけ、`revalidatePath("/", "layout")` はそのレイアウトを共有する配下の全ページをまとめて無効化します。動的セグメント（`/blog/[slug]`）を渡すときは第 2 引数が必須です。
 
