@@ -123,13 +123,15 @@ export async function updatePrice(formData: FormData) {
     body: formData,
   });
 
-  revalidateTag("products"); // タグ「products」のキャッシュを消す
+  revalidateTag("products", "max"); // タグ「products」を無効化（v16 は第 2 引数が必須）
 }
 ```
 
-`revalidateTag("products")` で、そのタグの付いたキャッシュが消されます。次にそのデータが必要になったとき、`getProducts()` が実行し直され、新しい価格で保存し直されます。
+`revalidateTag("products", "max")` で、そのタグの付いたキャッシュが無効になります。次にそのデータが必要になったとき、`getProducts()` が実行し直され、新しい価格で保存し直されます。
 
 時間切れを待つ必要はありません。
+
+v16 では `revalidateTag` に第 2 引数（`"max"` などの鮮度プロファイル）が必須で、引数なしは非推奨になりました。自分が加えた変更をその場で反映したいときは、Server Action 専用の `updateTag("products")` を使うと、次のアクセスで必ず最新を返します。
 
 データキャッシュは `fetch` ごとに保存場所が 1 つしかない共有のものです。だからどこか 1 か所で消せば、その `fetch` を使う箇所は次の取得から最新になります。
 
@@ -156,7 +158,7 @@ export const getProducts = unstable_cache(
 );
 ```
 
-`fetch` のときと同じく、更新側で `revalidateTag("products")` を呼べば消せます。`fetch` のオプションが「取得処理を `unstable_cache` に渡す形」に変わっただけで、保存と再検証のしくみは同じです。
+`fetch` のときと同じく、更新側で `revalidateTag("products", "max")` を呼べば無効化できます。`fetch` のオプションが「取得処理を `unstable_cache` に渡す形」に変わっただけで、保存と再検証のしくみは同じです。
 :::
 
 ## 書き方ごとの違い
