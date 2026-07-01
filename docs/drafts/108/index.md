@@ -60,19 +60,41 @@ export async function addProduct(formData: FormData) {
 
 ここから芋づる式に広がります。そのデータを使って組み立てた HTML は古くなるので、`products` を使っている全ルートの Full Route Cache も無効になります。トップページと一覧ページの両方で同じデータを出していれば、両方が対象です。こうして 1 つのタグで複数ページをまとめて無効にできます。
 
-```mermaid
-flowchart TB
-  T["revalidateTag（データ起点）"] --> D["Data Cache を無効化"]
-  D --> F1["ルート A の Full Route Cache"]
-  D --> F2["ルート B の Full Route Cache"]
-  F1 --> R["次の遷移で Router Cache も更新"]
-  F2 --> R
-  style T fill:#dbeafe,color:#1e293b,stroke:#3b82f6
-  style D fill:#fecaca,color:#1e293b,stroke:#ef4444
-  style F1 fill:#fed7aa,color:#1e293b,stroke:#f97316
-  style F2 fill:#fed7aa,color:#1e293b,stroke:#f97316
-  style R fill:#dcfce7,color:#1e293b,stroke:#22c55e
-```
+<svg viewBox="0 0 560 320" role="img" aria-label="revalidateTag('products') を起点にした芋づる式の無効化。データ起点で Data Cache の products タグが無効になり、products を使うルート A とルート B の Full Route Cache が無効になり、次の遷移で Router Cache も更新される。1 つのタグが複数のルートに波及する。" style="width:100%;height:auto;max-width:560px;display:block;margin:16px auto;">
+  <defs>
+    <marker id="d108-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+  </defs>
+  <rect x="0" y="0" width="560" height="320" rx="10" fill="#f8fafc"/>
+
+  <rect x="175" y="20" width="210" height="46" rx="8" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="280" y="41" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">revalidateTag('products')</text>
+  <text x="280" y="57" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">データ起点</text>
+
+  <line x1="280" y1="66" x2="280" y2="88" stroke="#64748b" stroke-width="2" marker-end="url(#d108-arrow)"/>
+
+  <rect x="175" y="90" width="210" height="46" rx="8" fill="#fecaca" stroke="#ef4444"/>
+  <text x="280" y="111" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">Data Cache</text>
+  <text x="280" y="127" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">products タグを無効化</text>
+
+  <line x1="240" y1="136" x2="152" y2="176" stroke="#64748b" stroke-width="2" marker-end="url(#d108-arrow)"/>
+  <line x1="320" y1="136" x2="408" y2="176" stroke="#64748b" stroke-width="2" marker-end="url(#d108-arrow)"/>
+  <text x="280" y="160" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">products を使う全ルート</text>
+
+  <rect x="40" y="178" width="210" height="50" rx="8" fill="#fed7aa" stroke="#f97316"/>
+  <text x="145" y="200" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">ルート A</text>
+  <text x="145" y="217" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">Full Route Cache</text>
+
+  <rect x="310" y="178" width="210" height="50" rx="8" fill="#fed7aa" stroke="#f97316"/>
+  <text x="415" y="200" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">ルート B</text>
+  <text x="415" y="217" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">Full Route Cache</text>
+
+  <line x1="145" y1="228" x2="245" y2="262" stroke="#64748b" stroke-width="2" marker-end="url(#d108-arrow)"/>
+  <line x1="415" y1="228" x2="315" y2="262" stroke="#64748b" stroke-width="2" marker-end="url(#d108-arrow)"/>
+
+  <rect x="175" y="264" width="210" height="46" rx="8" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="280" y="285" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">Router Cache</text>
+  <text x="280" y="301" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">次の遷移で更新</text>
+</svg>
 
 無効化しても、その場で作り直すわけではありません。古い保存に「もう古い」と印を付けるだけで、実際に作り直すのは次に誰かがそのページを開いたときです。サーバー側の無効化はこの遅延式だと覚えておくと、挙動を読み違えずに済みます。
 
