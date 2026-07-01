@@ -85,11 +85,11 @@ export async function getUser() {
 
 ```mermaid
 flowchart TD
-  H["Header<br>getUser()"] --> M{"同じ URL・オプションの<br>fetch は前にあった？"}
-  P["DashboardPage<br>getUser()"] --> M
-  A["Avatar<br>getUser()"] --> M
-  M -- "初回" --> N["実際に通信する<br>結果を覚える"]
-  M -- "2 回目以降" --> C["覚えた結果を返す<br>（通信しない）"]
+  H["Header: getUser()"] --> M{"同じ URL・オプションの<br>fetch は前にあった？"}
+  P["DashboardPage: getUser()"] --> M
+  A["Avatar: getUser()"] --> M
+  M -- "初回" --> N["実際に通信して結果を覚える"]
+  M -- "2 回目以降" --> C["覚えた結果を返す（通信しない）"]
   style N fill:#fef3c7,color:#1e293b,stroke:#f59e0b
   style C fill:#dcfce7,color:#1e293b,stroke:#22c55e
 ```
