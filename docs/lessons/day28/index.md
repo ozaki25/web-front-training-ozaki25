@@ -103,7 +103,7 @@ async function getProducts() {
 flowchart TD
   subgraph OLD["従来モデル（手段ごとに別の書き方）"]
     F1["fetch"] --> FO["fetch のオプション"]
-    D1["ORM / DB"] --> UC["unstable_cache で包む"]
+    D1["ORM / DB"] --> UC["unstable_cache に渡す"]
   end
   subgraph NEW["新モデル（書き方が 1 つ）"]
     F2["fetch"] --> USE["&quot;use cache&quot;"]
