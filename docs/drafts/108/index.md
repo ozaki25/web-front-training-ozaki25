@@ -69,14 +69,14 @@ export async function addProduct(formData: FormData) {
 
 `revalidateTag("products")` を呼ぶと、起点は Data Cache です。`products` タグの付いた Data Cache が無効になります。
 
-ここから芋づる式に広がります。そのデータを使って組み立てた HTML は古くなるので、`products` を使っている全ルートの Full Route Cache も無効になります。トップページと一覧ページの両方で同じデータを出していれば、両方が対象です。1 つのタグで複数ページをまとめて無効にできるのが `revalidateTag` の特徴です。
+ここから芋づる式に広がります。そのデータを使って組み立てた HTML は古くなるので、`products` を使っている全ルートの Full Route Cache も無効になります。トップページと一覧ページの両方で同じデータを出していれば、両方が対象です。こうして 1 つのタグで複数ページをまとめて無効にできます。
 
 ```mermaid
 flowchart TB
-  T["revalidateTag('products')<br>データ起点"] --> D["Data Cache<br>products タグのデータを無効化"]
-  D --> F1["ルート A の Full Route Cache<br>products を使う"]
-  D --> F2["ルート B の Full Route Cache<br>products を使う"]
-  F1 --> R["次の遷移で<br>Router Cache も更新"]
+  T["revalidateTag（データ起点）"] --> D["Data Cache を無効化"]
+  D --> F1["ルート A の Full Route Cache"]
+  D --> F2["ルート B の Full Route Cache"]
+  F1 --> R["次の遷移で Router Cache も更新"]
   F2 --> R
   style T fill:#dbeafe,color:#1e293b,stroke:#3b82f6
   style D fill:#fecaca,color:#1e293b,stroke:#ef4444
@@ -165,7 +165,11 @@ export function RefreshButton() {
 | `revalidatePath` | パス | そのパスの Full Route Cache と紐づく Data Cache | 次のアクセスで作り直し |
 | `router.refresh` | ブラウザ | 今のルートの Router Cache だけ | その場で取り直し |
 
-迷ったときの選び方はこうです。複数ページに出ている同じデータを更新したなら `revalidateTag`、特定のページを丸ごと新しくしたいなら `revalidatePath`、サーバーのデータはそのままで画面だけ取り直したいなら `router.refresh`。
+迷ったときは、こう選びます。
+
+- 複数ページに出ている同じデータを更新した → `revalidateTag`
+- 特定のページを丸ごと新しくしたい → `revalidatePath`
+- サーバーのデータはそのままで、画面だけ取り直したい → `router.refresh`
 
 サーバー側の 2 つは遅延式なので、呼んだ直後にサーバーで何かが起きるわけではありません。実際に作り直されるのは次のアクセスのとき、という点を押さえておくと、「revalidate したのに変わらない」で慌てずに済みます。
 
