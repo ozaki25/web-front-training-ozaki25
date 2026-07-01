@@ -141,7 +141,27 @@ export async function addToCart(productId: string) {
 }
 ```
 
-`revalidatePath("/", "layout")` で、ルートレイアウトの保持データが消され、次の表示でバッヂが正しい件数になります。
+`revalidatePath("/", "layout")` で、ルートレイアウトの保持データが消され、次の表示でバッヂが正しい件数になります。ヘッダーのバッヂで見ると、こう変わります。
+
+<svg viewBox="0 0 480 128" role="img" aria-label="ヘッダーのカート件数バッヂが、revalidatePath を呼ぶ前は古い 3 件のまま、呼んだ後は最新の 4 件に作り直される様子" style="width:100%;height:auto;max-width:480px;display:block;margin:16px auto;">
+  <defs>
+    <marker id="day32-rc2-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+  </defs>
+  <rect x="0" y="0" width="480" height="128" rx="10" fill="#f8fafc"/>
+
+  <text x="105" y="24" text-anchor="middle" font-family="sans-serif" font-size="12.5" fill="#475569">再検証の前</text>
+  <rect x="20" y="34" width="170" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="105" y="65" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#1e293b">🛒 カート 3</text>
+  <text x="105" y="85" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">保持データ｜古いまま</text>
+
+  <line x1="200" y1="67" x2="290" y2="67" stroke="#64748b" stroke-width="2" marker-end="url(#day32-rc2-arrow)"/>
+  <text x="245" y="58" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">revalidatePath</text>
+
+  <text x="375" y="24" text-anchor="middle" font-family="sans-serif" font-size="12.5" fill="#475569">再検証の後</text>
+  <rect x="290" y="34" width="170" height="66" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="375" y="65" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#1e293b">🛒 カート 4</text>
+  <text x="375" y="85" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">作り直して最新</text>
+</svg>
 
 第 2 引数の `"layout"` は「レイアウトと配下の全ページ」を対象にする指定です。バッヂはどのページでも出るので、レイアウト単位で消す必要があります。
 
