@@ -1,0 +1,146 @@
+# Router Cache — ブラウザが画面遷移を速くする仕組み
+
+## 今日のゴール
+
+- Router Cache が「ブラウザがメモリに持っておく画面遷移用のキャッシュ」だと知る
+- 何が保持され、何が毎回取り直されるかを知る
+- 古くなった保持データを消す方法（再検証・`router.refresh`）を知る
+
+::: info このレッスンの前提
+Router Cache はブラウザ側の仕組みで、`cacheComponents` の従来モデル・新モデルどちらでも共通です。
+:::
+
+## ブラウザ側にあるキャッシュ
+
+Next.js にはサーバー側にもキャッシュがありますが、**Router Cache** はブラウザ側にあります。画面遷移を速くするため、ブラウザが表示済みの画面の一部をメモリに持っておく仕組みです。
+
+リンクをホバーすると遷移先が先読みされたり、「戻る」が一瞬で表示されたりするのは、この仕組みのおかげです。サーバーへの往復を省けるので、遷移が速くなります。
+
+サーバー側のキャッシュと違い、設定で付け外しするものではありません。ブラウザがいつも持っています。
+
+## 何が保持されるか
+
+Router Cache は**何でも保持するわけではありません**。ここは誤解しやすいところです。
+
+保持されるものと、毎回取り直すものが分かれています。
+
+App Router では、ページ固有の中身は `page.tsx` に、ヘッダーやナビのように複数ページで共通する枠は `layout.tsx` に書きます。Router Cache はこの 2 つを別々に扱います。
+
+| 対象 | 既定の動き |
+|------|----------|
+| ページ本体（`page.tsx`） | **保持しない**（遷移のたびに最新を取り直す） |
+| 共有レイアウト（`layout.tsx`） | 保持する（遷移しても取り直さない） |
+| 先読み（プリフェッチ）した内容 | 保持する |
+| 「戻る」「進む」で戻ったときの表示 | 保持データから復元する |
+
+**ページ本体は既定で毎回新しくなります。** 一覧から詳細へ進むような通常の遷移では、ページの中身は古い保持データではなく最新が表示されます。
+
+一方、**全ページで共通のレイアウトは保持される**ので、取り直しが省かれて遷移が速くなります。
+
+別のページへ遷移したとき、何が再利用され、何が取り直されるかを図にすると次のようになります。
+
+```mermaid
+flowchart LR
+    subgraph L1["共有レイアウト（保持）　ヘッダー・カート 🛒"]
+        P1["ページ本体<br/>商品一覧"]:::fresh
+    end
+    subgraph L2["共有レイアウト（保持）　ヘッダー・カート 🛒"]
+        P2["ページ本体<br/>商品詳細"]:::fresh
+    end
+    L1 ==>|商品詳細へ遷移| L2
+    style L1 fill:#dcfce7,color:#1e293b,stroke:#16a34a
+    style L2 fill:#dcfce7,color:#1e293b,stroke:#16a34a
+    classDef fresh fill:#fee2e2,color:#1e293b,stroke:#dc2626
+```
+
+緑のレイアウトは遷移してもそのまま使い回され、赤のページ本体は捨てて取り直されます。だから遷移は速い一方、レイアウトに置いたデータは古いまま残ることがあります。
+
+## 古くなるのはレイアウトの保持データ
+
+保持の恩恵がある分、**保持された部分は古くなりえます**。とくに問題になりやすいのが、レイアウトに置いた共有データです。
+
+たとえばヘッダーのカート件数バッヂを考えます。バッヂはレイアウト（全ページ共通）にあるので、ブラウザはこれを保持します。
+
+```tsx
+// app/layout.tsx
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const res = await fetch("https://api.example.com/cart/count");
+  const { count } = await res.json();
+  return (
+    <html lang="ja">
+      <body>
+        <header>
+          <a href="/cart" aria-label={`カート（${count}件）`}>
+            <span aria-hidden="true">🛒</span>
+            <span>{count}</span>
+          </a>
+        </header>
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+商品ページで「カートに追加」しても、別のページに移ったときヘッダーのバッヂが古い件数のまま、ということが起きます。レイアウトの保持データがブラウザに残っているからです。
+
+## 再検証はブラウザの保持データにも効く
+
+キャッシュを消して取り直させることを**再検証**（revalidation）と呼びます。サーバー側のキャッシュを消す `revalidatePath` は、**ブラウザの Router Cache にも「その保持データは古い」と伝えます**。
+
+Server Action（サーバー側で動く関数）でデータを更新し、`revalidatePath` を呼ぶと、サーバーのキャッシュとブラウザの保持データがまとめて新しくなります。
+
+```ts
+// app/products/actions.ts
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+export async function addToCart(productId: string) {
+  await fetch("https://api.example.com/cart", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId }),
+  });
+
+  revalidatePath("/", "layout"); // レイアウトの保持データも新しくする
+}
+```
+
+`revalidatePath("/", "layout")` で、ルートレイアウトの保持データが消され、次の表示でバッヂが正しい件数になります。
+
+第 2 引数の `"layout"` は「レイアウトと配下の全ページ」を対象にする指定です。バッヂはどのページでも出るので、レイアウト単位で消す必要があります。
+
+## 手動で取り直す router.refresh
+
+`router.refresh()` は、ブラウザが持っている今の画面を捨てて、サーバーにページを要求し直す**ブラウザ側だけの操作**です。サーバー側のキャッシュは消しません。
+
+ブラウザの再読み込み（F5）に似ていますが、F5 と違って入力中のフォームの状態などは保たれ、表示だけが新しくなります。
+
+使うのは、自分が更新したわけではないのに画面が古いときです。たとえば別の管理画面で在庫が変わった、他の人が情報を更新した、といった場合に、クライアントコンポーネントから呼びます。
+
+```tsx
+"use client";
+
+import { useRouter } from "next/navigation";
+
+export function RefreshButton() {
+  const router = useRouter();
+  return (
+    <button type="button" onClick={() => router.refresh()}>
+      最新の状態に更新
+    </button>
+  );
+}
+```
+
+## まとめ
+
+- Router Cache は画面遷移を速くするためのブラウザ側のキャッシュ
+- ページ本体は既定で毎回最新、共有レイアウトや先読みは保持される
+- 保持されたレイアウトは古くなりうる（カートのバッヂなど）
+- `revalidatePath` はブラウザの保持データにも効く。単に取り直すなら `router.refresh()`
