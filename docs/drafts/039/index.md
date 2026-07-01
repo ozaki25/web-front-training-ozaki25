@@ -3,7 +3,7 @@
 ## 今日のゴール
 
 - 「全部待つ」と「スピナーだらけ」の間に第三の道があると知る
-- Suspense が「準備中に身代わりを出す」境界だと知る
+- Suspense が「準備中に仮表示を出す」境界だと知る
 - Streaming が HTML を少しずつ届ける仕組みだと知る
 
 ## 従来の二択 — 全部待つか、後から取るか
@@ -16,9 +16,9 @@
 
 速い部分は今すぐ、遅い部分はできたときに、同じサーバー描画のまま届けたい。それを実現するのが **Suspense と Streaming** です。
 
-## Suspense — 準備中の身代わりを宣言する境界
+## Suspense — 準備中の仮表示を宣言する境界
 
-React の `<Suspense>` は、**まだ準備できていない部分の身代わり表示（fallback）を宣言する境界**です。
+React の `<Suspense>` は、**まだ準備できていない部分の仮表示（fallback）を宣言する境界**です。
 
 ```tsx
 // app/products/[id]/page.tsx
@@ -62,7 +62,7 @@ export async function Reviews({ productId }: { productId: string }) {
 
 `<Suspense>` で囲むと、React は `Reviews` の準備を**待たずに**ページの残りを完成させ、その場所には fallback を置いておきます。`Reviews` のデータが揃ったら、fallback と差し替えます。
 
-App Router の `loading.tsx` も、中身は**ページ全体を 1 つの Suspense で包んだもの**です。`<Suspense>` を自分で書くのは、その境界をもっと細かく、部品単位で引く行為です。
+App Router の `loading.tsx` も、中身は**ページ全体を 1 つの Suspense で囲んだもの**です。`<Suspense>` を自分で書くのは、その境界をもっと細かく、部品単位で引く行為です。
 
 ## Streaming — HTML を少しずつ届ける
 
