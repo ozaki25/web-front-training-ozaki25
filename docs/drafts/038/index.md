@@ -89,7 +89,8 @@ export async function getProducts() {
 | 株価・在庫数 | `cacheLife("seconds")` |
 | ニュース一覧 | `cacheLife("minutes")` |
 | 商品カタログ | `cacheLife("hours")` |
-| 会社概要 | `cacheLife("days")` |
+| ブログ記事 | `cacheLife("days")` |
+| 会社概要・利用規約 | `cacheLife("max")` |
 
 ミリ秒ではなく**業務の言葉**で書きます。「在庫は秒単位で正確であってほしい」「会社概要は日単位でいい」が、そのままコードになります。
 
