@@ -31,7 +31,7 @@
 | `experimental.dynamicIO` | `cacheComponents: true` | experimental ではなくなった |
 | `unstable_cache` | `"use cache"` ディレクティブ | ファイル/コンポーネント/関数レベルで適用可能 |
 | `fetch` の `next.revalidate` | `cacheLife()` / `cacheTag()` | "use cache" と組み合わせて使用。import は `next/cache`（`unstable_` 接頭辞は不要に） |
-| `revalidateTag(tag)`（1 引数） | `revalidateTag(tag, profile)` / `updateTag(tag)` | 新モデルでは `revalidateTag` は第 2 引数に cacheLife プロファイル（`"max"` 推奨）が必須（SWR）。1 引数形は非推奨で型エラー。`updateTag(tag)` は即時無効化（read-your-own-writes・Server Action 専用）。従来モデルの `revalidateTag(tag)` 1 引数は引き続き有効 |
+| `revalidateTag(tag)`（1 引数） | `revalidateTag(tag, profile)` / `updateTag(tag)` | v16 で `revalidateTag` は第 2 引数（cacheLife プロファイル、`"max"` 推奨=SWR）を取る 2 引数シグネチャに。**1 引数形はモデルを問わず非推奨**（型エラー。TS を握りつぶせば当面は動くが将来削除の可能性）。公式ドキュメントに「従来モデルなら 1 引数可」という区別の記載はない。第 2 引数は fetch の `next.tags`・`"use cache"` の `cacheTag` どちらにも効く。`updateTag(tag)` は即時無効化（read-your-own-writes・Server Action 専用、両モデル共通）|
 | `useContext(Ctx)` | `use(Ctx)` も可 | React 19 の新 API。条件分岐内でも使える |
 | `React.memo` / `useMemo` / `useCallback` | React Compiler で自動化 | 手動での使用は基本不要に |
 | `forwardRef` | ref を通常の prop として受け取り | React 19 で非推奨 |
