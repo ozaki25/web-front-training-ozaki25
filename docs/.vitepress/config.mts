@@ -196,7 +196,7 @@ export default withPwa(
                 { text: "フォームバリデーション", link: "/drafts/095/" },
                 { text: "キャッシュ — Router Cache（共通）", link: "/drafts/107/" },
                 { text: "キャッシュ — use cache（新）", link: "/drafts/038/" },
-                { text: "キャッシュ — revalidate の整理", link: "/drafts/108/" },
+                { text: "キャッシュ — revalidate の使い分け", link: "/drafts/108/" },
                 { text: "Suspense と Streaming", link: "/drafts/039/" },
                 { text: "SPA のページ遷移の仕組み", link: "/drafts/040/" },
                 { text: "proxy.ts", link: "/drafts/092/" },

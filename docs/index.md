@@ -80,7 +80,7 @@
 - キャッシュ
   - [107: キャッシュ — Router Cache（共通）](/drafts/107/)
   - [038: キャッシュ — use cache（新）](/drafts/038/)
-  - [108: キャッシュ — revalidate の整理](/drafts/108/)
+  - [108: キャッシュ — revalidate の使い分け](/drafts/108/)
 - [039: Suspense と Streaming](/drafts/039/)
 - [040: SPA のページ遷移の仕組み](/drafts/040/)
 - [092: proxy.ts](/drafts/092/)
