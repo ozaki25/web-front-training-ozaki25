@@ -57,9 +57,9 @@ App Router では、ページ固有の中身は `page.tsx` に、ヘッダーや
   </g>
   <rect x="40" y="36" width="190" height="150" rx="8" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="135" y="64" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e293b">🛒 カート 3</text>
-  <text x="135" y="81" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ヘッダー（共有レイアウト）</text>
+  <text x="135" y="81" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">共有レイアウト｜保持</text>
   <text x="135" y="134" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#1e293b">商品一覧</text>
-  <text x="135" y="157" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ページ本体</text>
+  <text x="135" y="157" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ページ本体｜毎回取り直す</text>
 
   <line x1="238" y1="111" x2="320" y2="111" stroke="#64748b" stroke-width="2" marker-end="url(#day32-rc-arrow)"/>
   <text x="279" y="103" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">遷移</text>
@@ -73,9 +73,9 @@ App Router では、ページ固有の中身は `page.tsx` に、ヘッダーや
   </g>
   <rect x="330" y="36" width="190" height="150" rx="8" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="425" y="64" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e293b">🛒 カート 3</text>
-  <text x="425" y="81" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ヘッダー（共有レイアウト）</text>
+  <text x="425" y="81" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">共有レイアウト｜保持</text>
   <text x="425" y="134" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#1e293b">商品詳細</text>
-  <text x="425" y="157" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ページ本体</text>
+  <text x="425" y="157" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">ページ本体｜毎回取り直す</text>
 
   <rect x="110" y="212" width="13" height="13" rx="3" fill="#dcfce7" stroke="#16a34a"/>
   <text x="129" y="223" font-family="sans-serif" font-size="12" fill="#1e293b">保持（遷移しても再利用）</text>
