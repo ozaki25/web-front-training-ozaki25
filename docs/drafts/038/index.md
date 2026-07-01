@@ -144,16 +144,44 @@ export default function ProductPage() {
 
 ## 4 つの判断の全体像
 
-```mermaid
-flowchart TD
-  D["非同期データを扱う"] --> Q1{"キャッシュしてよい？"}
-  Q1 -->|"はい"| UC["&quot;use cache&quot; を付ける"]
-  UC --> Q2["鮮度は？ → cacheLife"]
-  UC --> Q3["誰が消す？ → cacheTag"]
-  Q1 -->|"いいえ"| Q4["待つ間に何を見せる？<br>→ Suspense の fallback"]
-  style UC fill:#dcfce7,color:#1e293b,stroke:#22c55e
-  style Q4 fill:#dbeafe,color:#1e293b,stroke:#3b82f6
-```
+<svg viewBox="0 0 600 320" role="img" aria-label="非同期データを扱うときの判断フロー。キャッシュしてよいなら use cache を付け、鮮度を cacheLife、誰が消すかを cacheTag で決める。キャッシュしないなら Suspense で囲んで待つ間の表示を決める。" style="width:100%;height:auto;max-width:600px;display:block;margin:16px auto;">
+  <defs>
+    <marker id="d038-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
+  </defs>
+  <rect x="0" y="0" width="600" height="320" rx="10" fill="#f8fafc"/>
+
+  <rect x="215" y="16" width="170" height="38" rx="8" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="300" y="40" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">非同期データを扱う</text>
+
+  <line x1="300" y1="54" x2="300" y2="70" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
+
+  <polygon points="300,72 380,110 300,148 220,110" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/>
+  <text x="300" y="106" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">キャッシュ</text>
+  <text x="300" y="122" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">してよい？</text>
+
+  <line x1="248" y1="137" x2="152" y2="174" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
+  <text x="182" y="150" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">はい</text>
+  <line x1="352" y1="137" x2="458" y2="174" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
+  <text x="418" y="150" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">いいえ</text>
+
+  <rect x="55" y="176" width="190" height="42" rx="8" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="150" y="202" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">"use cache" でキャッシュ</text>
+
+  <line x1="110" y1="218" x2="92" y2="252" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
+  <line x1="190" y1="218" x2="212" y2="252" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
+
+  <rect x="20" y="254" width="140" height="48" rx="8" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="90" y="276" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">cacheLife</text>
+  <text x="90" y="292" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">鮮度</text>
+
+  <rect x="172" y="254" width="150" height="48" rx="8" fill="#dcfce7" stroke="#22c55e"/>
+  <text x="247" y="276" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">cacheTag</text>
+  <text x="247" y="292" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">誰が消す</text>
+
+  <rect x="370" y="176" width="210" height="48" rx="8" fill="#dbeafe" stroke="#3b82f6"/>
+  <text x="475" y="198" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">Suspense で後から流す</text>
+  <text x="475" y="214" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">待つ間の表示</text>
+</svg>
 
 ## まとめ
 
