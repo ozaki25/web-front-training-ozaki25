@@ -172,32 +172,32 @@ export function RefreshButton() {
   <text x="16" y="200" font-family="sans-serif" font-size="10" fill="#475569">ブラウザ</text>
 
   <rect x="142" y="50" width="159" height="52" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="221" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">起点・無効化</text>
+  <text x="221" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">◎ 起点・無効化</text>
   <rect x="305" y="50" width="159" height="52" rx="6" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="384" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">無効化</text>
+  <text x="384" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">○ 無効化</text>
   <rect x="468" y="50" width="158" height="52" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
-  <text x="547" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#475569">触れない</text>
+  <text x="547" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#475569">× 触れない</text>
 
   <rect x="142" y="106" width="159" height="52" rx="6" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="221" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">作り直す</text>
+  <text x="221" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">○ 作り直す</text>
   <rect x="305" y="106" width="159" height="52" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="384" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">起点・無効化</text>
+  <text x="384" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">◎ 起点・無効化</text>
   <rect x="468" y="106" width="158" height="52" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
-  <text x="547" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#475569">触れない</text>
+  <text x="547" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#475569">× 触れない</text>
 
   <rect x="142" y="162" width="159" height="52" rx="6" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="221" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">更新</text>
+  <text x="221" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">○ 更新</text>
   <rect x="305" y="162" width="159" height="52" rx="6" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="384" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">更新</text>
+  <text x="384" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">○ 更新</text>
   <rect x="468" y="162" width="158" height="52" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="547" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">起点・取り直す</text>
+  <text x="547" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">◎ 起点・取り直す</text>
 
   <rect x="142" y="226" width="12" height="12" rx="2" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="159" y="236" font-family="sans-serif" font-size="11" fill="#1e293b">起点</text>
+  <text x="159" y="236" font-family="sans-serif" font-size="11" fill="#1e293b">◎ 起点</text>
   <rect x="205" y="226" width="12" height="12" rx="2" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="222" y="236" font-family="sans-serif" font-size="11" fill="#1e293b">波及して作り直す・更新</text>
+  <text x="222" y="236" font-family="sans-serif" font-size="11" fill="#1e293b">○ 波及して作り直す・更新</text>
   <rect x="405" y="226" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#94a3b8"/>
-  <text x="422" y="236" font-family="sans-serif" font-size="11" fill="#1e293b">触れない</text>
+  <text x="422" y="236" font-family="sans-serif" font-size="11" fill="#1e293b">× 触れない</text>
 </svg>
 
 一番の違いは、`router.refresh` だけがサーバー側（Data Cache と Full Route Cache）に届かないことです。ブラウザの表示を取り直すだけなので、サーバーの保存が古ければ古いまま返ってきます。
