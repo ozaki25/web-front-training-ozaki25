@@ -7,7 +7,7 @@
 - 1 つの操作が複数のキャッシュを芋づる式に作り直すことを知る
 
 ::: info このレッスンは従来モデル
-`cacheComponents` を有効にしていない従来モデルの書き方です。有効にした新モデルでは `revalidateTag` の引数や `updateTag` が変わります。これは別レッスンで扱います。
+取得側は従来モデル（`cacheComponents` 無効、`fetch` の `next.tags` でタグ付け）で書いています。新モデルでは取得側が `"use cache"` と `cacheTag` に変わりますが、無効化の API（`revalidateTag` / `updateTag` / `revalidatePath` / `router.refresh`）はどちらのモデルでも共通です。
 :::
 
 ## 3 つのキャッシュ
@@ -63,11 +63,11 @@ export async function addProduct(formData: FormData) {
     body: formData,
   });
 
-  revalidateTag("products"); // products タグの付いたデータを無効化
+  revalidateTag("products", "max"); // products タグのデータを無効化（v16 は第 2 引数が必須）
 }
 ```
 
-`revalidateTag("products")` を呼ぶと、起点は Data Cache です。`products` タグの付いた Data Cache が無効になります。
+`revalidateTag("products", "max")` を呼ぶと、起点は Data Cache です。`products` タグの付いた Data Cache が無効になります。
 
 ここから芋づる式に広がります。そのデータを使って組み立てた HTML は古くなるので、`products` を使っている全ルートの Full Route Cache も無効になります。トップページと一覧ページの両方で同じデータを出していれば、両方が対象です。こうして 1 つのタグで複数ページをまとめて無効にできます。
 
@@ -86,6 +86,8 @@ flowchart TB
 ```
 
 無効化しても、その場で作り直すわけではありません。古い保存に「もう古い」と印を付けるだけで、実際に作り直すのは次に誰かがそのページを開いたときです。サーバー側の無効化はこの遅延式だと覚えておくと、挙動を読み違えずに済みます。
+
+v16 では `revalidateTag` に第 2 引数（`"max"` などの鮮度プロファイル）が必須で、引数なしは非推奨になりました。自分が加えた変更をその場で確実に反映したいときは、Server Action 専用の `updateTag("products")` を使います。こちらは次のアクセスを待たせて、必ず最新を返します。
 
 ## revalidatePath — パス起点
 
