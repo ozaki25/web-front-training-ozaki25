@@ -58,7 +58,14 @@ export async function getProducts() {
 }
 ```
 
-変わったのは「どこに書くか」です。`fetch` の `next.revalidate` / `next.tags` や `unstable_cache` に散らばっていた指定が、`"use cache"` と `cacheLife` と `cacheTag` にまとまりました。
+変わったのは「どこに書くか」です。`fetch` に散らばっていた指定が、次のように移ります。
+
+| 従来モデル（`fetch` に書く） | 新モデル（関数に書く） |
+|--------------------------|--------------------|
+| `next: { revalidate: 3600 }` | `cacheLife("hours")` |
+| `next: { tags: ["products"] }` | `cacheTag("products")` |
+| `unstable_cache` でラップ | `"use cache"` を先頭に書く |
+| 条件がそろえば自動で保存 | `"use cache"` を書いたときだけ保存 |
 
 書く場所が変わっただけではありません。従来モデルは条件がそろえば自動で保存しましたが、新モデルは `"use cache"` を**書いたものだけ**を保存します。書かなければ保存されません。
 
