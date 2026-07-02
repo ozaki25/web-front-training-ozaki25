@@ -187,11 +187,11 @@ function App({ items }: { items: string[] }) {
 }
 ```
 
-これで `count` が変わっても `HeavyList` は再レンダリングされなくなります。
+これで `count` が変わっても `HeavyList` は再レンダリングされなくなります。`React.memo` が見るのは props だけなので、仮に `HeavyList` の中で `useState` を使っていても問題ありません。自分の state が変わったときは通常どおり再レンダリングされ、親から巻き込まれる再レンダリングだけがスキップされます。
 
 ## useCallback: React.memo を関数で壊さないため
 
-`React.memo` には落とし穴があります。props に関数を渡すと、メモ化が効かなくなるのです。
+`React.memo` には注意点があります。props に関数を渡すと、メモ化が効かなくなるのです。
 
 ```tsx
 function App({ items }: { items: string[] }) {

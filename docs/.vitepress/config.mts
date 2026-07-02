@@ -27,7 +27,10 @@ export default withPwa(
         },
       },
       themeConfig: {
-        nav: [{ text: "ホーム", link: "/" }],
+        nav: [
+          { text: "ホーム", link: "/" },
+          { text: "候補", link: "/drafts/005/" },
+        ],
         sidebar: {
           "/lessons/": [
             {
@@ -156,6 +159,167 @@ export default withPwa(
               ],
             },
           ],
+          "/drafts/": [
+            {
+              text: "JS の基礎",
+              items: [
+                { text: "関数とコールバック", link: "/drafts/005/" },
+                { text: "Promise", link: "/drafts/006/" },
+                { text: "async/await", link: "/drafts/086/" },
+                { text: "React コードを読むための JS 構文", link: "/drafts/017/" },
+                { text: "配列操作と JSX のリスト", link: "/drafts/018/" },
+                { text: "イベントループ", link: "/drafts/029/" },
+                { text: "スコープとクロージャ", link: "/drafts/025/" },
+                { text: "日付とタイムゾーンの罠", link: "/drafts/085/" },
+                { text: "URL の解剖", link: "/drafts/084/" },
+                { text: "JSON", link: "/drafts/103/" },
+              ],
+            },
+            {
+              text: "React の核",
+              items: [
+                { text: "JSX と props", link: "/drafts/019/" },
+                { text: "JSX の仕組み", link: "/drafts/020/" },
+                { text: "useState と画面更新", link: "/drafts/021/" },
+                { text: "key の役割", link: "/drafts/022/" },
+                { text: "useEffect と副作用", link: "/drafts/024/" },
+                { text: "Context と use()", link: "/drafts/026/" },
+                { text: "状態管理の世代史", link: "/drafts/027/" },
+                { text: "カスタムフック", link: "/drafts/028/" },
+                { text: "useRef", link: "/drafts/088/" },
+                { text: "エラーバウンダリ", link: "/drafts/083/" },
+                { text: "イベントの仕組み", link: "/drafts/030/" },
+                { text: "データ取得ライブラリ", link: "/drafts/031/" },
+              ],
+            },
+            {
+              text: "Next.js / App Router",
+              items: [
+                { text: "ハイドレーション", link: "/drafts/013/" },
+                { text: "Server / Client Components", link: "/drafts/033/" },
+                { text: "App Router のファイル規約", link: "/drafts/034/" },
+                { text: "SC でのデータ取得", link: "/drafts/035/" },
+                { text: "動的ルート", link: "/drafts/093/" },
+                { text: "Server Actions とフォーム", link: "/drafts/037/" },
+                { text: "フォームバリデーション", link: "/drafts/095/" },
+                { text: "キャッシュ — Router Cache（共通）", link: "/drafts/107/" },
+                { text: "キャッシュ — use cache（新）", link: "/drafts/038/" },
+                { text: "キャッシュ — revalidate の使い分け", link: "/drafts/108/" },
+                { text: "Suspense と Streaming", link: "/drafts/039/" },
+                { text: "SPA のページ遷移の仕組み", link: "/drafts/040/" },
+                { text: "proxy.ts", link: "/drafts/092/" },
+                { text: "環境変数", link: "/drafts/065/" },
+                { text: "metadata と OGP", link: "/drafts/094/" },
+              ],
+            },
+            {
+              text: "Web 標準と通信",
+              items: [
+                { text: "HTTP とステータスコード", link: "/drafts/032/" },
+                { text: "CORS", link: "/drafts/036/" },
+                { text: "WebSocket と SSE", link: "/drafts/041/" },
+                { text: "HTTP キャッシュと CDN", link: "/drafts/060/" },
+                { text: "Service Worker", link: "/drafts/079/" },
+                { text: "Web Storage", link: "/drafts/096/" },
+                { text: "View Transitions", link: "/drafts/100/" },
+                { text: "REST と GraphQL", link: "/drafts/101/" },
+              ],
+            },
+            {
+              text: "CSS",
+              items: [
+                { text: "Tailwind CSS の仕組み", link: "/drafts/023/" },
+                { text: "カスケードと詳細度", link: "/drafts/076/" },
+                { text: "モダン CSS", link: "/drafts/077/" },
+                { text: "ダークモードの仕組み", link: "/drafts/078/" },
+              ],
+            },
+            {
+              text: "アクセシビリティ",
+              items: [
+                { text: "スクリーンリーダーから見た Web", link: "/drafts/042/" },
+                { text: "WAI-ARIA の仕組み", link: "/drafts/043/" },
+                { text: "フォーカス管理", link: "/drafts/044/" },
+                { text: "アクセシビリティ検査の原理", link: "/drafts/089/" },
+              ],
+            },
+            {
+              text: "セキュリティ",
+              items: [
+                { text: "Cookie と認証", link: "/drafts/051/" },
+                { text: "CSRF と SameSite", link: "/drafts/052/" },
+                { text: "OAuth と OIDC", link: "/drafts/053/" },
+                { text: "パスキー", link: "/drafts/087/" },
+                { text: "npm サプライチェーン", link: "/drafts/054/" },
+              ],
+            },
+            {
+              text: "テスト",
+              items: [
+                { text: "E2E テスト", link: "/drafts/046/" },
+                { text: "テストを読む目", link: "/drafts/047/" },
+                { text: "Testing Library", link: "/drafts/048/" },
+                { text: "テストのコスト構造", link: "/drafts/049/" },
+                { text: "モックと MSW", link: "/drafts/090/" },
+              ],
+            },
+            {
+              text: "パフォーマンスと観測",
+              items: [
+                { text: "Web Vitals", link: "/drafts/058/" },
+                { text: "バンドルサイズ", link: "/drafts/059/" },
+                { text: "next/image と next/font", link: "/drafts/061/" },
+                { text: "レンダリングパイプライン", link: "/drafts/102/" },
+                { text: "フロントエンドの可観測性", link: "/drafts/082/" },
+              ],
+            },
+            {
+              text: "型",
+              items: [
+                { text: "TypeScript の型を読む", link: "/drafts/069/" },
+                { text: "構造的型付け", link: "/drafts/070/" },
+                { text: "型は実行時に消える", link: "/drafts/071/" },
+                { text: "strict の仕組み", link: "/drafts/099/" },
+              ],
+            },
+            {
+              text: "開発環境",
+              items: [
+                { text: "npm run の仕組み", link: "/drafts/062/" },
+                { text: "HMR", link: "/drafts/063/" },
+                { text: "ESM とバンドラー", link: "/drafts/081/" },
+                { text: "ビルドとデプロイ", link: "/drafts/064/" },
+                { text: "Git のデータモデル", link: "/drafts/080/" },
+                { text: "DevTools", link: "/drafts/091/" },
+                { text: "エラーの読み方", link: "/drafts/097/" },
+              ],
+            },
+            {
+              text: "設計とコードの読み書き",
+              items: [
+                { text: "コンポーネントの責務分割", link: "/drafts/066/" },
+                { text: "命名という設計", link: "/drafts/067/" },
+                { text: "コロケーション", link: "/drafts/068/" },
+              ],
+            },
+            {
+              text: "UX・デザイン",
+              items: [
+                { text: "ダークパターン", link: "/drafts/072/" },
+                { text: "UI デザインの法則", link: "/drafts/073/" },
+                { text: "OOUI", link: "/drafts/074/" },
+                { text: "デザインシステムの実装", link: "/drafts/075/" },
+              ],
+            },
+            {
+              text: "AI との協働",
+              items: [
+                { text: "AI コーディングとの付き合い方", link: "/drafts/055/" },
+                { text: "MCP", link: "/drafts/056/" },
+                { text: "コンテキストウィンドウ", link: "/drafts/057/" },
+              ],
+            },
+          ],
         },
         outline: {
           label: "目次",
@@ -181,7 +345,7 @@ export default withPwa(
         registerType: "autoUpdate",
         manifest: {
           name: "Web Front-end Training",
-          short_name: "WFT",
+          short_name: "WFT Draft",
           description: "Web フロントエンド研修コンテンツ",
           theme_color: "#064e3b",
           background_color: "#ffffff",
