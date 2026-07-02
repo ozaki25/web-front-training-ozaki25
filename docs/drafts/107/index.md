@@ -28,16 +28,16 @@ App Router では、ページ固有の中身は `page.tsx` に、ヘッダーや
 
 | 遷移の種類 | ページ本体（`page.tsx`） | 共有レイアウト（`layout.tsx`） |
 |-----------|------------------------|------------------------------|
-| リンクで前に進む | 取り直す | 保持を使う |
-| 「戻る」「進む」 | 保持を使う | 保持を使う |
+| リンクで前に進む | 取り直す | キャッシュを使う |
+| 「戻る」「進む」 | キャッシュを使う | キャッシュを使う |
 
-リンクで前に進むときは、ページ本体**だけ**取り直し、共有レイアウトは保持を使います。レイアウトのぶん取り直しが省けるので、遷移が速くなります。「戻る」「進む」では、ページ本体も含めて保持を使うので、前に見た画面が一瞬で戻ります。
+リンクで前に進むときは、ページ本体**だけ**取り直し、共有レイアウトはキャッシュを使います。レイアウトのぶん取り直しが省けるので、遷移が速くなります。「戻る」「進む」では、ページ本体も含めてキャッシュを使うので、前に見た画面が一瞬で戻ります。
 
 なお、リンクをホバーしたときなどに遷移先を先に取っておく**先読み**（プリフェッチ）も、前進遷移を速くするために内容を保持しておく仕組みです。
 
-別のページへ遷移したとき、何が再利用され、何が取り直されるかを図にすると次のようになります。
+別のページへ遷移したとき、どの部分がキャッシュを使い、どの部分が取り直されるかを図にすると次のようになります。
 
-<svg viewBox="0 0 560 250" role="img" aria-label="商品一覧から商品詳細へ遷移する図。共有レイアウトのヘッダー（無地・チェック印）は両方の画面で保持されて再利用され、斜線で示したページ本体（矢印印）だけが商品一覧から商品詳細へ取り直される" style="width:100%;height:auto;max-width:560px;display:block;margin:16px auto;">
+<svg viewBox="0 0 560 250" role="img" aria-label="商品一覧から商品詳細へ遷移する図。共有レイアウトのヘッダー（無地・チェック印）は両方の画面でキャッシュを使って表示され、斜線で示したページ本体（矢印印）だけが商品一覧から商品詳細へ取り直される" style="width:100%;height:auto;max-width:560px;display:block;margin:16px auto;">
   <defs>
     <clipPath id="day32-rc-c1"><rect x="40" y="36" width="190" height="150" rx="8"/></clipPath>
     <clipPath id="day32-rc-c2"><rect x="330" y="36" width="190" height="150" rx="8"/></clipPath>
@@ -57,9 +57,9 @@ App Router では、ページ固有の中身は `page.tsx` に、ヘッダーや
   </g>
   <rect x="40" y="36" width="190" height="150" rx="8" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="135" y="63" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e293b">🛒 カート 3</text>
-  <text x="135" y="80" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">✓ 共有レイアウト｜保持</text>
+  <text x="135" y="80" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">✓ 共有レイアウト</text>
   <text x="135" y="135" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#1e293b">商品一覧</text>
-  <text x="135" y="159" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">↻ ページ本体｜取り直す</text>
+  <text x="135" y="159" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">↻ ページ本体</text>
 
   <line x1="238" y1="111" x2="320" y2="111" stroke="#64748b" stroke-width="2" marker-end="url(#day32-rc-arrow)"/>
   <text x="279" y="103" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">遷移</text>
@@ -74,18 +74,18 @@ App Router では、ページ固有の中身は `page.tsx` に、ヘッダーや
   </g>
   <rect x="330" y="36" width="190" height="150" rx="8" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="425" y="63" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#1e293b">🛒 カート 3</text>
-  <text x="425" y="80" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">✓ 共有レイアウト｜保持</text>
+  <text x="425" y="80" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">✓ 共有レイアウト</text>
   <text x="425" y="135" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#1e293b">商品詳細</text>
-  <text x="425" y="159" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">↻ ページ本体｜取り直す</text>
+  <text x="425" y="159" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">↻ ページ本体</text>
 
   <rect x="66" y="216" width="18" height="18" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="92" y="229" font-family="sans-serif" font-size="12" fill="#1e293b">✓ 無地は保持を使う</text>
+  <text x="92" y="229" font-family="sans-serif" font-size="12" fill="#1e293b">✓ 無地はキャッシュを使う</text>
   <rect x="336" y="216" width="18" height="18" rx="3" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
   <rect x="336" y="216" width="18" height="18" rx="3" fill="url(#day32-rc-hatch)"/>
   <text x="362" y="229" font-family="sans-serif" font-size="12" fill="#1e293b">↻ 斜線は取り直す</text>
 </svg>
 
-無地のレイアウトは遷移しても保持を使い、斜線のページ本体は取り直します。だから遷移は速い一方、レイアウトに置いたデータは古いまま残ることがあります。
+無地のレイアウトは遷移してもキャッシュを使い、斜線のページ本体は取り直します。だから遷移は速い一方、レイアウトに置いたデータは古いまま残ることがあります。
 
 ## 古くなるのはレイアウトの保持データ
 
