@@ -153,47 +153,45 @@ export function RefreshButton() {
 
 ## 3 つの起点
 
-同じ「作り直す」でも、起点とどこまで届くかが違います。3 つのキャッシュ（上ほどサーバー寄り、下がブラウザ）に、それぞれの操作がどこまで届くかを並べると次のようになります。
+同じ「作り直す」でも、どこを起点に、どこまで届くかが違います。3 つのキャッシュを、ブラウザ（手前）からサーバーの奥へ横に並べ、各操作の届く範囲を重ねると次のようになります。
 
-<svg viewBox="0 0 640 250" role="img" aria-label="3 つの操作がどのキャッシュに届くかの一覧。revalidateTag はデータキャッシュを起点に、フルルートキャッシュ、ルーターキャッシュまで波及する。revalidatePath はフルルートキャッシュを起点に、データキャッシュとルーターキャッシュに波及する。router.refresh はブラウザのルーターキャッシュだけを取り直し、サーバー側のデータキャッシュとフルルートキャッシュには触れない。" style="width:100%;height:auto;max-width:640px;display:block;margin:16px auto;">
-  <rect x="0" y="0" width="640" height="250" rx="10" fill="#f8fafc"/>
-  <text x="221" y="34" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">revalidateTag</text>
-  <text x="384" y="34" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">revalidatePath</text>
-  <text x="547" y="34" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">router.refresh</text>
-  <text x="16" y="72" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">Data Cache</text>
-  <text x="16" y="88" font-family="sans-serif" font-size="10" fill="#475569">サーバー</text>
-  <text x="16" y="128" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">Full Route Cache</text>
-  <text x="16" y="144" font-family="sans-serif" font-size="10" fill="#475569">サーバー</text>
-  <text x="16" y="184" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">Router Cache</text>
-  <text x="16" y="200" font-family="sans-serif" font-size="10" fill="#475569">ブラウザ</text>
+<svg viewBox="0 0 600 268" role="img" aria-label="3 つの操作がどこまで届くかを、ブラウザ（手前）からサーバーの奥へ並べた図。左がブラウザの Router Cache、中央がサーバー末端の Full Route Cache、右がサーバー奥の Data Cache。router.refresh はブラウザだけに届きサーバーには届かない。revalidatePath はサーバー末端を起点に 3 層すべてに届く。revalidateTag はサーバー奥のデータを起点に 3 層すべてに届く。" style="width:100%;height:auto;max-width:600px;display:block;margin:16px auto;">
+  <rect x="0" y="0" width="600" height="268" rx="10" fill="#f8fafc"/>
 
-  <rect x="142" y="50" width="159" height="52" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="221" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">◎ 起点・無効化</text>
-  <rect x="305" y="50" width="159" height="52" rx="6" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="384" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">○ 無効化</text>
-  <rect x="468" y="50" width="158" height="52" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
-  <text x="547" y="80" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#475569">× 触れない</text>
+  <text x="198" y="34" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#64748b">あなたの端末</text>
+  <text x="436" y="34" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#64748b">Next サーバー</text>
 
-  <rect x="142" y="106" width="159" height="52" rx="6" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="221" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">○ 作り直す</text>
-  <rect x="305" y="106" width="159" height="52" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="384" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">◎ 起点・無効化</text>
-  <rect x="468" y="106" width="158" height="52" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
-  <text x="547" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#475569">× 触れない</text>
+  <line x1="278" y1="40" x2="278" y2="224" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="436" y1="44" x2="436" y2="224" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4 4"/>
 
-  <rect x="142" y="162" width="159" height="52" rx="6" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="221" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">○ 更新</text>
-  <rect x="305" y="162" width="159" height="52" rx="6" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="384" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">○ 更新</text>
-  <rect x="468" y="162" width="158" height="52" rx="6" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="547" y="192" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">◎ 起点・取り直す</text>
+  <rect x="124" y="44" width="148" height="46" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="198" y="65" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">ブラウザ</text>
+  <text x="198" y="81" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">Router Cache</text>
 
-  <rect x="142" y="226" width="12" height="12" rx="2" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="159" y="236" font-family="sans-serif" font-size="11" fill="#1e293b">◎ 起点</text>
-  <rect x="205" y="226" width="12" height="12" rx="2" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="222" y="236" font-family="sans-serif" font-size="11" fill="#1e293b">○ 波及して作り直す・更新</text>
-  <rect x="405" y="226" width="12" height="12" rx="2" fill="#e2e8f0" stroke="#94a3b8"/>
-  <text x="422" y="236" font-family="sans-serif" font-size="11" fill="#1e293b">× 触れない</text>
+  <rect x="284" y="44" width="148" height="46" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="358" y="65" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">サーバーの末端</text>
+  <text x="358" y="81" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">Full Route Cache</text>
+
+  <rect x="440" y="44" width="148" height="46" rx="6" fill="#e2e8f0" stroke="#94a3b8"/>
+  <text x="514" y="65" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">サーバーの奥</text>
+  <text x="514" y="81" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">Data Cache</text>
+
+  <text x="12" y="123" font-family="sans-serif" font-size="11.5" font-weight="700" fill="#1e293b">router.refresh</text>
+  <rect x="124" y="108" width="148" height="24" rx="6" fill="#bfdbfe" stroke="#3b82f6"/>
+  <circle cx="198" cy="120" r="5" fill="#1e293b" stroke="#ffffff" stroke-width="1.5"/>
+
+  <text x="12" y="163" font-family="sans-serif" font-size="11.5" font-weight="700" fill="#1e293b">revalidatePath</text>
+  <rect x="124" y="148" width="464" height="24" rx="6" fill="#bfdbfe" stroke="#3b82f6"/>
+  <circle cx="358" cy="160" r="5" fill="#1e293b" stroke="#ffffff" stroke-width="1.5"/>
+
+  <text x="12" y="203" font-family="sans-serif" font-size="11.5" font-weight="700" fill="#1e293b">revalidateTag</text>
+  <rect x="124" y="188" width="464" height="24" rx="6" fill="#bfdbfe" stroke="#3b82f6"/>
+  <circle cx="514" cy="200" r="5" fill="#1e293b" stroke="#ffffff" stroke-width="1.5"/>
+
+  <circle cx="132" cy="246" r="5" fill="#1e293b" stroke="#ffffff" stroke-width="1.5"/>
+  <text x="144" y="250" font-family="sans-serif" font-size="11" fill="#1e293b">起点</text>
+  <rect x="196" y="240" width="30" height="12" rx="3" fill="#bfdbfe" stroke="#3b82f6"/>
+  <text x="232" y="250" font-family="sans-serif" font-size="11" fill="#1e293b">届く範囲（帯がなければ触れない）</text>
 </svg>
 
 一番の違いは、`router.refresh` だけがサーバー側（Data Cache と Full Route Cache）に届かないことです。ブラウザの表示を取り直すだけなので、サーバーの保存が古ければ古いまま返ってきます。
