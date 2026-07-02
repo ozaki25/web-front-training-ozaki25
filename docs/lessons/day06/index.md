@@ -1,4 +1,4 @@
-# img タグの書き方 — アクセシビリティと Core Web Vitals
+# Day 6: img タグの書き方 — アクセシビリティと Core Web Vitals
 
 ## 今日のゴール
 
