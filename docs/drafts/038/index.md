@@ -62,7 +62,7 @@ export async function getProducts() {
 
 書く場所が変わっただけではありません。従来モデルは条件がそろえば自動で保存しましたが、新モデルは `"use cache"` を**書いたものだけ**を保存します。書かなければ保存されません。
 
-鮮度はミリ秒ではなく業務の言葉で選びます。
+`cacheLife` には、数字ではなく**プロファイル名**を渡します。`seconds` / `minutes` / `hours` / `days` / `max` といった名前は、それぞれ「どれくらい保つか」があらかじめ決められたプリセットです。数字を書かず、業務の感覚に近い名前で選びます。
 
 | データの例 | 宣言 |
 |-----------|------|
@@ -70,6 +70,8 @@ export async function getProducts() {
 | 商品カタログ | `cacheLife("hours")` |
 | ブログ記事 | `cacheLife("days")` |
 | 会社概要・利用規約 | `cacheLife("max")` |
+
+秒数できっちり決めたいときは `cacheLife({ stale, revalidate, expire })` のようにオブジェクトも渡せますが、まずは名前で選べば十分です。
 
 ## Full Route Cache — 「全ページ自動静的化」から「部品ごと」へ
 
