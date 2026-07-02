@@ -37,6 +37,8 @@
 - [Day 29: Request Memoization — 1 回の描画で同じ取得を何度も走らせない仕組み](/lessons/day29/)
 - [Day 30: データキャッシュ — 取得したデータを使い回す](/lessons/day30/)
 - [Day 31: Full Route Cache — 組み立てた HTML を使い回す](/lessons/day31/)
+- [Day 32: Router Cache — ブラウザが画面遷移を速くする仕組み](/lessons/day32/)
+- [Day 33: revalidate の使い分け — 3 つの起点と波及範囲](/lessons/day33/)
 
 ## 候補（下書き）
 

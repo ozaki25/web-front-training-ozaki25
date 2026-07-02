@@ -39,15 +39,24 @@ git show origin/draft:docs/drafts/<ID>/index.md > docs/lessons/dayXX/index.md
 
 ### 3. タイトルの更新
 
-`docs/lessons/dayXX/index.md` の 1 行目を `# Day XX: テーマ名 — サブタイトル` の形式に更新してください。下書き時点ではタイトルに Day 番号が含まれていない場合があります。
+`docs/lessons/dayXX/index.md` の 1 行目を `# Day XX: テーマ名 — サブタイトル` の形式に更新してください。下書き時点ではタイトルに Day 番号が含まれていない場合があります（下書きは公開時まで Day 番号が確定しないため、意図的に Day 番号なしで書かれています）。
+
+更新したら、その場で機械チェックで確認します。
+
+```bash
+node .claude/hooks/check-lesson-title.js docs/lessons/dayXX/index.md XX
+```
+
+出力が空（exit 0）なら OK。Day 番号が抜けていると理由を出力して失敗します。この付与は過去に何度も抜けているため、記憶ではなくこのチェックで必ず確認すること。
 
 ### 3.5 公開前レビュー（必須・省略不可）
 
 **いま公開しようとしている本文に対して、毎回この公開前レビューを通すこと。** 「前にレビュー済み」を理由に省略しない。下書きは公開までに何度も修正されるため、過去のレビュー後に崩れている可能性が常にある。記憶ではなく、この手順で必ず再確認する。
 
 1. **`review-lesson` スキルを当てる**: CLAUDE.md の執筆方針と A〜I 全カテゴリを、指摘ゼロになるまで通す。とくに自然な日本語（翻訳調・比喩で言い換えた語・問いかけ+即答・説明の足場）は、1 語ずつ「同僚に口頭で説明するときその言い回しを使うか」で判定する
-2. **太字の描画チェック**: `cat docs/lessons/dayXX/index.md | node .claude/hooks/check-bold.js` を実行し、出力が空であることを確認する
-3. **ビルド**: 後述のステップ 6 を実行する
+2. **タイトルのチェック**: `node .claude/hooks/check-lesson-title.js docs/lessons/dayXX/index.md XX` を実行し、出力が空であることを確認する
+3. **太字の描画チェック**: `cat docs/lessons/dayXX/index.md | node .claude/hooks/check-bold.js` を実行し、出力が空であることを確認する
+4. **ビルド**: 後述のステップ 6 を実行する
 
 報告するときは、機械チェック（ビルド・太字）と判断レビュー（自然な日本語・構成）を分けて書く。機械チェックは通過/不通過が確定するが、判断レビューは漏れがありうるため「完璧」と過信した言い方をしない。
 
@@ -69,10 +78,11 @@ git show origin/draft:docs/.vitepress/config.mts
 
 ```bash
 npx vitepress build docs
+node .claude/hooks/check-lesson-title.js docs/lessons/dayXX/index.md XX
 cat docs/lessons/dayXX/index.md | node .claude/hooks/check-bold.js
 ```
 
-ビルドが通り、`check-bold.js` の出力が空であることを確認してください。エラーや太字崩れがあれば修正し、ステップ 3.5 のレビューからやり直します。
+ビルドが通り、`check-lesson-title.js`（タイトルの Day 番号）と `check-bold.js`（太字崩れ）の出力がどちらも空であることを確認してください。エラーや崩れがあれば修正し、ステップ 3.5 のレビューからやり直します。
 
 ### 7. コミット & プッシュ
 
