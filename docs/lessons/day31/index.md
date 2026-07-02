@@ -1,4 +1,4 @@
-# Full Route Cache — 組み立てた HTML を使い回す
+# Day 31: Full Route Cache — 組み立てた HTML を使い回す
 
 ## 今日のゴール
 
