@@ -149,6 +149,10 @@ export default withPwa(
                   text: "Day 32: Router Cache",
                   link: "/lessons/day32/",
                 },
+                {
+                  text: "Day 33: revalidate の使い分け",
+                  link: "/lessons/day33/",
+                },
               ],
             },
           ],
