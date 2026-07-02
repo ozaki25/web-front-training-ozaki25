@@ -1,191 +1,117 @@
-# キャッシュの新モデル — 隠れていた判断を自分で決める
+# キャッシュの新モデル — 4 つのキャッシュがどう変わるか
 
 ## 今日のゴール
 
-- 従来モデルの「暗黙の判定」と「ページ単位」が何を困らせていたか分かる
-- 新モデルが開発者に渡す 4 つの判断を知る
-- その判断を表す語彙（use cache / cacheLife / cacheTag / Suspense）を読める
+- 新モデルにしても、4 つのキャッシュのうち 2 つはそのままだと分かる
+- 残る 2 つ（データと HTML の保存）が `"use cache"` にまとまると分かる
+- 消し方（revalidate 系）は変わらないと分かる
 
 ::: info このレッスンの前提（新モデル）
-ここで扱うのは `next.config.ts` に `cacheComponents: true` を書いて有効にする新モデルです（有効化は任意）。従来モデルのキャッシュを先に知っていると対比しやすくなります。
+`next.config.ts` に `cacheComponents: true` を書いて有効にする新モデルの話です（有効化は任意）。4 つのキャッシュ（Request Memoization / Data Cache / Full Route Cache / Router Cache）を知っている前提で、その差分だけを見ます。
 :::
 
-## 従来モデルで困っていたこと
+## 変わるのは 4 つのうち 2 つ
 
-従来モデルのキャッシュには、実務で繰り返しぶつかる困りごとがあります。
+先に全体像です。
 
-### 判断が暗黙
+| キャッシュ | 置き場所 | 新モデルでどうなる |
+|-----------|---------|------------------|
+| Request Memoization | サーバー（1 リクエスト内） | 変わらない |
+| Router Cache | ブラウザ | 変わらない |
+| Data Cache | サーバー | `"use cache"` で明示的に保存する形に |
+| Full Route Cache | サーバー | 自動の静的化がなくなり、`"use cache"` を付けた所だけ保存 |
 
-従来モデルでは、ページを静的にするか動的にするかを **Next.js が条件から推定**していました。`cookies()` を読んでいるか、毎回最新のデータを取りに行っているか、といった条件から「このページは静的化できる／できない」を判定します。
+つまり、変わるのは**サーバー側の 2 つ（Data Cache と Full Route Cache）の使い方**で、ブラウザ側と重複排除はそのままです。変わる 2 つも、やることは 1 つに集約されます。それが `"use cache"` です。
 
-この判定はコードに書いてありません。だから起きるのが：
+## 変わらない 2 つ
 
-- 「静的化されていることに気づかず、データを更新してもページが古いまま」
-- 「何もしていないのに、ページが勝手に動的になって遅くなった」
+- **Request Memoization**: 1 回のレンダリング中に同じ取得をまとめる React 側の仕組み。モデルとは無関係で、そのまま働きます。
+- **Router Cache**: ブラウザが画面遷移用に持つキャッシュ。これも新旧で同じです。
 
-原因を調べると、**Next.js がどう判定したかを推測する作業**になります。バージョンで既定が変わることもあり、「前は動いていたのに」が起きやすい構造でした。
+この 2 つは、これまで学んだとおりに考えて構いません。
 
-### 判断がページ単位
+## Data Cache — 「自動で保存」から「use cache で保存」へ
 
-もう 1 つ困るのは、**レンダリング方式がページに 1 つしか選べない**ことです。
-
-商品ページを例にします。
-
-- ヘッダーや商品説明：誰が見ても同じ。めったに変わらない
-- 在庫数：今この瞬間の値がほしい
-
-在庫数のように今この瞬間の値がほしい部分は、動的にするしかありません。ところが従来モデルはページ単位でしか静的か動的かを選べないので、**在庫数のために動的にすると、ページ全体が動的になってしまいます**。ヘッダーも商品説明も毎回作り直され、1 つの動的な部分のためにページ全体の速さを諦めることになります。
-
-## 新モデルが変えたこと
-
-新モデルは、この 2 つをひっくり返します。
-
-- **暗黙 → 明示**：Next.js が推定するのではなく、開発者が `"use cache"` と書いたものだけがキャッシュされる。書かなければキャッシュされない
-- **ページ単位 → コンポーネント単位**：1 枚のページの中で、部品ごとに「キャッシュする／しない」を分けられる。静的な部分と動的な部分を同じページに同居させられる
-
-従来モデルで知っていることが、新モデルの何に置き換わるかを並べると次のとおりです。
-
-| 観点 | 従来モデル（false） | 新モデル（true） |
-|------|-------------------|----------------|
-| 静的/動的の判定 | Next.js が暗黙に推定 | `"use cache"` で明示（書かなければキャッシュしない） |
-| キャッシュの書き方 | `fetch` オプション・`unstable_cache`・自動静的化 | `"use cache"` に統一 |
-| 鮮度 | `fetch` の `next.revalidate` | `cacheLife` |
-| タグ付け | `fetch` の `next.tags` | `cacheTag` |
-| 動的にする部分 | 1 つでもあるとページ全体が動的 | `<Suspense>` で部分ごとに |
-
-無効化の呼び出し（`revalidateTag` / `revalidatePath`）は両モデルで共通です。変わるのは「取得側でどう宣言するか」で、消し方は変わりません。
-
-## 開発者が下す 4 つの判断
-
-この「明示」と「コンポーネント単位」の結果として、新モデルでは非同期データを扱うたびに 4 つの判断を自分で下します。従来は Next.js が暗黙にやっていた判断を、自分で決める形です。
-
-### 1. この結果はキャッシュしてよいか
-
-関数やコンポーネントの先頭に `"use cache"` を書くと、その結果がキャッシュされます。書かなければキャッシュされません。
+従来モデルでは、`fetch` のオプションで Data Cache を操作していました。鮮度もタグも `fetch` に書きます。
 
 ```ts
-import { cacheLife } from "next/cache";
-
+// 従来モデル
 export async function getProducts() {
-  "use cache"; // ← この結果は使い回してよい、という判断
-  cacheLife("hours");
-
-  const res = await fetch("https://api.example.com/products");
-  if (!res.ok) throw new Error("取得に失敗しました");
+  const res = await fetch("https://api.example.com/products", {
+    next: { revalidate: 3600, tags: ["products"] }, // 鮮度とタグを fetch に付ける
+  });
   return res.json();
 }
 ```
 
-`"use cache"` は `"use client"` や `"use server"` と同じ形のディレクティブ（先頭に書く目印）です。関数に書けば**戻り値**が、コンポーネントに書けば**描画結果**がキャッシュされます。
+新モデルでは、`fetch` のオプションではなく、関数に `"use cache"` を付けて保存します。鮮度は `cacheLife`、タグは `cacheTag` に移ります。
 
-従来は取得手段ごとに書き方が分かれていましたが（`fetch` のオプション、`unstable_cache`、自動静的化）、この 1 つに統一されました。
+```ts
+// 新モデル
+import { cacheLife, cacheTag } from "next/cache";
 
-### 2. どれくらい新鮮であるべきか
+export async function getProducts() {
+  "use cache"; // ← この結果を保存する、という宣言
+  cacheLife("hours"); // 鮮度（従来の revalidate にあたる）
+  cacheTag("products"); // タグ（従来の next.tags にあたる）
 
-`cacheLife()` で鮮度を宣言します。
+  const res = await fetch("https://api.example.com/products");
+  return res.json();
+}
+```
+
+変わったのは「どこに書くか」です。`fetch` の `next.revalidate` / `next.tags` や `unstable_cache` に散らばっていた指定が、`"use cache"` と `cacheLife` と `cacheTag` にまとまりました。
+
+大きな違いは 1 つ。**`"use cache"` を書かなければ保存されません**。従来モデルは条件がそろうと自動で保存していましたが、新モデルは書いたものだけを保存します。
+
+鮮度はミリ秒ではなく業務の言葉で選びます。
 
 | データの例 | 宣言 |
 |-----------|------|
-| 株価・在庫数 | `cacheLife("seconds")` |
-| ニュース一覧 | `cacheLife("minutes")` |
+| 在庫数・株価 | `cacheLife("seconds")` |
 | 商品カタログ | `cacheLife("hours")` |
 | ブログ記事 | `cacheLife("days")` |
 | 会社概要・利用規約 | `cacheLife("max")` |
 
-ミリ秒ではなく**業務の言葉**で書きます。「在庫は秒単位で正確であってほしい」「会社概要は日単位でいい」が、そのままコードになります。
+## Full Route Cache — 「全ページ自動静的化」から「部品ごと」へ
 
-### 3. 変わったとき誰が消すか
+従来モデルでは、ページが静的なら Next.js が自動で HTML を保存しました。これが Full Route Cache です。ただしページ単位で、1 か所でも動的な部分があるとページ全体が動的になり、保存されませんでした。
 
-`cacheTag` でタグを付けておき、データを変えた側から消します。
-
-```ts
-import { cacheLife, cacheTag } from "next/cache";
-
-export async function getProducts() {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("products"); // タグを付ける
-  // ...
-}
-```
-
-消す関数は 2 つあります。
-
-| 関数 | 動き | 場面 |
-|------|------|------|
-| `updateTag("products")` | すぐ消し、新しい結果を待つ | 管理画面で編集 → 自分にすぐ反映 |
-| `revalidateTag("products", "max")` | 古い結果を返しつつ裏で作り直す | 不特定多数が見るページ |
-
-`updateTag` は、フォーム送信などを処理する Server Action（サーバー側で動く関数）の中だけで使えます。
-
-取得側にタグを付けたのに、更新側で消し忘れるパターンはよくあります。「このデータ、更新したら**誰がキャッシュを消すの？**」がレビューの一言になります。
-
-### 4. キャッシュしない部分は、待つ間に何を見せるか
-
-キャッシュしない非同期データ（在庫数など）は、`<Suspense>` で囲んで「待っている間の仮表示」を宣言します。
+新モデルでは、この自動の静的化がなくなります。代わりに、保存したい部分に `"use cache"` を付け、動的な部分は `<Suspense>` で囲みます。**1 枚のページの中で、静的な部分と動的な部分が同居できます**。
 
 ```tsx
+// 新モデル：商品説明は保存、在庫数は毎回取得
 import { Suspense } from "react";
 
 export default function ProductPage() {
   return (
     <main>
-      <ProductDescription /> {/* use cache で静的化 → すぐ表示 */}
+      <ProductDescription /> {/* "use cache" 付き → 保存してすぐ表示 */}
       <Suspense fallback={<p>在庫を確認中…</p>}>
-        <StockCount /> {/* キャッシュしない → 後から届く */}
+        <StockCount /> {/* キャッシュしない → アクセスごとに取得して後から表示 */}
       </Suspense>
     </main>
   );
 }
 ```
 
-これが「ページ単位 → コンポーネント単位」の具体です。同じページの中で、静的な土台はすぐ返し、動的な部分だけ後から流します。
+従来モデルなら、在庫数を最新にするにはページを動的にするしかなく、商品説明まで毎回作り直していました。新モデルは、商品説明は保存したまま、在庫数だけを動的にできます。これが「ページ単位から部品単位へ」の中身です。
 
-新モデルでは、非同期データは `"use cache"` で**キャッシュする**か、`<Suspense>` で**後から流す**かの**どちらかを必ず宣言**します。どちらも書かないとビルドが通りません。Next.js が暗黙に決めるのではなく、ここでも判断は開発者の手元にあります。
+ここで 1 つ決まりごとがあります。保存しない非同期データは、`<Suspense>` で囲むか `"use cache"` を付けるかの**どちらかが必須**です。どちらもないとビルドが通りません。従来モデルのように Next.js が勝手にどちらかへ倒すのではなく、開発者がその場で決めます。
 
-## 4 つの判断の全体像
+## 消し方は変わらない
 
-<svg viewBox="0 0 600 320" role="img" aria-label="非同期データを扱うときの判断フロー。キャッシュしてよいなら use cache を付け、鮮度を cacheLife、誰が消すかを cacheTag で決める。キャッシュしないなら Suspense で囲んで待つ間の表示を決める。" style="width:100%;height:auto;max-width:600px;display:block;margin:16px auto;">
-  <defs>
-    <marker id="d038-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker>
-  </defs>
-  <rect x="0" y="0" width="600" height="320" rx="10" fill="#f8fafc"/>
+保存したものを作り直す API は、両モデルで同じです。
 
-  <rect x="215" y="16" width="170" height="38" rx="8" fill="#e2e8f0" stroke="#94a3b8"/>
-  <text x="300" y="40" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">非同期データを扱う</text>
+- `revalidateTag` … タグを起点に無効化
+- `revalidatePath` … パスを起点に無効化
+- `router.refresh` … ブラウザ側だけ取り直し
 
-  <line x1="300" y1="54" x2="300" y2="70" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
-
-  <polygon points="300,72 380,110 300,148 220,110" fill="#fef9c3" stroke="#eab308" stroke-width="1.5"/>
-  <text x="300" y="106" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">キャッシュ</text>
-  <text x="300" y="122" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#1e293b">してよい？</text>
-
-  <line x1="248" y1="137" x2="152" y2="174" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
-  <text x="182" y="150" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">はい</text>
-  <line x1="352" y1="137" x2="458" y2="174" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
-  <text x="418" y="150" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">いいえ</text>
-
-  <rect x="55" y="176" width="190" height="42" rx="8" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="150" y="202" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">"use cache" でキャッシュ</text>
-
-  <line x1="110" y1="218" x2="92" y2="252" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
-  <line x1="190" y1="218" x2="212" y2="252" stroke="#64748b" stroke-width="2" marker-end="url(#d038-arrow)"/>
-
-  <rect x="20" y="254" width="140" height="48" rx="8" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="90" y="276" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">cacheLife</text>
-  <text x="90" y="292" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">鮮度</text>
-
-  <rect x="172" y="254" width="150" height="48" rx="8" fill="#dcfce7" stroke="#22c55e"/>
-  <text x="247" y="276" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">cacheTag</text>
-  <text x="247" y="292" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">誰が消す</text>
-
-  <rect x="370" y="176" width="210" height="48" rx="8" fill="#dbeafe" stroke="#3b82f6"/>
-  <text x="475" y="198" text-anchor="middle" font-family="sans-serif" font-size="12.5" font-weight="700" fill="#1e293b">Suspense で後から流す</text>
-  <text x="475" y="214" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">待つ間の表示</text>
-</svg>
+取得側で `next.tags` の代わりに `cacheTag` を使うようになっても、`revalidateTag("products", "max")` で消すことは変わりません。変わるのは「取得側でどう保存を宣言するか」だけで、消し方は**そのまま**です。
 
 ## まとめ
 
-- 従来モデルは判断が暗黙かつページ単位 → 「なぜキャッシュされた」「全体が動的になる」が起きる
-- 新モデルは判断を明示的に、コンポーネント単位で開発者に渡す
-- 渡される判断は 4 つ：キャッシュするか / 鮮度 / 誰が消すか / 待つ間に何を見せるか
+- 4 つのうち Request Memoization と Router Cache はそのまま
+- Data Cache と Full Route Cache の役割は `"use cache"` にまとまる（自動から明示へ）
+- 保存しない非同期データは `<Suspense>` か `"use cache"` で必ず囲む
+- 消し方（revalidate 系）は両モデル共通
