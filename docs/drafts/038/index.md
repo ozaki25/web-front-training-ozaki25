@@ -66,7 +66,7 @@ export async function getProducts() {
 
 | データの例 | 宣言 |
 |-----------|------|
-| 在庫数・株価 | `cacheLife("seconds")` |
+| 株価・為替レート | `cacheLife("seconds")` |
 | 商品カタログ | `cacheLife("hours")` |
 | ブログ記事 | `cacheLife("days")` |
 | 会社概要・利用規約 | `cacheLife("max")` |
@@ -92,6 +92,8 @@ export default function ProductPage() {
   );
 }
 ```
+
+`ProductDescription` の中で `"use cache"` を使えば、その部分は保存されます。`StockCount` は囲まないので毎回取得され、`<Suspense>` の仮表示が先に出ます。
 
 従来モデルなら、在庫数を最新にするにはページを動的にするしかなく、商品説明まで毎回作り直していました。新モデルは、商品説明は保存したまま、在庫数だけを動的にできます。これが「ページ単位から部品単位へ」の中身です。
 
