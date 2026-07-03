@@ -264,6 +264,7 @@ export default withPwa(
                 { text: "モックと MSW", link: "/drafts/090/" },
                 { text: "デシジョンテーブル", link: "/drafts/104/" },
                 { text: "状態遷移テスト", link: "/drafts/105/" },
+                { text: "テスト計画（どこまでテストするか）", link: "/drafts/106/" },
               ],
             },
             {
