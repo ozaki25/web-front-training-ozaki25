@@ -153,6 +153,10 @@ export default withPwa(
                   text: "Day 33: revalidate の使い分け",
                   link: "/lessons/day33/",
                 },
+                {
+                  text: "Day 34: キャッシュの新モデル",
+                  link: "/lessons/day34/",
+                },
               ],
             },
           ],

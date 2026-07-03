@@ -39,3 +39,4 @@
 - [Day 31: Full Route Cache — 組み立てた HTML を使い回す](/lessons/day31/)
 - [Day 32: Router Cache — ブラウザが画面遷移を速くする仕組み](/lessons/day32/)
 - [Day 33: revalidate の使い分け — 3 つの起点と波及範囲](/lessons/day33/)
+- [Day 34: キャッシュの新モデル — 4 つのキャッシュがどう変わるか](/lessons/day34/)
