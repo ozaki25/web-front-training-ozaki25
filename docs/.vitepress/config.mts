@@ -263,6 +263,7 @@ export default withPwa(
                 { text: "テストのコスト構造", link: "/drafts/049/" },
                 { text: "モックと MSW", link: "/drafts/090/" },
                 { text: "デシジョンテーブル", link: "/drafts/104/" },
+                { text: "状態遷移テスト", link: "/drafts/105/" },
               ],
             },
             {
