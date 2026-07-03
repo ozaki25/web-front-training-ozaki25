@@ -61,6 +61,27 @@ test("5000 円の送料は無料", () => {
 
 3000 ちょうどの 1 本があれば、先ほどのバグは赤くなって捕まりました。**仕様書の「〜以上」「〜まで」という言葉を見たら、その数字の前後を試す**。これだけで、テストの「効き」は劇的に変わります。
 
+<svg viewBox="0 0 520 190" role="img" aria-label="送料計算の境界を示す数直線。3000 円を境に、左の 3000 円未満は送料 500 円、右の 3000 円以上は送料 0 円。境目の前後 2999・3000・3001 を試すと、以上と超の取り違えが捕まる。3000 ちょうどが要。" style="width:100%;height:auto;max-width:520px;display:block;margin:16px auto;">
+  <rect x="0" y="0" width="520" height="190" rx="10" fill="#f8fafc"/>
+  <text x="165" y="42" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">3000 円未満</text>
+  <text x="165" y="60" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">送料 500 円</text>
+  <text x="375" y="42" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">3000 円以上</text>
+  <text x="375" y="60" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">送料 0 円</text>
+
+  <line x1="60" y1="95" x2="470" y2="95" stroke="#94a3b8" stroke-width="2"/>
+  <line x1="270" y1="78" x2="270" y2="112" stroke="#1e293b" stroke-width="2"/>
+
+  <circle cx="225" cy="95" r="5" fill="#1e293b"/>
+  <circle cx="270" cy="95" r="7" fill="#1e293b" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="315" cy="95" r="5" fill="#1e293b"/>
+
+  <text x="225" y="130" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">2999</text>
+  <text x="270" y="132" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">3000</text>
+  <text x="315" y="130" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#1e293b">3001</text>
+
+  <text x="265" y="162" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">境目の前後を試すと「以上」と「超」の取り違えが捕まる（3000 ちょうどが要）</text>
+</svg>
+
 ## 定番の「意地悪な値」リスト
 
 境界の親戚として、どんな入力にも潜む定番のエッジケースがあります。テストを読むとき、これらが試されているかを見ます。
@@ -87,7 +108,7 @@ test("送料が計算できる", () => {
 
 ## AI 時代の役割分担
 
-整理すると、テストにおける人間の仕事はこう絞られます。
+テストで人間がやることは、こう絞られます。
 
 1. **仕様の境界を伝える**: 「3000 円以上で送料無料。2999 / 3000 / 3001 を試して」と指示する。技法の言葉（境界値）を知っていれば一言で済む
 2. **生成されたテストを技法で査読する**: 同値クラスの代表は揃っているか、境界の両側はあるか、意地悪な値はあるか、expect は仕事をしているか
@@ -97,6 +118,6 @@ test("送料が計算できる", () => {
 ## まとめ
 
 - テストの価値は本数や緑の数でなく「どの値を試すか」
-- 同値分割でグループの代表に絞り、境界値分析で境目の両側を狙う。バグは境界に住む
+- 同値分割で代表に絞り、境界値分析で境目の両側を狙う（バグは境界に住む）
 - 空・ゼロ・null・極端・全角の意地悪リストも定番
-- カバレッジは「通った」だけ。expect の中身が確かめている
+- カバレッジは「通った」だけで、確かめているのは expect の中身
