@@ -39,6 +39,7 @@
 - [Day 31: Full Route Cache — 組み立てた HTML を使い回す](/lessons/day31/)
 - [Day 32: Router Cache — ブラウザが画面遷移を速くする仕組み](/lessons/day32/)
 - [Day 33: revalidate の使い分け — 3 つの起点と波及範囲](/lessons/day33/)
+- [Day 34: キャッシュの新モデル — 4 つのキャッシュがどう変わるか](/lessons/day34/)
 
 ## 候補（下書き）
 
@@ -79,10 +80,6 @@
 - [093: 動的ルート](/drafts/093/)
 - [037: Server Actions とフォーム](/drafts/037/)
 - [095: フォームバリデーション](/drafts/095/)
-- キャッシュ
-  - [107: キャッシュ — Router Cache（共通）](/drafts/107/)
-  - [038: キャッシュ — use cache（新）](/drafts/038/)
-  - [108: キャッシュ — revalidate の使い分け](/drafts/108/)
 - [039: Suspense と Streaming](/drafts/039/)
 - [040: SPA のページ遷移の仕組み](/drafts/040/)
 - [092: proxy.ts](/drafts/092/)
