@@ -262,6 +262,7 @@ export default withPwa(
                 { text: "Testing Library", link: "/drafts/048/" },
                 { text: "テストのコスト構造", link: "/drafts/049/" },
                 { text: "モックと MSW", link: "/drafts/090/" },
+                { text: "デシジョンテーブル", link: "/drafts/104/" },
               ],
             },
             {
