@@ -107,7 +107,7 @@ argument-hint: <レッスンのパスまたはID（例: drafts/105 / day26）>
 
 - `npm run docs:build` が通るか
 - 図（Mermaid）が壊れず、長い行・表が横スクロールで破綻していないか
-- **太字 `**` が素通りしていないか**。markdown-it は全角約物（（）「」など）に隣接した `**` を太字にしないため、目視では気づけない。対象ファイルを `node .claude/hooks/check-bold.js` に流し（`cat docs/drafts/XXX/index.md | node .claude/hooks/check-bold.js`）、出力が空であることを確認する。崩れたら約物を `**` の外に出す（例: `**目次（一覧）**` → `**目次**（一覧）`）
+- **太字 `**` が素通りしていないか**。markdown-it は全角約物（（）「」など）に隣接した `**` を、文中（前後が日本語）にあるとき太字にしないため、目視では気づけない。`node .claude/hooks/check-bold.js docs/drafts/XXX/index.md`（複数ファイル可）か `cat ... | node .claude/hooks/check-bold.js` で検査し、出力が空であることを確認する。**引数の渡し方を間違えると無言で通過するので、既知の崩れ（例: `テスト**強調（補足）**を置く`）で検査自体が exit 1 になることをたまに確認する**。崩れたら約物を `**` の外に出す（例: `**目次（一覧）**` → `**目次**（一覧）`）
 
 ## 出力フォーマット
 
