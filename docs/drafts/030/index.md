@@ -138,7 +138,7 @@ React の `onClick={...}` も、裏側ではこのイベントの仕組みで動
 
 - イベントは押された要素から親へ昇る（バブリング）。通り道の要素はどこでも拾える
 - `e.target` は押された場所、`e.currentTarget` は拾った場所
-- `preventDefault` は既定の動作を、`stopPropagation` は旅を止める。別物
+- `preventDefault` は既定の動作を止め、`stopPropagation` は伝播を止める（別物）
 - React の onClick はバブリング + 委譲 + 合成イベントでできている
 
 <style>
