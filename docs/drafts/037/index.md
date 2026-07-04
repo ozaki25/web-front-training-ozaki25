@@ -151,7 +151,7 @@ Server Action に認証チェックも値の検証も無かったら、それは
 
 ## まとめ
 
-- Server Actions = form の action に渡せるサーバーの関数。"use server" で宣言
-- 値は input の name 属性 → FormData で届く。API も fetch も書かない
+- Server Actions は form の action に渡せるサーバーの関数で、"use server" で宣言
+- 値は input の name 属性から FormData で届き、API も fetch も書かない
 - useActionState が「結果の state」「送信中の isPending」を画面に返す
-- 実体は公開エンドポイント。認証と検証はアクションの中で
+- 実体は公開エンドポイントなので、認証と検証はアクションの中で

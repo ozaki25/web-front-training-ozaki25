@@ -126,6 +126,6 @@ const [products, news] = await Promise.all([fetchProducts(), fetchNews()]);
 ## まとめ
 
 - SC はサーバーで「データが揃ってから描く」ので、async + await が書ける
-- 中継 API を省略してデータ源へ直接アクセスできる。秘密情報も漏れない
+- 中継 API を省略してデータ源へ直接アクセスでき、秘密情報も漏れない
 - params / searchParams は Promise。await で取り出す（Next.js 16）
 - 無関係な await の縦並び（ウォーターフォール）は Promise.all で並列に
