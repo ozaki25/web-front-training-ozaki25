@@ -114,7 +114,7 @@ export async function generateStaticParams() {
 
 ## まとめ
 
-- `[id]` フォルダで URL の一部が変数になる。1 ファイルで無数のページを捌く
-- params は Promise（await）で、値は常に文字列。ユーザー入力として検証する
-- 無いものはエラーでなく notFound()。404 と 500 は別物
+- `[id]` フォルダで URL の一部が変数になり、1 ファイルで無数のページを捌く
+- params は Promise（await）で値は常に文字列なので、ユーザー入力として検証する
+- 無いものはエラーでなく notFound() で返す（404 と 500 は別物）
 - 一覧が既知なら generateStaticParams で事前生成して CDN 配信

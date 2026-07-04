@@ -109,7 +109,7 @@ tsconfig には数十のオプションがありますが、`target`（どの世
 
 ## まとめ
 
-- tsconfig.json は TypeScript の働き方の調整盤。読むべきは strict と paths
-- strict は null チェックと暗黙 any 禁止の親スイッチ。実行前にバグを検出する網
+- tsconfig.json は TypeScript の働き方の調整盤で、読むべきは strict と paths
+- strict は null チェックと暗黙 any 禁止の親スイッチで、実行前にバグを検出する網
 - エラーが多くても strict: false にしない。報知器ごと外す対応になる
 - `@/` は paths が定義するエイリアス。「見つからない」はここを見る

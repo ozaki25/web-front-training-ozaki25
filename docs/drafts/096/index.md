@@ -136,8 +136,8 @@ export function ThemeLabel() {
 
 - 引き出しは 3 つ: localStorage（永続）、sessionStorage（タブ限り）、Cookie（サーバーに届く）
 - 判断軸は「サーバーが知る必要があるか」と「いつまで残すか」
-- localStorage は XSS で全部読まれる。トークンや個人情報は置かない（HttpOnly Cookie へ）
-- localStorage はサーバーに存在しない。触るのは useEffect の中で
+- localStorage は XSS で全部読まれるので、トークンや個人情報は置かない（HttpOnly Cookie へ）
+- localStorage はサーバーに存在しないので、触るのは useEffect の中で
 
 <style>
 .c96-demo {

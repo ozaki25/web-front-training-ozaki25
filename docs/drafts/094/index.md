@@ -137,7 +137,7 @@ export default async function ProductPage({ params }: Props) {
 
 ## まとめ
 
-- シェアのカードは `<head>` の OGP タグから作られる。読みに来るのはクローラー
-- Next.js は metadata オブジェクトの export で宣言。layout が既定、page が上書き
+- シェアのカードは `<head>` の OGP タグから作られ、読みに来るのはクローラー
+- Next.js は metadata オブジェクトの export で宣言し、layout が既定・page が上書き
 - 動的ページは generateMetadata でデータからメタデータを生成する
-- クローラーは JS を実行しない。サーバーが返す HTML に焼き込まれていることが必須
+- クローラーは JS を実行しないので、サーバーが返す HTML に焼き込まれていることが必須
