@@ -101,6 +101,6 @@ export default async function MyPage() {
 ## まとめ
 
 - HTTP はステートレス。覚えているのはブラウザ（Cookie の自動添付）
-- 名札の流派は 2 つ: 引換券のセッション方式、署名付き情報の JWT。無効化のしやすさが分岐点
-- 鎧は HttpOnly・Secure・SameSite。トークンを localStorage に置かない
+- 名札の流派は引換券のセッション方式と署名付き情報の JWT の 2 つで、無効化のしやすさが分岐点
+- 守りは HttpOnly・Secure・SameSite で、トークンを localStorage に置かない
 - サーバー側（SC / Server Actions）では cookies() で名札を照合する
