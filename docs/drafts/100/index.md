@@ -97,5 +97,5 @@ View Transitions には 2 つの使い方があります。
 
 - View Transitions は前後のスナップショットを繋いで見せる標準 API
 - view-transition-name で「同一人物」を宣言すると、位置とサイズが自動補間される
-- ページ間は CSS だけで有効化できる。未対応ブラウザでは普通の遷移に戻るだけ
-- 動きが情報を持つ場面に絞る。prefers-reduced-motion への配慮が作法
+- ページ間は CSS だけで有効化でき、未対応ブラウザでは普通の遷移に戻るだけ
+- 動きが情報を持つ場面に絞り、prefers-reduced-motion への配慮が作法
