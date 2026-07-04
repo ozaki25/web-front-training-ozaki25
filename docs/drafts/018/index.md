@@ -187,7 +187,7 @@ function UserSearch({ users, query }: { users: User[]; query: string }) {
 
 ## まとめ
 
-- JSX の `{}` には式しか書けない。だから一覧は文の for ではなく、値になる `map`
+- JSX の `{}` には式しか書けないので、一覧は文の for ではなく値になる `map`
 - 一覧表示は「データの配列 → JSX の配列」への変換
 - key は兄弟の中の名札。重複せず、同じデータなら同じ値（id が最適）
-- `filter` は全部、`find` は最初の 1 件、`some` は有無。0 件の画面も忘れない
+- `filter` は全部・`find` は最初の 1 件・`some` は有無を返し、0 件の画面も忘れない

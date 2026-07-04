@@ -300,7 +300,7 @@ fetchUser("user-1", (user) => {
 
 ## まとめ
 
-- 関数は<strong>ファーストクラスオブジェクト</strong>。変数や引数として渡せる
+- 関数は<strong>ファーストクラスオブジェクト</strong>で、変数や引数として渡せる
 - <strong>コールバック関数</strong>は「後で呼んでもらうために渡す関数」
-- <strong>高階関数</strong>は関数を受け取る関数。`map` / `filter` が代表
-- コールバックの連鎖で<strong>コールバック地獄</strong>が起きる。解決するのが Promise
+- <strong>高階関数</strong>は関数を受け取る関数で、`map` / `filter` が代表
+- 連鎖して起きる<strong>コールバック地獄</strong>を解決するのが Promise
