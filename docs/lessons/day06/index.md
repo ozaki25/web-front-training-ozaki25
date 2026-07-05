@@ -180,4 +180,4 @@ URL を入力するだけで測定できる **[PageSpeed Insights](https://pages
 
 - `alt` は画像の役割で書き分ける（情報画像は説明、装飾画像は `alt=""`）
 - **CWV** の CLS 対策は `width` / `height` や `aspect-ratio` でサイズを確定させること
-- `loading="lazy"` は画面外の遅延読み込み。ファーストビューには付けない
+- `loading="lazy"` は画面外の遅延読み込みで、ファーストビューには付けない

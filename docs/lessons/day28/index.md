@@ -165,4 +165,4 @@ export default function ProductPage() {
 
 - キャッシュは 4 種類ある（Memoization / Data / Full Route / Router）
 - 従来モデルは `fetch` ごとに指定、新モデルは `"use cache"` に統一（`cacheComponents` の 1 行で切替）
-- 新モデルの背景は「ページ単位からコンポーネント単位へ」。キャッシュしない非同期データは `<Suspense>` で囲む
+- 新モデルの背景は「ページ単位からコンポーネント単位へ」で、キャッシュしない非同期データは `<Suspense>` で囲む

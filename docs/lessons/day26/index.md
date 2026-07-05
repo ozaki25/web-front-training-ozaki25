@@ -247,7 +247,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <circle cx="89" cy="129" r="17" fill="#db2777" stroke="#831843" stroke-width="1.5"/>
   <text x="62" y="120" font-family="sans-serif" font-size="15" fill="#1e293b" font-weight="700" text-anchor="end">赤紫</text>
 
-  <!-- ===== P/D型（横長楕円＝縦が潰れる） ===== -->
+  <!-- ===== P/D型（横長楕円は縦が潰れる） ===== -->
   <g transform="translate(100,0)">
   <text x="440" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">P 型 / D 型</text>
 
@@ -276,7 +276,7 @@ L / M / S はそれぞれ Long / Medium / Short の頭文字です。
   <line x1="521" y1="175" x2="521" y2="225" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="5 3"/>
   </g>
 
-  <!-- ===== T型（縦長楕円＝横が潰れる） ===== -->
+  <!-- ===== T型（縦長楕円は横が潰れる） ===== -->
   <g transform="translate(95,0)">
   <text x="810" y="28" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="700" fill="#1e293b">T 型</text>
 

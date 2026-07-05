@@ -185,5 +185,5 @@ email=user@example.com&message=こんにちは
 ## まとめ
 
 - フォーム送信は HTML だけで完結する（`action` / `method` / `name`）
-- `name` なしは送信されない。`<button>` の `type` 省略は `submit` 扱い
+- `name` なしは送信されず、`<button>` の `type` 省略は `submit` 扱い
 - `<label>` の紐付けと `<fieldset>` のグループ化がアクセシビリティの基盤
