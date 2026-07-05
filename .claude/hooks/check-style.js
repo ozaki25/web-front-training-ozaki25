@@ -49,12 +49,15 @@ function scan(file) {
     }
     if (t.startsWith("#")) {
       for (const w of POETIC) if (t.includes(w)) hits.push(`  [詩的見出し:${w}] ${i + 1}: ${t.slice(0, 60)}`);
+      // AI が付けがちな抽象・比喩の見出し（「〜を読む目」「〜という発想」「AI 時代」「思想」など）
+      const AIFEEL = [/(読む|見る|決める|養う|磨く|見抜く)目/, /という発想/, /AI\s*時代/, /思想/, /本質/, /の世界/, /旅[へに]/];
+      for (const re of AIFEEL) if (re.test(t)) hits.push(`  [AI感の見出し] ${i + 1}: ${t.slice(0, 60)}`);
     }
     if (/[＝＋]/.test(noCode)) hits.push(`  [全角記号] ${i + 1}: ${t.slice(0, 60)}`);
     for (const s of SCAFFOLD) if (t.includes(s)) hits.push(`  [足場:${s}] ${i + 1}: ${t.slice(0, 60)}`);
     // 未観測の AI 出力を前提にした書き方の疑い（「AIに頼むと〜が出る/抜ける」「AIが書く/出す/偏る」）。
     // 指示（「AIに〜と指示できる」）は対象外。候補なので人が判断する。
-    if (/AI\s*に[^。]{0,20}頼むと(?!き)[^。]{0,30}(出|書|生成|試|抜|作|なる)/.test(noCode) || /AI\s*(が|は)[^。]{0,25}(書いて|書く|生成|出てき|出します|抜け|抜か|偏)/.test(noCode)) {
+    if (/AI\s*に[^。]{0,20}頼むと(?!き)[^。]{0,30}(出|書|生成|試|抜|作|なる)/.test(noCode) || /AI\s*(の|が|は)[^。]{0,40}(書いて|書く|生成|出てき|出します|抜け|抜か|偏|外す|網羅|量産)/.test(noCode)) {
       hits.push(`  [AI出力前提の疑い] ${i + 1}: ${t.slice(0, 60)}`);
     }
   });
