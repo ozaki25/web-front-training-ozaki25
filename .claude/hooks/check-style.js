@@ -52,6 +52,11 @@ function scan(file) {
     }
     if (/[＝＋]/.test(noCode)) hits.push(`  [全角記号] ${i + 1}: ${t.slice(0, 60)}`);
     for (const s of SCAFFOLD) if (t.includes(s)) hits.push(`  [足場:${s}] ${i + 1}: ${t.slice(0, 60)}`);
+    // 未観測の AI 出力を前提にした書き方の疑い（「AIに頼むと〜が出る/抜ける」「AIが書く/出す/偏る」）。
+    // 指示（「AIに〜と指示できる」）は対象外。候補なので人が判断する。
+    if (/AI\s*に[^。]{0,40}頼むと/.test(noCode) || /AI\s*(が|は)[^。]{0,25}(書いて|書く|生成|出てき|出します|抜け|抜か|偏)/.test(noCode)) {
+      hits.push(`  [AI出力前提の疑い] ${i + 1}: ${t.slice(0, 60)}`);
+    }
   });
   return hits;
 }
