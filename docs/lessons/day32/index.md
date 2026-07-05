@@ -199,4 +199,4 @@ export function RefreshButton() {
 - Router Cache は画面遷移を速くするためのブラウザ側のキャッシュ
 - ページ本体はリンク遷移では最新、共有レイアウトや先読みは保持される
 - 保持されたレイアウトは古くなりうる（カートのバッヂなど）
-- `revalidatePath` はブラウザの保持データにも効く。単に取り直すなら `router.refresh()`
+- `revalidatePath` はブラウザの保持データにも効き、単に取り直すなら `router.refresh()`
