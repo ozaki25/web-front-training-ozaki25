@@ -257,6 +257,7 @@ export default withPwa(
             {
               text: "テスト設計・計画",
               items: [
+                { text: "そもそもテストとは何か", link: "/drafts/110/" },
                 { text: "同値分割と境界値", link: "/drafts/047/" },
                 { text: "テスト設計技法の分類", link: "/drafts/107/" },
                 { text: "デシジョンテーブル", link: "/drafts/104/" },
