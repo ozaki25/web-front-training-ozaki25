@@ -257,22 +257,22 @@ export default withPwa(
             {
               text: "テスト設計・計画",
               items: [
-                { text: "テスト設計技法の分類", link: "/drafts/107/" },
                 { text: "テストを読む目", link: "/drafts/047/" },
+                { text: "テスト設計技法の分類", link: "/drafts/107/" },
                 { text: "デシジョンテーブル", link: "/drafts/104/" },
                 { text: "状態遷移テスト", link: "/drafts/105/" },
                 { text: "ホワイトボックステスト", link: "/drafts/109/" },
                 { text: "経験ベースのテスト技法", link: "/drafts/108/" },
-                { text: "テストのコスト構造", link: "/drafts/049/" },
                 { text: "テスト計画（どこまでテストするか）", link: "/drafts/106/" },
+                { text: "テストのコスト構造", link: "/drafts/049/" },
               ],
             },
             {
               text: "テストの実装・ツール",
               items: [
-                { text: "E2E テスト", link: "/drafts/046/" },
                 { text: "Testing Library", link: "/drafts/048/" },
                 { text: "モックと MSW", link: "/drafts/090/" },
+                { text: "E2E テスト", link: "/drafts/046/" },
               ],
             },
             {
