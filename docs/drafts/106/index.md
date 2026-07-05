@@ -58,14 +58,49 @@
 - **右上（最重点）**: 決済・ログイン・複雑な割引ロジック。境界値や組み合わせまで厚く
 - **左下**: めったに使わない画面の細部など。薄く、または今はやらない
 
-### 「影響が大きい所」はコアドメインと重なる
+### 厚くする所はコアドメインと重なる
 
-どの機能の「影響」が大きいかは、ドメイン駆動設計でいう**コアドメイン**（事業の価値の中心。競合との差になる部分）とよく重なります。
+この「影響が大きい所」は、**ドメイン駆動設計**でいう**コアドメイン**とよく重なります。事業のどの部分かを、2 つの軸で見分ける考え方です。
 
-- 決済・在庫の引き当て・料金計算のような**中核**は、壊れると事業が止まる（つまり影響が大きい）。ここを手厚くテスト・レビューする
-- 問い合わせフォームのような**どこにでもある部分**は、影響が小さく差にもならない。薄くてよい
+- **競合との差になるか**: 自分たちの強みか、どこにでもある機能か
+- **ロジックが複雑か**: 作り込みが要るか、単純か
 
-「どこを手厚く見るか」は、コアドメイン（自分たちの価値の中心はどこか）を見極める作業でもあります。
+<svg viewBox="0 0 480 340" role="img" aria-label="コアドメインを見分ける2軸の図。縦軸が業務ロジックの複雑さで上ほど複雑、横軸が競合との差別化で右ほど差になる。右上の複雑かつ差になる所がコアドメインで最も手厚く見る。左上の複雑だが差にならない所は汎用で既製品や外部サービスに任せる。下段の単純な所は支援で、軽く作るか AI に任せる。" style="width:100%;height:auto;max-width:480px;display:block;margin:16px auto;">
+  <rect x="0" y="0" width="480" height="340" rx="10" fill="#f8fafc"/>
+
+  <text x="56" y="108" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">複雑</text>
+  <text x="56" y="222" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">単純</text>
+
+  <rect x="118" y="50" width="150" height="110" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="193" y="96" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">汎用（一般）</text>
+  <text x="193" y="116" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">既製品・外部サービス</text>
+
+  <rect x="272" y="50" width="150" height="110" rx="6" fill="#e2e8f0" stroke="#1e293b" stroke-width="2.5"/>
+  <text x="347" y="90" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">コアドメイン（中核）</text>
+  <text x="347" y="110" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">最も手厚く</text>
+  <text x="347" y="127" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">人が伴走して見る</text>
+
+  <rect x="118" y="164" width="150" height="110" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="193" y="214" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">支援（補完）</text>
+  <text x="193" y="234" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">軽く作る</text>
+
+  <rect x="272" y="164" width="150" height="110" rx="6" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="347" y="214" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">支援（補完）</text>
+  <text x="347" y="234" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">AI に任せる</text>
+
+  <text x="193" y="292" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">差にならない</text>
+  <text x="347" y="292" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">競合との差になる</text>
+
+  <text x="270" y="320" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#475569">複雑さ × 競合との差。右上の中核を最も手厚く見る</text>
+</svg>
+
+この見方で、機能は 3 種類に分かれます。
+
+- **コアドメイン（中核）**: 複雑で、競合との差になる中心。決済・料金計算・独自の推薦など。壊れると事業が止まり、他社から買うこともできない。**最も手厚くテスト・レビューする**
+- **汎用（一般）**: 複雑だが差にはならない、どこでも同じ部分。認証やメール配信など。**自分で作り込まず、既製品や外部サービスに任せる**
+- **支援（補完）**: 単純で差にもならない部分。管理画面の一覧など。**軽く作る**
+
+AI で開発する今、この 3 分類はそのまま「どこを人が手厚く見るか」の判断に効きます。中核は人が伴走して厚く見る、汎用は買う、支援は AI に任せる。つまり手厚くテスト・レビューする先を選ぶことは、自分たちの価値の中心（コアドメイン）を見極める作業でもあります。
 
 ## どの層を厚くするか
 
