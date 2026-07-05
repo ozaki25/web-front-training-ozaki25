@@ -157,6 +157,10 @@ export default withPwa(
                   text: "Day 34: キャッシュの新モデル",
                   link: "/lessons/day34/",
                 },
+                {
+                  text: "Day 35: テスト計画",
+                  link: "/lessons/day35/",
+                },
               ],
             },
           ],
