@@ -263,7 +263,7 @@ export default withPwa(
                 { text: "状態遷移テスト", link: "/drafts/105/" },
                 { text: "ホワイトボックステスト", link: "/drafts/109/" },
                 { text: "経験ベースのテスト技法", link: "/drafts/108/" },
-                { text: "テスト計画（工数をどこに配るか）", link: "/drafts/106/" },
+                { text: "テスト計画（工数をどこにかけるか）", link: "/drafts/106/" },
               ],
             },
             {
