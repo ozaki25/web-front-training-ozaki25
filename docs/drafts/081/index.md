@@ -40,7 +40,7 @@ import { ProductCard } from "./product-card";
 | **裸の名前が解決できない** | `import ... from "react"` の `"react"` はパスではない。ブラウザは `node_modules` を知らない |
 | **変換が必要** | JSX や TypeScript はブラウザが理解できない。取得する前に変換が要る |
 
-## バンドラー — まとめて、繋いで、変換する
+## バンドラー — まとめて繋いで変換する
 
 この 3 つの問題を一括で解決するのが**バンドラー**です。代表は Webpack、esbuild、Rollup、そして Next.js が使う **Turbopack** です。
 

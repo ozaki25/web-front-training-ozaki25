@@ -6,7 +6,7 @@
 - JavaScript のオブジェクトとの「似て非なる」違いを知る
 - `JSON.parse` / `JSON.stringify` の変換の仕組みと、消える値の存在を知る
 
-## API のレスポンスは、実は文字列
+## API のレスポンスは実は文字列
 
 `fetch` で API を呼んで `.json()` で受け取ると、JavaScript のオブジェクトが手に入ります。
 

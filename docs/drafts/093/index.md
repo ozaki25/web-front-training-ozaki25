@@ -6,7 +6,7 @@
 - params で値を受け取る流れを知る
 - 事前生成（generateStaticParams)と 404 の扱いを知る
 
-## 商品が 1 万件あっても、page.tsx は 1 つ
+## 商品が 1 万件あっても page.tsx は 1 つ
 
 EC サイトの商品ページの URL は `/products/1`、`/products/2`、…と商品の数だけあります。1 万商品あったら、page.tsx を 1 万個作るのでしょうか。
 
