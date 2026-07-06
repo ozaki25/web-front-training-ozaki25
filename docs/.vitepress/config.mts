@@ -160,6 +160,10 @@ export default withPwa(
                   text: "Day 34: キャッシュの新モデル",
                   link: "/lessons/day34/",
                 },
+                {
+                  text: "Day 35: テスト計画",
+                  link: "/lessons/day35/",
+                },
               ],
             },
           ],
@@ -264,7 +268,6 @@ export default withPwa(
                 { text: "状態遷移テスト", link: "/drafts/105/" },
                 { text: "ホワイトボックステスト", link: "/drafts/109/" },
                 { text: "経験ベースのテスト技法", link: "/drafts/108/" },
-                { text: "テスト計画（工数をどこにかけるか）", link: "/drafts/106/" },
               ],
             },
             {
