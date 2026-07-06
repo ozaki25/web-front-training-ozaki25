@@ -1,4 +1,4 @@
-# useEffect と副作用 — React の外の世界と同期する
+# useEffect と副作用 — React の外と同期する
 
 ## 今日のゴール
 

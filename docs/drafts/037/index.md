@@ -1,4 +1,4 @@
-# Server Actions とフォーム — action に関数を渡すという発想
+# Server Actions とフォーム — action に関数を渡す
 
 ## 今日のゴール
 
