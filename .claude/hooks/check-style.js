@@ -4,6 +4,7 @@
 //   2) 見出し（# 行）に詩的・文学的な語（正体・裏側・世界 など）
 //   3) 本文に全角記号 ＝ ＋（「A は B」「A に B を足す」と言葉で書く）
 //   4) 足場フレーズ（「今日は〜見ていきます」「結論から言うと」など）
+//   5) 短い見出し（## 以降）に読点「、」や全角丸括弧「（）」（中身を表す名詞句にする）
 // 使い方: node .claude/hooks/check-style.js docs/drafts/107/index.md [...]
 //         省略時は docs/drafts と docs/lessons の全 index.md を対象にする。
 // 検出は「候補」。引用の格言・概念語など正当なものは人が判断して除外する。
@@ -52,6 +53,8 @@ function scan(file) {
       // AI が付けがちな抽象・比喩の見出し（「〜を読む目」「〜という発想」「AI 時代」「思想」など）
       const AIFEEL = [/(読む|見る|決める|養う|磨く|見抜く)目/, /という発想/, /AI\s*時代/, /思想/, /本質/, /の世界/, /旅[へに]/];
       for (const re of AIFEEL) if (re.test(t)) hits.push(`  [AI感の見出し] ${i + 1}: ${t.slice(0, 60)}`);
+      // 短い見出し（## 以降）に読点・全角丸括弧は不要。中身を表す名詞句にする（h1 タイトルの — 区切りは対象外）。
+      if (/^#{2,}\s/.test(t) && /[、（）]/.test(t)) hits.push(`  [見出しに読点/括弧] ${i + 1}: ${t.slice(0, 60)}`);
     }
     if (/[＝＋]/.test(noCode)) hits.push(`  [全角記号] ${i + 1}: ${t.slice(0, 60)}`);
     for (const s of SCAFFOLD) if (t.includes(s)) hits.push(`  [足場:${s}] ${i + 1}: ${t.slice(0, 60)}`);
