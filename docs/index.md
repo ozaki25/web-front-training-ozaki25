@@ -40,3 +40,4 @@
 - [Day 32: Router Cache — ブラウザが画面遷移を速くする仕組み](/lessons/day32/)
 - [Day 33: revalidate の使い分け — 3 つの起点と波及範囲](/lessons/day33/)
 - [Day 34: キャッシュの新モデル — 4 つのキャッシュがどう変わるか](/lessons/day34/)
+- [Day 35: テスト計画 — 限られた工数をどこにかけるか](/lessons/day35/)
