@@ -263,10 +263,8 @@ export default withPwa(
               items: [
                 { text: "そもそもテストとは何か", link: "/drafts/110/" },
                 { text: "テスト設計技法の分類", link: "/drafts/107/" },
-                { text: "ブラックボックステスト（047+104+105 統合）", link: "/drafts/111/" },
                 { text: "同値分割と境界値", link: "/drafts/047/" },
-                { text: "デシジョンテーブル", link: "/drafts/104/" },
-                { text: "状態遷移テスト", link: "/drafts/105/" },
+                { text: "デシジョンテーブルと状態遷移テスト", link: "/drafts/111/" },
                 { text: "ホワイトボックステスト", link: "/drafts/109/" },
                 { text: "経験ベースのテスト技法", link: "/drafts/108/" },
               ],
