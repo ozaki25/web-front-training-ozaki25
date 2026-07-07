@@ -161,6 +161,10 @@ export default withPwa(
                   text: "Day 35: テスト計画",
                   link: "/lessons/day35/",
                 },
+                {
+                  text: "Day 37: 同値分割と境界値",
+                  link: "/lessons/day37/",
+                },
               ],
             },
           ],
