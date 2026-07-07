@@ -161,6 +161,10 @@ export default withPwa(
                   text: "Day 35: テスト計画",
                   link: "/lessons/day35/",
                 },
+                {
+                  text: "Day 36: テスト設計技法の分類",
+                  link: "/lessons/day36/",
+                },
               ],
             },
           ],
