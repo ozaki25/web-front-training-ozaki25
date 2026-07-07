@@ -161,6 +161,10 @@ export default withPwa(
                   text: "Day 35: テスト計画",
                   link: "/lessons/day35/",
                 },
+                {
+                  text: "Day 38: デシジョンテーブルと状態遷移テスト",
+                  link: "/lessons/day38/",
+                },
               ],
             },
           ],
