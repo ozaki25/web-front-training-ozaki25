@@ -165,6 +165,10 @@ export default withPwa(
                   text: "Day 36: テスト設計技法の分類",
                   link: "/lessons/day36/",
                 },
+                {
+                  text: "Day 37: 同値分割と境界値",
+                  link: "/lessons/day37/",
+                },
               ],
             },
           ],
