@@ -162,6 +162,10 @@ export default withPwa(
                   link: "/lessons/day35/",
                 },
                 {
+                  text: "Day 36: テスト設計技法の分類",
+                  link: "/lessons/day36/",
+                },
+                {
                   text: "Day 38: デシジョンテーブルと状態遷移テスト",
                   link: "/lessons/day38/",
                 },
