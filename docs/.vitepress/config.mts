@@ -166,6 +166,10 @@ export default withPwa(
                   link: "/lessons/day36/",
                 },
                 {
+                  text: "Day 37: 同値分割と境界値",
+                  link: "/lessons/day37/",
+                },
+                {
                   text: "Day 38: デシジョンテーブルと状態遷移テスト",
                   link: "/lessons/day38/",
                 },
