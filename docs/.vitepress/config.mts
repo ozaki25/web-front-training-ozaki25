@@ -164,6 +164,10 @@ export default withPwa(
                   text: "Day 35: テスト計画",
                   link: "/lessons/day35/",
                 },
+                {
+                  text: "Day 36: テスト設計技法の分類",
+                  link: "/lessons/day36/",
+                },
               ],
             },
           ],
@@ -262,7 +266,6 @@ export default withPwa(
               text: "テスト設計・計画",
               items: [
                 { text: "そもそもテストとは何か", link: "/drafts/110/" },
-                { text: "テスト設計技法の分類", link: "/drafts/107/" },
                 { text: "同値分割と境界値", link: "/drafts/047/" },
                 { text: "デシジョンテーブルと状態遷移テスト", link: "/drafts/111/" },
                 { text: "ホワイトボックステスト", link: "/drafts/109/" },
