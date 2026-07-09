@@ -189,6 +189,7 @@ export default withPwa(
                 { text: "日付とタイムゾーンの罠", link: "/drafts/085/" },
                 { text: "URL の解剖", link: "/drafts/084/" },
                 { text: "JSON", link: "/drafts/103/" },
+                { text: "JavaScript の妙な挙動", link: "/drafts/112/" },
               ],
             },
             {
