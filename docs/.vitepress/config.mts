@@ -172,6 +172,10 @@ export default withPwa(
                   text: "Day 37: 同値分割と境界値",
                   link: "/lessons/day37/",
                 },
+                {
+                  text: "Day 38: デシジョンテーブルと状態遷移テスト",
+                  link: "/lessons/day38/",
+                },
               ],
             },
           ],
@@ -271,7 +275,6 @@ export default withPwa(
               text: "テスト設計・計画",
               items: [
                 { text: "そもそもテストとは何か", link: "/drafts/110/" },
-                { text: "デシジョンテーブルと状態遷移テスト", link: "/drafts/111/" },
                 { text: "ホワイトボックステスト", link: "/drafts/109/" },
                 { text: "経験ベースのテスト技法", link: "/drafts/108/" },
               ],
