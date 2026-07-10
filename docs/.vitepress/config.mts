@@ -319,6 +319,12 @@ export default withPwa(
               ],
             },
             {
+              text: "インフラと本番環境",
+              items: [
+                { text: "ローカル・ステージング・本番", link: "/drafts/114/" },
+              ],
+            },
+            {
               text: "設計とコードの読み書き",
               items: [
                 { text: "コンポーネントの責務分割", link: "/drafts/066/" },
