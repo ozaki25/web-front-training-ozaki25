@@ -25,7 +25,7 @@ AI に Next.js アプリを作ってもらい、`npm run dev` を実行して `h
 ```mermaid
 flowchart LR
   subgraph local["ローカル（開発中）"]
-    dev["自分の PC<br>サーバー役もブラウザ役もここ"]
+    dev["自分の PC<br>サーバー役もブラウザ役も同居"]
   end
   subgraph prod["デプロイ後"]
     server["どこかのサーバー<br>（データセンターの中）"]
