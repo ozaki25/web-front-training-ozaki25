@@ -194,6 +194,7 @@ export default withPwa(
                 { text: "URL の解剖", link: "/drafts/084/" },
                 { text: "JSON", link: "/drafts/103/" },
                 { text: "JavaScript の妙な挙動", link: "/drafts/112/" },
+                { text: "IME変換中のEnter", link: "/drafts/115/" },
               ],
             },
             {
@@ -211,6 +212,7 @@ export default withPwa(
                 { text: "エラーバウンダリ", link: "/drafts/083/" },
                 { text: "イベントの仕組み", link: "/drafts/030/" },
                 { text: "データ取得ライブラリ", link: "/drafts/031/" },
+                { text: "楽観的更新", link: "/drafts/116/" },
               ],
             },
             {
@@ -250,6 +252,7 @@ export default withPwa(
                 { text: "カスケードと詳細度", link: "/drafts/076/" },
                 { text: "モダン CSS", link: "/drafts/077/" },
                 { text: "ダークモードの仕組み", link: "/drafts/078/" },
+                { text: "スタッキングコンテキスト", link: "/drafts/119/" },
               ],
             },
             {
@@ -285,6 +288,7 @@ export default withPwa(
                 { text: "Testing Library", link: "/drafts/048/" },
                 { text: "モックと MSW", link: "/drafts/090/" },
                 { text: "E2E テスト", link: "/drafts/046/" },
+                { text: "プロパティベーステスト", link: "/drafts/120/" },
               ],
             },
             {
@@ -295,6 +299,7 @@ export default withPwa(
                 { text: "next/image と next/font", link: "/drafts/061/" },
                 { text: "レンダリングパイプライン", link: "/drafts/102/" },
                 { text: "フロントエンドの可観測性", link: "/drafts/082/" },
+                { text: "ソースマップ", link: "/drafts/118/" },
               ],
             },
             {
@@ -304,6 +309,7 @@ export default withPwa(
                 { text: "構造的型付け", link: "/drafts/070/" },
                 { text: "型は実行時に消える", link: "/drafts/071/" },
                 { text: "strict の仕組み", link: "/drafts/099/" },
+                { text: "as const と satisfies", link: "/drafts/121/" },
               ],
             },
             {
@@ -322,6 +328,7 @@ export default withPwa(
               text: "インフラと本番環境",
               items: [
                 { text: "ローカル・ステージング・本番", link: "/drafts/114/" },
+                { text: "フィーチャーフラグ", link: "/drafts/117/" },
               ],
             },
             {
