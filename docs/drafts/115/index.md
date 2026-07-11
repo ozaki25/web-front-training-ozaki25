@@ -41,7 +41,9 @@ Enter キーには 2 つの役割が同居しています。
 
 利用者はこの 2 つを無意識に使い分けていますが、どちらの Enter でも `keydown` イベントは発火します。だから `onKeyDown` で Enter を拾って送信するコードは、確定のつもりの Enter を送信の合図と取り違えます。
 
-この 2 つを見分けるために用意されているのが、キーボードイベントの `isComposing` プロパティです。`compositionstart` から `compositionend` までの間に発火したキーボードイベントでは `true` になります。変換確定の Enter の keydown は `compositionend` より前に発火するので、そこでは `isComposing` が `true` です。
+この 2 つを見分けるために用意されているのが、キーボードイベントの `isComposing` プロパティです。`compositionstart` から `compositionend` までの間に発火したキーボードイベントでは `true` になります。多くのブラウザでは、変換確定の Enter の keydown は `compositionend` より前に発火するので、そこでは `isComposing` が `true` になります。
+
+ただし Safari は順番が逆で、確定の Enter では `compositionend` が先に発火し、そのあとの keydown ではすでに `isComposing` が `false` に戻っています。`isComposing` だけに頼ると Safari を取りこぼすので、実装では次に見るもう 1 つの手がかりを併用します。
 
 ```mermaid
 sequenceDiagram
@@ -111,11 +113,13 @@ export function ChatInput({ onSend }: Props) {
 
 英語で試すぶんにはきれいに動きます。しかし日本語では、変換確定の Enter の keydown もこの条件に一致するため、書きかけの本文がそのまま送信されます。
 
-直し方は 1 行です。Enter の判定より先に `isComposing` を確かめ、変換中なら何もしません。React の `onKeyDown` に渡ってくるのは React が包んだイベントなので、`event.nativeEvent` からブラウザ本来のイベントを参照します。
+直し方は、Enter の判定より先に変換中かどうかを確かめ、変換中なら何もしないことです。React の `onKeyDown` に渡ってくるのは React が包んだイベントなので、`event.nativeEvent` からブラウザ本来のイベントを参照します。
 
 ```tsx
         onKeyDown={(event) => {
-          if (event.nativeEvent.isComposing) {
+          // isComposing に加えて keyCode 229 も見る。
+          // Safari は確定の Enter で isComposing が先に false へ戻るため
+          if (event.nativeEvent.isComposing || event.keyCode === 229) {
             return; // 変換確定の Enter では送信しない
           }
           if (event.key === "Enter" && !event.shiftKey) {
@@ -124,6 +128,8 @@ export function ChatInput({ onSend }: Props) {
           }
         }}
 ```
+
+`keyCode` は非推奨のプロパティですが、IME 確定の Enter に限っては、ブラウザが `229` という特別な値を入れる歴史的な決まりが今も広く使われています。`isComposing` 単独ではなく、この 2 つを合わせて確認するのが実務でのよくある書き方です。
 
 なお、Enter 送信を付けても `<form>` と送信ボタンは残しています。キーボードの Enter はあくまで近道で、マウスや支援技術で操作する人はボタンから送信するためです。`<label>` を `htmlFor` で結びつけておくのも同じ理由で、何の入力欄かをスクリーンリーダーにも伝えます。
 
