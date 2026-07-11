@@ -195,6 +195,7 @@ export default withPwa(
                 { text: "JSON", link: "/drafts/103/" },
                 { text: "JavaScript の妙な挙動", link: "/drafts/112/" },
                 { text: "IME変換中のEnter", link: "/drafts/115/" },
+                { text: "debounce と throttle", link: "/drafts/129/" },
               ],
             },
             {
@@ -214,6 +215,7 @@ export default withPwa(
                 { text: "データ取得ライブラリ", link: "/drafts/031/" },
                 { text: "楽観的更新", link: "/drafts/116/" },
                 { text: "競合状態", link: "/drafts/122/" },
+                { text: "メモリリーク", link: "/drafts/130/" },
               ],
             },
             {
@@ -267,6 +269,7 @@ export default withPwa(
                 { text: "WAI-ARIA の仕組み", link: "/drafts/043/" },
                 { text: "フォーカス管理", link: "/drafts/044/" },
                 { text: "アクセシビリティ検査の原理", link: "/drafts/089/" },
+                { text: "タッチターゲット", link: "/drafts/133/" },
               ],
             },
             {
@@ -277,6 +280,8 @@ export default withPwa(
                 { text: "OAuth と OIDC", link: "/drafts/053/" },
                 { text: "パスキー", link: "/drafts/087/" },
                 { text: "npm サプライチェーン", link: "/drafts/054/" },
+                { text: "CSP", link: "/drafts/132/" },
+                { text: "サードパーティスクリプトの信頼範囲", link: "/drafts/134/" },
               ],
             },
             {
@@ -294,6 +299,7 @@ export default withPwa(
                 { text: "モックと MSW", link: "/drafts/090/" },
                 { text: "E2E テスト", link: "/drafts/046/" },
                 { text: "プロパティベーステスト", link: "/drafts/120/" },
+                { text: "壊し方のカタログ", link: "/drafts/135/" },
               ],
             },
             {
@@ -305,6 +311,7 @@ export default withPwa(
                 { text: "レンダリングパイプライン", link: "/drafts/102/" },
                 { text: "フロントエンドの可観測性", link: "/drafts/082/" },
                 { text: "ソースマップ", link: "/drafts/118/" },
+                { text: "N+1とウォーターフォール", link: "/drafts/131/" },
               ],
             },
             {
