@@ -213,6 +213,7 @@ export default withPwa(
                 { text: "イベントの仕組み", link: "/drafts/030/" },
                 { text: "データ取得ライブラリ", link: "/drafts/031/" },
                 { text: "楽観的更新", link: "/drafts/116/" },
+                { text: "競合状態", link: "/drafts/122/" },
               ],
             },
             {
@@ -227,6 +228,7 @@ export default withPwa(
                 { text: "フォームバリデーション", link: "/drafts/095/" },
                 { text: "Suspense と Streaming", link: "/drafts/039/" },
                 { text: "SPA のページ遷移の仕組み", link: "/drafts/040/" },
+                { text: "SPA と 404", link: "/drafts/124/" },
                 { text: "proxy.ts", link: "/drafts/092/" },
                 { text: "環境変数", link: "/drafts/065/" },
                 { text: "metadata と OGP", link: "/drafts/094/" },
@@ -239,10 +241,13 @@ export default withPwa(
                 { text: "CORS", link: "/drafts/036/" },
                 { text: "WebSocket と SSE", link: "/drafts/041/" },
                 { text: "HTTP キャッシュと CDN", link: "/drafts/060/" },
+                { text: "共有キャッシュ事故", link: "/drafts/125/" },
+                { text: "bfcache", link: "/drafts/126/" },
                 { text: "Service Worker", link: "/drafts/079/" },
                 { text: "Web Storage", link: "/drafts/096/" },
                 { text: "View Transitions", link: "/drafts/100/" },
                 { text: "REST と GraphQL", link: "/drafts/101/" },
+                { text: "二重送信と冪等性", link: "/drafts/123/" },
               ],
             },
             {
@@ -329,6 +334,7 @@ export default withPwa(
               items: [
                 { text: "ローカル・ステージング・本番", link: "/drafts/114/" },
                 { text: "フィーチャーフラグ", link: "/drafts/117/" },
+                { text: "結果整合性", link: "/drafts/127/" },
               ],
             },
             {
@@ -346,6 +352,7 @@ export default withPwa(
                 { text: "UI デザインの法則", link: "/drafts/073/" },
                 { text: "OOUI", link: "/drafts/074/" },
                 { text: "デザインシステムの実装", link: "/drafts/075/" },
+                { text: "取り消せる設計", link: "/drafts/128/" },
               ],
             },
             {

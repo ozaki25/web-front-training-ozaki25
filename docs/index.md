@@ -77,6 +77,7 @@
 - [030: イベントの仕組み](/drafts/030/)
 - [031: データ取得ライブラリ](/drafts/031/)
 - [116: 楽観的更新](/drafts/116/)
+- [122: 競合状態](/drafts/122/)
 
 ### Next.js / App Router
 
@@ -89,6 +90,7 @@
 - [095: フォームバリデーション](/drafts/095/)
 - [039: Suspense と Streaming](/drafts/039/)
 - [040: SPA のページ遷移の仕組み](/drafts/040/)
+- [124: SPA と 404](/drafts/124/)
 - [092: proxy.ts](/drafts/092/)
 - [065: 環境変数](/drafts/065/)
 - [094: metadata と OGP](/drafts/094/)
@@ -99,10 +101,13 @@
 - [036: CORS](/drafts/036/)
 - [041: WebSocket と SSE](/drafts/041/)
 - [060: HTTP キャッシュと CDN](/drafts/060/)
+- [125: 共有キャッシュ事故](/drafts/125/)
+- [126: bfcache](/drafts/126/)
 - [079: Service Worker](/drafts/079/)
 - [096: Web Storage](/drafts/096/)
 - [100: View Transitions](/drafts/100/)
 - [101: REST と GraphQL](/drafts/101/)
+- [123: 二重送信と冪等性](/drafts/123/)
 
 ### CSS
 
@@ -176,6 +181,7 @@
 
 - [114: ローカル・ステージング・本番](/drafts/114/)
 - [117: フィーチャーフラグ](/drafts/117/)
+- [127: 結果整合性](/drafts/127/)
 
 ### 設計とコードの読み書き
 
@@ -189,6 +195,7 @@
 - [073: UI デザインの法則](/drafts/073/)
 - [074: OOUI](/drafts/074/)
 - [075: デザインシステムの実装](/drafts/075/)
+- [128: 取り消せる設計](/drafts/128/)
 
 ### AI との協働
 
