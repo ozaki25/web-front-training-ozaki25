@@ -66,6 +66,7 @@
 - [146: truthy と falsy](/drafts/146/)
 - [151: コールスタック](/drafts/151/)
 - [152: 配列とオブジェクト](/drafts/152/)
+- [155: WebAssembly](/drafts/155/)
 
 ### React の核
 

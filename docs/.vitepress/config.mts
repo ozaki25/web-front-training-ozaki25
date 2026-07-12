@@ -200,6 +200,7 @@ export default withPwa(
                 { text: "truthy と falsy", link: "/drafts/146/" },
                 { text: "コールスタック", link: "/drafts/151/" },
                 { text: "配列とオブジェクト", link: "/drafts/152/" },
+                { text: "WebAssembly", link: "/drafts/155/" },
               ],
             },
             {
