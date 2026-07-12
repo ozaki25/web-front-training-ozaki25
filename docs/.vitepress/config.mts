@@ -198,6 +198,8 @@ export default withPwa(
                 { text: "debounce と throttle", link: "/drafts/129/" },
                 { text: "ハッシュテーブル", link: "/drafts/137/" },
                 { text: "truthy と falsy", link: "/drafts/146/" },
+                { text: "コールスタック", link: "/drafts/151/" },
+                { text: "配列とオブジェクト", link: "/drafts/152/" },
               ],
             },
             {
@@ -291,6 +293,7 @@ export default withPwa(
                 { text: "クリックジャッキング", link: "/drafts/143/" },
                 { text: "JWTは誰でも読める", link: "/drafts/144/" },
                 { text: "IDOR", link: "/drafts/148/" },
+                { text: "SQL インジェクション", link: "/drafts/150/" },
               ],
             },
             {
@@ -323,6 +326,7 @@ export default withPwa(
                 { text: "N+1とウォーターフォール", link: "/drafts/131/" },
                 { text: "計算量とO記法", link: "/drafts/140/" },
                 { text: "フォントの遅延", link: "/drafts/149/" },
+                { text: "巨大リストの仮想化", link: "/drafts/154/" },
               ],
             },
             {
@@ -354,6 +358,7 @@ export default withPwa(
                 { text: "フィーチャーフラグ", link: "/drafts/117/" },
                 { text: "結果整合性", link: "/drafts/127/" },
                 { text: "コールドスタート", link: "/drafts/138/" },
+                { text: "ロードバランサ", link: "/drafts/153/" },
               ],
             },
             {
