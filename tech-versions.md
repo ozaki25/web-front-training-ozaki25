@@ -22,6 +22,7 @@
 | MSW | v2 | `http.get(...)` + `HttpResponse.json(...)`（v1 の `rest.get` / `res(ctx.json())` から API 刷新） |
 | Zod | **4** | `z.object` / `safeParse`。メール等の形式検証はトップレベル関数に昇格（`z.email()`、`z.url()`、`z.uuidv4()` 等）。`z.string().email()` の形は**非推奨**（次のメジャーで削除予定）。クライアントとサーバーでスキーマ共有が定番 |
 | Zustand | v5 | `create<T>((set) => ...)`。セレクタで購読粒度を制御 |
+| WebAssembly | 3.0（2025/09 仕様完成） | 1.0 は 2019/12 に W3C 勧告（プレスリリースで「HTML・CSS・JavaScript に続く 4 つ目の言語」と紹介）。3.0 で GC・Memory64・例外処理などが標準化。drafts/155 は概念紹介にとどめ、仕様バージョンには踏み込まない |
 
 ## Next.js の主要 API 変更（従来 → 現在）
 
