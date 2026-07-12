@@ -197,6 +197,7 @@ export default withPwa(
                 { text: "IME変換中のEnter", link: "/drafts/115/" },
                 { text: "debounce と throttle", link: "/drafts/129/" },
                 { text: "ハッシュテーブル", link: "/drafts/137/" },
+                { text: "truthy と falsy", link: "/drafts/146/" },
               ],
             },
             {
@@ -217,6 +218,7 @@ export default withPwa(
                 { text: "楽観的更新", link: "/drafts/116/" },
                 { text: "競合状態", link: "/drafts/122/" },
                 { text: "メモリリーク", link: "/drafts/130/" },
+                { text: "純粋関数", link: "/drafts/145/" },
               ],
             },
             {
@@ -286,6 +288,9 @@ export default withPwa(
                 { text: "CSP", link: "/drafts/132/" },
                 { text: "サードパーティスクリプトの信頼範囲", link: "/drafts/134/" },
                 { text: "パスワードの保存", link: "/drafts/139/" },
+                { text: "クリックジャッキング", link: "/drafts/143/" },
+                { text: "JWTは誰でも読める", link: "/drafts/144/" },
+                { text: "IDOR", link: "/drafts/148/" },
               ],
             },
             {
@@ -317,6 +322,7 @@ export default withPwa(
                 { text: "ソースマップ", link: "/drafts/118/" },
                 { text: "N+1とウォーターフォール", link: "/drafts/131/" },
                 { text: "計算量とO記法", link: "/drafts/140/" },
+                { text: "フォントの遅延", link: "/drafts/149/" },
               ],
             },
             {
@@ -367,6 +373,7 @@ export default withPwa(
                 { text: "デザインシステムの実装", link: "/drafts/075/" },
                 { text: "取り消せる設計", link: "/drafts/128/" },
                 { text: "ローディングの見せ方", link: "/drafts/141/" },
+                { text: "エンプティステート", link: "/drafts/147/" },
               ],
             },
             {

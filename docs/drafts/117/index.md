@@ -8,7 +8,7 @@
 
 ## 作りかけの機能の置き場所
 
-新しい決済画面を作るのに 2 週間かかるとします。チーム開発では、main ブランチにマージされたコードが本番、つまり実際のユーザーが使う環境にデプロイされます。作りかけの決済画面が main に入ってそのままデプロイされたら、未完成の画面がユーザーに見えてしまいそうです。
+新しい決済画面を作るのに 2 週間かかるとします。チーム開発では多くの場合、main ブランチにマージされたコードが本番、つまり実際のユーザーが使う環境にデプロイされます。作りかけの決済画面が main に入ってそのままデプロイされたら、未完成の画面がユーザーに見えてしまいそうです。
 
 そう考えると「完成するまで main に入れない」が自然な答えに思えます。完成まで自分のブランチで作業を続けるやり方です。ただ、ブランチが長生きすると別の問題が出てきます。
 
@@ -22,13 +22,18 @@
 
 フィーチャーフラグ（feature flag。フィーチャートグルとも呼びます）は、機能単位の on/off スイッチです。仕組みは単純で、機能のコードを if の分岐で包みます。
 
-```ts
-// フラグの値は、コードの外にある設定や管理画面から読み込む
-const flags = await getFeatureFlags();
+```tsx
+import { getFeatureFlags } from "@/lib/feature-flags";
+import { NewCheckout } from "./new-checkout";
+import { OldCheckout } from "./old-checkout";
 
-if (flags.newCheckout) {
-  return <NewCheckout />; // 新しい決済画面
-} else {
+export default async function CheckoutPage() {
+  // フラグの値は、コードの外にある設定や管理画面から読み込む
+  const flags = await getFeatureFlags();
+
+  if (flags.newCheckout) {
+    return <NewCheckout />; // 新しい決済画面
+  }
   return <OldCheckout />; // 従来の決済画面
 }
 ```

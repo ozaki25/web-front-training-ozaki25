@@ -8,7 +8,7 @@
 
 ## 一覧画面が妙に遅い
 
-書籍の一覧ページを開くと、表示されるまで数秒待たされる。データが 10 件のうちは気にならなかったのに、50 件、100 件と増えるにつれて、目に見えて遅くなっていく。一覧画面が遅くなる原因はいろいろありますが、その定番のひとつが今日のテーマです。
+書籍の一覧ページを開くと、表示されるまで数秒待たされます。データが 10 件のうちは気にならなかったのに、50 件、100 件と増えるにつれて目に見えて遅くなっていく。一覧画面が遅くなる原因はいろいろありますが、その定番のひとつが今日のテーマです。
 
 複数のリクエストが絡むトラブルというと、レスポンスが返る順序が入れ替わって古い結果が画面に残る競合状態もありますが、今日の話は順序ではありません。リクエストの積み重なり方で所要時間そのものが膨らむ、速さの話です。
 
@@ -55,14 +55,14 @@ export default async function BooksPage() {
 
 このコードは間違いではありません。型も合っているし、動かせば正しい画面が出ます。問題はループの中の `await` です。`await` は「この処理が終わるまで次に進まない」という意味なので、for ループの中に書くと、**1 件目の詳細が返ってくるまで 2 件目のリクエストを投げない**動きになります。
 
-リクエストが 1 本ずつ順番に、滝が段々と落ちるように積み重なる。この形を**ウォーターフォール**（waterfall）と呼びます。開発者ツールの Network タブでリクエストの帯が階段状に並ぶ、あの見た目のことです。
+こうしてリクエストが 1 本ずつ順番に、滝が段々と落ちるように積み重なる形を**ウォーターフォール**（waterfall）と呼びます。開発者ツールの Network タブで見ると、リクエストの帯が階段状に並びます。
 
 ## 所要時間は件数に比例して増える
 
 直列と並列で、所要時間の増え方はまったく違います。詳細 1 件の取得に 1 秒かかるとして、5 件取る場合を比べます。
 
-<svg viewBox="0 0 520 200" role="img" aria-label="詳細5件の取得にかかる時間の比較。直列は詳細1から5までが1秒ずつ順番に並び、合計5秒かかる。並列は詳細1から5までが同時に始まり、1秒で全部そろう。" style="width:100%;height:auto;max-width:520px;display:block;margin:16px auto;">
-  <rect x="0" y="0" width="520" height="200" rx="10" fill="#f8fafc"/>
+<svg viewBox="0 0 520 236" role="img" aria-label="詳細5件の取得にかかる時間の比較。直列は詳細1から5までが1秒ずつ順番に並び、合計5秒かかる。並列は詳細1から5までが同時に始まり、1秒強で全部そろう。" style="width:100%;height:auto;max-width:520px;display:block;margin:16px auto;">
+  <rect x="0" y="0" width="520" height="236" rx="10" fill="#f8fafc"/>
 
   <text x="16" y="26" font-family="sans-serif" font-size="13" font-weight="700" fill="#1e293b">直列（5 秒かかる）</text>
   <rect x="16" y="34" width="60" height="20" fill="#93c5fd" stroke="#3b82f6"/>
@@ -82,17 +82,19 @@ export default async function BooksPage() {
   <rect x="16" y="128" width="60" height="20" fill="#86efac" stroke="#22c55e"/>
   <rect x="16" y="152" width="60" height="20" fill="#86efac" stroke="#22c55e"/>
   <rect x="16" y="176" width="60" height="20" fill="#86efac" stroke="#22c55e"/>
+  <rect x="16" y="200" width="60" height="20" fill="#86efac" stroke="#22c55e"/>
   <text x="46" y="119" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#1e293b">詳細1</text>
   <text x="46" y="143" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#1e293b">詳細2</text>
   <text x="46" y="167" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#1e293b">詳細3</text>
-  <text x="46" y="191" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#1e293b">詳細4・5 も同時</text>
-  <text x="90" y="145" font-family="sans-serif" font-size="11" fill="#475569">← 全件を同時に投げて、まとめて待つ</text>
+  <text x="46" y="191" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#1e293b">詳細4</text>
+  <text x="46" y="215" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#1e293b">詳細5</text>
+  <text x="90" y="167" font-family="sans-serif" font-size="11" fill="#475569">← 全件を同時に投げて、まとめて待つ</text>
 </svg>
 
 - 直列: 前の 1 件を待ってから次を投げるので、所要時間は「**1 件の時間 × 件数**」。5 件なら 5 秒、100 件なら 100 秒
 - 並列: 全部を同時に投げてまとめて待つので、所要時間は「**一番遅い 1 件の時間**」。5 件でも 100 件でも 1 秒強
 
-直列の怖さは、**データが増えるほど遅くなる**ところにあります。開発中は 5 件のテストデータで一瞬だったのに、本番でデータが 100 件になったら 20 倍待たされる。「最初は速かったのに、使っているうちに遅くなった」という報告の裏で、よく起きている構造です。
+直列の怖さは、**データが増えるほど遅くなる**ところにあります。開発中は 5 件のテストデータで一瞬だったのに、本番でデータが 100 件になったら 20 倍待たされます。「最初は速かったのに、使っているうちに遅くなった」という報告の裏で、よく起きている構造です。
 
 ## N+1 という名前の由来
 
@@ -104,7 +106,7 @@ export default async function BooksPage() {
 
 ## Promise.all でまとめて並列に取得する
 
-直列を並列にする道具が `Promise.all` です。さきほどの for ループを、こう書き換えます。
+直列を並列に変えるには `Promise.all` を使います。さきほどの for ループを、こう書き換えます。
 
 ```tsx
 // app/books/page.tsx（詳細取得の部分だけ書き換え）
@@ -112,7 +114,7 @@ export default async function BooksPage() {
   const listRes = await fetch("https://api.example.com/books");
   const books: Book[] = await listRes.json();
 
-  // 全員ぶんのリクエストを先に投げてから、まとめて待つ
+  // 全件ぶんのリクエストを先に投げてから、まとめて待つ
   const details: BookDetail[] = await Promise.all(
     books.map(async (book) => {
       const res = await fetch(`https://api.example.com/books/${book.id}`);
@@ -140,9 +142,9 @@ export default async function BooksPage() {
 1. `books.map(...)` の時点で、**全件ぶんの fetch が一斉に走り始める**。map は待たずに Promise（あとで結果が入る箱）の配列を返す
 2. `Promise.all` が、その全部が終わるのを**まとめて待つ**。全件揃ったら結果の配列が返る
 
-ループの中に `await` を書くと「投げて、待って、次を投げて」の繰り返しになるのに対し、この形は「全部投げてから、全部待つ」になります。書き換え自体は数行ですが、100 件で 100 秒だったものが 1 秒強になる。並列化は、少ない手数で効きが大きい改善です。
+ループの中に `await` を書くと「投げて、待って、次を投げて」の繰り返しになるのに対し、この形は「全部投げてから、全部待つ」になります。書き換え自体は数行ですが、100 件で 100 秒だったものが 1 秒強になります。並列化は、少ない手数で効きが大きい改善です。
 
-ひとつ注意があるとすれば、`Promise.all` は**どれか 1 件でも失敗すると全体がエラーになる**ことです。失敗した項目だけ除いて表示したい場合は、成功と失敗を分けて受け取れる `Promise.allSettled` という兄弟分もあります。
+ひとつ注意があるとすれば、`Promise.all` は**どれか 1 件でも失敗すると全体がエラーになる**ことです。失敗した項目だけ除いて表示したい場合は、成功と失敗を分けて受け取れる `Promise.allSettled` を使います。
 
 ## 全部一斉に投げてよいとは限らない
 
