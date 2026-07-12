@@ -196,6 +196,7 @@ export default withPwa(
                 { text: "JavaScript の妙な挙動", link: "/drafts/112/" },
                 { text: "IME変換中のEnter", link: "/drafts/115/" },
                 { text: "debounce と throttle", link: "/drafts/129/" },
+                { text: "ハッシュテーブル", link: "/drafts/137/" },
               ],
             },
             {
@@ -250,6 +251,7 @@ export default withPwa(
                 { text: "View Transitions", link: "/drafts/100/" },
                 { text: "REST と GraphQL", link: "/drafts/101/" },
                 { text: "二重送信と冪等性", link: "/drafts/123/" },
+                { text: "タイムアウトとリトライ", link: "/drafts/136/" },
               ],
             },
             {
@@ -270,6 +272,7 @@ export default withPwa(
                 { text: "フォーカス管理", link: "/drafts/044/" },
                 { text: "アクセシビリティ検査の原理", link: "/drafts/089/" },
                 { text: "タッチターゲット", link: "/drafts/133/" },
+                { text: "ズームとリフロー", link: "/drafts/142/" },
               ],
             },
             {
@@ -282,6 +285,7 @@ export default withPwa(
                 { text: "npm サプライチェーン", link: "/drafts/054/" },
                 { text: "CSP", link: "/drafts/132/" },
                 { text: "サードパーティスクリプトの信頼範囲", link: "/drafts/134/" },
+                { text: "パスワードの保存", link: "/drafts/139/" },
               ],
             },
             {
@@ -312,6 +316,7 @@ export default withPwa(
                 { text: "フロントエンドの可観測性", link: "/drafts/082/" },
                 { text: "ソースマップ", link: "/drafts/118/" },
                 { text: "N+1とウォーターフォール", link: "/drafts/131/" },
+                { text: "計算量とO記法", link: "/drafts/140/" },
               ],
             },
             {
@@ -342,6 +347,7 @@ export default withPwa(
                 { text: "ローカル・ステージング・本番", link: "/drafts/114/" },
                 { text: "フィーチャーフラグ", link: "/drafts/117/" },
                 { text: "結果整合性", link: "/drafts/127/" },
+                { text: "コールドスタート", link: "/drafts/138/" },
               ],
             },
             {
@@ -360,6 +366,7 @@ export default withPwa(
                 { text: "OOUI", link: "/drafts/074/" },
                 { text: "デザインシステムの実装", link: "/drafts/075/" },
                 { text: "取り消せる設計", link: "/drafts/128/" },
+                { text: "ローディングの見せ方", link: "/drafts/141/" },
               ],
             },
             {
