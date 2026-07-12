@@ -173,6 +173,10 @@ export default withPwa(
                   text: "Day 38: デシジョンテーブルと状態遷移テスト",
                   link: "/lessons/day38/",
                 },
+                {
+                  text: "Day 39: WebAssembly",
+                  link: "/lessons/day39/",
+                },
               ],
             },
           ],
