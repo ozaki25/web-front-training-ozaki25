@@ -176,6 +176,10 @@ export default withPwa(
                   text: "Day 38: デシジョンテーブルと状態遷移テスト",
                   link: "/lessons/day38/",
                 },
+                {
+                  text: "Day 39: WebAssembly",
+                  link: "/lessons/day39/",
+                },
               ],
             },
           ],
@@ -200,7 +204,6 @@ export default withPwa(
                 { text: "truthy と falsy", link: "/drafts/146/" },
                 { text: "コールスタック", link: "/drafts/151/" },
                 { text: "配列とオブジェクト", link: "/drafts/152/" },
-                { text: "WebAssembly", link: "/drafts/155/" },
               ],
             },
             {

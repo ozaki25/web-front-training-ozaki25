@@ -44,6 +44,7 @@
 - [Day 36: テスト設計技法の分類 — 仕様・構造・経験の3系統](/lessons/day36/)
 - [Day 37: 同値分割と境界値 — 試す値を代表と境目に絞る](/lessons/day37/)
 - [Day 38: デシジョンテーブルと状態遷移テスト — 条件と状態を漏らさない](/lessons/day38/)
+- [Day 39: WebAssembly — ブラウザで JavaScript 以外のプログラムが動く](/lessons/day39/)
 
 ## 候補（下書き）
 
@@ -66,7 +67,6 @@
 - [146: truthy と falsy](/drafts/146/)
 - [151: コールスタック](/drafts/151/)
 - [152: 配列とオブジェクト](/drafts/152/)
-- [155: WebAssembly](/drafts/155/)
 
 ### React の核
 

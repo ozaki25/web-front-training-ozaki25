@@ -1,4 +1,4 @@
-# WebAssembly — ブラウザで JavaScript 以外のプログラムが動く
+# Day 39: WebAssembly — ブラウザで JavaScript 以外のプログラムが動く
 
 ## 今日のゴール
 
