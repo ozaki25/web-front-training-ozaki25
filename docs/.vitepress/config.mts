@@ -177,6 +177,10 @@ export default withPwa(
                   text: "Day 39: WebAssembly",
                   link: "/lessons/day39/",
                 },
+                {
+                  text: "Day 40: ホワイトボックステスト",
+                  link: "/lessons/day40/",
+                },
               ],
             },
           ],
