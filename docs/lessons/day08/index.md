@@ -84,7 +84,9 @@ utterance.lang = "ja-JP";
 speechSynthesis.speak(utterance);
 ```
 
-外部サービスを使っていません。ブラウザに最初から入っている機能です。速度やピッチも `utterance.rate` や `utterance.pitch` で変更できます。
+外部サービスを使っていません。ブラウザに最初から入っている機能です。
+
+速度やピッチも `utterance.rate` や `utterance.pitch` で変更できます。
 
 ## ブラウザが翻訳する — Translator API
 
@@ -132,7 +134,9 @@ const text = document.querySelector("main").innerText;
 const summary = await summarizer.summarize(text);
 ```
 
-翻訳も要約も、サーバーには一切データを送っていません。すべてブラウザ内の Gemini Nano（Google のオンデバイス AI モデル）が処理しています。入力したテキストが端末の外に出ないので、プライバシーの面でも安心です。
+翻訳も要約も、サーバーには一切データを送っていません。すべてブラウザ内の Gemini Nano（Google のオンデバイス AI モデル）が処理しています。
+
+入力したテキストが端末の外に出ないので、プライバシーの面でも安心です。
 
 ## 通知を出す — Notification API
 
@@ -161,7 +165,9 @@ if (permission === "granted") {
 
 この研修サイトは、一度開けばオフラインでも読めます。試しにネットワークを切ってページを移動してみてください。
 
-これは Service Worker が初回アクセス時にページのデータをキャッシュしているからです。Service Worker はブラウザの中で動くプログラムで、ページとサーバーの間に立ってリクエストを仲介します。ネットワークの手前、**ブラウザ側に立つ中間者**です。
+これは Service Worker が初回アクセス時にページのデータをキャッシュしているからです。
+
+Service Worker はブラウザの中で動くプログラムで、ページとサーバーの間に立ってリクエストを仲介します。ネットワークの手前、**ブラウザ側に立つ中間者**です。
 
 ```mermaid
 sequenceDiagram
