@@ -20,7 +20,9 @@ revalidate で作り直す対象は、次の 3 つのキャッシュです。
 | Full Route Cache | サーバー | 組み立てたルートの HTML |
 | Router Cache | ブラウザ | 画面遷移用に保持した表示 |
 
-データを取り、その結果でルートの HTML を組み立て、ブラウザがそれを保持する。この 3 つは上から順に積み重なっています。更新したのに画面が古いのは、このどこかに古い保存が残っているからです。`revalidateTag` / `revalidatePath` / `router.refresh` は、それぞれ違う場所を起点に、この保存を作り直します。
+データを取り、その結果でルートの HTML を組み立て、ブラウザがそれを保持する。この 3 つは上から順に積み重なっています。
+
+更新したのに画面が古いのは、このどこかに古い保存が残っているからです。`revalidateTag` / `revalidatePath` / `router.refresh` は、それぞれ違う場所を起点に、この保存を作り直します。
 
 ## revalidateTag — データ起点
 
@@ -58,7 +60,9 @@ export async function addProduct(formData: FormData) {
 
 `revalidateTag("products", "max")` を呼ぶと、起点は Data Cache です。`products` タグの付いた Data Cache が無効になります。
 
-ここから芋づる式に広がります。そのデータを使って組み立てた HTML は古くなるので、`products` を使っている全ルートの Full Route Cache も無効になります。トップページと一覧ページの両方で同じデータを出していれば、両方が対象です。こうして 1 つのタグで複数ページをまとめて無効にできます。
+ここから芋づる式に広がります。そのデータを使って組み立てた HTML は古くなるので、`products` を使っている全ルートの Full Route Cache も無効になります。
+
+トップページと一覧ページの両方で同じデータを出していれば、両方が対象です。こうして 1 つのタグで複数ページをまとめて無効にできます。
 
 <svg viewBox="0 0 560 320" role="img" aria-label="revalidateTag('products') を起点にした芋づる式の無効化。データ起点で Data Cache の products タグが無効になり、products を使うルート A とルート B の Full Route Cache が無効になり、次の遷移で Router Cache も更新される。1 つのタグが複数のルートに波及する。" style="width:100%;height:auto;max-width:560px;display:block;margin:16px auto;">
   <defs>
@@ -96,7 +100,9 @@ export async function addProduct(formData: FormData) {
   <text x="280" y="301" text-anchor="middle" font-family="sans-serif" font-size="10.5" fill="#475569">次の遷移で更新</text>
 </svg>
 
-無効化しても、その場で作り直すわけではありません。古い保存に「もう古い」と印を付けるだけで、実際に作り直すのは次に誰かがそのページを開いたときです。サーバー側の無効化はこの遅延式だと覚えておくと、挙動を読み違えずに済みます。
+無効化しても、その場で作り直すわけではありません。古い保存に「もう古い」と印を付けるだけで、実際に作り直すのは次に誰かがそのページを開いたときです。
+
+サーバー側の無効化はこの遅延式だと覚えておくと、挙動を読み違えずに済みます。
 
 v16 では `revalidateTag` に第 2 引数（`"max"` などの鮮度プロファイル）を渡すのが基本になり、1 引数だけの呼び出しは非推奨になりました。`"max"` は「古い内容を返しつつ、裏で作り直す」動きです。
 
@@ -122,11 +128,15 @@ export async function updateCompany(formData: FormData) {
 }
 ```
 
-起点は指定したパスです。`/about` の Full Route Cache と、そのページで使っていた Data Cache がまとめて無効になります。次に `/about` を開いたとき、データを取り直してレンダリングし直し、新しい HTML が保存されます。ブラウザ側の Router Cache にも「`/about` の保持は古い」と伝わるので、遷移で表示し直したときも新しくなります。
+起点は指定したパスです。`/about` の Full Route Cache と、そのページで使っていた Data Cache がまとめて無効になります。
+
+次に `/about` を開いたとき、データを取り直してレンダリングし直し、新しい HTML が保存されます。ブラウザ側の Router Cache にも「`/about` の保持は古い」と伝わるので、遷移で表示し直したときも新しくなります。
 
 `revalidateTag` がデータを目印にして複数ページを横断するのに対し、`revalidatePath` は「このパスを丸ごと作り直す」という指定です。どのデータが絡んでいるかを気にせず、ページ単位で更新したいときに向きます。
 
-第 2 引数で範囲を選べます。`revalidatePath("/about")` はそのページだけ、`revalidatePath("/", "layout")` はそのレイアウトを共有する配下の全ページをまとめて無効化します。動的セグメント（`/blog/[slug]`）を渡すときは第 2 引数が必須です。
+第 2 引数で範囲を選べます。`revalidatePath("/about")` はそのページだけ、`revalidatePath("/", "layout")` はそのレイアウトを共有する配下の全ページをまとめて無効化します。
+
+動的セグメント（`/blog/[slug]`）を渡すときは第 2 引数が必須です。
 
 ## router.refresh — ブラウザ起点
 
@@ -147,9 +157,13 @@ export function RefreshButton() {
 }
 ```
 
-起点はブラウザの Router Cache です。今のルートの保持を捨ててサーバーに取り直しに行きますが、**サーバー側の Data Cache と Full Route Cache には触れません**。なので、サーバーに古い保存が残っていれば、取り直しても結局その古い保存が返ってきます。
+起点はブラウザの Router Cache です。今のルートの保持を捨ててサーバーに取り直しに行きますが、**サーバー側の Data Cache と Full Route Cache には触れません**。
 
-`router.refresh` が向くのは、自分が更新したわけではないのに画面が古いときです。別の管理画面で在庫が変わった、他の人が情報を更新した、といった場合に、ブラウザ側で取り直しをかけます。サーバー側のデータを自分で書き換えたなら、`revalidateTag` か `revalidatePath` の出番です。
+なので、サーバーに古い保存が残っていれば、取り直しても結局その古い保存が返ってきます。
+
+`router.refresh` が向くのは、自分が更新したわけではないのに画面が古いときです。別の管理画面で在庫が変わった、他の人が情報を更新した、といった場合に、ブラウザ側で取り直しをかけます。
+
+サーバー側のデータを自分で書き換えたなら、`revalidateTag` か `revalidatePath` の出番です。
 
 ## 3 つの起点
 
