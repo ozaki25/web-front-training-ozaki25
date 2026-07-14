@@ -343,6 +343,7 @@ export default withPwa(
               items: [
                 { text: "TypeScript の型を読む", link: "/drafts/069/" },
                 { text: "構造的型付け", link: "/drafts/070/" },
+                { text: "Branded Types", link: "/drafts/157/" },
                 { text: "型は実行時に消える", link: "/drafts/071/" },
                 { text: "strict の仕組み", link: "/drafts/099/" },
                 { text: "as const と satisfies", link: "/drafts/121/" },
