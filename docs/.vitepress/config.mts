@@ -180,6 +180,10 @@ export default withPwa(
                   text: "Day 39: WebAssembly",
                   link: "/lessons/day39/",
                 },
+                {
+                  text: "Day 40: ホワイトボックステスト",
+                  link: "/lessons/day40/",
+                },
               ],
             },
           ],
@@ -304,7 +308,6 @@ export default withPwa(
               text: "テスト設計・計画",
               items: [
                 { text: "そもそもテストとは何か", link: "/drafts/110/" },
-                { text: "ホワイトボックステスト", link: "/drafts/109/" },
                 { text: "経験ベースのテスト技法", link: "/drafts/108/" },
               ],
             },
