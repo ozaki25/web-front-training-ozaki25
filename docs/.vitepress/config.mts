@@ -292,7 +292,7 @@ export default withPwa(
               items: [
                 { text: "Same-Origin Policy", link: "/drafts/155/" },
                 { text: "Open Redirect", link: "/drafts/156/" },
-                { text: "Cookie と認証", link: "/drafts/051/" },
+                { text: "Cookie の仕組み", link: "/drafts/051/" },
                 { text: "CSRF と SameSite", link: "/drafts/052/" },
                 { text: "OAuth と OIDC", link: "/drafts/053/" },
                 { text: "パスキー", link: "/drafts/087/" },

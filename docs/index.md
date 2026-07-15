@@ -138,7 +138,7 @@
 
 ### セキュリティ
 
-- [051: Cookie と認証](/drafts/051/)
+- [051: Cookie の仕組み](/drafts/051/)
 - [052: CSRF と SameSite](/drafts/052/)
 - [053: OAuth と OIDC](/drafts/053/)
 - [087: パスキー](/drafts/087/)
