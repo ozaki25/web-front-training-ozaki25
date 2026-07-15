@@ -184,6 +184,10 @@ export default withPwa(
                   text: "Day 40: ホワイトボックステスト",
                   link: "/lessons/day40/",
                 },
+                {
+                  text: "Day 41: CSRF",
+                  link: "/lessons/day41/",
+                },
               ],
             },
           ],

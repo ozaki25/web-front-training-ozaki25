@@ -46,6 +46,7 @@
 - [Day 38: デシジョンテーブルと状態遷移テスト — 条件と状態を漏らさない](/lessons/day38/)
 - [Day 39: WebAssembly — ブラウザで JavaScript 以外のプログラムが動く](/lessons/day39/)
 - [Day 40: ホワイトボックステスト — ステートメントとデシジョンのカバレッジ](/lessons/day40/)
+- [Day 41: CSRF — 別サイトからあなたになりすます攻撃](/lessons/day41/)
 
 ## 候補（下書き）
 
