@@ -1,165 +1,82 @@
-# Open Redirect — リダイレクト先の検証をせずに送ると起こること
+# Open Redirect — 信頼できるサイトを踏み台にする攻撃
 
 ## 今日のゴール
 
-- Open Redirect 脆弱性が何かと、攻撃者がそれを使う目的を知る
-- URL パラメータでリダイレクト先を指定するとき、何が危険か理解する
-- ホワイトリスト方式と相対 URL でリスクを減らす方法を知る
+- Open Redirect が何か、なぜフィッシングに使われるかを知る
+- リダイレクト先を利用者の入力任せにすると危ないと知る
+- 文字列チェックでは防げず、許可リストが要ると知る
 
-## ユーザーが許可した操作が危険になる理由
+## Open Redirect とは何か
 
-ログイン画面を例に考えてみます。
-
-```typescript
-// ログイン後に「どこに戻るか」をクエリパラメータで受け取る
-// https://example.com/login?next=/dashboard
-app.post('/login', (req, res) => {
-  // ユーザーがパスワードを入力して認証
-  const isValid = authenticate(req.body);
-  
-  if (isValid) {
-    // パラメータで指定されたページへリダイレクト
-    const nextUrl = req.query.next;
-    res.redirect(nextUrl);  // ⚠️ 危険
-  }
-});
-```
-
-このコードは、一見すると正当です。「ログイン前のページに戻す」機能はユーザーにとって便利です。
-
-ところが、攻撃者が次のような URL を作ると危険になります。
+ログイン後に元のページへ戻す機能を考えます。「どこに戻すか」を URL のクエリパラメータで受け取る作りは、よくあります。
 
 ```
-https://example.com/login?next=https://attacker.com/phishing
+https://example.com/login?next=/mypage
 ```
 
-ユーザーが example.com でログインしたのに、成功後に詐欺サイト attacker.com へ飛ばされます。
+ログインが終わると、サーバーは `next` の値へリダイレクトします。ふだんは `/mypage` のような自分のサイト内のパスが入っています。
 
-ユーザーは「example.com は信頼できるサイトだから、このリダイレクト先も安全」と思い込み、attacker.com で再度パスワードを入力してしまいます。これが **Open Redirect** による **フィッシング** です。
+ところが、この `next` に外部サイトの URL を入れられると、話が変わります。
 
-## 攻撃者の手口
-
-1. 攻撃者は信頼されたサイトの Open Redirect の URL を作る
-2. メールや SNS で「アカウントが不正アクセスされました。ここをクリックして確認してください」と送信
-3. ユーザーがクリックすると、信頼されたサイトを経由して詐欺サイトへ飛ばされる
-4. ユーザーは「さっきのサイトから飛ばされたのだから安全」と思い込み、詐欺サイトで認証情報を入力
-
-信頼できるサイトを仲介役にされるため、ユーザーの警戒心が下がります。
-
-## サーバーサイドでの検証
-
-サーバーでリダイレクト先を検証する責任があります。
-
-### ❌ 危険な実装
-
-```typescript
-app.post('/login', (req, res) => {
-  if (authenticate(req.body)) {
-    // クエリパラメータをそのまま使う
-    res.redirect(req.query.next);
-  }
-});
+```
+https://example.com/login?next=https://attacker.example/fake-login
 ```
 
-### ✓ ホワイトリスト方式
+このリンクを踏んだ人は、example.com でログインした直後に、攻撃者の偽サイトへ飛ばされます。
 
-許可するリダイレクト先を事前に限定します。
+行き先を利用者の入力任せにして検証していないサイトは、こうして外部への「転送装置」にされてしまいます。これが **Open Redirect** です。
 
-```typescript
-const ALLOWED_REDIRECTS = ['/dashboard', '/profile', '/settings'];
+## なぜフィッシングに効くのか
 
-app.post('/login', (req, res) => {
-  if (authenticate(req.body)) {
-    const nextUrl = req.query.next || '/dashboard';
-    
-    // ホワイトリストに含まれているか確認
-    if (ALLOWED_REDIRECTS.includes(nextUrl)) {
-      res.redirect(nextUrl);
-    } else {
-      // ホワイトリストにない場合はデフォルト URL へ
-      res.redirect('/dashboard');
-    }
-  }
-});
+利用者が最初にクリックするのは、本物の example.com のリンクです。ドメインを見ても本物なので、警戒しません。
+
+その本物のサイトを経由して偽サイトへ飛ばされるので、「さっきのサイトから移動したのだから安全だろう」と錯覚します。そこでもう一度パスワードを入力してしまいます。
+
+信頼できるサイトを踏み台にして、その信用を借りるのが狙いです。
+
+メールでも同じ手が使われます。本物のドメインで始まる Open Redirect のリンクを警告メールの文面に載せれば、ドメインが本物なのでリンクチェックをすり抜けます。
+
+## どう防ぐか
+
+### 行き先を利用者の入力で決めない
+
+一番確実なのは、外部から来た URL をそのままリダイレクト先にしないことです。戻り先の候補が決まっているなら、あらかじめ許可リストを持っておき、その中からだけ選びます。
+
+```ts
+const ALLOWED = { mypage: "/mypage", settings: "/settings" };
+
+// URL には next=mypage のように「キー」だけを渡してもらう
+res.redirect(ALLOWED[req.query.next] ?? "/mypage");
 ```
 
-### ✓ 相対 URL のみ許可
+利用者が渡すのは `mypage` のようなキーだけで、実際の URL はサーバーが持つ表から引きます。外部の URL を差し込む余地がありません。
 
-```typescript
-app.post('/login', (req, res) => {
-  if (authenticate(req.body)) {
-    const nextUrl = req.query.next || '/dashboard';
-    
-    // 相対 URL か、同一オリジンのみ許可
-    if (nextUrl.startsWith('/')) {
-      res.redirect(nextUrl);
-    } else {
-      res.redirect('/dashboard');
-    }
-  }
-});
+### 文字列チェックで判定しない
+
+「`/` で始まるなら自サイトのパスだから安全」と考えたくなりますが、これは通用しません。
+
+```ts
+// ❌ 「/ で始まれば自サイト」は通用しない
+if (req.query.next.startsWith("/")) res.redirect(req.query.next);
 ```
 
-相対 URL（`/dashboard` など）なら、自動的に同一オリジンへのリダイレクトになるので、外部サイトへの飛び先が防げます。
+`//attacker.example` は `/` で始まっていますが、ブラウザはこれを「プロトコル相対 URL」として外部サイト扱いにします。`//` で始めるだけで、このチェックを突破できてしまいます。
 
-### ✓ URL クラスで同一オリジンを確認
+URL の検証を文字列操作（`startsWith` や正規表現）でやろうとすると、こうした抜け道をふさぎきれません。どうしても外部 URL を許可するなら、`URL` で解析してホスト名が許可リストにあるかを確かめます。
 
-より厳密には、JavaScript の `URL` クラスで検証します。
+## 見落としやすい場所
 
-```typescript
-app.post('/login', (req, res) => {
-  if (authenticate(req.body)) {
-    const nextUrl = req.query.next || '/dashboard';
-    
-    try {
-      const url = new URL(nextUrl, req.headers.host);
-      
-      // リダイレクト先のオリジンが、現在のオリジンと同じか確認
-      if (url.origin === `https://${req.headers.host}`) {
-        res.redirect(nextUrl);
-      } else {
-        res.redirect('/dashboard');
-      }
-    } catch {
-      // URL が不正な形式なら、デフォルト先へ
-      res.redirect('/dashboard');
-    }
-  }
-});
-```
+同じ「行き先を外部入力で決める」構図は、いろいろな所に現れます。
 
-## クライアントサイドでも検証は必要か
+- OAuth や OIDC の `redirect_uri`（ログイン後のコールバック先）
+- 決済の完了後に戻るページ
+- パスワードリセットのメールに載せるリンク
 
-`location.href` でリダイレクトするコードも同じです。
-
-```typescript
-// ❌ 危険
-const next = new URLSearchParams(location.search).get('next');
-location.href = next;
-
-// ✓ ホワイトリスト方式
-const ALLOWED_PATHS = ['/dashboard', '/profile'];
-const next = new URLSearchParams(location.search).get('next');
-if (ALLOWED_PATHS.includes(next)) {
-  location.href = next;
-}
-```
-
-しかし、クライアント側の検証だけでは不足です。攻撃者は JavaScript を読み、許可ルールを逆算して悪用します。
-
-サーバーでの検証こそが唯一の信頼できる防御です。
-
-## 他のリダイレクト場面
-
-- OAuth/OIDC の `redirect_uri` — コールバック URL の指定
-- 決済ページの成功後リダイレクト — ユーザーを戻す先
-- パスワードリセットメール内のリンク — リセット画面への遷移
-
-すべて同じ原則です。**リダイレクト先が外部入力に依存する場合は、サーバーで同一オリジンか ホワイトリストか確認する**。
+どれも「利用者が渡した行き先を、検証せずに信じていないか」を疑うのが第一歩です。
 
 ## まとめ
 
-- Open Redirect は、ユーザーを意図しない別のサイトへ飛ばす脆弱性
-- クエリパラメータやフォーム入力でリダイレクト先を受け取るときは、サーバーで検証が必須
-- ホワイトリスト方式か相対 URL のみ許可で、外部サイトへの飛び先を防ぐ
-- サーバーサイドの検証が唯一の信頼できる防御
+- Open Redirect は、信頼できるサイトを踏み台に偽サイトへ飛ばす攻撃
+- 本物のドメインで始まるので、利用者もリンクチェックも警戒しにくい
+- 防御の基本は行き先を入力任せにせず、許可リストから選ぶこと
+- `startsWith("/")` は `//外部` ですり抜けるので、文字列チェックに頼らない
