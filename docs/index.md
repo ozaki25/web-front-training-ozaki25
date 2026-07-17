@@ -108,6 +108,9 @@
 ### Web 標準と通信
 
 - [032: HTTP とステータスコード](/drafts/032/)
+- [158: DNS](/drafts/158/)
+- [159: HTTPS と TLS](/drafts/159/)
+- [160: HTTP の進化](/drafts/160/)
 - [036: CORS](/drafts/036/)
 - [041: WebSocket と SSE](/drafts/041/)
 - [060: HTTP キャッシュと CDN](/drafts/060/)
@@ -117,8 +120,11 @@
 - [096: Web Storage](/drafts/096/)
 - [100: View Transitions](/drafts/100/)
 - [101: REST と GraphQL](/drafts/101/)
+- [161: FormData と multipart](/drafts/161/)
+- [162: 圧縮](/drafts/162/)
 - [123: 二重送信と冪等性](/drafts/123/)
 - [136: タイムアウトとリトライ](/drafts/136/)
+- [163: AbortController](/drafts/163/)
 
 ### CSS
 

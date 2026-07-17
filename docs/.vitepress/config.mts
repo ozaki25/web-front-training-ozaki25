@@ -257,6 +257,9 @@ export default withPwa(
               text: "Web 標準と通信",
               items: [
                 { text: "HTTP とステータスコード", link: "/drafts/032/" },
+                { text: "DNS", link: "/drafts/158/" },
+                { text: "HTTPS と TLS", link: "/drafts/159/" },
+                { text: "HTTP の進化", link: "/drafts/160/" },
                 { text: "CORS", link: "/drafts/036/" },
                 { text: "WebSocket と SSE", link: "/drafts/041/" },
                 { text: "HTTP キャッシュと CDN", link: "/drafts/060/" },
@@ -266,8 +269,11 @@ export default withPwa(
                 { text: "Web Storage", link: "/drafts/096/" },
                 { text: "View Transitions", link: "/drafts/100/" },
                 { text: "REST と GraphQL", link: "/drafts/101/" },
+                { text: "FormData と multipart", link: "/drafts/161/" },
+                { text: "圧縮", link: "/drafts/162/" },
                 { text: "二重送信と冪等性", link: "/drafts/123/" },
                 { text: "タイムアウトとリトライ", link: "/drafts/136/" },
+                { text: "AbortController", link: "/drafts/163/" },
               ],
             },
             {
