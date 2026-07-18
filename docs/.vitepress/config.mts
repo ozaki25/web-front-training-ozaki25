@@ -298,6 +298,7 @@ export default withPwa(
                 { text: "アクセシビリティ検査の原理", link: "/drafts/089/" },
                 { text: "タッチターゲット", link: "/drafts/133/" },
                 { text: "ズームとリフロー", link: "/drafts/142/" },
+                { text: "APCA", link: "/drafts/167/" },
               ],
             },
             {
