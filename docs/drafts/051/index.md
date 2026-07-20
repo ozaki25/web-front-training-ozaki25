@@ -110,7 +110,17 @@ Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3
 
 `HttpOnly` と `Secure` は値を取らないフラグで、その語を書けば有効、書かなければ無効です。`SameSite` や `Path` は `=` のうしろに値を書きます。
 
-上の `SameSite`・`HttpOnly` に加えて、残りはこの 4 つです。
+属性はこれで全部です。
+
+| 属性 | 書き方 | 何を絞るか |
+|---|---|---|
+| `HttpOnly` | フラグ（値なし） | ブラウザの JavaScript から読めなくする |
+| `Secure` | フラグ（値なし） | HTTPS のときだけ送る |
+| `SameSite` | `SameSite=Lax` など | 別サイトへのリクエストにも送るか |
+| `Domain` / `Path` | `Domain=example.com` / `Path=/` | どの範囲のリクエストに送るか |
+| `Expires` / `Max-Age` | `Max-Age=3600`（秒）など | いつまで保存するか |
+
+`SameSite` と `HttpOnly` は上で説明したとおりです。ほかの属性を補います。
 
 - `Secure`: HTTPS のときだけ送る。付けないと暗号化されていない通信にも送られて盗み見られるので、ログインの値には付ける
 - `Domain`: どのホストまで送るか。付けなければ発行したホストだけ（`www.example.com` の Cookie は `shop.example.com` に届かない）。`Domain=example.com` でサブドメイン全部に広がり、サブドメインをまたいで共有したいときだけ広げる
