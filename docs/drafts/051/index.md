@@ -4,7 +4,7 @@
 
 - Cookie は「サーバーが預け、ブラウザが以降自動で送り返す値」だと仕組みで知る
 - 宛先は決まっているが、どのページから送ったかは問われないと知る
-- その隙を CSRF が突き、SameSite や HttpOnly で送り方を絞ると知る
+- その隙を CSRF が突き、SameSite で送信を、HttpOnly で読み出しを絞ると知る
 
 ## リロードしてもログインが続く理由
 
@@ -68,15 +68,13 @@ Cookie: session_id=abc123
 
 これが、別サイトからあなたになりすます CSRF という攻撃です。
 
-安全に関わる属性が 2 つあります。この 2 つが要で、残りは送り方の細かい調整です。
-
 ### なりすましを防ぐ SameSite
 
-抑えるのが `SameSite` 属性です。送る前に「発信元が同じサイトか」を見て、別サイト発の送信には Cookie を付けないようにします。
+この CSRF を抑えるのが `SameSite` 属性です。送る前に「発信元が同じサイトか」を見て、別サイト発の送信には Cookie を付けないようにします。
 
-主要ブラウザは、指定のない Cookie を `Lax` として扱います。値は 3 段階あり、別サイトへの送信をどこまで許すかが変わります。
+Chrome をはじめ多くのブラウザは、指定のない Cookie を `Lax` として扱います。値は 3 段階あり、別サイトへの送信をどこまで許すかが変わります。
 
-- `Lax`（指定なしの既定）: 同じサイト内では送り、別サイトからでもリンクをたどる通常の遷移では送る。POST や埋め込みには送らないので、ログイン維持と CSRF 対策のバランスが取れる
+- `Lax`（多くのブラウザで既定）: 同じサイト内では送り、別サイトからでもリンクをたどる通常の遷移では送る。POST や埋め込みには送らないので、ログイン維持と CSRF 対策のバランスが取れる
 - `Strict`: 同じサイト内でしか送らない。外部リンクから来た初回は未ログイン扱いになるため、安全側だが利用者の体験は損なう
 - `None`: 別サイトへの送信でも常に送る。`Secure` が必須で、CSRF の露出が大きいので別の対策とセットで使う
 
@@ -90,6 +88,7 @@ Cookie: session_id=abc123
 | `https://example.com` と `https://example.com/mypage` | ○ | ○ |
 | `https://example.com` と `https://shop.example.com` | ✗ ホスト違い | ○ ドメインは同じ |
 | `https://example.com` と `https://example.com:8080` | ✗ ポート違い | ○ ポートは見ない |
+| `http://example.com` と `https://example.com` | ✗ スキーム違い | ✗ スキーム違い |
 | `https://example.com` と `https://attacker.com` | ✗ | ✗ |
 
 `SameSite` が見るのは same-site のほうです。一方、JavaScript が別サイトのデータを読めるかどうかは、より厳密な same-origin で決まります。
@@ -110,7 +109,7 @@ Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3
 
 `HttpOnly` と `Secure` は値を取らないフラグで、その語を書けば有効、書かなければ無効です。`SameSite` や `Path` は `=` のうしろに値を書きます。
 
-属性はこれで全部です。
+よく使う属性を一覧にします。
 
 | 属性 | 書き方 | 何を絞るか |
 |---|---|---|
@@ -120,11 +119,11 @@ Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3
 | `Domain` / `Path` | `Domain=example.com` / `Path=/` | どの範囲のリクエストに送るか |
 | `Expires` / `Max-Age` | `Max-Age=3600`（秒）など | いつまで保存するか |
 
-`SameSite` と `HttpOnly` は上で説明したとおりです。ほかの属性を補います。
+`SameSite` と `HttpOnly` は上で見たとおりです。残りはこうです。
 
 - `Secure`: HTTPS のときだけ送る。付けないと暗号化されていない通信にも送られて盗み見られるので、ログインの値には付ける
-- `Domain`: どのホストまで送るか。付けなければ発行したホストだけ（`www.example.com` の Cookie は `shop.example.com` に届かない）。`Domain=example.com` でサブドメイン全部に広がり、サブドメインをまたいで共有したいときだけ広げる
-- `Path`: 同じホストの中の URL の範囲。`/admin` のように絞れるが、同一オリジンなら別のパスから読めるので強い壁にはならない。ふつうは `/`（全体）のままにする
+- `Domain`: どのホストまで送るか。付けなければ発行したホストだけ（`www.example.com` の Cookie は `shop.example.com` に届かない）。`Domain=example.com` を付けるとサブドメイン全部に届き、またいで共有したいときだけ指定する
+- `Path`: 同じホストの中で送る URL の範囲。`/admin` のように絞れるが、同一オリジンなら別のパスから読めるのでセキュリティの境界にはならない。特別な理由がなければ `/`（サイト全体）にする
 - `Expires` / `Max-Age`: 保存する期間。指定なしはブラウザを閉じると消え（セッション Cookie）、指定するとその期間は残る
 
 認証の値なら `HttpOnly` と `Secure` を付け、送る範囲（`SameSite`・`Domain`）は既定の狭いまま、必要なときだけ広げます。
