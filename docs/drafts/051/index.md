@@ -119,12 +119,14 @@ Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3
 | `Domain` / `Path` | `Domain=example.com` / `Path=/` | どの範囲のリクエストに送るか |
 | `Expires` / `Max-Age` | `Max-Age=3600`（秒）など | いつまで保存するか |
 
-`SameSite` と `HttpOnly` は上で見たとおりです。残りはこうです。
+`SameSite` と `HttpOnly` は上で見たとおりです。残りの 4 つは、詳しく知りたいときに開いてください。
 
+::: details Secure・Domain・Path・Expires の詳しい説明
 - `Secure`: HTTPS のときだけ送る。付けないと暗号化されていない通信にも送られて盗み見られるので、ログインの値には付ける
 - `Domain`: どのホストまで送るか。付けなければ発行したホストだけ（`www.example.com` の Cookie は `shop.example.com` に届かない）。`Domain=example.com` を付けるとサブドメイン全部に届き、またいで共有したいときだけ指定する
 - `Path`: 同じホストの中で送る URL の範囲。`/admin` のように絞れるが、同一オリジンなら別のパスから読めるのでセキュリティの境界にはならない。特別な理由がなければ `/`（サイト全体）にする
 - `Expires` / `Max-Age`: 保存する期間。指定なしはブラウザを閉じると消え（セッション Cookie）、指定するとその期間は残る
+:::
 
 認証の値なら `HttpOnly` と `Secure` を付け、送る範囲（`SameSite`・`Domain`）は既定の狭いまま、必要なときだけ広げます。
 
