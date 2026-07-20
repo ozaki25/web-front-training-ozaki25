@@ -124,7 +124,7 @@ Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3
 
 - `Secure`: HTTPS のときだけ送る。付けないと暗号化されていない通信にも送られて盗み見られるので、ログインの値には付ける
 - `Domain`: どのホストまで送るか。付けなければ発行したホストだけ（`www.example.com` の Cookie は `shop.example.com` に届かない）。`Domain=example.com` でサブドメイン全部に広がり、サブドメインをまたいで共有したいときだけ広げる
-- `Path`: 同じホストの中の URL の範囲。`/admin` のように絞れるが、同一オリジンなら別のパスから読めるので強い壁にはならない。ふつうは `/`
+- `Path`: 同じホストの中の URL の範囲。`/admin` のように絞れるが、同一オリジンなら別のパスから読めるので強い壁にはならない。ふつうは `/`（全体）のままにする
 - `Expires` / `Max-Age`: 保存する期間。指定なしはブラウザを閉じると消え（セッション Cookie）、指定するとその期間は残る
 
 認証の値なら `HttpOnly` と `Secure` を付け、送る範囲（`SameSite`・`Domain`）は既定の狭いまま、必要なときだけ広げます。
