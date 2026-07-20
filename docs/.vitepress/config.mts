@@ -185,6 +185,10 @@ export default withPwa(
                   text: "Day 41: CSRF",
                   link: "/lessons/day41/",
                 },
+                {
+                  text: "Day 42: Cookie",
+                  link: "/lessons/day42/",
+                },
               ],
             },
           ],
