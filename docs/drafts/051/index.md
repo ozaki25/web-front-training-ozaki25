@@ -127,26 +127,6 @@ Set-Cookie: session_id=abc123; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3
 
 認証の値なら `HttpOnly` と `Secure` を付け、送る範囲（`SameSite`・`Domain`）は既定の狭いまま、必要なときだけ広げます。
 
-## Next.js での読み方
-
-Server Components や Server Actions はサーバーで動くので、ブラウザが自動で送ってきた Cookie をそのまま読めます。
-
-```tsx
-import { cookies } from "next/headers";
-
-export default async function MyPage() {
-  const cookieStore = await cookies();
-  const sessionId = cookieStore.get("session_id")?.value;
-  // sessionId でユーザーを照合して画面を作る
-}
-```
-
-ブラウザが自動で送り、サーバーが照合する。この流れを、App Router では `cookies()` で受け取ります。
-
-ただし、アプリの後ろに別のバックエンド API がいる構成では注意が要ります。ブラウザから Next への Cookie は自動でも、Next からその API への `fetch` には自動で付きません。
-
-サーバー間の通信には、ブラウザのような Cookie の保管庫がないからです。届いた Cookie を次のリクエストに載せ替えれば、その先でも同じ利用者だと分かります。
-
 ## まとめ
 
 - Cookie はサーバーが預け、ブラウザが以降のリクエストに自動で送り返す値
