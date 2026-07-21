@@ -322,6 +322,7 @@ export default withPwa(
             {
               text: "テスト設計・計画",
               items: [
+                { text: "テストの7つの原則", link: "/drafts/168/" },
                 { text: "そもそもテストとは何か", link: "/drafts/110/" },
                 { text: "経験ベースのテスト技法", link: "/drafts/108/" },
               ],
