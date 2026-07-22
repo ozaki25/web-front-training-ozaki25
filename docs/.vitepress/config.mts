@@ -186,8 +186,8 @@ export default withPwa(
                   link: "/lessons/day41/",
                 },
                 {
-                  text: "Day 42: Cookie",
-                  link: "/lessons/day42/",
+                  text: "Day 43: Cookie",
+                  link: "/lessons/day43/",
                 },
               ],
             },
