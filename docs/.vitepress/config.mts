@@ -186,6 +186,10 @@ export default withPwa(
                   link: "/lessons/day41/",
                 },
                 {
+                  text: "Day 42: JavaScript の妙な挙動",
+                  link: "/lessons/day42/",
+                },
+                {
                   text: "Day 43: Cookie",
                   link: "/lessons/day43/",
                 },
