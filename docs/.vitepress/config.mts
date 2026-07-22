@@ -403,6 +403,7 @@ export default withPwa(
                 { text: "取り消せる設計", link: "/drafts/128/" },
                 { text: "ローディングの見せ方", link: "/drafts/141/" },
                 { text: "エンプティステート", link: "/drafts/147/" },
+                { text: "Lottie", link: "/drafts/169/" },
               ],
             },
             {
