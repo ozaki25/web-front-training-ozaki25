@@ -193,6 +193,10 @@ export default withPwa(
                   text: "Day 43: Cookie",
                   link: "/lessons/day43/",
                 },
+                {
+                  text: "Day 44: Lottie",
+                  link: "/lessons/day44/",
+                },
               ],
             },
           ],
