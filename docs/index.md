@@ -47,6 +47,9 @@
 - [Day 39: WebAssembly — ブラウザで JavaScript 以外のプログラムが動く](/lessons/day39/)
 - [Day 40: ホワイトボックステスト — ステートメントとデシジョンのカバレッジ](/lessons/day40/)
 - [Day 41: CSRF — 別サイトからあなたになりすます攻撃](/lessons/day41/)
+- [Day 42: JavaScript の妙な挙動 — その場で予想して当てるクイズ](/lessons/day42/)
+- [Day 43: Cookie — ブラウザが自動で送る値](/lessons/day43/)
+- [Day 44: Lottie — 軽いアニメーションが JSON で届く仕組み](/lessons/day44/)
 
 ## 候補（下書き）
 

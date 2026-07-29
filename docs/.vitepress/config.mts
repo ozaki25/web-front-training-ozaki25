@@ -188,6 +188,18 @@ export default withPwa(
                   text: "Day 41: CSRF",
                   link: "/lessons/day41/",
                 },
+                {
+                  text: "Day 42: JavaScript の妙な挙動",
+                  link: "/lessons/day42/",
+                },
+                {
+                  text: "Day 43: Cookie",
+                  link: "/lessons/day43/",
+                },
+                {
+                  text: "Day 44: Lottie",
+                  link: "/lessons/day44/",
+                },
               ],
             },
           ],
