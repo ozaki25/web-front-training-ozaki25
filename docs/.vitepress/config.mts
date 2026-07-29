@@ -217,7 +217,6 @@ export default withPwa(
                 { text: "日付とタイムゾーンの罠", link: "/drafts/085/" },
                 { text: "URL の解剖", link: "/drafts/084/" },
                 { text: "JSON", link: "/drafts/103/" },
-                { text: "JavaScript の妙な挙動", link: "/drafts/112/" },
                 { text: "IME変換中のEnter", link: "/drafts/115/" },
                 { text: "debounce と throttle", link: "/drafts/129/" },
                 { text: "ハッシュテーブル", link: "/drafts/137/" },
@@ -319,7 +318,6 @@ export default withPwa(
               items: [
                 { text: "Same-Origin Policy", link: "/drafts/155/" },
                 { text: "Open Redirect", link: "/drafts/156/" },
-                { text: "Cookie の仕組み", link: "/drafts/051/" },
                 { text: "OAuth と OIDC", link: "/drafts/053/" },
                 { text: "パスキー", link: "/drafts/087/" },
                 { text: "npm サプライチェーン", link: "/drafts/054/" },
@@ -416,7 +414,6 @@ export default withPwa(
                 { text: "取り消せる設計", link: "/drafts/128/" },
                 { text: "ローディングの見せ方", link: "/drafts/141/" },
                 { text: "エンプティステート", link: "/drafts/147/" },
-                { text: "Lottie", link: "/drafts/169/" },
               ],
             },
             {
