@@ -200,6 +200,10 @@ export default withPwa(
                   text: "Day 44: Lottie",
                   link: "/lessons/day44/",
                 },
+                {
+                  text: "Day 45: ディスレクシア",
+                  link: "/lessons/day45/",
+                },
               ],
             },
           ],

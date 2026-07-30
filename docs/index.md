@@ -50,6 +50,7 @@
 - [Day 42: JavaScript の妙な挙動 — その場で予想して当てるクイズ](/lessons/day42/)
 - [Day 43: Cookie — ブラウザが自動で送る値](/lessons/day43/)
 - [Day 44: Lottie — 軽いアニメーションが JSON で届く仕組み](/lessons/day44/)
+- [Day 45: ディスレクシア — 組み方で変わる文字の読みやすさ](/lessons/day45/)
 
 ## 候補（下書き）
 
