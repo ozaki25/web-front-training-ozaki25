@@ -314,7 +314,6 @@ export default withPwa(
                 { text: "タッチターゲット", link: "/drafts/133/" },
                 { text: "ズームとリフロー", link: "/drafts/142/" },
                 { text: "APCA", link: "/drafts/167/" },
-                { text: "ディスレクシア", link: "/drafts/170/" },
               ],
             },
             {
