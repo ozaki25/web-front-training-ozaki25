@@ -37,6 +37,8 @@ function collectTargets(args) {
 
 function scan(file) {
   const lines = fs.readFileSync(file, "utf8").split("\n");
+  // タイトル（最初の # 行）に AI を含む回は「AI そのものが主題」とみなし、AI 言及検出から除外する。
+  const aiTopic = /AI/.test(lines.find((l) => /^#\s/.test(l.trim())) || "");
   let inCode = false;
   let section = "";
   const hits = [];
@@ -79,6 +81,11 @@ function scan(file) {
     // 指示（「AIに〜と指示できる」）は対象外。候補なので人が判断する。
     if (/AI\s*に[^。]{0,20}頼むと(?!き)[^。]{0,30}(出|書|生成|試|抜|作|なる)/.test(noCode) || /AI\s*(の|が|は)[^。]{0,40}(書いて|書く|生成|出てき|出します|抜け|抜か|偏|外す|網羅)/.test(noCode)) {
       hits.push(`  [AI出力前提の疑い] ${i + 1}: ${t.slice(0, 60)}`);
+    }
+    // AI 言及そのものの検出（既定で入れない。例外はよほど価値がある1箇所のみ）。
+    // AI 主題のレッスンは除外。テンプレ的な散りばめは候補が複数出るので気づける。人が1件ずつ判断する。
+    if (!aiTopic && /AI/.test(noCode)) {
+      hits.push(`  [AI言及] ${i + 1}: ${t.slice(0, 60)}`);
     }
     // 長文段落: 見出し・箇条書き・表・コード・HTML/SVG 埋め込みではない地の文の行に
     // 「。」が3つ以上（3文以上）あれば1段落に詰め込まれている。短い段落・箇条書きに分解する。
