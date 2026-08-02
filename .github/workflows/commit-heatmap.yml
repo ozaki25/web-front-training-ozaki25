@@ -1,0 +1,62 @@
+name: commit-heatmap
+
+# 毎日データを作り直して gh-pages ブランチへ公開する。
+# schedule は既定ブランチにあるワークフローしか動かないため、このファイルは main に置くこと。
+
+on:
+  schedule:
+    # 20:00 UTC = 05:00 JST
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/commit-heatmap/**"
+      - ".github/workflows/commit-heatmap.yml"
+
+concurrency:
+  group: commit-heatmap
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch the branch we aggregate
+        run: git fetch --no-tags origin +refs/heads/draft:refs/remotes/origin/draft
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build data
+        run: node .github/commit-heatmap/build-data.mjs --ref origin/draft --out dist/commits.json
+
+      - name: Assemble site
+        run: |
+          cp -R .github/commit-heatmap/site/. dist/
+          touch dist/.nojekyll
+
+      - name: Publish to gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd dist
+          git init -q -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "commit heatmap: $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q --force \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          echo "published $(git rev-parse --short HEAD) to gh-pages"
