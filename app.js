@@ -68,21 +68,12 @@
     hourCycle: "h23",
   });
 
-  function relTime(iso) {
-    const diff = (new Date(iso).getTime() - Date.now()) / 1000;
-    const rtf = new Intl.RelativeTimeFormat("ja", { numeric: "auto" });
-    const abs = Math.abs(diff);
-    if (abs < 3600) return rtf.format(Math.round(diff / 60), "minute");
-    if (abs < 86400) return rtf.format(Math.round(diff / 3600), "hour");
-    return rtf.format(Math.round(diff / 86400), "day");
-  }
-
   // ---------- 描画 ----------
 
   function renderUpdated() {
     const el = $("updated");
-    el.textContent = `最終更新 ${relTime(DATA.generatedAt)}`;
-    el.title = `${jstFmt.format(new Date(DATA.generatedAt))} ${DATA.tzLabel}・${DATA.ref} ブランチ`;
+    el.textContent = `最終更新 ${jstFmt.format(new Date(DATA.generatedAt))}`;
+    el.title = `${DATA.tzLabel}・${DATA.ref} ブランチ`;
   }
 
   function renderGrid(view) {
@@ -92,7 +83,7 @@
     grid.style.setProperty("--cols", days.length);
     grid.style.setProperty("--col-w", `${cw}px`);
 
-    let s = '<div class="corner c1"></div><div class="corner c2">時間帯計</div>';
+    let s = '<div class="corner c1"></div><div class="corner c2"></div>';
 
     // 月が変わる列にだけ日付ラベルと区切りを置く
     let prevMonth = "";
@@ -101,6 +92,13 @@
       const ms = month !== prevMonth;
       prevMonth = month;
       s += `<div class="dlab${ms ? " ms" : ""}">${ms ? day.d.slice(5).replace("-", "/") : ""}</div>`;
+    }
+
+    // 曜日は全列に出す
+    s += '<div class="corner c1"></div><div class="corner c2">時間帯計</div>';
+    for (const day of days) {
+      const w = wdOf(day.d);
+      s += `<div class="wlab${w >= 5 ? " wend" : ""}">${WD[w]}</div>`;
     }
 
     for (let h = 0; h < 24; h++) {
@@ -143,13 +141,13 @@
     trimEdgeLabels();
   }
 
-  /** 固定した左 2 列に隠れて半端に見える月ラベルを消す。 */
+  /** 固定した左 2 列に隠れて半端に見える見出しを消す。 */
   function trimEdgeLabels() {
     const grid = $("grid");
     const corner = grid.querySelector(".corner.c2");
     if (!corner) return;
     const edge = corner.getBoundingClientRect().right;
-    for (const el of grid.querySelectorAll(".dlab.ms")) {
+    for (const el of grid.querySelectorAll(".dlab.ms, .wlab")) {
       el.style.visibility = el.getBoundingClientRect().left < edge ? "hidden" : "";
     }
   }
