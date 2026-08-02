@@ -483,7 +483,8 @@ table.tbl {
 .tbl th,
 .tbl td {
   border: 1px solid var(--hairline);
-  padding: 3px 7px;
+  padding: 2px 7px;
+  line-height: 1.4;
   text-align: right;
   color: var(--ink-2);
   white-space: nowrap;
@@ -494,13 +495,31 @@ table.tbl {
   z-index: 2;
   background: var(--surface);
   color: var(--ink);
+  text-align: center;
+  font-weight: 500;
+  line-height: 1.35;
 }
-.tbl tbody th {
+.tbl tbody th,
+.tbl tfoot th {
   position: sticky;
   left: 0;
+  z-index: 2;
   background: var(--surface);
   color: var(--ink);
   text-align: left;
+}
+.tbl tfoot td,
+.tbl tfoot th {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+}
+/* 見出しどうしが重なる角は、行・列の見出しより上に置く */
+.tbl thead th:first-child,
+.tbl tfoot th {
+  z-index: 3;
 }
 .tbl caption {
   caption-side: top;
