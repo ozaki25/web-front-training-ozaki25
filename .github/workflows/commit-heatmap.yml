@@ -60,6 +60,9 @@ jobs:
           cp -R .github/commit-heatmap/site/. "$PUBLIC/"
           cp dist/commits.json "$PUBLIC/commits.json"
           touch "$PUBLIC/.nojekyll"
+          # Vercel の preview デプロイを止める。この設定は対象ブランチ側の
+          # vercel.json を読むため、main ではなく gh-pages に置く必要がある。
+          cp .github/commit-heatmap/gh-pages-vercel.json "$PUBLIC/vercel.json"
 
           cd "$PUBLIC"
           git config user.name "github-actions[bot]"
