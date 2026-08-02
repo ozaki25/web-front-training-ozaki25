@@ -24,7 +24,7 @@
   /** "YYYY-MM-DD" から曜日を出す（0=月 … 6=日）。文字列を UTC として読むのでタイムゾーンに揺れない。 */
   const wdOf = (ymd) => (new Date(`${ymd}T00:00:00Z`).getUTCDay() + 6) % 7;
 
-  const state = { range: 90, nums: false, table: false };
+  const state = { range: 0, nums: false, table: false };
   let DATA = null;
 
   function buildView() {
@@ -159,17 +159,25 @@
     $("legend").innerHTML = `<span>少ない</span><div class="swatches">${sw}</div><span>多い</span>`;
   }
 
+  /** 軸の向きはヒートマップに合わせる。縦が時刻、横が日付。 */
   function renderTable(view) {
-    const rows = view.days.slice().reverse();
-    let s = `<table class="tbl"><caption>日付 × 時間帯のコミット数（${esc(DATA.tzLabel)}）</caption><thead><tr><th scope="col">日付</th>`;
-    for (let h = 0; h < 24; h++) s += `<th scope="col">${hh(h)}</th>`;
-    s += '<th scope="col">計</th></tr></thead><tbody>';
-    for (const day of rows) {
-      s += `<tr><th scope="row">${day.d}（${WD[wdOf(day.d)]}）</th>`;
-      for (let h = 0; h < 24; h++) s += `<td>${day.h[h]}</td>`;
-      s += `<td>${day._t}</td></tr>`;
+    const days = view.days;
+    let s = `<table class="tbl"><caption>日付 × 時間帯のコミット数（${esc(DATA.tzLabel)}）</caption><thead><tr><th scope="col">時刻</th>`;
+    for (const day of days) {
+      s += `<th scope="col">${day.d.slice(5).replace("-", "/")}<br>${WD[wdOf(day.d)]}</th>`;
     }
-    s += "</tbody></table>";
+    s += '<th scope="col">時間帯計</th></tr></thead><tbody>';
+
+    for (let h = 0; h < 24; h++) {
+      s += `<tr><th scope="row">${hh(h)}</th>`;
+      for (const day of days) s += `<td>${day.h[h]}</td>`;
+      s += `<td>${view.hourTotals[h]}</td></tr>`;
+    }
+
+    s += '</tbody><tfoot><tr><th scope="row">日計</th>';
+    for (const day of days) s += `<td>${day._t}</td>`;
+    s += `<td>${view.total}</td></tr></tfoot></table>`;
+
     $("tableview").innerHTML = s;
   }
 
@@ -293,7 +301,6 @@
       return;
     }
 
-    if (DATA.days.length <= 90) state.range = 0;
     document
       .querySelectorAll(".segbtn")
       .forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.range) === state.range)));

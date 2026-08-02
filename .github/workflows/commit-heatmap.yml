@@ -64,6 +64,11 @@ jobs:
           # vercel.json を読むため、main ではなく gh-pages に置く必要がある。
           cp .github/commit-heatmap/gh-pages-vercel.json "$PUBLIC/vercel.json"
 
+          # Pages はアセットに max-age=600 を付けるため、参照にバージョンを埋める。
+          # サイトのソースが変わったときだけ値が動くので、日次実行では差分にならない。
+          VERSION=$(git log -1 --format=%h -- .github/commit-heatmap/site)
+          sed -i "s/{{VERSION}}/${VERSION}/g" "$PUBLIC/index.html"
+
           cd "$PUBLIC"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
