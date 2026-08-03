@@ -51,4 +51,4 @@
 - [Day 43: Cookie — ブラウザが自動で送る値](/lessons/day43/)
 - [Day 44: Lottie — 軽いアニメーションが JSON で届く仕組み](/lessons/day44/)
 - [Day 45: ディスレクシア — 組み方で変わる文字の読みやすさ](/lessons/day45/)
-- [Day 46: UX の5段階モデル — 見た目は一番上でしかない](/lessons/day46/)
+- [Day 46: UX の5段階モデル — 見た目の下にある4つの段階](/lessons/day46/)
