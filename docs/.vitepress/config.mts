@@ -201,6 +201,10 @@ export default withPwa(
                   text: "Day 45: ディスレクシア",
                   link: "/lessons/day45/",
                 },
+                {
+                  text: "Day 46: UX の5段階モデル",
+                  link: "/lessons/day46/",
+                },
               ],
             },
           ],
