@@ -63,7 +63,11 @@ function scan(file) {
       const AIFEEL = [/(読む|見る|決める|養う|磨く|見抜く)目/, /という発想/, /AI\s*時代/, /思想/, /本質/, /の世界/, /旅[へに]/];
       for (const re of AIFEEL) if (re.test(t)) hits.push(`  [AI感の見出し] ${i + 1}: ${t.slice(0, 60)}`);
       // 短い見出し（## 以降）に読点・全角丸括弧は不要。中身を表す名詞句にする（h1 タイトルの — 区切りは対象外）。
-      if (/^#{2,}\s/.test(t) && /[、（）]/.test(t)) hits.push(`  [見出しに読点/括弧] ${i + 1}: ${t.slice(0, 60)}`);
+      // ただし用語に原語を添える括弧（「構造（Structure）」など、中身が英数字だけ）は正当なので除外する。
+      if (/^#{2,}\s/.test(t)) {
+        const noGloss = t.replace(/（[A-Za-z0-9 .&/-]+）/g, "");
+        if (/[、（）]/.test(noGloss)) hits.push(`  [見出しに読点/括弧] ${i + 1}: ${t.slice(0, 60)}`);
+      }
     }
     if (/[＝＋]/.test(noCode)) hits.push(`  [全角記号] ${i + 1}: ${t.slice(0, 60)}`);
     for (const s of SCAFFOLD) if (t.includes(s)) hits.push(`  [足場:${s}] ${i + 1}: ${t.slice(0, 60)}`);
