@@ -276,6 +276,7 @@ export default withPwa(
               text: "Web 標準と通信",
               items: [
                 { text: "HTTP とステータスコード", link: "/drafts/032/" },
+                { text: "同期通信と非同期通信", link: "/drafts/172/" },
                 { text: "DNS", link: "/drafts/158/" },
                 { text: "HTTPS と TLS", link: "/drafts/159/" },
                 { text: "HTTP の進化", link: "/drafts/160/" },
