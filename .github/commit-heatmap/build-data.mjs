@@ -47,8 +47,9 @@ const addDays = (ymd, n) => {
   return d.toISOString().slice(0, 10);
 };
 
+/** マージコミットは除く。PR のマージやブランチ同期は作業そのものではないため。 */
 function readCommits(ref) {
-  const out = execFileSync("git", ["log", ref, "--pretty=format:%aI"], {
+  const out = execFileSync("git", ["log", ref, "--no-merges", "--pretty=format:%aI"], {
     encoding: "utf8",
     maxBuffer: 256 * 1024 * 1024,
   });
