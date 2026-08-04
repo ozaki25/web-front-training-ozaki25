@@ -26,6 +26,13 @@
 
   const state = { range: 0, nums: false, table: false };
   let DATA = null;
+  let HOL = {};
+
+  /** 日付の見出しに添える「（曜・祝日名）」。 */
+  const dayLabel = (d) => {
+    const name = HOL[d];
+    return `${WD[wdOf(d)]}${name ? "・" + name : ""}`;
+  };
 
   function buildView() {
     const all = DATA.days;
@@ -98,7 +105,9 @@
     s += '<div class="corner c1"></div><div class="corner c2">時間帯計</div>';
     for (const day of days) {
       const w = wdOf(day.d);
-      s += `<div class="wlab${w >= 5 ? " wend" : ""}">${WD[w]}</div>`;
+      const hol = HOL[day.d];
+      const cls = [w >= 5 || hol ? "wend" : "", hol ? "hol" : ""].filter(Boolean).join(" ");
+      s += `<div class="wlab ${cls}"${hol ? ` title="${esc(hol)}"` : ""}>${WD[w]}</div>`;
     }
 
     for (let h = 0; h < 24; h++) {
@@ -164,7 +173,10 @@
     const days = view.days;
     let s = `<table class="tbl"><caption>日付 × 時間帯のコミット数（${esc(DATA.tzLabel)}）</caption><thead><tr><th scope="col">時刻</th>`;
     for (const day of days) {
-      s += `<th scope="col">${day.d.slice(5).replace("-", "/")}<br>${WD[wdOf(day.d)]}</th>`;
+      const hol = HOL[day.d];
+      s +=
+        `<th scope="col"${hol ? ` title="${esc(hol)}"` : ""} class="${wdOf(day.d) >= 5 || hol ? "off" : ""}">` +
+        `${day.d.slice(5).replace("-", "/")}<br>${WD[wdOf(day.d)]}${hol ? "祝" : ""}</th>`;
     }
     s += '<th scope="col">時間帯計</th></tr></thead><tbody>';
 
@@ -259,13 +271,13 @@
         return;
       }
       const d = cell.dataset.d;
-      const w = WD[wdOf(d)];
+      const lab = dayLabel(d);
       if (cell.classList.contains("dtot")) {
         const t = Number(cell.dataset.t);
-        tip.innerHTML = `<b>${d}（${w}）</b> — この日 ${t} 件`;
+        tip.innerHTML = `<b>${d}（${lab}）</b> — この日 ${t} 件`;
       } else {
         const v = Number(cell.dataset.v);
-        tip.innerHTML = `<b>${d}（${w}） ${cell.dataset.h} 時台</b> — ${v} 件`;
+        tip.innerHTML = `<b>${d}（${lab}） ${cell.dataset.h} 時台</b> — ${v} 件`;
       }
       tip.classList.add("on");
       const r = tip.getBoundingClientRect();
@@ -296,6 +308,7 @@
       const res = await fetch("./commits.json", { cache: "no-cache" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       DATA = await res.json();
+      HOL = DATA.holidays || {};
     } catch (err) {
       $("grid-sub").textContent = `データを読み込めませんでした（${err.message}）`;
       return;

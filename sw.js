@@ -10,7 +10,7 @@
  * 古いキャッシュは activate で丸ごと捨てられる。
  */
 
-const VERSION = "24c2406";
+const VERSION = "ce992fa";
 const SHELL = `heatmap-shell-${VERSION}`;
 const DATA = "heatmap-data";
 
