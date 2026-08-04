@@ -204,6 +204,10 @@ export default withPwa(
                   text: "Day 45: ディスレクシア",
                   link: "/lessons/day45/",
                 },
+                {
+                  text: "Day 46: UX の5段階モデル",
+                  link: "/lessons/day46/",
+                },
               ],
             },
           ],
@@ -418,7 +422,6 @@ export default withPwa(
                 { text: "ローディングの見せ方", link: "/drafts/141/" },
                 { text: "エンプティステート", link: "/drafts/147/" },
                 { text: "UI の状態", link: "/drafts/171/" },
-                { text: "UX の5段階モデル", link: "/drafts/172/" },
               ],
             },
             {
