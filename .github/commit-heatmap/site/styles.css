@@ -342,8 +342,14 @@ p {
   justify-content: center;
   overflow: hidden;
 }
+/* 土日祝は濃く太くする。色だけに頼らせない */
 .wlab.wend {
   color: var(--ink-2);
+  font-weight: 700;
+}
+/* 祝日はさらに下線で区別する */
+.wlab.hol {
+  box-shadow: inset 0 -2px 0 var(--bar);
 }
 
 .cell {
@@ -520,6 +526,10 @@ table.tbl {
 .tbl thead th:first-child,
 .tbl tfoot th {
   z-index: 3;
+}
+.tbl thead th.off {
+  color: var(--ink);
+  background: var(--bar-soft);
 }
 .tbl caption {
   caption-side: top;

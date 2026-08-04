@@ -9,13 +9,24 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
 const SCHEMA = 1;
 
+// 国民の祝日は内閣府の CSV を一次情報として使う。春分・秋分・振替休日・国民の休日・
+// 年ごとの特例まで含まれるので、自前で計算するより確実。
+const HOLIDAY_URL = "https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv";
+
 function parseArgs(argv) {
-  const opts = { ref: "origin/draft", out: "dist/commits.json", tz: "Asia/Tokyo", repo: "" };
+  const opts = {
+    ref: "origin/draft",
+    out: "dist/commits.json",
+    tz: "Asia/Tokyo",
+    repo: "",
+    holidays: HOLIDAY_URL,
+    holidaysCsv: "",
+  };
   for (let i = 0; i < argv.length; i += 2) {
     const key = argv[i].replace(/^--/, "");
     if (!(key in opts)) throw new Error(`unknown option: ${argv[i]}`);
@@ -56,6 +67,53 @@ function readCommits(ref) {
   return out.trim() ? out.trim().split("\n") : [];
 }
 
+/**
+ * 内閣府の CSV を { "YYYY-MM-DD": "名称" } に変換する。
+ * 想定は Shift_JIS・CRLF・「YYYY/M/D,名称」。見出し行や想定外の行は落とす。
+ */
+function parseHolidayCsv(bytes) {
+  let text;
+  try {
+    text = new TextDecoder("shift_jis").decode(bytes);
+  } catch {
+    text = Buffer.from(bytes).toString("latin1");
+  }
+  const out = {};
+  for (const line of text.split(/\r?\n/)) {
+    const comma = line.indexOf(",");
+    if (comma < 0) continue;
+    const m = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/.exec(line.slice(0, comma).trim().replace(/^﻿/, ""));
+    if (!m) continue;
+    const key = `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`;
+    out[key] = line.slice(comma + 1).trim();
+  }
+  return out;
+}
+
+/** 取得に失敗しても集計は止めない。祝日の色分けが消えるだけ。 */
+async function loadHolidays(opts) {
+  try {
+    let bytes;
+    if (opts.holidaysCsv) {
+      bytes = readFileSync(opts.holidaysCsv);
+    } else if (opts.holidays) {
+      const res = await fetch(opts.holidays);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      bytes = new Uint8Array(await res.arrayBuffer());
+    } else {
+      return {};
+    }
+    const all = parseHolidayCsv(bytes);
+    const n = Object.keys(all).length;
+    if (n === 0) throw new Error("祝日を 1 件も読めなかった");
+    process.stderr.write(`holidays: ${n} 件を読み込み\n`);
+    return all;
+  } catch (err) {
+    process.stderr.write(`holidays: 取得できなかったので祝日なしで続行します (${err.message})\n`);
+    return {};
+  }
+}
+
 function detectRepo(explicit) {
   if (explicit) return explicit;
   if (process.env.GITHUB_REPOSITORY) return process.env.GITHUB_REPOSITORY;
@@ -69,7 +127,7 @@ function detectRepo(explicit) {
   }
 }
 
-function main() {
+async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const localize = makeLocalizer(opts.tz);
   const commits = readCommits(opts.ref);
@@ -99,6 +157,12 @@ function main() {
     days.push(byDate.get(d) ?? { d, h: new Array(24).fill(0) });
   }
 
+  const allHolidays = await loadHolidays(opts);
+  const holidays = {};
+  for (const day of days) {
+    if (allHolidays[day.d]) holidays[day.d] = allHolidays[day.d];
+  }
+
   const data = {
     schema: SCHEMA,
     generatedAt: new Date().toISOString(),
@@ -107,6 +171,7 @@ function main() {
     timeZone: opts.tz,
     tzLabel: opts.tz === "Asia/Tokyo" ? "JST" : opts.tz,
     total: commits.length,
+    holidays,
     days,
   };
 
@@ -114,8 +179,9 @@ function main() {
   writeFileSync(opts.out, JSON.stringify(data));
 
   process.stderr.write(
-    `commits=${data.total} days=${days.length} (active ${byDate.size}) range=${first}..${last} -> ${opts.out}\n`,
+    `commits=${data.total} days=${days.length} (active ${byDate.size}) ` +
+      `holidays=${Object.keys(holidays).length} range=${first}..${last} -> ${opts.out}\n`,
   );
 }
 
-main();
+await main();
