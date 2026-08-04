@@ -1,0 +1,23 @@
+{
+  "name": "コミットの日付 × 時間ヒートマップ",
+  "short_name": "コミット時間帯",
+  "description": "コミット数を日付 × 時間帯で表示。毎日更新。",
+  "lang": "ja",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f1f3f5",
+  "theme_color": "#f1f3f5",
+  "icons": [
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "./icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

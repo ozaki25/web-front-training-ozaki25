@@ -65,9 +65,14 @@ jobs:
           cp .github/commit-heatmap/gh-pages-vercel.json "$PUBLIC/vercel.json"
 
           # Pages はアセットに max-age=600 を付けるため、参照にバージョンを埋める。
-          # サイトのソースが変わったときだけ値が動くので、日次実行では差分にならない。
+          # sw.js はキャッシュ名にも使う。サイトのソースが変わったときだけ値が動くので、
+          # 日次実行では差分にならない。
           VERSION=$(git log -1 --format=%h -- .github/commit-heatmap/site)
-          sed -i "s/{{VERSION}}/${VERSION}/g" "$PUBLIC/index.html"
+          sed -i "s/{{VERSION}}/${VERSION}/g" "$PUBLIC/index.html" "$PUBLIC/sw.js"
+          if grep -q '{{VERSION}}' "$PUBLIC/index.html" "$PUBLIC/sw.js"; then
+            echo "バージョンの置換に失敗しました" >&2
+            exit 1
+          fi
 
           cd "$PUBLIC"
           git config user.name "github-actions[bot]"
