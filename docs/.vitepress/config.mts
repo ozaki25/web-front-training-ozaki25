@@ -209,6 +209,10 @@ export default withPwa(
                   text: "Day 47: 同期通信と非同期通信",
                   link: "/lessons/day47/",
                 },
+                {
+                  text: "Day 48: Web はステートレス",
+                  link: "/lessons/day48/",
+                },
               ],
             },
           ],
