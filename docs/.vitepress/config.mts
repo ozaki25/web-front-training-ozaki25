@@ -205,6 +205,10 @@ export default withPwa(
                   text: "Day 46: UX の5段階モデル",
                   link: "/lessons/day46/",
                 },
+                {
+                  text: "Day 47: 同期通信と非同期通信",
+                  link: "/lessons/day47/",
+                },
               ],
             },
           ],
