@@ -208,6 +208,10 @@ export default withPwa(
                   text: "Day 46: UX の5段階モデル",
                   link: "/lessons/day46/",
                 },
+                {
+                  text: "Day 47: 同期通信と非同期通信",
+                  link: "/lessons/day47/",
+                },
               ],
             },
           ],
@@ -276,7 +280,6 @@ export default withPwa(
               text: "Web 標準と通信",
               items: [
                 { text: "HTTP とステータスコード", link: "/drafts/032/" },
-                { text: "同期通信と非同期通信", link: "/drafts/172/" },
                 { text: "Web はステートレス", link: "/drafts/173/" },
                 { text: "DNS", link: "/drafts/158/" },
                 { text: "HTTPS と TLS", link: "/drafts/159/" },
