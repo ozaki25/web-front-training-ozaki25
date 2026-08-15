@@ -357,6 +357,7 @@ export default withPwa(
               text: "テストの実装・ツール",
               items: [
                 { text: "Testing Library", link: "/drafts/048/" },
+                { text: "コンポーネントテストの書き場所", link: "/drafts/174/" },
                 { text: "モックと MSW", link: "/drafts/090/" },
                 { text: "E2E テスト", link: "/drafts/046/" },
                 { text: "プロパティベーステスト", link: "/drafts/120/" },
