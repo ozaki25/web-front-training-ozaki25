@@ -11,8 +11,13 @@ export default withPwa(
       description: "Web フロントエンド研修コンテンツ",
       lang: "ja",
       // 各ページの最終更新日時を出す。日時は「そのファイルの直近のコミット」から取る
-      // （VitePress が git log -1 を実行する）ので、浅いクローンだと全ページが同じ日時になる。
-      // それを防ぐため docs:build の前で unshallow している（package.json 参照）。
+      // （VitePress が git log -1 を実行する）。
+      //
+      // Vercel は既定で git clone --depth=10 する。浅いクローンでは最古のコミットが
+      // 親を持たないため、そこより前に更新されたファイルはすべてそのコミットで
+      // 追加されたように見え、全ページが同じ日時になる。
+      // 直すには Vercel の環境変数に VERCEL_DEEP_CLONE=true を設定して全履歴を取らせる
+      // （ビルドコマンド側の git fetch --unshallow は Vercel では効かない）。
       lastUpdated: true,
       head: [
         ["meta", { name: "theme-color", content: "#064e3b" }],
