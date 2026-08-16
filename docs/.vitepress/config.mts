@@ -213,6 +213,10 @@ export default withPwa(
                   text: "Day 48: Web はステートレス",
                   link: "/lessons/day48/",
                 },
+                {
+                  text: "Day 49: コンポーネントテストの書き場所",
+                  link: "/lessons/day49/",
+                },
               ],
             },
           ],
