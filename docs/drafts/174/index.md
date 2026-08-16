@@ -127,24 +127,9 @@ test("空のまま送信するとエラーが出て、送信されない", async
 
 実行環境も違います。こちらはブラウザを起動せず、jsdom という「Node.js の上で動く DOM の模造品」の中で走るので、立ち上がりが速いのが利点です。
 
-Story の描画準備だけを借りることもできます。composeStories という API を使うと、Story を args が適用済みのコンポーネントとしてテストファイルに持ち込めます。
-
-```tsx
-import { render } from "@testing-library/react";
-import { composeStories } from "@storybook/react";
-import * as stories from "./LoginForm.stories";
-
-const { Default } = composeStories(stories);
-render(<Default />); // Story の args が適用された状態で描画される
-```
-
-公式ドキュメントはこの API のページで、直接使いたい人向けに残してあるが、Story をテストとして走らせるなら addon-vitest を推奨する、と明記しています。
-
 ## 2つの書き方の違い
 
 同じケースが、どちらの書き方でも成立します。確かめられる内容そのものは変わりません。
-
-同じ検証一式を両方で実装してカバレッジを測ると、行・分岐・関数のすべてでどちらも100%になりました。
 
 違いが出るのは、確かめる内容ではなく次の点です。
 
