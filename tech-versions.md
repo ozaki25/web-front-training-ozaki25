@@ -3,7 +3,7 @@
 レッスン作成時に参照する、各技術の最新バージョンと API の記録。
 **レッスン作成・修正のたびに、該当する技術の公式ドキュメントまたは Web 検索で最新情報を確認し、このファイルを更新すること。**
 
-> 最終確認日: 2026-06-26
+> 最終確認日: 2026-08-16（Storybook / Vitest / Testing Library。他は 2026-06-26）
 
 ## フレームワーク・ライブラリ
 
@@ -14,8 +14,9 @@
 | React Compiler | 1.0 | React 19 に自動バンドルされない。`npm install -D babel-plugin-react-compiler`。Next.js では `next.config.ts` に `reactCompiler: true` を追加 |
 | TypeScript | 6 系（安定）/ 7 ベータ | satisfies 演算子、as const、const type parameters。**TypeScript 7 = Go 製ネイティブコンパイラ（tsgo）がベータ公開中**（2026/06 時点。約10倍高速・構文や型の書き方は不変）。6 系は移行ブリッジの位置づけ。「TS7 安定版リリース済み」と主張するブログは誤情報 |
 | Tailwind CSS | 4.3 | CSS ファースト設定。`@import "tailwindcss"`、`@theme` ブロック。`tailwind.config.js/ts` は不要。`@tailwindcss/postcss` を使用。4.1 でテキストシャドウ・マスク、4.2 で webpack プラグイン・論理プロパティ、4.3 が現行安定版 |
-| Vitest | 最新安定版 | Jest 互換 API。`vitest.config.ts` で設定 |
-| Testing Library | 最新安定版 | `@testing-library/react`, `@testing-library/user-event` |
+| Vitest | 4.1 | Jest 互換 API。`vite.config.ts` の `test.projects` で実行環境ごとにプロジェクトを分けられる。ブラウザモードのプロバイダは `@vitest/browser-playwright` として独立。`coverage.all` は廃止（`include` に一致すれば未実行でも集計対象） |
+| Testing Library | 16.3（React） | `@testing-library/react`, `@testing-library/user-event` |
+| Storybook | 10.5 | インストールは `npx storybook add @storybook/addon-vitest`。play の引数は `{ canvas, userEvent, args, step }`（`canvasElement` から `within` する旧形は不要）。`expect` / `fn` の import 元は **`storybook/test`**（`@storybook/test` ではない）。型は `@storybook/react-vite` から。play の無い Story も**render test**（描画が通るかのスモークテスト）として実行される。`dev` タグ＝サイドバー表示、`test` タグ＝テスト実行で別管理。addon-a11y を入れると各 Story に axe が走る。**Portable Stories（`composeStories`）は残っているが、公式は Vite 系プロジェクトでは addon-vitest を推奨** |
 | Auth.js (NextAuth) | **v5（安定版）** | `auth()` 関数に統合（getServerSession 等を置換）。環境変数は `AUTH_*` プレフィックス。**プロジェクトは Better Auth 社に移管済みで同社が維持**。新規選定の主候補は Auth.js / Better Auth / Clerk |
 | TanStack Query | v5 | `useQuery({ queryKey, queryFn })`。`isPending`（v4 の `isLoading` から改名）。戻り値は判別可能ユニオン |
 | Playwright | 最新安定版 | `getByRole` / `getByLabel` などロールベースのロケータが推奨。`expect(...).toBeVisible()` で自動待機 |
