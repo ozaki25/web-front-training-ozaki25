@@ -216,6 +216,10 @@ export default withPwa(
                   text: "Day 48: Web はステートレス",
                   link: "/lessons/day48/",
                 },
+                {
+                  text: "Day 49: コンポーネントテストの書き場所",
+                  link: "/lessons/day49/",
+                },
               ],
             },
           ],
@@ -357,7 +361,6 @@ export default withPwa(
               text: "テストの実装・ツール",
               items: [
                 { text: "Testing Library", link: "/drafts/048/" },
-                { text: "コンポーネントテストの書き場所", link: "/drafts/174/" },
                 { text: "モックと MSW", link: "/drafts/090/" },
                 { text: "E2E テスト", link: "/drafts/046/" },
                 { text: "プロパティベーステスト", link: "/drafts/120/" },
