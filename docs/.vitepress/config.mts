@@ -10,6 +10,10 @@ export default withPwa(
       title: "Web Front-end Training",
       description: "Web フロントエンド研修コンテンツ",
       lang: "ja",
+      // 各ページの最終更新日時を出す。日時は「そのファイルの直近のコミット」から取る
+      // （VitePress が git log -1 を実行する）ので、浅いクローンだと全ページが同じ日時になる。
+      // それを防ぐため docs:build の前で unshallow している（package.json 参照）。
+      lastUpdated: true,
       head: [
         ["meta", { name: "theme-color", content: "#064e3b" }],
       ],
@@ -449,6 +453,16 @@ export default withPwa(
         },
         outline: {
           label: "目次",
+        },
+        lastUpdated: {
+          text: "最終更新",
+          // forceLocale で site の lang（ja）に固定する。
+          // 付けないと閲覧者のブラウザの言語で表示され、人によって表記が変わる。
+          formatOptions: {
+            dateStyle: "medium",
+            timeStyle: "short",
+            forceLocale: true,
+          },
         },
         docFooter: {
           prev: "前のレッスン",
