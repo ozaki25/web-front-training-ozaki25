@@ -229,6 +229,10 @@ export default withPwa(
                   text: "Day 49: コンポーネントテストの書き場所",
                   link: "/lessons/day49/",
                 },
+                {
+                  text: "Day 50: ダブルダイヤモンド",
+                  link: "/lessons/day50/",
+                },
               ],
             },
           ],
@@ -443,7 +447,6 @@ export default withPwa(
                 { text: "ローディングの見せ方", link: "/drafts/141/" },
                 { text: "エンプティステート", link: "/drafts/147/" },
                 { text: "UI の状態", link: "/drafts/171/" },
-                { text: "ダブルダイヤモンド", link: "/drafts/175/" },
               ],
             },
             {
