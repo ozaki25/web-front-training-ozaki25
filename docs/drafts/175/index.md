@@ -17,16 +17,16 @@
 各ひし形の左半分は選択肢を**広げる**時間、右半分は**絞る**時間です。広がって狭まる形が2回続くので、ひし形が2つ並びます。
 
 ```mermaid
-flowchart LR
-  A[きっかけ<br>困りごとや依頼] --> B
+flowchart TB
+  A[きっかけ<br>困りごとや依頼] --> D1
   subgraph D1[前半のひし形]
     B[探索 Discover<br>問題の候補を広げる] --> C[定義 Define<br>解くべき問題を絞る]
   end
-  C --> E
+  D1 --> D2
   subgraph D2[後半のひし形]
     E[展開 Develop<br>解決策の候補を広げる] --> F[提供 Deliver<br>絞って届ける]
   end
-  F --> G[成果]
+  D2 --> G[成果]
 ```
 
 4つの段階には、探索（Discover）、定義（Define）、展開（Develop）、提供（Deliver）という名前が付いています。頭文字を取って 4D とも呼ばれます。
