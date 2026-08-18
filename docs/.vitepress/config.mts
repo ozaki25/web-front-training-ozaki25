@@ -226,6 +226,10 @@ export default withPwa(
                   text: "Day 49: コンポーネントテストの書き場所",
                   link: "/lessons/day49/",
                 },
+                {
+                  text: "Day 50: ダブルダイヤモンド",
+                  link: "/lessons/day50/",
+                },
               ],
             },
           ],
