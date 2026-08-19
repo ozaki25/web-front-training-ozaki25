@@ -62,14 +62,14 @@ export default function Profile({ user }: { user: User }) {
 
 ```mermaid
 flowchart TB
-  A["取ってきた1件<br>4つのフィールド"]
-  A --> B["ブラウザ側の部品に渡す"]
-  B --> R
-  subgraph R["サーバーが返すもの"]
-    H["見た目の HTML<br>出るのは名前だけ"]
+  subgraph S["サーバーの中"]
+    A["取ってきた1件<br>4つのフィールド"]
+  end
+  A -->|"丸ごと渡す"| B
+  subgraph B["ブラウザに届く HTML"]
+    H["見た目<br>名前だけ"]
     D["埋め込みデータ<br>4つとも入る"]
   end
-  R --> C["ブラウザが受け取り<br>組み立て直す"]
 ```
 
 埋め込まれる場所は `<script>` タグの中です。実物はこういう形をしています。
@@ -105,13 +105,13 @@ export default async function Page() {
 
 ```mermaid
 flowchart TB
-  A["取ってきた1件<br>4つのフィールド"]
-  A --> B["サーバー側の部品で<br>名前だけ描画"]
-  B --> R
-  subgraph R["サーバーが返すもの"]
-    H["見た目の HTML<br>名前だけ"]
+  subgraph S["サーバーの中"]
+    A["取ってきた1件<br>4つのフィールド"]
   end
-  R --> C["ブラウザが受け取る<br>他の3つは届かない"]
+  A -->|"名前だけ描画して渡す"| B
+  subgraph B["ブラウザに届く HTML"]
+    H["見た目<br>名前だけ"]
+  end
 ```
 
 | 書き方 | HTML に残るもの |
@@ -150,11 +150,12 @@ export default function ArticleList({ articles }) {
 
 ```mermaid
 flowchart TB
-  A["記事を全件取得<br>下書きも含む"]
-  A --> B["ブラウザ側の部品に渡す"]
-  B --> R
-  subgraph R["サーバーが返すもの"]
-    H["見た目の HTML<br>公開済みだけ"]
+  subgraph S["サーバーの中"]
+    A["記事を全件取得<br>下書きも含む"]
+  end
+  A -->|"丸ごと渡す"| B
+  subgraph B["ブラウザに届く HTML"]
+    H["見た目<br>公開済みだけ"]
     D["埋め込みデータ<br>下書きも全部"]
   end
 ```
