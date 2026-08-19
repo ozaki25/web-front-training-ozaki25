@@ -3,13 +3,13 @@
 レッスン作成時に参照する、各技術の最新バージョンと API の記録。
 **レッスン作成・修正のたびに、該当する技術の公式ドキュメントまたは Web 検索で最新情報を確認し、このファイルを更新すること。**
 
-> 最終確認日: 2026-08-16（Storybook / Vitest / Testing Library。他は 2026-06-26）
+> 最終確認日: 2026-08-19（Next.js）/ 2026-08-16（Storybook / Vitest / Testing Library）/ 他は 2026-06-26
 
 ## フレームワーク・ライブラリ
 
 | 技術 | バージョン | 主な変更点・注意事項 |
 |------|-----------|---------------------|
-| Next.js | 16.2 | App Router。`middleware.ts` → `proxy.ts`（export 関数名も `proxy`）。Node.js ランタイム（Edge ではない）。`cacheComponents: true` で "use cache" 有効化（`dynamicIO` は廃止）。`create-next-app` は `tailwind.config.ts` を生成しない。**Turbopack が dev / build の既定**（`--turbopack` フラグ不要）。**`next lint` は削除**（ESLint / Biome を直接実行。scripts は `"lint": "eslint"` 形式）。16.1 で Node.js 最低版を 20.9.0 に引き上げ（18 は非サポート）。16.2 で Server Fast Refresh 既定化・Link に `transitionTypes` prop 追加 |
+| Next.js | 16.3 | App Router。`middleware.ts` → `proxy.ts`（export 関数名も `proxy`）。Node.js ランタイム（Edge ではない）。`cacheComponents: true` で "use cache" 有効化（`dynamicIO` は廃止）。`create-next-app` は `tailwind.config.ts` を生成しない。**Turbopack が dev / build の既定**（`--turbopack` フラグ不要）。**`next lint` は削除**（ESLint / Biome を直接実行。scripts は `"lint": "eslint"` 形式）。16.1 で Node.js 最低版を 20.9.0 に引き上げ（18 は非サポート）。16.2 で Server Fast Refresh 既定化・Link に `transitionTypes` prop 追加。**Client Component に渡した props は RSC ペイロードとして HTML に埋め込まれる**（`self.__next_f.push(...)` のスクリプトタグ。表示しないフィールドも全部入るため、渡す前に絞る）。ハイドレーション後も DOM に残る |
 | React | 19.2 系 | form actions, useActionState, useFormStatus, useOptimistic, use() API（useContext の代替）。forwardRef 非推奨（ref を通常の prop として渡せる）。19.2（2025/10）で useEffectEvent・`<Activity>`・View Transitions 対応・Suspense の一括表示が追加。RSC のセキュリティ修正が 19.x パッチで継続提供（19.0.1 / 19.1.2 / 19.2.1 等）。**React 20 は未リリース**（2026/06 時点。一部ブログの「React 20」記事は誤情報） |
 | React Compiler | 1.0 | React 19 に自動バンドルされない。`npm install -D babel-plugin-react-compiler`。Next.js では `next.config.ts` に `reactCompiler: true` を追加 |
 | TypeScript | 6 系（安定）/ 7 ベータ | satisfies 演算子、as const、const type parameters。**TypeScript 7 = Go 製ネイティブコンパイラ（tsgo）がベータ公開中**（2026/06 時点。約10倍高速・構文や型の書き方は不変）。6 系は移行ブリッジの位置づけ。「TS7 安定版リリース済み」と主張するブログは誤情報 |
