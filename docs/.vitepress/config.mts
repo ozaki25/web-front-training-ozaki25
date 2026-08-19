@@ -233,6 +233,10 @@ export default withPwa(
                   text: "Day 50: ダブルダイヤモンド",
                   link: "/lessons/day50/",
                 },
+                {
+                  text: "Day 51: サーバーから渡したデータは全部見える",
+                  link: "/lessons/day51/",
+                },
               ],
             },
           ],
@@ -360,7 +364,6 @@ export default withPwa(
                 { text: "JWTは誰でも読める", link: "/drafts/144/" },
                 { text: "IDOR", link: "/drafts/148/" },
                 { text: "SQL インジェクション", link: "/drafts/150/" },
-                { text: "サーバーから渡したデータは全部見える", link: "/drafts/176/" },
               ],
             },
             {
