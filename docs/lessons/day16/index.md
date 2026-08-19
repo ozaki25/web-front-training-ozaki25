@@ -25,7 +25,7 @@ bigint と symbol は使う場面が限られるので、ここでは触れま�
 flowchart LR
   subgraph プリミティブ
     x["変数 x"] --- v1["42"]
-    y["変数 y"] --- v2['"hello"']
+    y["変数 y"] --- v2["&quot;hello&quot;"]
   end
   subgraph オブジェクト
     user["変数 user"] -->|参照| obj["{ name: &quot;田中&quot; }"]
