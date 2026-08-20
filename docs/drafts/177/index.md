@@ -11,6 +11,10 @@
 
 Notion でも、Google ドキュメントでも、note の投稿画面でもかまいません。文字を打ちながら、その場で一部を太字にしたり、見出しにしたり、箇条書きにしたりできる入力欄を使ったことがあると思います。
 
+![ツールバーの付いた入力欄。見出し、太字を含む段落、箇条書きが表示されている](/tiptap-editor.png)
+
+この画像は、これから説明する Tiptap で実際に作って動かしたものです。B を押せば選んだ文字が太字になり、リストを押せば箇条書きになります。
+
 こういう入力欄は、**リッチテキストエディタ**と呼ばれます。「書式付きの文章を書ける入力欄」という意味です。
 
 `<textarea>` では作れません。`<textarea>` が持てるのはただの文字だからです。改行はできますが、一部だけ太字にすることはできません。
@@ -33,20 +37,16 @@ Tiptap は自分たちを headless（ヘッドレス）だと説明していま�
   <div class="d177-cols">
     <div>
       <div class="d177-cap">置いただけの状態</div>
-      <div class="d177-editor">
-        <div class="d177-area">ここに文字を打てます</div>
-      </div>
-      <div class="d177-sub">編集できる枠だけ。ボタンは付いてこない</div>
+      <img class="d177-shot" src="/tiptap-bare.png" alt="ツールバーのない入力欄。文章だけが表示されている">
+      <div class="d177-sub">編集はできる。ボタンは付いてこない</div>
     </div>
     <div>
       <div class="d177-cap">ボタンを自分で作ると</div>
-      <div class="d177-editor">
-        <div class="d177-bar"><span class="d177-btn">B</span><span class="d177-btn">I</span><span class="d177-btn">H2</span><span class="d177-btn">リスト</span></div>
-        <div class="d177-area">ここに文字を打てます</div>
-      </div>
+      <img class="d177-shot" src="/tiptap-editor.png" alt="上にボタンが並んだ入力欄">
       <div class="d177-sub">見た目も並びも自分で決められる</div>
     </div>
   </div>
+  <div class="d177-sub">どちらも同じ Tiptap です。違うのは、上のボタンを自分で置いたかどうかだけ</div>
 </div>
 
 ボタンは自分で作り、押されたら Tiptap に命令を送ります。
@@ -214,10 +214,7 @@ HTML で取り出す場合も、出てくるのは木から組み立て直した
 @media (max-width: 640px) { .d177-cols { grid-template-columns: 1fr; } }
 .d177-cap { font-size: 12px; opacity: 0.7; margin-bottom: 6px; }
 .d177-sub { font-size: 12px; opacity: 0.7; margin-top: 10px; }
-.d177-editor { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
-.d177-bar { display: flex; gap: 4px; padding: 6px; border-bottom: 1px solid #cbd5e1; background: #f1f5f9; }
-.d177-btn { font-size: 12px; padding: 2px 8px; border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; color: #1e293b; }
-.d177-area { padding: 14px; min-height: 64px; color: #94a3b8; font-size: 14px; }
+.d177-shot { width: 100%; height: auto; display: block; border: 1px solid var(--vp-c-divider); border-radius: 6px; }
 .d177-render { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; }
 .d177-h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
 .d177-para { font-size: 14px; line-height: 1.9; }
