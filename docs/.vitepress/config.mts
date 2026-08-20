@@ -438,7 +438,7 @@ export default withPwa(
                 { text: "コンポーネントの責務分割", link: "/drafts/066/" },
                 { text: "命名という設計", link: "/drafts/067/" },
                 { text: "コロケーション", link: "/drafts/068/" },
-                { text: "リッチテキストの持ち方", link: "/drafts/177/" },
+                { text: "Tiptap", link: "/drafts/177/" },
               ],
             },
             {
