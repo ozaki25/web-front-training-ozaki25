@@ -3,7 +3,7 @@
 レッスン作成時に参照する、各技術の最新バージョンと API の記録。
 **レッスン作成・修正のたびに、該当する技術の公式ドキュメントまたは Web 検索で最新情報を確認し、このファイルを更新すること。**
 
-> 最終確認日: 2026-08-19（Next.js）/ 2026-08-16（Storybook / Vitest / Testing Library）/ 他は 2026-06-26
+> 最終確認日: 2026-08-19（Next.js / Tiptap）/ 2026-08-16（Storybook / Vitest / Testing Library）/ 他は 2026-06-26
 
 ## フレームワーク・ライブラリ
 
@@ -23,6 +23,7 @@
 | MSW | v2 | `http.get(...)` + `HttpResponse.json(...)`（v1 の `rest.get` / `res(ctx.json())` から API 刷新） |
 | Zod | **4** | `z.object` / `safeParse`。メール等の形式検証はトップレベル関数に昇格（`z.email()`、`z.url()`、`z.uuidv4()` 等）。`z.string().email()` の形は**非推奨**（次のメジャーで削除予定）。クライアントとサーバーでスキーマ共有が定番 |
 | Zustand | v5 | `create<T>((set) => ...)`。セレクタで購読粒度を制御 |
+| Tiptap | 3.30 | ProseMirror ベースのヘッドレスエディタ。中身は**スキーマで定義されたノードとマークの木**として持たれ、`editor.getJSON()` / `getHTML()` で出力。`@tiptap/html` の `generateJSON` / `generateHTML` はエディタなしで変換できる。StarterKit のノードは doc/paragraph/heading/text/bulletList/orderedList/listItem/blockquote/codeBlock/horizontalRule/hardBreak、マークは bold/italic/strike/underline/code/link。定義外のタグ・属性は変換時に落ちる（img は StarterKit に含まれない）。Link 拡張は `javascript:` / `data:` を弾き、`target=_blank` と `rel=noopener noreferrer nofollow` を付ける。**公式は保存形式について JSON と HTML のどちらでもよいとし、セキュリティを理由に選ぶ理由はない・入力は常に検証せよと明記** |
 | WebAssembly | 3.0（2025/09 仕様完成） | 1.0 は 2019/12 に W3C 勧告（プレスリリースで「HTML・CSS・JavaScript に続く 4 つ目の言語」と紹介）。3.0 で GC・Memory64・例外処理などが標準化。drafts/155 は概念紹介にとどめ、仕様バージョンには踏み込まない |
 
 ## Next.js の主要 API 変更（従来 → 現在）
