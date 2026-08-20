@@ -29,6 +29,26 @@ Tiptap は自分たちを headless（ヘッドレス）だと説明していま�
 
 インストールして表示しても、ツールバーは出てきません。太字ボタンも、見出しのプルダウンもありません。出てくるのは、編集できる領域だけです。
 
+<div class="d177-box">
+  <div class="d177-cols">
+    <div>
+      <div class="d177-cap">置いただけの状態</div>
+      <div class="d177-editor">
+        <div class="d177-area">ここに文字を打てます</div>
+      </div>
+      <div class="d177-sub">編集できる枠だけ。ボタンは付いてこない</div>
+    </div>
+    <div>
+      <div class="d177-cap">ボタンを自分で作ると</div>
+      <div class="d177-editor">
+        <div class="d177-bar"><span class="d177-btn">B</span><span class="d177-btn">I</span><span class="d177-btn">H2</span><span class="d177-btn">リスト</span></div>
+        <div class="d177-area">ここに文字を打てます</div>
+      </div>
+      <div class="d177-sub">見た目も並びも自分で決められる</div>
+    </div>
+  </div>
+</div>
+
 ボタンは自分で作り、押されたら Tiptap に命令を送ります。
 
 ```jsx
@@ -96,6 +116,33 @@ export default Tiptap;
 }
 ```
 
+<div class="d177-box" id="d177-map">
+  <div class="d177-cols">
+    <div>
+      <div class="d177-cap">画面の見た目</div>
+      <div class="d177-render">
+        <div class="d177-h2"><span class="d177-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">買い物メモ</span></div>
+        <div class="d177-para"><span class="d177-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">週末に</span><span class="d177-p d177-b" data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">牛乳</span><span class="d177-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">を買う。</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="d177-cap">Tiptap が持っている中身</div>
+<pre class="d177-json">{
+  "type": "doc",
+  "content": [
+    <span class="d177-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">{ "type": "heading", "attrs": { "level": 2 },<br>      "content": [{ "type": "text", "text": "買い物メモ" }] }</span>,
+    { "type": "paragraph", "content": [
+      <span class="d177-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">{ "type": "text", "text": "週末に" }</span>,
+      <span class="d177-p " data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">{ "type": "text", "marks": [{ "type": "bold" }], "text": "牛乳" }</span>,
+      <span class="d177-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">{ "type": "text", "text": "を買う。" }</span>
+    ] }
+  ]
+}</pre>
+    </div>
+  </div>
+  <div class="d177-sub">どちらかをクリックすると、対応する相手が光ります</div>
+</div>
+
 タグの並びではなく、入れ子になった部品の木です。太字は `<strong>` というタグではなく、その文字に付いた `bold` という**マーク**として表されています。
 
 この形は**スキーマ**という定義に沿っています。どんな部品が存在してよいか、どれがどれの中に入れるか、どんな属性を持てるかが、あらかじめ決まっています。StarterKit で定義されているのは次の範囲です。
@@ -160,3 +207,23 @@ HTML で取り出す場合も、出てくるのは木から組み立て直した
 - リッチテキストエディタは既製のライブラリで作り、Tiptap はその選択肢のひとつ
 - 中身はスキーマで定義された部品の木で、出力の HTML はそこから組み立て直したもの
 - 定義外が落ちるのはエディタを通したときだけで、サーバー側の検証は別に要る
+
+<style>
+.d177-box { border: 1px solid var(--vp-c-divider); border-radius: 8px; padding: 16px; margin: 1.5rem 0; }
+.d177-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .d177-cols { grid-template-columns: 1fr; } }
+.d177-cap { font-size: 12px; opacity: 0.7; margin-bottom: 6px; }
+.d177-sub { font-size: 12px; opacity: 0.7; margin-top: 10px; }
+.d177-editor { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
+.d177-bar { display: flex; gap: 4px; padding: 6px; border-bottom: 1px solid #cbd5e1; background: #f1f5f9; }
+.d177-btn { font-size: 12px; padding: 2px 8px; border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; color: #1e293b; }
+.d177-area { padding: 14px; min-height: 64px; color: #94a3b8; font-size: 14px; }
+.d177-render { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; }
+.d177-h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.d177-para { font-size: 14px; line-height: 1.9; }
+.d177-json { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; font-size: 11px; line-height: 1.8; overflow-x: auto; margin: 0; }
+#d177-map .d177-cols { grid-template-columns: 1fr; }
+.d177-p { cursor: pointer; border-radius: 3px; padding: 0 2px; }
+.d177-b { font-weight: 700; }
+.d177-on { background: #fde68a; color: #1e293b; outline: 1px solid #f59e0b; }
+</style>
