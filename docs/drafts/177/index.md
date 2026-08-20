@@ -11,9 +11,10 @@
 
 Notion でも、Google ドキュメントでも、note の投稿画面でもかまいません。文字を打ちながら、その場で一部を太字にしたり、見出しにしたり、箇条書きにしたりできる入力欄を使ったことがあると思います。
 
-![ツールバーの付いた入力欄。見出し、太字を含む段落、箇条書きが表示されている](/tiptap-editor.png)
-
-上はこのページに貼った画像で、ここでは入力できません。これから説明する Tiptap で実際に作って動かし、その画面を撮ったものです。B を押せば選んだ文字が太字になり、リストを押せば箇条書きになります。
+<figure class="d177-fig">
+  <img class="d177-shot" src="/tiptap-editor.png" alt="ツールバーの付いた入力欄。見出し、太字を含む段落、箇条書きが表示されている">
+  <figcaption class="d177-sub">これから説明する Tiptap で作った入力欄。B を押すと選んだ文字が太字になる</figcaption>
+</figure>
 
 こういう入力欄は、**リッチテキストエディタ**と呼ばれます。「書式付きの文章を書ける入力欄」という意味です。
 
@@ -46,7 +47,7 @@ Tiptap は自分たちを headless（ヘッドレス）だと説明していま�
       <div class="d177-sub">見た目も並びも自分で決められる</div>
     </div>
   </div>
-  <div class="d177-sub">どちらも同じ Tiptap を動かして撮った画像です。違うのは、上のボタンを自分で置いたかどうかだけ</div>
+  <div class="d177-sub">どちらも同じ Tiptap。違うのは、上のボタンを自分で置いたかどうかだけ</div>
 </div>
 
 ボタンは自分で作り、押されたら Tiptap に命令を送ります。
@@ -140,7 +141,7 @@ export default Tiptap;
 }</pre>
     </div>
   </div>
-  <div class="d177-sub">どちらかをクリックすると、対応する相手が光ります（入力はできません）</div>
+  <div class="d177-sub">どちらかをクリックすると、対応する相手が光ります</div>
 </div>
 
 タグの並びではなく、入れ子になった部品の木です。太字は `<strong>` というタグではなく、その文字に付いた `bold` という**マーク**として表されています。
@@ -211,9 +212,11 @@ HTML で取り出す場合も、出てくるのは木から組み立て直した
 <style>
 .d177-box { border: 1px solid var(--vp-c-divider); border-radius: 8px; padding: 16px; margin: 1.5rem 0; }
 .d177-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.d177-cols > * { min-width: 0; }
 @media (max-width: 640px) { .d177-cols { grid-template-columns: 1fr; } }
 .d177-cap { font-size: 12px; opacity: 0.7; margin-bottom: 6px; }
 .d177-sub { font-size: 12px; opacity: 0.7; margin-top: 10px; }
+.d177-fig { margin: 1.5rem 0; }
 .d177-shot { width: 100%; height: auto; display: block; border: 1px solid var(--vp-c-divider); border-radius: 6px; }
 .d177-render { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; }
 .d177-h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
