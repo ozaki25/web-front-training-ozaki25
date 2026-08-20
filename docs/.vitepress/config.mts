@@ -234,6 +234,10 @@ export default withPwa(
                   text: "Day 51: サーバーから渡したデータは全部見える",
                   link: "/lessons/day51/",
                 },
+                {
+                  text: "Day 52: Tiptap",
+                  link: "/lessons/day52/",
+                },
               ],
             },
           ],
