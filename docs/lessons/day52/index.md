@@ -111,8 +111,8 @@ Next.js はサーバーでいったん HTML を作り、ブラウザで動きを
     <div>
       <div class="day52-cap">画面の見た目</div>
       <div class="day52-render">
-        <div class="day52-h2"><span class="day52-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">買い物メモ</span></div>
-        <div class="day52-para"><span class="day52-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">週末に</span><span class="day52-p day52-b" data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">牛乳</span><span class="day52-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">を買う。</span></div>
+        <div class="day52-h2"><button type="button" class="day52-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">買い物メモ</button></div>
+        <div class="day52-para"><button type="button" class="day52-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">週末に</button><button type="button" class="day52-p day52-b" data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">牛乳</button><button type="button" class="day52-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">を買う。</button></div>
       </div>
     </div>
     <div>
@@ -120,17 +120,17 @@ Next.js はサーバーでいったん HTML を作り、ブラウザで動きを
 <pre class="day52-json">{
   "type": "doc",
   "content": [
-    <span class="day52-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "heading", "attrs": { "level": 2 },<br>      "content": [{ "type": "text", "text": "買い物メモ" }] }</span>,
+    <button type="button" class="day52-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "heading", "attrs": { "level": 2 },<br>      "content": [{ "type": "text", "text": "買い物メモ" }] }</button>,
     { "type": "paragraph", "content": [
-      <span class="day52-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "text", "text": "週末に" }</span>,
-      <span class="day52-p " data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "text", "marks": [{ "type": "bold" }], "text": "牛乳" }</span>,
-      <span class="day52-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "text", "text": "を買う。" }</span>
+      <button type="button" class="day52-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "text", "text": "週末に" }</button>,
+      <button type="button" class="day52-p " data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "text", "marks": [{ "type": "bold" }], "text": "牛乳" }</button>,
+      <button type="button" class="day52-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "text", "text": "を買う。" }</button>
     ] }
   ]
 }</pre>
     </div>
   </div>
-  <div class="day52-sub">どちらかをクリックすると、対応する相手が光ります</div>
+  <div class="day52-sub">どちらかを選ぶと、対応する相手が光ります</div>
 </div>
 
 タグの並びではなく、入れ子になった部品の木です。太字は `<strong>` というタグではなく、その文字に付いた `bold` という**マーク**として表されています。
@@ -273,7 +273,8 @@ const html = generateHTML(saved, [StarterKit]);
 .day52-para { font-size: 14px; line-height: 1.9; }
 .day52-json { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; font-size: 11px; line-height: 1.8; overflow-x: auto; margin: 0; }
 #day52-map .day52-cols { grid-template-columns: 1fr; }
-.day52-p { cursor: pointer; border-radius: 3px; padding: 0 2px; }
+.day52-p { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; border-radius: 3px; padding: 0 2px; text-align: inherit; }
+.day52-p:focus-visible { outline: 2px solid #f59e0b; outline-offset: 1px; }
 .day52-b { font-weight: 700; }
 .day52-on { background: #fde68a; color: #1e293b; outline: 1px solid #f59e0b; }
 </style>
