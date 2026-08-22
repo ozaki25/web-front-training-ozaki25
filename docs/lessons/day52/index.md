@@ -1,4 +1,4 @@
-# Tiptap — 見た目は自分で作るリッチテキストエディタ
+# Day 52: Tiptap — 見た目は自分で作るリッチテキストエディタ
 
 ## 今日のゴール
 
@@ -11,9 +11,9 @@
 
 Notion でも、Google ドキュメントでも、note の投稿画面でもかまいません。文字を打ちながら、その場で一部を太字にしたり、見出しにしたり、箇条書きにしたりできる入力欄を使ったことがあると思います。
 
-<figure class="d177-fig">
-  <img class="d177-shot" src="/tiptap-editor.png" alt="ツールバーの付いた入力欄。見出し、太字を含む段落、箇条書きが表示されている">
-  <figcaption class="d177-sub">これから説明する Tiptap で作った入力欄。B を押すと選んだ文字が太字になる</figcaption>
+<figure class="day52-fig">
+  <img class="day52-shot" src="./tiptap-editor.png" alt="ツールバーの付いた入力欄。見出し、太字を含む段落、箇条書きが表示されている">
+  <figcaption class="day52-sub">これから説明する Tiptap で作った入力欄。B を押すと選んだ文字が太字になる</figcaption>
 </figure>
 
 こういう入力欄は、**リッチテキストエディタ**と呼ばれます。「書式付きの文章を書ける入力欄」という意味です。
@@ -36,20 +36,20 @@ Tiptap は自らを headless（ヘッドレス）と説明しています。**�
 
 インストールして表示しても、ツールバーは出てきません。太字ボタンも、見出しのプルダウンもありません。出てくるのは、編集できる領域だけです。
 
-<div class="d177-box">
-  <div class="d177-cols">
+<div class="day52-box">
+  <div class="day52-cols">
     <div>
-      <div class="d177-cap">置いただけの状態</div>
-      <img class="d177-shot" src="/tiptap-bare.png" alt="ツールバーのない入力欄。文章だけが表示されている">
-      <div class="d177-sub">編集はできる。ボタンは付いてこない</div>
+      <div class="day52-cap">置いただけの状態</div>
+      <img class="day52-shot" src="./tiptap-bare.png" alt="ツールバーのない入力欄。文章だけが表示されている">
+      <div class="day52-sub">編集はできる。ボタンは付いてこない</div>
     </div>
     <div>
-      <div class="d177-cap">ボタンを自分で作ると</div>
-      <img class="d177-shot" src="/tiptap-editor.png" alt="上にボタンが並んだ入力欄">
-      <div class="d177-sub">見た目も並びも自分で決められる</div>
+      <div class="day52-cap">ボタンを自分で作ると</div>
+      <img class="day52-shot" src="./tiptap-editor.png" alt="上にボタンが並んだ入力欄">
+      <div class="day52-sub">見た目も並びも自分で決められる</div>
     </div>
   </div>
-  <div class="d177-sub">どちらも同じ Tiptap。違うのは、上のボタンを自分で置いたかどうかだけ</div>
+  <div class="day52-sub">どちらも同じ Tiptap。違うのは、上のボタンを自分で置いたかどうかだけ</div>
 </div>
 
 ボタンは自分で作り、押されたら Tiptap に命令を送ります。
@@ -106,31 +106,31 @@ Next.js はサーバーでいったん HTML を作り、ブラウザで動きを
 
 「買い物メモ」という見出しと、「週末に**牛乳**を買う。」という段落を書くと、こうなります。
 
-<div class="d177-box" id="d177-map">
-  <div class="d177-cols">
+<div class="day52-box" id="day52-map">
+  <div class="day52-cols">
     <div>
-      <div class="d177-cap">画面の見た目</div>
-      <div class="d177-render">
-        <div class="d177-h2"><span class="d177-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">買い物メモ</span></div>
-        <div class="d177-para"><span class="d177-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">週末に</span><span class="d177-p d177-b" data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">牛乳</span><span class="d177-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">を買う。</span></div>
+      <div class="day52-cap">画面の見た目</div>
+      <div class="day52-render">
+        <div class="day52-h2"><span class="day52-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">買い物メモ</span></div>
+        <div class="day52-para"><span class="day52-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">週末に</span><span class="day52-p day52-b" data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">牛乳</span><span class="day52-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">を買う。</span></div>
       </div>
     </div>
     <div>
-      <div class="d177-cap">Tiptap が持っている中身</div>
-<pre class="d177-json">{
+      <div class="day52-cap">Tiptap が持っている中身</div>
+<pre class="day52-json">{
   "type": "doc",
   "content": [
-    <span class="d177-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">{ "type": "heading", "attrs": { "level": 2 },<br>      "content": [{ "type": "text", "text": "買い物メモ" }] }</span>,
+    <span class="day52-p " data-k="h" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "heading", "attrs": { "level": 2 },<br>      "content": [{ "type": "text", "text": "買い物メモ" }] }</span>,
     { "type": "paragraph", "content": [
-      <span class="d177-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">{ "type": "text", "text": "週末に" }</span>,
-      <span class="d177-p " data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">{ "type": "text", "marks": [{ "type": "bold" }], "text": "牛乳" }</span>,
-      <span class="d177-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#d177-map [data-k]').forEach(function(e){e.classList.toggle('d177-on', e.dataset.k===k)})">{ "type": "text", "text": "を買う。" }</span>
+      <span class="day52-p " data-k="t1" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "text", "text": "週末に" }</span>,
+      <span class="day52-p " data-k="b" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "text", "marks": [{ "type": "bold" }], "text": "牛乳" }</span>,
+      <span class="day52-p " data-k="t2" onclick="var k=this.dataset.k;document.querySelectorAll('#day52-map [data-k]').forEach(function(e){e.classList.toggle('day52-on', e.dataset.k===k)})">{ "type": "text", "text": "を買う。" }</span>
     ] }
   ]
 }</pre>
     </div>
   </div>
-  <div class="d177-sub">どちらかをクリックすると、対応する相手が光ります</div>
+  <div class="day52-sub">どちらかをクリックすると、対応する相手が光ります</div>
 </div>
 
 タグの並びではなく、入れ子になった部品の木です。太字は `<strong>` というタグではなく、その文字に付いた `bold` という**マーク**として表されています。
@@ -260,20 +260,20 @@ const html = generateHTML(saved, [StarterKit]);
 - 定義外が落ちるのはエディタを通したときだけで、サーバー側の検証は別に要る
 
 <style>
-.d177-box { border: 1px solid var(--vp-c-divider); border-radius: 8px; padding: 16px; margin: 1.5rem 0; }
-.d177-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.d177-cols > * { min-width: 0; }
-@media (max-width: 640px) { .d177-cols { grid-template-columns: 1fr; } }
-.d177-cap { font-size: 12px; opacity: 0.7; margin-bottom: 6px; }
-.d177-sub { font-size: 12px; opacity: 0.7; margin-top: 10px; }
-.d177-fig { margin: 1.5rem 0; }
-.d177-shot { width: 100%; height: auto; display: block; border: 1px solid var(--vp-c-divider); border-radius: 6px; }
-.d177-render { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; }
-.d177-h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-.d177-para { font-size: 14px; line-height: 1.9; }
-.d177-json { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; font-size: 11px; line-height: 1.8; overflow-x: auto; margin: 0; }
-#d177-map .d177-cols { grid-template-columns: 1fr; }
-.d177-p { cursor: pointer; border-radius: 3px; padding: 0 2px; }
-.d177-b { font-weight: 700; }
-.d177-on { background: #fde68a; color: #1e293b; outline: 1px solid #f59e0b; }
+.day52-box { border: 1px solid var(--vp-c-divider); border-radius: 8px; padding: 16px; margin: 1.5rem 0; }
+.day52-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.day52-cols > * { min-width: 0; }
+@media (max-width: 640px) { .day52-cols { grid-template-columns: 1fr; } }
+.day52-cap { font-size: 12px; opacity: 0.7; margin-bottom: 6px; }
+.day52-sub { font-size: 12px; opacity: 0.7; margin-top: 10px; }
+.day52-fig { margin: 1.5rem 0; }
+.day52-shot { width: 100%; height: auto; display: block; border: 1px solid var(--vp-c-divider); border-radius: 6px; }
+.day52-render { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 14px; }
+.day52-h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.day52-para { font-size: 14px; line-height: 1.9; }
+.day52-json { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; font-size: 11px; line-height: 1.8; overflow-x: auto; margin: 0; }
+#day52-map .day52-cols { grid-template-columns: 1fr; }
+.day52-p { cursor: pointer; border-radius: 3px; padding: 0 2px; }
+.day52-b { font-weight: 700; }
+.day52-on { background: #fde68a; color: #1e293b; outline: 1px solid #f59e0b; }
 </style>
