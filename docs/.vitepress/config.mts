@@ -430,7 +430,7 @@ export default withPwa(
               text: "インフラと本番環境",
               items: [
                 { text: "ローカル・ステージング・本番", link: "/drafts/114/" },
-                { text: "フィーチャーフラグ", link: "/drafts/117/" },
+                { text: "フィーチャーフラグ", link: "/drafts/178/" },
                 { text: "結果整合性", link: "/drafts/127/" },
                 { text: "コールドスタート", link: "/drafts/138/" },
                 { text: "ロードバランサ", link: "/drafts/153/" },
@@ -442,7 +442,6 @@ export default withPwa(
                 { text: "コンポーネントの責務分割", link: "/drafts/066/" },
                 { text: "命名という設計", link: "/drafts/067/" },
                 { text: "コロケーション", link: "/drafts/068/" },
-                { text: "フィーチャーフラグ", link: "/drafts/178/" },
               ],
             },
             {
