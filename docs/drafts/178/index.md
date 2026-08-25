@@ -8,7 +8,7 @@
 
 ## 作りかけの機能は人に見せられない
 
-新しい機能を作っている途中、画面は中途半端な状態になります。ボタンはあるのに押しても何も起きなかったり、フォームが最後まで作れていなかったりする、あの状態です。人に見せるのは、ひととおり動くようになってからにしたいところです。
+新しい機能を作っている途中、画面は中途半端な状態になります。ボタンはあるのに押しても何も起きなかったり、フォームが最後まで作れていなかったりします。人に見せるのは、ひととおり動くようになってからにしたいところです。
 
 チームで開発すると、これは好みの問題ではなくなります。統合先（チーム全員の変更が集まるブランチ。`main`、トランクとも呼ばれます）に入ったコードは、いずれそのまま本番に出ていって利用者に見えます。
 
@@ -19,6 +19,30 @@
 ところが、抱えているあいだも他の人は統合先を変え続けます。自分のブランチは日が経つほど周りから離れていきます。離れたぶんは、あとでマージするときにまとめて解消することになります。
 
 3日分と3か月分では、衝突の数も増えますし、1件ずつ解くのも難しくなります。
+
+<svg viewBox="0 0 420 150" role="img" aria-labelledby="d178-t1 d178-d1" style="width:100%;max-width:520px;height:auto;display:block;margin:1.5rem auto;">
+  <title id="d178-t1">完成まで抱えた場合</title>
+  <desc id="d178-d1">作業ブランチが1本だけ長く伸びて、統合先から日が経つほど離れていく。合流は最後に1回、大きなマージになる。</desc>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="10" y="16" width="400" height="124" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <path d="M40 50 H380" />
+    <path d="M40 50 C120 50 140 105 380 105" stroke-dasharray="5 4" />
+    <path d="M380 105 L380 56" marker-end="url(#d178-a1)" />
+  </g>
+  <defs>
+    <marker id="d178-a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <g fill="currentColor" font-size="11">
+    <text x="40" y="42">統合先</text>
+    <text x="160" y="72" opacity="0.75">離れていく</text>
+    <text x="215" y="124">作業ブランチ</text>
+    <text x="285" y="92">大きなマージ</text>
+  </g>
+</svg>
 
 毎日こまめに統合先へ入れれば、ズレは小さいうちに解消できます。でも今度は、作りかけの機能が本番に出てしまいます。
 
@@ -50,39 +74,27 @@ export default async function OrderPage() {
 
 新しい決済フローのコードは本番に入っていますが、`isEnabled` が false を返すあいだ画面には出てきません。作りかけでも、オフのままなら毎日統合先に入れられます。マージを小さく保ちながら、機能は隠しておけます。
 
-<svg viewBox="0 0 420 300" role="img" aria-labelledby="d178-t d178-d" style="width:100%;max-width:520px;height:auto;display:block;margin:1.5rem auto;">
-  <title id="d178-t">未完成のコードの置き方2通り</title>
-  <desc id="d178-d">上は完成まで抱える場合。作業ブランチが1本だけ長く伸びて統合先から離れていき、最後に大きなマージが1回ある。下はフラグでオフにして入れる場合。短い作業ブランチが何本も出ては統合先へ戻り、マージが小さく何回にも分かれる。入ったコードは機能がオフのまま待つ。</desc>
-  <g fill="currentColor" font-size="11" opacity="0.7">
-    <text x="16" y="18">ブランチに抱える</text>
-    <text x="16" y="180">フラグでオフにして入れる</text>
-  </g>
+<svg viewBox="0 0 420 130" role="img" aria-labelledby="d178-t2 d178-d2" style="width:100%;max-width:520px;height:auto;display:block;margin:1.5rem auto;">
+  <title id="d178-t2">フラグでオフにして入れた場合</title>
+  <desc id="d178-d2">短い作業ブランチが何本も出ては統合先へ戻り、マージが小さく何回にも分かれる。入ったコードは機能がオフのまま待つ。</desc>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <rect x="10" y="26" width="400" height="112" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
-    <rect x="10" y="188" width="400" height="100" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
+    <rect x="10" y="16" width="400" height="104" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
   </g>
   <g stroke="currentColor" stroke-width="1.5" fill="none">
-    <path d="M40 60 H380" />
-    <path d="M40 60 C120 60 140 110 380 110" stroke-dasharray="5 4" />
-    <path d="M380 110 L380 66" marker-end="url(#d178-a)" />
-    <path d="M40 222 H380" />
-    <path d="M70 222 C82 244 122 242 130 222" stroke-dasharray="5 4" marker-end="url(#d178-a)" />
-    <path d="M150 222 C162 244 202 242 210 222" stroke-dasharray="5 4" marker-end="url(#d178-a)" />
-    <path d="M230 222 C242 244 282 242 290 222" stroke-dasharray="5 4" marker-end="url(#d178-a)" />
-    <path d="M310 222 C322 244 362 242 370 222" stroke-dasharray="5 4" marker-end="url(#d178-a)" />
+    <path d="M40 52 H380" />
+    <path d="M70 52 C82 74 122 72 130 52" stroke-dasharray="5 4" marker-end="url(#d178-a2)" />
+    <path d="M150 52 C162 74 202 72 210 52" stroke-dasharray="5 4" marker-end="url(#d178-a2)" />
+    <path d="M230 52 C242 74 282 72 290 52" stroke-dasharray="5 4" marker-end="url(#d178-a2)" />
+    <path d="M310 52 C322 74 362 72 370 52" stroke-dasharray="5 4" marker-end="url(#d178-a2)" />
   </g>
   <defs>
-    <marker id="d178-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <marker id="d178-a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
     </marker>
   </defs>
   <g fill="currentColor" font-size="11">
-    <text x="40" y="52">統合先</text>
-    <text x="150" y="78" opacity="0.75">離れていく</text>
-    <text x="215" y="128">作業ブランチ</text>
-    <text x="285" y="96">大きなマージ</text>
-    <text x="40" y="214">統合先</text>
-    <text x="40" y="272" opacity="0.75">短いブランチで毎日入る。機能はオフのまま</text>
+    <text x="40" y="44">統合先</text>
+    <text x="40" y="102" opacity="0.75">短いブランチで毎日入る。機能はオフのまま</text>
   </g>
 </svg>
 
@@ -107,7 +119,7 @@ Next.js で気をつけるのは、ブラウザ側で読む `NEXT_PUBLIC_` の�
 
 人によって値を変えられると、公開を少しずつ広げられます。まず社内の人だけオン、次に利用者の1%、10%と様子を見ながら広げ、問題が出たら値をオフに戻す。ビルドも配り直しも待たずに、壊れた画面を引っ込められます。
 
-使っているアプリで、隣の人にはもう出ている新機能が自分にはまだ出ていない、ということがあります。あれはこの出し分けの途中です。コードはすでに全員に届いていて、見せる相手だけを少しずつ広げています。
+使っているアプリで、隣の人にはもう出ている新機能が自分にはまだ出ていない、ということがあります。出し分けが途中まで進んでいる状態です。コードはすでに全員に届いていて、見せる相手だけを少しずつ広げています。
 
 似た言葉に**カナリアリリース**があります。あちらは新しいバージョンを先に一部にだけ当てて様子を見る方法で、サーバーを分けてアクセスの一部をそちらへ流す形が代表的です。バージョンまるごとが単位で、切り替えるのはインフラ側です。フラグは機能ひとつが単位で、コードの中で切り替えます。
 
