@@ -241,6 +241,10 @@ export default withPwa(
                   text: "Day 52: Tiptap",
                   link: "/lessons/day52/",
                 },
+                {
+                  text: "Day 53: フィーチャーフラグ",
+                  link: "/lessons/day53/",
+                },
               ],
             },
           ],
@@ -430,7 +434,6 @@ export default withPwa(
               text: "インフラと本番環境",
               items: [
                 { text: "ローカル・ステージング・本番", link: "/drafts/114/" },
-                { text: "フィーチャーフラグ", link: "/drafts/178/" },
                 { text: "結果整合性", link: "/drafts/127/" },
                 { text: "コールドスタート", link: "/drafts/138/" },
                 { text: "ロードバランサ", link: "/drafts/153/" },
