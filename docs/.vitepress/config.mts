@@ -238,6 +238,10 @@ export default withPwa(
                   text: "Day 52: Tiptap",
                   link: "/lessons/day52/",
                 },
+                {
+                  text: "Day 53: フィーチャーフラグ",
+                  link: "/lessons/day53/",
+                },
               ],
             },
           ],
