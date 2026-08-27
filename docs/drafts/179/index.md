@@ -96,6 +96,35 @@ v2 は全体を **5つのフェーズ、33のステージ**に分けています
 - **Unit**: Intent を分けた、独立して作れる塊。Inception の終盤で分解され、Construction の設計はこの単位で繰り返す
 - **Bolt**: Unit をいくつか束ねた、届ける区切り。スプリントに似た計画の単位だが、実行の順番は Unit どうしの依存関係から決まる
 
+<svg viewBox="0 0 420 210" role="img" aria-labelledby="d179-t3 d179-d3" style="width:100%;max-width:520px;height:auto;display:block;margin:1.5rem auto;">
+  <title id="d179-t3">Intent が Unit に分かれ、Bolt で束ねられる</title>
+  <desc id="d179-d3">やりたいことの一文である Intent が、Inception で独立して作れる3つの Unit に分解される。Unit のいくつかを束ねた届ける区切りが Bolt。Construction の設計と実装は Unit ごとに繰り返される。</desc>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="110" y="16" width="200" height="34" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
+    <rect x="30" y="96" width="100" height="34" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
+    <rect x="160" y="96" width="100" height="34" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
+    <rect x="290" y="96" width="100" height="34" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
+    <rect x="22" y="88" width="246" height="50" rx="8" stroke-dasharray="5 4" />
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <path d="M210 50 V84" marker-end="url(#d179-c)" />
+  </g>
+  <defs>
+    <marker id="d179-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
+    </marker>
+  </defs>
+  <g fill="currentColor" font-size="11">
+    <text x="128" y="38">Intent（やりたいことの一文）</text>
+    <text x="222" y="72" opacity="0.75">Inception で分解</text>
+    <text x="58" y="118">Unit A</text>
+    <text x="188" y="118">Unit B</text>
+    <text x="318" y="118">Unit C</text>
+    <text x="26" y="158" opacity="0.75">Bolt（まとめて届ける計画の区切り）</text>
+    <text x="82" y="192" opacity="0.75">Construction の設計と実装は Unit ごとに繰り返す</text>
+  </g>
+</svg>
+
 各ステージには担当エージェントが割り当てられています。全部で14体です。
 
 - 専門家が **11体**。プロダクト、アーキテクト、開発、品質、運用など
