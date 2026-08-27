@@ -242,6 +242,10 @@ export default withPwa(
                   text: "Day 53: フィーチャーフラグ",
                   link: "/lessons/day53/",
                 },
+                {
+                  text: "Day 54: AI-DLC",
+                  link: "/lessons/day54/",
+                },
               ],
             },
           ],
