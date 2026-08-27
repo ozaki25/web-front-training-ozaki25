@@ -245,6 +245,10 @@ export default withPwa(
                   text: "Day 53: フィーチャーフラグ",
                   link: "/lessons/day53/",
                 },
+                {
+                  text: "Day 54: AI-DLC",
+                  link: "/lessons/day54/",
+                },
               ],
             },
           ],
@@ -467,7 +471,6 @@ export default withPwa(
                 { text: "MCP", link: "/drafts/056/" },
                 { text: "コンテキストウィンドウ", link: "/drafts/057/" },
                 { text: "AIとの協働モード（伴走と委託）", link: "/drafts/113/" },
-                { text: "AI-DLC", link: "/drafts/179/" },
               ],
             },
           ],
