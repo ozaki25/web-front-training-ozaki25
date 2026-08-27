@@ -43,9 +43,9 @@ AI に渡す指示の実例も公開されています。
 
 v2 は全体を **5つのフェーズ、33のステージ**に分けています。
 
-<svg viewBox="0 0 420 300" role="img" aria-labelledby="d179-t2 d179-d2" style="width:100%;max-width:520px;height:auto;display:block;margin:1.5rem auto;">
+<svg viewBox="0 0 420 392" role="img" aria-labelledby="d179-t2 d179-d2" style="width:100%;max-width:520px;height:auto;display:block;margin:1.5rem auto;">
   <title id="d179-t2">v2 の5つのフェーズ</title>
-  <desc id="d179-d2">Initialization は自動で Ideation へ進み、以降は Ideation、Inception、Construction、Operation の順に、フェーズの境目ごとに検証ゲートを通って進む。Operation の最後から Ideation へ戻るフィードバックの流れがある。</desc>
+  <desc id="d179-d2">Initialization は自動で Ideation へ進み、以降は Ideation、Inception、Construction、Operation の順に、フェーズの境目ごとに検証ゲートを通って進む。Operation の最後から Ideation へ戻るフィードバックの流れがある。どのフェーズの中も、ステージの終わりごとに人間の承認ゲートを通る。</desc>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
     <rect x="118" y="12" width="184" height="30" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
     <rect x="118" y="70" width="184" height="30" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
@@ -58,6 +58,21 @@ v2 は全体を **5つのフェーズ、33のステージ**に分けています
     <path d="M210 216 V240" marker-end="url(#d179-b)" />
     <path d="M118 259 C40 259 40 85 112 85" marker-end="url(#d179-b)" stroke-dasharray="5 4" />
   </g>
+  <g fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity="0.6">
+    <path d="M126 158 L36 306" />
+    <path d="M294 158 L400 306" />
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="24" y="306" width="384" height="72" rx="8" fill="var(--vp-c-bg-soft, transparent)" />
+    <rect x="40" y="330" width="76" height="28" rx="5" fill="var(--vp-c-bg, transparent)" />
+    <rect x="188" y="330" width="76" height="28" rx="5" fill="var(--vp-c-bg, transparent)" />
+    <circle cx="152" cy="344" r="14" />
+    <circle cx="300" cy="344" r="14" />
+    <path d="M116 344 H134" marker-end="url(#d179-b)" />
+    <path d="M166 344 H184" marker-end="url(#d179-b)" />
+    <path d="M264 344 H282" marker-end="url(#d179-b)" />
+    <path d="M314 344 H336" marker-end="url(#d179-b)" />
+  </g>
   <defs>
     <marker id="d179-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
@@ -69,6 +84,11 @@ v2 は全体を **5つのフェーズ、33のステージ**に分けています
     <text x="210" y="147">Inception 2.1–2.9</text>
     <text x="210" y="205">Construction 3.1–3.7</text>
     <text x="210" y="263">Operation 4.1–4.7</text>
+    <text x="78" y="348">ステージ</text>
+    <text x="226" y="348">ステージ</text>
+    <text x="152" y="348" font-size="10">承認</text>
+    <text x="300" y="348" font-size="10">承認</text>
+    <text x="352" y="348">…</text>
   </g>
   <g fill="currentColor" font-size="10" opacity="0.75">
     <text x="222" y="58">自動で次へ</text>
@@ -81,6 +101,7 @@ v2 は全体を **5つのフェーズ、33のステージ**に分けています
     <text x="310" y="205">設計と実装</text>
     <text x="310" y="263">デプロイと運用</text>
     <text transform="rotate(-90 30 172)" x="30" y="172">運用から構想へ戻る</text>
+    <text x="32" y="322">どのフェーズの中も、ステージごとに人間の承認ゲート</text>
   </g>
 </svg>
 
