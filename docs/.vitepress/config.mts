@@ -467,6 +467,7 @@ export default withPwa(
                 { text: "MCP", link: "/drafts/056/" },
                 { text: "コンテキストウィンドウ", link: "/drafts/057/" },
                 { text: "AIとの協働モード（伴走と委託）", link: "/drafts/113/" },
+                { text: "AI-DLC", link: "/drafts/179/" },
               ],
             },
           ],
