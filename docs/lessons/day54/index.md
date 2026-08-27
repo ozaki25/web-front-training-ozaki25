@@ -184,16 +184,21 @@ v2 の回し方は二重のループです。ステージの内側では **AI �
 
 **事後条件がなければ、AI は自分の出力を直せません。** 逆に事後条件が機械で検査できるなら、AI は自分で検証して直すのを繰り返せます。ビルドとテストのように白黒がつく段階は、そこまで到達できます。さきほどの学習ループは、3つ目の区画（実行から学ぶ）が実装に現れたものです。
 
-<svg viewBox="0 0 420 175" role="img" aria-labelledby="d179-t d179-d" style="width:100%;max-width:520px;height:auto;display:block;margin:1.5rem auto;">
-  <title id="d179-t">自己修正ループと停止条件</title>
-  <desc id="d179-d">計画して実装したあと自己検証し、事後条件を満たさなければ実装に戻ってやり直す。満たせば次の段階へ進む。反復回数やトークンの上限に達したら、人間に戻してエスカレーションする。</desc>
+<svg viewBox="0 0 420 195" role="img" aria-labelledby="d179-t d179-d" style="width:100%;max-width:520px;height:auto;display:block;margin:1.5rem auto;">
+  <title id="d179-t">二重のループ</title>
+  <desc id="d179-d">ステージの内側で AI が実装し、AI が検証する。事後条件を満たさないあいだは実装に戻って繰り返す。収束するか上限に達したら人間の承認ゲートに渡り、承認されれば次のステージへ進み、差し戻されれば実装に戻る。</desc>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <rect x="25" y="55" width="130" height="36" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
-    <rect x="200" y="55" width="100" height="36" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
-    <path d="M155 73 H194" marker-end="url(#d179-a)" />
-    <path d="M250 55 C250 22 90 22 90 49" marker-end="url(#d179-a)" stroke-dasharray="5 4" />
-    <path d="M300 73 H348" marker-end="url(#d179-a)" />
-    <path d="M250 91 V128" marker-end="url(#d179-a)" />
+    <rect x="12" y="20" width="278" height="116" rx="8" fill="var(--vp-c-bg-soft, transparent)" />
+    <rect x="28" y="78" width="104" height="34" rx="6" fill="var(--vp-c-bg, transparent)" />
+    <rect x="168" y="78" width="104" height="34" rx="6" fill="var(--vp-c-bg, transparent)" />
+    <rect x="318" y="78" width="88" height="34" rx="6" fill="var(--vp-c-bg-soft, transparent)" />
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <path d="M132 95 H164" marker-end="url(#d179-a)" />
+    <path d="M220 78 C220 40 80 40 80 74" stroke-dasharray="5 4" marker-end="url(#d179-a)" />
+    <path d="M272 95 H314" marker-end="url(#d179-a)" />
+    <path d="M362 78 V46" marker-end="url(#d179-a)" />
+    <path d="M362 112 C362 174 80 174 80 116" stroke-dasharray="5 4" marker-end="url(#d179-a)" />
   </g>
   <defs>
     <marker id="d179-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -201,11 +206,13 @@ v2 の回し方は二重のループです。ステージの内側では **AI �
     </marker>
   </defs>
   <g fill="currentColor" font-size="11">
-    <text x="46" y="78">計画して実装する</text>
-    <text x="228" y="78">自己検証</text>
-    <text x="132" y="18" opacity="0.75">満たさない</text>
-    <text x="354" y="77" opacity="0.75">次へ</text>
-    <text x="150" y="150" opacity="0.75">上限に達したら人間に戻す</text>
+    <text x="20" y="36" opacity="0.7">ステージの内側</text>
+    <text x="42" y="99">AI が実装する</text>
+    <text x="182" y="99">AI が検証する</text>
+    <text x="101" y="68" opacity="0.75">満たすまで繰り返す</text>
+    <text x="330" y="99">人間の承認</text>
+    <text x="300" y="36" opacity="0.75">承認したら次へ</text>
+    <text x="196" y="185" opacity="0.75">差し戻し</text>
   </g>
 </svg>
 
